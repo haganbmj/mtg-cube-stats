@@ -60,7 +60,7 @@ const excludedSets = [
 ];
 
 const excludedSetTypes = [
-
+    'token',
 ];
 
 const excludedLayouts = [
@@ -96,13 +96,25 @@ const stripped = cards.filter(card => {
     return {
         id: card.id,
         oracleId: card.oracle_id,
-        oracleName: card.name,
         name: card.name,
         releaseDate: card.released_at,
         set: {
             name: card.set_name,
             code: card.set,
         },
+        cmc: card.cmc,
+        colors: card.colors || [],
+        colorIdentity: card.color_identity || [],
+        typeLine: card.type_line,
+        oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text ? card.card_faces.map(face => face.oracle_text).join('\n\n') : ''),
+        keywords: card.keywords || [],
+        allParts: card.all_parts || [],
+        legalities: card.legalities || {},
+        rarity: card.rarity,
+        setType: card.set_type,
+        fromBooster: card.booster,
+        promoTypes: card.promo_types || [],
+        layout: card.layout,
         collectorNumber: card.overridden_collector_number ?? card.collector_number,
         isDigital: card.digital,
         isPromo: !customNotPromoSets.includes(card.set) && (card.promo || card.promo_types || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
@@ -123,21 +135,6 @@ const stripped = cards.filter(card => {
     }
 
     return [ card ];
-});
-
-stripped.push({
-    name: 'griselbrand',
-    releaseDate: '1990-01-01',
-    set: {
-        name: 'Griselbrand.com',
-        code: 'Griselbrand.com',
-    },
-    collectorNumber: '1',
-    isDigital: false,
-    isPromo: false,
-    imageUris: {
-        front: '/avr-106-griselbrand.jpg',
-    },
 });
 
 // fs.writeFileSync('./out.json', JSON.stringify(stripped, null, 2));
@@ -164,14 +161,46 @@ const minimized = stripped.sort((a, b) => {
 }).reduce((store, card) => {
     try {
         // And take that and tighten it down as much as possible.
-        const name = card.name.toLowerCase();
-        store.cards[name] = store.cards[name] || [];
-        store.cards[name].push({
+        // const name = card.name.toLowerCase();
+        const key = card.oracleId;
+        store.cards[key] = store.cards[key] || [];
+        store.cards[key].push({
             setCode: card.set.code,
             collectorNumber: card.collectorNumber,
+            releaseDate: card.releaseDate,
+
+            name: card.name,
+            cmc: card.cmc,
+            colors: card.colors,
+            // This is one we want, it is based on the mana cost.
+            colorIdentity: card.colorIdentity,
+            typeLine: card.typeLine,
+            oracleText: card.oracleText,
+            oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).length,
+            // This needs sanitization to use, it seems to including flavor abilities.
+            keywords: card.keywords,
+            rarity: card.rarity,
+            setType: card.setType,
+            fromBooster: card.fromBooster,
+            promoTypes: card.promoTypes,
+            layout: card.layout,
+
             isDigital: card.isDigital ? true : undefined,
             isPromo: card.isPromo ? true : undefined,
             isToken: card.isToken ? true : undefined,
+            isUniversesBeyond: card.promoTypes.includes('universes_beyond') ? true : undefined,
+            isSupplementalProduct: ['core', 'expansion'].includes(card.setType) ? undefined : true,
+            // Apparently planeswalkers are "normal" layout?
+            isNormalLayout: card.layout === 'normal' ? true : undefined,
+            makesTokens: card.allParts.some(part => part.component === 'token') ? true : undefined,
+
+            legality: {
+                standard: card.legalities?.standard === 'legal' ? true : undefined,
+                pioneer: card.legalities?.pioneer === 'legal' ? true : undefined,
+                modern: card.legalities?.modern === 'legal' ? true : undefined,
+                legacy: card.legalities?.legacy === 'legal' ? true : undefined,
+                vintage: card.legalities?.vintage === 'legal' ? true : undefined,
+            },
 
             urlFront: card.imageUris.front,
             urlBack: card.imageUris.back,
@@ -186,51 +215,18 @@ const minimized = stripped.sort((a, b) => {
     }
 }, { cards: {}, sets: {} });
 
-console.log(`Found ${Object.keys(minimized.cards).length} distinct cards from ${Object.keys(minimized.sets).length} sets.`);
+// Remap that to just the "original" printing of each card.
+const best = Object.keys(minimized.cards).reduce((store, key) => {
+    const card = minimized.cards[key];
+    store[key] = card.filter(printing => {
+        return !printing.isDigital && !printing.isPromo && !printing.isToken;
+    })?.[0] ?? card[0];
+    return store;
+}, {});
 
-// Run some basic sanity tests.
-// FIXME: Replace this test with a card that isn't likely to get a reprint.
-assert.deepStrictEqual(
-    minimized.cards["toralf, god of fury // toralf's hammer"],
-    [
-        {
-            "setCode": "khm",
-            "collectorNumber": "154",
-            "isDigital": undefined,
-            "isPromo": undefined,
-            "isToken": undefined,
-            "urlFront": "https://api.scryfall.com/cards/khm/154?format=image&face=front",
-            "urlBack": "https://api.scryfall.com/cards/khm/154?format=image&face=back",
-          },
-          {
-            "setCode": "pkhm",
-            "collectorNumber": "154s",
-            "isDigital": undefined,
-            "isPromo": true,
-            "isToken": undefined,
-            "urlFront": "https://api.scryfall.com/cards/pkhm/154s?format=image&face=front",
-            "urlBack": "https://api.scryfall.com/cards/pkhm/154s?format=image&face=back",
-          },
-          {
-            "setCode": "khm",
-            "collectorNumber": "313",
-            "isDigital": undefined,
-            "isPromo": true,
-            "isToken": undefined,
-            "urlFront": "https://api.scryfall.com/cards/khm/313?format=image&face=front",
-            "urlBack": "https://api.scryfall.com/cards/khm/313?format=image&face=back",
-          },
-          {
-            "setCode": "prm",
-            "collectorNumber": "88302",
-            "isDigital": true,
-            "isPromo": true,
-            "isToken": undefined,
-            "urlFront": "https://api.scryfall.com/cards/prm/88302?format=image&face=front",
-            "urlBack": "https://api.scryfall.com/cards/prm/88302?format=image&face=back",
-          },
-    ],
-);
+minimized.cards = best;
+
+console.log(`Found ${Object.keys(minimized.cards).length} distinct cards from ${Object.keys(minimized.sets).length} sets.`);
 
 assert.equal(
     minimized.sets['plc'],
