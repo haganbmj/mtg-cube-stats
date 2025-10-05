@@ -188,7 +188,7 @@ const minimized = stripped.sort((a, b) => {
             isDigital: card.isDigital ? true : undefined,
             isPromo: card.isPromo ? true : undefined,
             isToken: card.isToken ? true : undefined,
-            isUniversesBeyond: card.promoTypes.includes('universes_beyond') ? true : undefined,
+            isUniversesBeyond: card.promoTypes.includes('universesbeyond') ? true : undefined,
             isSupplementalProduct: ['core', 'expansion'].includes(card.setType) ? undefined : true,
             // Apparently planeswalkers are "normal" layout?
             isNormalLayout: card.layout === 'normal' ? true : undefined,
