@@ -21,12 +21,31 @@ if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update"
         write.on('error', rej);
     });
 
+    console.log('Downloading fresh flavor data.');
+
+    const flavorWordsResp = await axios({
+        url: `https://api.scryfall.com/catalog/flavor-words?format=file`,
+        method: 'GET',
+        responseType: 'stream',
+        headers: {
+            'User-Agent': 'Griselbrand/0.1.0',
+        },
+    })
+
+    const writeFlavor = fs.createWriteStream('./data/flavor-words.json');
+    flavorWordsResp.data.pipe(writeFlavor);
+    await new Promise((res, rej) => {
+        writeFlavor.on('finish', res);
+        writeFlavor.on('error', rej);
+    });
+
     console.log('Finished piping results to file.');
 } else {
     console.log('Using existing card data.');
 }
 
 const cards = JSON.parse(fs.readFileSync('./data/default-cards.json'));
+const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json'));
 
 const customPromoSetTypes = [
     'from_the_vault',
@@ -178,7 +197,7 @@ const minimized = stripped.sort((a, b) => {
             oracleText: card.oracleText,
             oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).length,
             // This needs sanitization to use, it seems to including flavor abilities.
-            keywords: card.keywords,
+            keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
             rarity: card.rarity,
             setType: card.setType,
             fromBooster: card.fromBooster,

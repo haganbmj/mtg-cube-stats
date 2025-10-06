@@ -1,3 +1,4 @@
+import { en } from 'element-plus/es/locales.mjs';
 import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
 
 /**
@@ -7,33 +8,53 @@ import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
  * @param {object} cube
  * @returns {object}
  */
-export function remapCube(cube) {
+export function remapCube(cube, enrich = true) {
+    const cards = cube.cards.mainboard.map(card => {
+        return {
+            oracleId: card.details.oracle_id,
+            elo: card.details.elo,
+            popularity: card.details.popularity,
+        };
+    });
+
     return {
         id: cube.id,
         name: cube.name,
         owner: cube.owner.username,
         ownerId: cube.owner.id,
         thumbnail: cube.image.uri,
+        category: cube.categoryOverride ?? '',
+        categoryPrefixes: (cube.categoryPrefixes ?? []).sort(), // This is an array, so unclear how to get the best use out of it.
+
+        cards: enrich ? enrichCubeContents(cards) : cards,
 
         // FIXME: Maybe I move the enrich out to its own function to keep file size down on the preload?
-        cards: enrichCubeContents(
-            cube.cards.mainboard.map(card => {
-                return {
-                    oracleId: card.details.oracle_id,
-                    elo: card.details.elo,
-                    popularity: card.details.popularity,
-                };
-            })
-        ),
+        // cards: cube.cards.mainboard.map(card => {
+        //     return {
+        //         oracleId: card.details.oracle_id,
+        //         elo: card.details.elo,
+        //         popularity: card.details.popularity,
+        //     };
+        // }),
+        // cards: enrichCubeContents(
+        //     cube.cards.mainboard.map(card => {
+        //         return {
+        //             oracleId: card.details.oracle_id,
+        //             elo: card.details.elo,
+        //             popularity: card.details.popularity,
+        //         };
+        //     })
+        // ),
     };
 }
 
 /**
- * FIXME: This needs to handle Custom Cards on CubeCobra.
+ * FIXME: This needs to handle Custom Cards on CubeCobra. I think those just have cardId="custom-card"
  * @param {object[]} cards
  * @returns {object[]}
  */
-function enrichCubeContents(cards) {
+export function enrichCubeContents(cards) {
+    console.log(`Enriching cube...`);
     return cards.map(card => {
         const scryfallCard = scryfall.cards[card.oracleId];
         if (!scryfallCard) {
@@ -56,9 +77,12 @@ function enrichCubeContents(cards) {
 /**
  * @param {object[]} cards
  */
-export function analyzeCubeContents(cards) {
+export function analyzeCubeContents(cards, excludeLands = false) {
+    const filteredCards = excludeLands ? cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')) : cards;
     return {
         totalCards: cards.length,
+        filteredCards: filteredCards.length,
+        landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
         totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
         colorDistribution: {
             W: cards.filter(c => c.colorIdentity.includes('W')).length,
@@ -68,6 +92,9 @@ export function analyzeCubeContents(cards) {
             G: cards.filter(c => c.colorIdentity.includes('G')).length,
             C: cards.filter(c => c.colorIdentity.length === 0).length,
         },
+        averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
+        averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
+        // Rounded down to the nearest integer.
         cmcDistribution: (() => {
             const distribution = {};
             for (let i = 0; i < 10; i++) {
@@ -84,9 +111,8 @@ export function analyzeCubeContents(cards) {
             // This would just be the front side of any DFCs.
             cards.forEach(card => {
                 // Look only at the front face? This is probably naive and needs to handle MDFCs.
-                const superTypes = card.typeLine.split('//')[0].split('—')[0].trim().split(' ');
-                // console.log(card.typeLine, '=>', superTypes);
-                for (const type of superTypes) {
+                const cardTypes = card.typeLine.split('//')[0].split('—')[0].trim().split(' ');
+                for (const type of cardTypes) {
                     // Maybe keep the basics to be able to identify those?
                     if (type === 'Legendary' || type === 'Basic' || type === 'Snow' || type === 'World') {
                         continue;
