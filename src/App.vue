@@ -91,10 +91,41 @@
                                         <el-image :src="props.row.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
                                     </template> -->
                                     <template #default="props">
-                                        <div style="width: 500px; height: 300px;">
-                                            <ManaValueTable class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
-                                        </div>
-                                        <!-- <pre>{{ props.row }}</pre> -->
+                                        <el-row>
+                                            <el-col :span="8">
+                                                <KeywordTable :keywords="props.row.stats?.keywords || {}" />
+                                            </el-col>
+                                            <el-col :span="16">
+                                                <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
+                                                    <el-col :span="12">
+                                                        <div style="height: 300px;">
+                                                            <ManaValueTable class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
+                                                        </div>
+                                                    </el-col>
+                                                    <el-col :span="12">
+                                                        <div style="height: 300px;">
+                                                            <ReleaseYearChart class="chart" :releaseYearDistribution="props.row.stats?.releaseYearDistribution || {}" />
+                                                        </div>
+                                                    </el-col>
+                                                    <el-col :span="12">
+                                                        <div style="height: 300px;">
+                                                            <ColorIdentityDistribution class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
+                                                        </div>
+                                                    </el-col>
+                                                    <el-col :span="12">
+                                                        <div style="height: 300px;">
+                                                            <TypeLineDistribution class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
+                                                        </div>
+                                                    </el-col>
+                                                    <el-col :span="12">
+                                                        <div style="height: 300px;">
+                                                            <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" />
+                                                        </div>
+                                                    </el-col>
+                                                </el-row>
+                                            </el-col>
+                                        </el-row>
+                                        <!-- <pre>{{ { ...props.row, cards: undefined } }}</pre> -->
                                     </template>
                                 </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
@@ -123,9 +154,11 @@
                                 <el-table-column prop="stats.cardCounts.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')" />
                                 <el-table-column prop="stats.cardCounts.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')" />
 
+                                <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
                                 <el-table-column prop="stats.uniqueKeywords" label="Unique Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
                                 <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
                                 <el-table-column prop="stats.cardCounts.makesTokens" label="Makes Tokens" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')" />
+                                <el-table-column prop="stats.cardCounts.initiative" label="Initiative" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.initiative')" />
 
                                 <el-table-column label="" min-width="60">
                                     <template #default="scope">
@@ -213,31 +246,16 @@
 
 <script lang="ts" setup>
 import { ref, reactive, computed, watch, provide } from 'vue';
+import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import { remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
-
-// import { registerTheme } from 'echarts';
-import { use, registerTheme } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
-import { BarChart, PieChart } from 'echarts/charts';
-
 import ManaValueTable from './echarts/ManaValueTable.vue';
-
-import VChart, { THEME_KEY } from 'vue-echarts';
-import darkbmjTheme from './echarts/theme.mjs';
-
-registerTheme('darkbmj', darkbmjTheme);
-use([
-    CanvasRenderer,
-    TitleComponent,
-    TooltipComponent,
-    GridComponent,
-    // LegendComponent,
-    BarChart,
-    // PieChart,
-]);
+import ColorIdentityDistribution from './echarts/ColorIdentityDistribution.vue';
+import TypeLineDistribution from './echarts/TypeLineDistribution.vue';
+import KeywordTable from './components/KeywordTable.vue';
+import RarityDistribution from './echarts/RarityDistribution.vue';
+import ReleaseYearChart from './echarts/ReleaseYearChart.vue';
 
 provide(THEME_KEY, "darkbmj");
 
@@ -250,7 +268,7 @@ const presetComparisons = {
 // TODO: Bind this to localStorage.
 const config = reactive({
     excludeLands: false,
-    visibleColumns: ['stats.totalCards', 'stats.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.uniqueKeywords' ],
+    visibleColumns: ['stats.totalCards', 'stats.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.averageWordCount', 'stats.uniqueKeywords' ],
 });
 
 const addCubeForm = reactive({
@@ -301,9 +319,11 @@ const columnOptions = ref([
     {
         label: 'Characteristics',
         options: [
+            { value: 'stats.averageWordCount', label: 'Avg. Word Count' },
             { value: 'stats.uniqueKeywords', label: "Unique Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
             { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens" },
+            { value: 'stats.cardCounts.initiative', label: "Initiative" },
         ],
     },
 ]);
@@ -428,5 +448,12 @@ body {
 
 .el-select-group__title {
     padding: 0 10px;
+}
+
+.chart-row {
+    x-vue-echarts.chart {
+        width: unset;
+        margin: 0 auto;
+    }
 }
 </style>
