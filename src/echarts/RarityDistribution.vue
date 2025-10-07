@@ -3,13 +3,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { capitalize, computed } from 'vue';
 import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 
 import VChart from 'vue-echarts';
+import { capitalizeFirstLetter } from '../util/HelperFunctions.mjs';
 
 use([
     CanvasRenderer,
@@ -28,7 +29,7 @@ const props = defineProps({
 
 const chartOptions = computed(() => {
     const data = Object.entries(props.rarityDistribution).map(([key, value]) => {
-        return { name: key[0].toUpperCase() + key.slice(1), value };
+        return { name: capitalizeFirstLetter(key), value };
     });
 
     return {

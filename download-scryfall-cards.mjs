@@ -125,7 +125,7 @@ const stripped = cards.filter(card => {
         colors: card.colors || [],
         colorIdentity: card.color_identity || [],
         typeLine: card.type_line,
-        oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text ? card.card_faces.map(face => face.oracle_text).join('\n\n') : ''),
+        oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text !== undefined ? card.card_faces.map(face => face.oracle_text).join('\n\n') : ''),
         keywords: card.keywords || [],
         allParts: card.all_parts || [],
         legalities: card.legalities || {},
@@ -195,7 +195,7 @@ const minimized = stripped.sort((a, b) => {
             colorIdentity: card.colorIdentity,
             typeLine: card.typeLine,
             oracleText: card.oracleText,
-            oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).length,
+            oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).filter(v => v != '').length,
             // This needs sanitization to use, it seems to including flavor abilities.
             keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
             rarity: card.rarity,
