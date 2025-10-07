@@ -68,6 +68,7 @@ export function enrichCubeContents(cards) {
             typeLine: scryfallCard?.typeLine ?? '',
             isUniversesBeyond: scryfallCard?.isUniversesBeyond ?? false,
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
+            keywords: scryfallCard?.keywords ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
         };
@@ -78,29 +79,39 @@ export function enrichCubeContents(cards) {
  * @param {object[]} cards
  */
 export function analyzeCubeContents(cards, excludeLands = false) {
-    const filteredCards = excludeLands ? cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')) : cards;
-    return {
+    const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
+    const filteredCards = excludeLands ? nonLandCards : cards;
+
+    // const uniqueKeywords = filteredCards.reduce((keywords, c) => {
+    //     c.keywords?.forEach(kw => {
+    //         keywords[kw] = (keywords[kw] ?? 0) + 1;
+    //     });
+    //     return keywords;
+    // }, {});
+
+    const firstOrderStats = {
         totalCards: cards.length,
-        filteredCards: filteredCards.length,
-        landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
         totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
-        colorDistribution: {
-            W: cards.filter(c => c.colorIdentity.includes('W')).length,
-            U: cards.filter(c => c.colorIdentity.includes('U')).length,
-            B: cards.filter(c => c.colorIdentity.includes('B')).length,
-            R: cards.filter(c => c.colorIdentity.includes('R')).length,
-            G: cards.filter(c => c.colorIdentity.includes('G')).length,
-            C: cards.filter(c => c.colorIdentity.length === 0).length,
-        },
+        landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
+
+        filteredCards: filteredCards.length,
         averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
-        // Rounded down to the nearest integer.
+        colorDistribution: {
+            W: filteredCards.filter(c => c.colorIdentity.includes('W')).length,
+            U: filteredCards.filter(c => c.colorIdentity.includes('U')).length,
+            B: filteredCards.filter(c => c.colorIdentity.includes('B')).length,
+            R: filteredCards.filter(c => c.colorIdentity.includes('R')).length,
+            G: filteredCards.filter(c => c.colorIdentity.includes('G')).length,
+            C: filteredCards.filter(c => c.colorIdentity.length === 0).length,
+        },
         cmcDistribution: (() => {
+            // FIXME: Should this just try and account for Lands as their own entry?
             const distribution = {};
             for (let i = 0; i < 10; i++) {
-                distribution[i] = cards.filter(c => Math.floor(c.cmc) === i).length;
+                distribution[i] = nonLandCards.filter(c => Math.floor(c.cmc) === i).length;
             }
-            distribution['10+'] = cards.filter(c => c.cmc >= 10).length;
+            distribution['10+'] = nonLandCards.filter(c => c.cmc >= 10).length;
             return distribution;
         })(),
         // This is currently double counting if a card has multiple types.
@@ -109,7 +120,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         typeLineDistribution: (() => {
             const types = {};
             // This would just be the front side of any DFCs.
-            cards.forEach(card => {
+            filteredCards.forEach(card => {
                 // Look only at the front face? This is probably naive and needs to handle MDFCs.
                 const cardTypes = card.typeLine.split('//')[0].split('—')[0].trim().split(' ');
                 for (const type of cardTypes) {
@@ -125,11 +136,80 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             });
             return types;
         })(),
-        makesTokens: cards.filter(c => c.makesTokens).length,
-        universesBeyond: cards.filter(c => c.isUniversesBeyond).length,
-        supplementalProduct: cards.filter(c => c.isSupplementalProduct).length,
-        abnormalLayout: cards.filter(c => !c.isNormalLayout).length,
-    };
+        keywords: filteredCards.reduce((keywords, c) => {
+            c.keywords?.forEach(kw => {
+                keywords[kw] = (keywords[kw] ?? 0) + 1;
+            });
+            return keywords;
+        }, {}),
+        cardCounts: {
+            makesTokens: filteredCards.filter(c => c.makesTokens).length,
+            universesBeyond: filteredCards.filter(c => c.isUniversesBeyond).length,
+            supplementalProduct: filteredCards.filter(c => c.isSupplementalProduct).length,
+            abnormalLayout: filteredCards.filter(c => !c.isNormalLayout).length,
+        },
+    }
+
+    const secondOrderStats = {
+        ...firstOrderStats,
+        uniqueKeywords: Object.keys(firstOrderStats.keywords).length,
+    }
+
+    return secondOrderStats;
+
+    // return {
+    //     totalCards: cards.length,
+    //     filteredCards: filteredCards.length,
+    //     landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
+    //     totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
+    //     colorDistribution: {
+    //         W: cards.filter(c => c.colorIdentity.includes('W')).length,
+    //         U: cards.filter(c => c.colorIdentity.includes('U')).length,
+    //         B: cards.filter(c => c.colorIdentity.includes('B')).length,
+    //         R: cards.filter(c => c.colorIdentity.includes('R')).length,
+    //         G: cards.filter(c => c.colorIdentity.includes('G')).length,
+    //         C: cards.filter(c => c.colorIdentity.length === 0).length,
+    //     },
+    //     averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
+    //     averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
+    //     // Rounded down to the nearest integer.
+    //     cmcDistribution: (() => {
+    //         const distribution = {};
+    //         for (let i = 0; i < 10; i++) {
+    //             distribution[i] = nonLandCards.filter(c => Math.floor(c.cmc) === i).length;
+    //         }
+    //         distribution['10+'] = nonLandCards.filter(c => c.cmc >= 10).length;
+    //         return distribution;
+    //     })(),
+    //     // This is currently double counting if a card has multiple types.
+    //     // And it doesn't handle MDFCs as being functionally both types...
+    //     // Probably doesn't handle split cards either?
+    //     typeLineDistribution: (() => {
+    //         const types = {};
+    //         // This would just be the front side of any DFCs.
+    //         cards.forEach(card => {
+    //             // Look only at the front face? This is probably naive and needs to handle MDFCs.
+    //             const cardTypes = card.typeLine.split('//')[0].split('—')[0].trim().split(' ');
+    //             for (const type of cardTypes) {
+    //                 // Maybe keep the basics to be able to identify those?
+    //                 if (type === 'Legendary' || type === 'Basic' || type === 'Snow' || type === 'World') {
+    //                     continue;
+    //                 }
+    //                 if (!types[type]) {
+    //                     types[type] = 0;
+    //                 }
+    //                 types[type]++;
+    //             }
+    //         });
+    //         return types;
+    //     })(),
+    //     keywords: uniqueKeywords,
+    //     uniqueKeywords: Object.keys(uniqueKeywords).length,
+    //     makesTokens: cards.filter(c => c.makesTokens).length,
+    //     universesBeyond: cards.filter(c => c.isUniversesBeyond).length,
+    //     supplementalProduct: cards.filter(c => c.isSupplementalProduct).length,
+    //     abnormalLayout: cards.filter(c => !c.isNormalLayout).length,
+    // };
 }
 
 export default { remapCube, analyzeCubeContents }

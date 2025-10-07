@@ -45,7 +45,7 @@
                 </div>
                 <div id="contents">
                     <el-tabs tab-position="top" v-model="activeTab">
-                        <el-tab-pane label="Overview" name="overview">
+                        <el-tab-pane label="Overview" name="overview" :lazy="true">
                             <el-space direction="horizontal" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 1em;">
                                 <el-text tag="i">Loaded Cubes: {{ Object.keys(loadedCubes).length }}</el-text>
                                 <el-form :inline="true" style="justify-content: flex-end; display: flex;">
@@ -79,7 +79,7 @@
                             </el-space>
 
                             <el-table
-                                :data="tableData"
+                                :data="overviewTableData"
                                 :defaut-sort="{ prop: 'name', order: 'ascending' }"
                                 :preserve-expanded-content="false"
                                 style="width: 100%"
@@ -91,7 +91,10 @@
                                         <el-image :src="props.row.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
                                     </template> -->
                                     <template #default="props">
-                                        <pre>{{ props.row }}</pre>
+                                        <div style="width: 500px; height: 300px;">
+                                            <ManaValueTable class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
+                                        </div>
+                                        <!-- <pre>{{ props.row }}</pre> -->
                                     </template>
                                 </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
@@ -109,16 +112,20 @@
                                         <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
                                     </template>
                                 </el-table-column>
+
                                 <el-table-column prop="category" label="Category" min-width="100" max-width="125" sortable v-if="config.visibleColumns.includes('category')" />
                                 <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
                                 <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
                                 <el-table-column prop="stats.landCards" label="Lands" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.landCards')" />
                                 <el-table-column prop="stats.averageElo" label="Avg. Card Elo" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageElo')" />
                                 <el-table-column prop="stats.averagePopularity" label="Avg. Card Popularity" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averagePopularity')" />
-                                <el-table-column prop="stats.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.universesBeyond')" />
-                                <el-table-column prop="stats.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.supplementalProduct')" />
-                                <el-table-column prop="stats.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.abnormalLayout')" />
-                                <el-table-column prop="stats.makesTokens" label="Makes Tokens" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.makesTokens')" />
+
+                                <el-table-column prop="stats.cardCounts.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')" />
+                                <el-table-column prop="stats.cardCounts.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')" />
+
+                                <el-table-column prop="stats.uniqueKeywords" label="Unique Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
+                                <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
+                                <el-table-column prop="stats.cardCounts.makesTokens" label="Makes Tokens" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')" />
 
                                 <el-table-column label="" min-width="60">
                                     <template #default="scope">
@@ -130,8 +137,72 @@
                             </el-table>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Contents" name="contents">
-                            <p>Coming soon...</p>
+                        <el-tab-pane label="Cards" name="cards" :lazy="true">
+                            <el-table
+                                :data="cardsTableData"
+                                :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
+                                :preserve-expanded-content="false"
+                                style="width: 100%"
+                                table-layout="auto"
+                                stripe
+                            >
+                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable>
+                                    <template #default="{ row }">
+                                        <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="cubeCount" label="Cube Count" min-width="150" max-width="300" sortable />
+                                <el-table-column prop="count" label="Total Count" min-width="75" max-width="100" sortable />
+                            </el-table>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="Keywords" name="keywords" :lazy="true">
+                            <p>Big old TODO.</p>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="Statistics" name="statistics" :lazy="true">
+                            <p>Big old TODO. Probably just the same stats as per-cube, but at the aggregate level?</p>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="Similarity Matrix" name="similarity-matrix" :lazy="true">
+                            <p>Big old TODO. Cosine similarity matrix perhaps?</p>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="About" name="about" :lazy="true">
+                            <h3>Notes</h3>
+                            <ul>
+                                <li>All cards are evaluated using their original printings only.</li>
+                                <li>Cards with multiple faces are (currently) evaluated using their front face only.</li>
+                                <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
+                                <li>This site is statically compiled and uses cached information where possible, so collections or card details may be (slightly) out of date.</li>
+                            </ul>
+
+                            <h3>TODOs</h3>
+                            <ul>
+                                <li>Add persistence for displayed columns.</li>
+                                <li>Enrich the handling of MDFCs.</li>
+                                <li>Figure out how to do second order sorting in Element Plus tables.</li>
+                                <li>Look at adding filtering options.</li>
+                                <li>Derive categories based on cube contents rather than relying on user-defined CubeCobra metadata.</li>
+                                <li>Add some more evaluations, like a comparison matrix.</li>
+                                <li>Consider trying to make this a bit more mobile friendly.</li>
+                                <li>Consider adding the ability to define custom cube collections.</li>
+                            </ul>
+
+                            <h3>Data Sources</h3>
+                            <ul>
+                                <li><a href="https://cubecobra.com" target="_blank">CubeCobra</a> - All cube data.</li>
+                                <li><a href="https://scryfall.com" target="_blank">Scryfall</a> - Card details, card imagery.</li>
+                            </ul>
+
+                            <h3>Build Details</h3>
+                            <ul>
+                                <li>Repository: <a href="https://github.com/haganbmj/mtg-cube-stats" target="_blank">github.com/haganbmj/mtg-cube-stats</a></li>
+                                <li>Build SHA: <a :href="'https://github.com/haganbmj/mtg-cube-stats/commit/' + getBuildSha()" target="_blank">{{ getBuildSha() }}</a></li>
+                                <li>Timestamp: {{ getBuildTimestamp() }}</li>
+                            </ul>
+
+                            <el-text tag="i">This site is not affiliated with or endorsed by Wizards of the Coast, CubeCobra, CubeCon, or Scryfall.</el-text>
                         </el-tab-pane>
                     </el-tabs>
                 </div>
@@ -141,21 +212,45 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, provide } from 'vue';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import { remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 
+// import { registerTheme } from 'echarts';
+import { use, registerTheme } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
+import { BarChart, PieChart } from 'echarts/charts';
+
+import ManaValueTable from './echarts/ManaValueTable.vue';
+
+import VChart, { THEME_KEY } from 'vue-echarts';
+import darkbmjTheme from './echarts/theme.mjs';
+
+registerTheme('darkbmj', darkbmjTheme);
+use([
+    CanvasRenderer,
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    // LegendComponent,
+    BarChart,
+    // PieChart,
+]);
+
+provide(THEME_KEY, "darkbmj");
+
 const presetComparisons = {
     "CubeCon 2025": () => import("../data/cubes-cubecon2025.json"),
     "haganbmj": () => import("../data/cubes-haganbmj.json"),
-    "Peasant Discord": () => import("../data/cubes-peasantDiscord.json"),
+    // "Peasant Discord": () => import("../data/cubes-peasantDiscord.json"),
 };
 
 // TODO: Bind this to localStorage.
 const config = reactive({
     excludeLands: false,
-    visibleColumns: ['stats.totalCards', 'stats.landCards', 'stats.averageElo', 'stats.averagePopularity' ],
+    visibleColumns: ['stats.totalCards', 'stats.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.uniqueKeywords' ],
 });
 
 const addCubeForm = reactive({
@@ -199,26 +294,56 @@ const columnOptions = ref([
     {
         label: 'Product Line',
         options: [
-            { value: 'stats.universesBeyond', label: "Universes Beyond" },
-            { value: 'stats.supplementalProduct', label: "Supplemental Product" },
+            { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond" },
+            { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product" },
         ],
     },
     {
         label: 'Characteristics',
         options: [
-            { value: 'stats.abnormalLayout', label: "Abnormal Layout" },
-            { value: 'stats.makesTokens', label: "Makes Tokens" },
+            { value: 'stats.uniqueKeywords', label: "Unique Keywords" },
+            { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
+            { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens" },
         ],
     },
 ]);
 
-const tableData = computed(() => {
+const overviewTableData = computed(() => {
     return Object.entries(loadedCubes).map(([id, cube]) => {
         return {
             ...cube,
             stats: analyzeCubeContents(cube.cards, config.excludeLands),
         }
     });
+});
+
+const cardsTableData = computed(() => {
+    console.log("cardsTableData recomputed");
+    if (Object.keys(loadedCubes).length === 0) {
+        return [];
+    }
+    const allCards = Object.keys(loadedCubes).reduce((allCards, key) => {
+        loadedCubes[key].cards.forEach(card => {
+            if (allCards[card.oracleId] === undefined) {
+                allCards[card.oracleId] = {
+                    ...card,
+                    count: 0,
+                    cubes: [], // TODO:
+                    cubeCount: 0,
+                };
+            }
+
+            allCards[card.oracleId].count += 1;
+            if (!allCards[card.oracleId].cubes.includes(key)) {
+                allCards[card.oracleId].cubes.push(key);
+                allCards[card.oracleId].cubeCount += 1;
+            }
+        });
+
+        return allCards;
+    }, {});
+
+    return Object.values(allCards);
 });
 
 const submitAddCubeForm = async () => {
@@ -244,6 +369,13 @@ const toFixed2 = (row, column) => {
     return (getNestedProp(row, column.property) ?? 0).toFixed(2);
 }
 
+function getBuildTimestamp() {
+    return import.meta.env.VITE_BUILD_TIMESTAMP;
+}
+
+function getBuildSha() {
+    return import.meta.env.VITE_BUILD_SHA || 'local';
+}
 </script>
 
 <style lang="scss">
