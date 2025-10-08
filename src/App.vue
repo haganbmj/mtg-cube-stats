@@ -92,9 +92,6 @@
                                     </template> -->
                                     <template #default="props">
                                         <el-row>
-                                            <el-col :span="8">
-                                                <KeywordTable :keywords="props.row.stats?.keywords || {}" />
-                                            </el-col>
                                             <el-col :span="16">
                                                 <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
                                                     <el-col :span="12">
@@ -122,9 +119,18 @@
                                                             <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" />
                                                         </div>
                                                     </el-col>
+                                                    <el-col :span="12">
+                                                        <div style="height: 300px;">
+                                                            <LegalityDistribution class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
+                                                        </div>
+                                                    </el-col>
                                                 </el-row>
                                             </el-col>
+                                            <el-col :span="8">
+                                                <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.filteredCards || 1" />
+                                            </el-col>
                                         </el-row>
+
                                         <!-- <pre>{{ { ...props.row, cards: undefined } }}</pre> -->
                                     </template>
                                 </el-table-column>
@@ -148,17 +154,24 @@
                                 <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
                                 <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
                                 <el-table-column prop="stats.landCards" label="Lands" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.landCards')" />
+                                <el-table-column prop="stats.percentages.landCards" label="% Lands" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.landCards')" />
                                 <el-table-column prop="stats.averageElo" label="Avg. Card Elo" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageElo')" />
                                 <el-table-column prop="stats.averagePopularity" label="Avg. Card Popularity" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averagePopularity')" />
 
                                 <el-table-column prop="stats.cardCounts.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')" />
+                                <el-table-column prop="stats.percentages.universesBeyond" label="% Universes Beyond" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.universesBeyond')" />
                                 <el-table-column prop="stats.cardCounts.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')" />
+                                <el-table-column prop="stats.percentages.supplementalProduct" label="% Supplemental Product" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.supplementalProduct')" />
 
                                 <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
                                 <el-table-column prop="stats.uniqueKeywords" label="Unique Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
+
                                 <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
+                                <el-table-column prop="stats.percentages.abnormalLayout" label="% Abnormal Layout" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.abnormalLayout')" />
                                 <el-table-column prop="stats.cardCounts.makesTokens" label="Makes Tokens" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')" />
+                                <el-table-column prop="stats.percentages.makesTokens" label="% Makes Tokens" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.makesTokens')" />
                                 <el-table-column prop="stats.cardCounts.initiative" label="Initiative" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.initiative')" />
+                                <el-table-column prop="stats.percentages.initiative" label="% Initiative" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.initiative')" />
 
                                 <el-table-column label="" min-width="60">
                                     <template #default="scope">
@@ -170,7 +183,7 @@
                             </el-table>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Cards" name="cards" :lazy="true">
+                        <el-tab-pane label="Cards" name="cards" :lazy="true" v-if="false">
                             <el-row>
                                 <el-col :span="12">
                                     <el-text tag="i">Total Unique Cards: {{ cardsTableData.length }}</el-text>
@@ -180,6 +193,7 @@
                                 </el-col>
                             </el-row>
                             <el-table
+                            v-if="false"
                                 :data="cardsTableData"
                                 :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
                                 :preserve-expanded-content="false"
@@ -203,17 +217,27 @@
                                 <el-table-column prop="isUniversesBeyond" label="Universes Beyond" min-width="50" max-width="75" sortable />
                                 <el-table-column prop="isSupplementalProduct" label="Supplemental Product" min-width="50" max-width="75" sortable />
                             </el-table>
+
+                            <el-table-v2
+                                v-if="true"
+                                :columns="cardsTableColumnsV2"
+                                :data="cardsTableDataV2"
+                                :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
+                                :width="1000"
+                                :height="500"
+                            >
+                            </el-table-v2>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Keywords" name="keywords" :lazy="true">
+                        <el-tab-pane label="Keywords" name="keywords" :lazy="true" v-if="false">
                             <p>Big old TODO.</p>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Statistics" name="statistics" :lazy="true">
+                        <el-tab-pane label="Statistics" name="statistics" :lazy="true" v-if="false">
                             <p>Big old TODO. Probably just the same stats as per-cube, but at the aggregate level?</p>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Similarity Matrix" name="similarity-matrix" :lazy="true">
+                        <el-tab-pane label="Similarity Matrix" name="similarity-matrix" :lazy="true" v-if="false">
                             <p>Big old TODO. Cosine similarity matrix perhaps?</p>
                         </el-tab-pane>
 
@@ -223,6 +247,8 @@
                                 <li>All cards are evaluated using their original printings only.</li>
                                 <li>Cards with multiple faces are (currently) evaluated using their front face only.</li>
                                 <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
+                                <li>Keywords are a best effort, there are a number of things not classified as "keywords" by the comp rules (Initiative, Monarch, "Becomes Day", etc) and things like Adventure are considered card layouts rather than keywords.</li>
+                                <li>Minimum Format Legality is looking to represent the "smallest" sanctioned paper format that the cards are legal in? (Standard < Pioneer < Modern < Legacy < Vintage < Cube).</li>
                                 <li>This site is statically compiled and uses cached information where possible, so collections or card details may be (slightly) out of date.</li>
                             </ul>
 
@@ -232,10 +258,11 @@
                                 <li>Enrich the handling of MDFCs.</li>
                                 <li>Figure out how to do second order sorting in Element Plus tables.</li>
                                 <li>Look at adding filtering options.</li>
+                                <li>Support CubeCobra custom cards more better.</li>
                                 <li>Derive categories based on cube contents rather than relying on user-defined CubeCobra metadata.</li>
-                                <li>Add some more evaluations, like a comparison matrix.</li>
+                                <li>Add some more evaluations, like a comparison matrix, card stats, summary stats, etc.</li>
                                 <li>Consider trying to make this a bit more mobile friendly.</li>
-                                <li>Consider adding the ability to define custom cube collections.</li>
+                                <li>Consider adding the ability to define/save custom cube collections.</li>
                             </ul>
 
                             <h3>Data Sources</h3>
@@ -260,7 +287,7 @@
     </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ref, reactive, computed, watch, provide } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
@@ -273,6 +300,12 @@ import KeywordTable from './components/KeywordTable.vue';
 import RarityDistribution from './echarts/RarityDistribution.vue';
 import ReleaseYearChart from './echarts/ReleaseYearChart.vue';
 
+import { registerTheme } from 'echarts';
+import darkbmjTheme from './echarts/theme.mjs';
+import LegalityDistribution from './echarts/LegalityDistribution.vue';
+
+registerTheme('darkbmj', darkbmjTheme);
+
 provide(THEME_KEY, "darkbmj");
 
 const presetComparisons = {
@@ -284,7 +317,7 @@ const presetComparisons = {
 // TODO: Bind this to localStorage.
 const config = reactive({
     excludeLands: false,
-    visibleColumns: ['stats.totalCards', 'stats.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.averageWordCount', 'stats.uniqueKeywords' ],
+    visibleColumns: ['stats.totalCards', 'stats.percentages.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.averageWordCount', 'stats.uniqueKeywords' ],
 });
 
 const addCubeForm = reactive({
@@ -321,6 +354,7 @@ const columnOptions = ref([
             { value: 'categoryPrefixes', label: "Category Prefixes" },
             { value: 'stats.totalCards', label: "Total Cards" },
             { value: 'stats.landCards', label: "Lands" },
+            { value: 'stats.percentages.landCards', label: "% Lands" },
             { value: 'stats.averageElo', label: "Avg. Card Elo" },
             { value: 'stats.averagePopularity', label: "Avg. Card Popularity" },
         ],
@@ -329,7 +363,9 @@ const columnOptions = ref([
         label: 'Product Line',
         options: [
             { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond" },
+            { value: 'stats.percentages.universesBeyond', label: "% Universes Beyond" },
             { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product" },
+            { value: 'stats.percentages.supplementalProduct', label: "% Supplemental Product" },
         ],
     },
     {
@@ -338,8 +374,11 @@ const columnOptions = ref([
             { value: 'stats.averageWordCount', label: 'Avg. Word Count' },
             { value: 'stats.uniqueKeywords', label: "Unique Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
+            { value: 'stats.percentages.abnormalLayout', label: "% Abnormal Layout" },
             { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens" },
+            { value: 'stats.percentages.makesTokens', label: "% Makes Tokens" },
             { value: 'stats.cardCounts.initiative', label: "Initiative" },
+            { value: 'stats.percentages.initiative', label: "% Initiative" },
         ],
     },
 ]);
@@ -352,6 +391,24 @@ const overviewTableData = computed(() => {
         }
     });
 });
+
+const cardsTableColumnsV2 = [
+    { key: 'name', title: 'Name', dataKey: 'name', width: 150, fixed: 'left', },
+    { key: 'typeLine', title: 'Type Line', dataKey: 'typeLine', width: 200 },
+    { key: 'cubeCount', title: 'Cube Count', dataKey: 'cubeCount', width: 100 },
+    { key: 'count', title: 'Total Count', dataKey: 'count', width: 100 },
+    { key: 'releaseDate', title: 'Release Date', dataKey: 'releaseDate', width: 150 },
+    { key: 'rarity', title: 'Rarity', dataKey: 'rarity', width: 100 },
+    { key: 'oracleTextWordCount', title: 'Word Count', dataKey: 'oracleTextWordCount', width: 100 },
+    { key: 'isUniversesBeyond', title: 'Universes Beyond', dataKey: 'isUniversesBeyond', width: 75 },
+    { key: 'isSupplementalProduct', title: 'Supplemental Product', dataKey: 'isSupplementalProduct', width: 75 },
+];
+
+const cardsTableDataV2 = [
+    { name: 'Test', typeLine: 'Creature — Human Wizard', cubeCount: 3, count: 5, releaseDate: '2021-09-03', rarity: 'R', oracleTextWordCount: 12, isUniversesBeyond: false, isSupplementalProduct: false },
+    { name: 'Test 2', typeLine: 'Creature — Human Wizard', cubeCount: 2, count: 4, releaseDate: '2021-09-03', rarity: 'R', oracleTextWordCount: 12, isUniversesBeyond: false, isSupplementalProduct: false },
+    { name: 'Test 3', typeLine: 'Creature — Human Wizard', cubeCount: 1, count: 3, releaseDate: '2021-09-03', rarity: 'R', oracleTextWordCount: 12, isUniversesBeyond: false, isSupplementalProduct: false },
+];
 
 const cardsTableData = computed(() => {
     console.log("cardsTableData recomputed");
@@ -403,6 +460,10 @@ const removeCube = (cubeId: string) => {
 
 const toFixed2 = (row, column) => {
     return (getNestedProp(row, column.property) ?? 0).toFixed(2);
+}
+
+const percentageFormatter = (row, column) => {
+    return ((getNestedProp(row, column.property) ?? 0) * 100).toFixed(2) + '%';
 }
 
 function getBuildTimestamp() {

@@ -49,6 +49,7 @@ export function enrichCubeContents(cards) {
             typeLine: scryfallCard?.typeLine ?? '',
             oracleText: scryfallCard?.oracleText ?? '',
             oracleTextWordCount: scryfallCard?.oracleTextWordCount ?? 0,
+            legality: scryfallCard?.legality ?? {},
             isUniversesBeyond: scryfallCard?.isUniversesBeyond ?? false,
             rarity: scryfallCard?.rarity ?? undefined,
             releaseDate: scryfallCard?.releaseDate ?? undefined,
@@ -116,6 +117,20 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             });
             return types;
         })(),
+        minimumFormatLegalityDistribution: (() => {
+            const formats = ['standard', 'pioneer', 'modern', 'legacy', 'vintage', 'cube'];
+            const legality = {};
+            filteredCards.forEach(card => {
+                for (const format of formats) {
+                    if (card.legality[format] === true) {
+                        legality[format] = (legality[format] ?? 0) + 1;
+                        return;
+                    }
+                }
+                legality['cube'] = (legality['cube'] ?? 0) + 1;
+            });
+            return legality;
+        })(),
         releaseYearDistribution: (() => {
             const distribution = {};
             filteredCards.forEach(card => {
@@ -152,12 +167,25 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             universesBeyond: filteredCards.filter(c => c.isUniversesBeyond).length,
             supplementalProduct: filteredCards.filter(c => c.isSupplementalProduct).length,
             abnormalLayout: filteredCards.filter(c => !c.isNormalLayout).length,
-            // Apparently this isn't a keyword on Scryfall?!
+            // Apparently this isn't a keyword in the comp rules, so that's awkward.
+            // There are others too; Become the Monarch, Becomes Day/Night, etc.
             initiative: filteredCards.filter(c => c.oracleText?.toLowerCase().includes('take the initiative')).length,
         },
     }
 
-    return secondOrderStats;
+    const thirdOrderStats = {
+        ...secondOrderStats,
+        percentages: {
+            landCards: (secondOrderStats.landCards / secondOrderStats.totalCards),
+            makesTokens: (secondOrderStats.cardCounts.makesTokens / secondOrderStats.filteredCards),
+            universesBeyond: (secondOrderStats.cardCounts.universesBeyond / secondOrderStats.filteredCards),
+            supplementalProduct: (secondOrderStats.cardCounts.supplementalProduct / secondOrderStats.filteredCards),
+            abnormalLayout: (secondOrderStats.cardCounts.abnormalLayout / secondOrderStats.filteredCards),
+            initiative: (secondOrderStats.cardCounts.initiative / secondOrderStats.filteredCards),
+        }
+    }
+
+    return thirdOrderStats;
 }
 
 export default { remapCube, analyzeCubeContents }

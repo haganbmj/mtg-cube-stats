@@ -20,20 +20,20 @@ use([
 ]);
 
 const props = defineProps({
-    typeLineDistribution: {
+    legalityDistribution: {
         type: Object,
         required: true,
     }
 });
 
 const chartOptions = computed(() => {
-    const data = Object.entries(props.typeLineDistribution).map(([key, value]) => {
+    const data = Object.entries(props.legalityDistribution).map(([key, value]) => {
         return { name: key, value };
     });
 
     return {
         title: {
-            text: 'Card Types',
+            text: 'Minimum Format Legality',
             left: 'center',
         },
         tooltip: {

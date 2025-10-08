@@ -1,9 +1,9 @@
 <template>
-    <VChart class="chart" :option="chartOptions" />
+    <VChart class="chart" :option="chartOptions" autoresize />
 </template>
 
-<script setup>
-import { capitalize, computed } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';

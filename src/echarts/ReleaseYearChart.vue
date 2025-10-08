@@ -1,8 +1,8 @@
 <template>
-    <VChart class="chart" :option="chartOptions" />
+    <VChart class="chart" :option="chartOptions" autoresize />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { use } from 'echarts/core';
 import { BarChart } from 'echarts/charts';
@@ -41,7 +41,7 @@ const chartOptions = computed(() => {
 
     return {
         title: {
-            text: 'Release Year',
+            text: 'Original Release Year',
             left: 'center',
         },
         tooltip: {

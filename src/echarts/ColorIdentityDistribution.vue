@@ -1,8 +1,8 @@
 <template>
-    <VChart class="chart" :option="chartOptions" />
+    <VChart class="chart" :option="chartOptions" autoresize />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
@@ -55,6 +55,7 @@ const chartOptions = computed(() => {
                 type: 'pie',
                 label: {
                     color: 'rgba(255, 255, 255, 0.3)',
+                    formatter: '{b} ({d}%)',
                 },
                 color: ['#f8f4e3', '#d0e3f2', '#b8c2c6', '#f2b5a0', '#b4e2b0', '#cfcfcf'],
             }
