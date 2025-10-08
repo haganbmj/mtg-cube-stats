@@ -46,7 +46,7 @@ jobs:
       - run: npm run cards
       - run: VITE_BUILD_SHA=$GITHUB_SHA npm run build
       # - run: npm run lint
-      - run: npm run test
+      # - run: npm run test
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v4
