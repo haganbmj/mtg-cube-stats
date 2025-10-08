@@ -263,6 +263,7 @@
                                 <li>Add some more evaluations, like a comparison matrix, card stats, summary stats, etc.</li>
                                 <li>Consider trying to make this a bit more mobile friendly.</li>
                                 <li>Consider adding the ability to define/save custom cube collections.</li>
+                                <li>Add a way to retrieve all cubes for a CubeCobra user?</li>
                             </ul>
 
                             <h3>Data Sources</h3>
@@ -293,25 +294,25 @@ import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import { remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
-import ManaValueTable from './echarts/ManaValueTable.vue';
-import ColorIdentityDistribution from './echarts/ColorIdentityDistribution.vue';
-import TypeLineDistribution from './echarts/TypeLineDistribution.vue';
+import ManaValueTable from './components/ManaValueTable.vue';
+import ColorIdentityDistribution from './components/ColorIdentityDistribution.vue';
+import TypeLineDistribution from './components/TypeLineDistribution.vue';
 import KeywordTable from './components/KeywordTable.vue';
-import RarityDistribution from './echarts/RarityDistribution.vue';
-import ReleaseYearChart from './echarts/ReleaseYearChart.vue';
+import RarityDistribution from './components/RarityDistribution.vue';
+import ReleaseYearChart from './components/ReleaseYearChart.vue';
 
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
-import LegalityDistribution from './echarts/LegalityDistribution.vue';
+import LegalityDistribution from './components/LegalityDistribution.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 
 provide(THEME_KEY, "darkbmj");
 
 const presetComparisons = {
-    "CubeCon 2025": () => import("../data/cubes-cubecon2025.json"),
-    "haganbmj": () => import("../data/cubes-haganbmj.json"),
-    // "Peasant Discord": () => import("../data/cubes-peasantDiscord.json"),
+    "CubeCon 2025": () => import("../preloads/cubes-cubecon2025.json"),
+    // "haganbmj": () => import("../preloads/cubes-haganbmj.json"),
+    "Peasant Discord": () => import("../preloads/cubes-peasantDiscord.json"),
 };
 
 // TODO: Bind this to localStorage.
