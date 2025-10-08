@@ -1,0 +1,77 @@
+name: Deploy Github Pages
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 13 * * 6"
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5.0.0
+        with:
+          node-version: "24.x"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4.3.0
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Restore Cached Card List
+        uses: actions/cache/restore@v4.3.0
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
+        with:
+          path: |
+            data/default-cards.json
+            data/flavor-words.json
+          key: scryfall-json-${{ github.run_id }}
+          restore-keys: |
+            scryfall-json-
+
+      - run: echo "VITE_BUILD_SHA=$GITHUB_SHA" >> $GITHUB_ENV
+      - run: npm ci
+      - run: npm run cards
+      - run: VITE_BUILD_SHA=$GITHUB_SHA npm run build
+      # - run: npm run lint
+      # - run: npm run test
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
+
+      - name: Save Cached Card List
+        uses: actions/cache/save@v4.3.0
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        with:
+          path: |
+            data/default-cards.json
+            data/flavor-words.json
+          key: scryfall-json-${{ github.run_id }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
