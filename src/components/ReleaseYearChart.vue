@@ -35,8 +35,9 @@ const releaseYears = [
 ]
 
 const chartOptions = computed(() => {
+    const totalCards = Object.values(props.releaseYearDistribution).reduce((a, b) => a + b, 0);
     const data = releaseYears.map(year => {
-        return { name: year, value: props.releaseYearDistribution[year] || 0 };
+        return { name: year, value: (100 * (props.releaseYearDistribution[year] || 0) / totalCards).toFixed(2), rawValue: props.releaseYearDistribution[year] || 0 };
     });
 
     return {
@@ -46,7 +47,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: '<b>{b}</b><br/>{c} Cards',
+            formatter: (args) => { console.log(args); return `<b>Year = ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`},//'<b>{b}</b><br/>{c} Cards',
         },
         xAxis: {
             type: 'category',
@@ -60,6 +61,9 @@ const chartOptions = computed(() => {
             name: 'Count',
             nameLocation: 'middle',
             nameGap: 40,
+            axisLabel: {
+                formatter: '{value} %'
+            },
         },
         series: [
             {

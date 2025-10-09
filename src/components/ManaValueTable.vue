@@ -29,8 +29,9 @@ const props = defineProps({
 const xAxisLabels = ['L','0','1','2','3','4','5','6','7','8','9','10+'];
 
 const chartOptions = computed(() => {
+    const totalCards = Object.values(props.cmcDistribution).reduce((a, b) => a + b, 0);
     const data = xAxisLabels.map(label => {
-        return { name: label, value: props.cmcDistribution[label] || 0 };
+        return { name: label, value: (100 * (props.cmcDistribution[label] || 0) / totalCards).toFixed(2), rawValue: props.cmcDistribution[label] || 0 };
     });
 
     return {
@@ -40,7 +41,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: '<b>{b}</b><br/>{c} Cards',
+            formatter: (args) => { console.log(args); return `<b>MV = ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`},//'<b>{b}</b><br/>{c} Cards',
         },
         xAxis: {
             type: 'category',
@@ -53,9 +54,12 @@ const chartOptions = computed(() => {
         },
         yAxis: {
             type: 'value',
-            name: 'Count',
+            name: 'Percentage',
             nameLocation: 'middle',
             nameGap: 40,
+            axisLabel: {
+                formatter: '{value} %'
+            },
         },
         series: [
             {
