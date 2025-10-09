@@ -10,6 +10,7 @@ import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
 export function remapCube(cube, enrich = true) {
     const cards = cube.cards.mainboard.map(card => {
         return {
+            printingId: card.details.scryfall_id,
             oracleId: card.details.oracle_id,
             elo: card.details.elo,
             popularity: card.details.popularity,
@@ -18,6 +19,7 @@ export function remapCube(cube, enrich = true) {
 
     return {
         id: cube.id,
+        shortId: cube.shortId,
         name: cube.name,
         owner: cube.owner.username,
         ownerId: cube.owner.id,
