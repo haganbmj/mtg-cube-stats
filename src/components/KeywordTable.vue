@@ -5,6 +5,7 @@
         max-height="775"
         :default-sort = "{prop: 'count', order: 'descending'}"
     >
+        <el-table-column fixed type="index" label="#" width="50" />
         <el-table-column
             prop="keyword"
             label="Keyword"
