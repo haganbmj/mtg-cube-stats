@@ -41,7 +41,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: (args) => { return `<b>MV = ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`},
+            formatter: (args) => { return `<b>MV = ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards` },
         },
         xAxis: {
             type: 'category',
