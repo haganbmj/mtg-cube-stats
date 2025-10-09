@@ -167,6 +167,7 @@
                                 <el-table-column prop="stats.percentages.supplementalProduct" label="% Supplemental Product" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.supplementalProduct')" />
 
                                 <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
+                                <el-table-column prop="stats.averageWordCountMinusParen" label="Avg. Word Count Excl. Reminder" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')" />
                                 <el-table-column prop="stats.uniqueKeywords" label="Unique Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
 
                                 <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
@@ -251,7 +252,7 @@
                                 <li>Cards with multiple faces are (currently) evaluated using their front face only.</li>
                                 <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
                                 <li>Keywords are a best effort, there are a number of things not classified as "keywords" by the comp rules (Initiative, Monarch, "Becomes Day", etc) and things like Adventure are considered card layouts rather than keywords.</li>
-                                <li>Word count is a best effort, this is using Scryfall's oracle text which sometimes includes reminder text.</li>
+                                <li>Word count is a best effort, this is using Scryfall's oracle text which sometimes includes reminder text. The column excluding reminder text is just a naive stripping of any text between parenthesis in the oracle text, which will catch some false positives.</li>
                                 <li>Minimum Format Legality is looking to represent the "smallest" sanctioned paper format that the cards are legal in? (Standard < Pioneer < Modern < Legacy < Vintage < Cube).</li>
                                 <li>This site is statically compiled and uses cached information where possible, so collections or card details may be (slightly) out of date.</li>
                             </ul>
@@ -322,7 +323,7 @@ const presetComparisons = {
 // TODO: Bind this to localStorage.
 const config = reactive({
     excludeLands: false,
-    visibleColumns: ['rowNumber', 'name', 'owner', 'stats.totalCards', 'stats.percentages.landCards', 'stats.averageNonLandCmc', 'stats.averageWordCount', 'stats.uniqueKeywords' ],
+    visibleColumns: ['rowNumber', 'name', 'owner', 'stats.totalCards', 'stats.percentages.landCards', 'stats.averageNonLandCmc', 'stats.averageWordCount', 'stats.averageWordCountMinusParen', 'stats.uniqueKeywords' ],
 });
 
 const addCubeForm = reactive({
@@ -379,6 +380,7 @@ const columnOptions = ref([
         label: 'Characteristics',
         options: [
             { value: 'stats.averageWordCount', label: 'Avg. Word Count' },
+            { value: 'stats.averageWordCountMinusParen', label: 'Avg. Word Count Excl. Reminder' },
             { value: 'stats.uniqueKeywords', label: "Unique Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
             { value: 'stats.percentages.abnormalLayout', label: "% Abnormal Layout" },

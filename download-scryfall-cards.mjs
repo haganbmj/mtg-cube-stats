@@ -196,6 +196,7 @@ const minimized = stripped.sort((a, b) => {
             typeLine: card.typeLine,
             oracleText: card.oracleText,
             oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).filter(v => v != '').length,
+            oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter(v => v != '').length,
             // This needs sanitization to use, it seems to including flavor abilities.
             keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
             rarity: card.rarity,
