@@ -51,6 +51,7 @@ export function enrichCubeContents(cards) {
             typeLine: scryfallCard?.typeLine ?? '',
             oracleText: scryfallCard?.oracleText ?? '',
             oracleTextWordCount: scryfallCard?.oracleTextWordCount ?? 0,
+            oracleTextWordCountMinusParen: scryfallCard?.oracleTextWordCountMinusParen ?? 0,
             legality: scryfallCard?.legality ?? {},
             isUniversesBeyond: scryfallCard?.isUniversesBeyond ?? false,
             rarity: scryfallCard?.rarity ?? undefined,
@@ -153,6 +154,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             return rarities;
         }, {}),
         averageWordCount: filteredCards.reduce((sum, c) => sum + (c.oracleTextWordCount ?? 0), 0) / filteredCards.length,
+        averageWordCountMinusParen: filteredCards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / filteredCards.length,
         // This is a map of keyword -> count
         keywords: filteredCards.reduce((keywords, c) => {
             c.keywords?.forEach(kw => {
