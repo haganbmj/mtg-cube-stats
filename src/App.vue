@@ -132,6 +132,7 @@
                                         </el-row>
 
                                         <!-- <pre>{{ { ...props.row, cards: undefined } }}</pre> -->
+                                         <!-- <pre>{{ { ...props.row } }}</pre> -->
                                     </template>
                                 </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
