@@ -140,12 +140,13 @@
                                         <el-image :src="row.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
                                     </template>
                                 </el-table-column>
-                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable>
+                                <el-table-column fixed type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
+                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
                                         <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
                                     </template>
                                 </el-table-column>
-                                <el-table-column prop="owner" label="Owner" min-width="100" max-width="150" show-overflow-tooltip sortable>
+                                <el-table-column prop="owner" label="Owner" min-width="100" max-width="150" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('owner')" >
                                     <template #default="{ row }">
                                         <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
                                     </template>
@@ -319,7 +320,7 @@ const presetComparisons = {
 // TODO: Bind this to localStorage.
 const config = reactive({
     excludeLands: false,
-    visibleColumns: ['stats.totalCards', 'stats.percentages.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.averageWordCount', 'stats.uniqueKeywords' ],
+    visibleColumns: ['rowNumber', 'name', 'owner', 'stats.totalCards', 'stats.percentages.landCards', 'stats.averageElo', 'stats.averagePopularity', 'stats.averageWordCount', 'stats.uniqueKeywords' ],
 });
 
 const addCubeForm = reactive({
@@ -349,9 +350,10 @@ const columnOptions = ref([
     {
         label: 'Core',
         options: [
+            { value: 'rowNumber', label: "Row Number" },
             // { value: 'thumbnail', label: "Thumbnail" },
-            // { value: 'name', label: "Name" },
-            // { value: 'owner', label: "Owner" },
+            { value: 'name', label: "Name" },
+            { value: 'owner', label: "Owner" },
             { value: 'category', label: "Category" },
             { value: 'categoryPrefixes', label: "Category Prefixes" },
             { value: 'stats.totalCards', label: "Total Cards" },
