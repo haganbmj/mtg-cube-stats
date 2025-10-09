@@ -47,7 +47,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: (args) => { console.log(args); return `<b>Year = ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`},//'<b>{b}</b><br/>{c} Cards',
+            formatter: (args) => { return `<b>Year = ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards` },
         },
         xAxis: {
             type: 'category',
