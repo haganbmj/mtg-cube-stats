@@ -90,7 +90,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         cmcDistribution: (() => {
             // FIXME: Should this just try and account for Lands as their own entry?
             const distribution = {};
-            distribution["L"] = cards.length - nonLandCards.length;
+            distribution["L"] = excludeLands ? 0 : cards.length - nonLandCards.length;
             for (let i = 0; i < 10; i++) {
                 distribution[i] = nonLandCards.filter(c => Math.floor(c.cmc) === i).length;
             }
