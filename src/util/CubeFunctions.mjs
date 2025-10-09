@@ -79,6 +79,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         filteredCards: filteredCards.length,
         averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
+        averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
         colorDistribution: {
             W: filteredCards.filter(c => c.colorIdentity.includes('W')).length,
             U: filteredCards.filter(c => c.colorIdentity.includes('U')).length,
@@ -184,7 +185,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             supplementalProduct: (secondOrderStats.cardCounts.supplementalProduct / secondOrderStats.filteredCards),
             abnormalLayout: (secondOrderStats.cardCounts.abnormalLayout / secondOrderStats.filteredCards),
             initiative: (secondOrderStats.cardCounts.initiative / secondOrderStats.filteredCards),
-        }
+        },
     }
 
     return thirdOrderStats;
