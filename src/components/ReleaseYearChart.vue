@@ -58,7 +58,7 @@ const chartOptions = computed(() => {
         },
         yAxis: {
             type: 'value',
-            name: 'Count',
+            name: 'Percentage',
             nameLocation: 'middle',
             nameGap: 40,
             axisLabel: {
