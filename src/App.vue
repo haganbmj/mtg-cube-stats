@@ -96,7 +96,7 @@
                                                 <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
                                                     <el-col :span="12">
                                                         <div style="height: 300px;">
-                                                            <ManaValueTable class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
+                                                            <ManaValueChart class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                     <el-col :span="12">
@@ -299,7 +299,7 @@ import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import { remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
-import ManaValueTable from './components/ManaValueTable.vue';
+import ManaValueChart from './components/ManaValueChart.vue';
 import ColorIdentityDistribution from './components/ColorIdentityDistribution.vue';
 import TypeLineDistribution from './components/TypeLineDistribution.vue';
 import KeywordTable from './components/KeywordTable.vue';
