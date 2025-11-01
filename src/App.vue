@@ -315,6 +315,7 @@ registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, "darkbmj");
 
 const presetComparisons = {
+    "WotC MTGO/Arena": () => import("../preloads/cubes-wotc.json"),
     "CubeCon 2025": () => import("../preloads/cubes-cubecon2025.json"),
     // "haganbmj": () => import("../preloads/cubes-haganbmj.json"),
     "Peasant Discord": () => import("../preloads/cubes-peasantDiscord.json"),
