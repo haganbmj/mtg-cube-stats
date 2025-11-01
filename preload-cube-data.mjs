@@ -8,11 +8,11 @@ const batches = {
     //     '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // Kuleshov
     //     '4618ca9d-e359-4e85-b2fb-9e97720eb64c', // Twobert by Four
     // ],
-    // "peasantDiscord": [
+    // "peasant": [
+    //     // Combination of Peasant Discord + a few others that I follow.
     //     'haganbmj', // haganbmj
     //     '450peasant', // Alfonso
     //     'arbor4817_peasant', // ArBoR4817
-    //     '16nh', // Browndog - Boomer - 380
     //     'gn3', // CSabor - 375
     //     '578d0a76-59b4-4414-a121-25676a2baf86', // Chooks -Semipowered - 360
     //     'DaneeliusPeasantAllStars', // daneelius - Arena, Retail Allstars - 540
@@ -36,6 +36,16 @@ const batches = {
     //     '68u', // water the weeds -
     //     'GreenlessPeasant', // Winston PBardin - Greenless
     //     'zanderpeasant', // Zander611 - Semi-Powered
+
+    //     '5d3ed83247586d63776acbf6', // Sammich's Peasant Cube
+    //     '5e501a1b0304345db201ee2a', // MountainMage
+    //     '608fd59e0938891048b2490e', // BrownDog5117
+    //     '6377de78946dbd0f6a6e8fff', // Emmmzyne
+    //     '5d3f7245d1bbf667dd9d4286', // MatEffect
+    //     '5d70f0322d52e15c2537f057', // Spootyone
+    //     '5e8c9f60a0c28578ee03de2d', // JankDiverGaming
+    //     '5da9ff1872d31f3e1c1377ff', // CorakTM
+    //     '5d5ed579726e4277c7bb1e32', // calibretto
     // ],
     // "cubecon2025": [
     //     // var a = ""; document.querySelectorAll('h5.card-title a[href*="https://cubecobra.com/cube/overview/"]').forEach(e => { a += `'${e.href}', // ${e.innerText}\n`; }); console.log(a);
@@ -133,10 +143,10 @@ const batches = {
     //     '6189e6d28b06db101e4b5bb8', // Welcome to Theros Cube
     //     'dd921b61-7e3e-4d0c-9f2b-68b879a6110f', // Worship the Gods! A Theros Odyssey
     // ],
-    'wotc': [
-        '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
-        'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
-    ]
+    // 'wotc': [
+    //     '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
+    //     'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
+    // ]
 };
 
 // FIXME: This probably needs a way to record a timestamp for when the last fetch was.
