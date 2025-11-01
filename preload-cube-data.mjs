@@ -133,6 +133,10 @@ const batches = {
     //     '6189e6d28b06db101e4b5bb8', // Welcome to Theros Cube
     //     'dd921b61-7e3e-4d0c-9f2b-68b879a6110f', // Worship the Gods! A Theros Odyssey
     // ],
+    'wotc': [
+        '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
+        'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
+    ]
 };
 
 // FIXME: This probably needs a way to record a timestamp for when the last fetch was.
