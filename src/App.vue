@@ -35,7 +35,7 @@
                         </el-form-item>
                         <el-form-item>OR</el-form-item>
                         <el-form-item style="margin-right: 6px;">
-                            <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" :disabled="addCubeForm.loading" autofocus />
+                            <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
                         </el-form-item>
                         <el-form-item>
                             <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
@@ -451,10 +451,16 @@ const cardsTableData = computed(() => {
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
-    if (!(addCubeForm.cubeId in loadedCubes)) {
+
+    // Attempt to take just the Cube ID based on multiple possible input formats.
+    const input = addCubeForm.cubeId.split('?')[0].trim();
+    const [ cubeId ] = input.match(/([^\/]+)\/?$/);
+
+    // FIXME: This ideally should handle deduping on both IDs for a cube. The user-defined and the system-defined.
+    if (!(cubeId in loadedCubes)) {
         try {
-            const rawCube = await getCubeData(addCubeForm.cubeId);
-            loadedCubes[addCubeForm.cubeId] = remapCube(rawCube);
+            const rawCube = await getCubeData(cubeId);
+            loadedCubes[cubeId] = remapCube(rawCube);
         } catch (e) {
             console.error("Error loading cube:", e);
         }
