@@ -42,6 +42,51 @@
         table-layout="auto"
         stripe
     >
+        <el-table-column fixed width="25" type="expand">
+            <template #default="props">
+                <el-row class="expanded-content" :gutter="20" justify="space-around">
+                    <el-col :span="8">
+                        <el-image
+                            :src="`https://api.scryfall.com/cards/${props.row.setCode?.toLowerCase()}/${props.row.collectorNumber}?format=image`"
+                            fit="contain"
+                            :alt="props.row.name"
+                            class="card-image"
+                        />
+                    </el-col>
+                    <el-col :span="8">
+                        <h3>Included In:</h3>
+                        <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
+                            <div v-if="cube.included">
+                                <el-row direction="horizontal">
+                                    <el-col :span="16">
+                                        <el-link :href="`https://cubecobra.com/cube/overview/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-text tag="i">({{ cube.size }} Cards)</el-text>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                        </template>
+                    </el-col>
+                    <el-col :span="8">
+                        <h3>Not Included In:</h3>
+                        <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
+                            <div v-if="!cube.included">
+                                <el-row direction="horizontal">
+                                    <el-col :span="16">
+                                        <el-link :href="`https://cubecobra.com/cube/overview/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-text tag="i">({{ cube.size }} Cards)</el-text>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                        </template>
+                    </el-col>
+                </el-row>
+            </template>
+        </el-table-column>
+
         <el-table-column fixed prop="index" label="#" width="50" />
         <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable="custom">
             <template #default="{ row }">
@@ -179,6 +224,25 @@ const pageSize = ref(50);
 const searchInput = ref('');
 const activeFilters = ref({});
 const activeSort = ref<SortBy | null>({ prop: 'cubeCount', order: 'descending' });
+
+const expandedCubeList = (cubeKeys: string[]) => {
+    const resp = Object.entries(props.loadedCubes).map(([key, cube]) => {
+        return {
+            id: cube.id,
+            key: key,
+            name: cube.name,
+            owner: cube.owner,
+            size: cube.cards.length,
+            included: cubeKeys.includes(key),
+        }
+    });
+
+    return resp.sort((a, b) => {
+        if (a.name < b.name) return -1;
+        if (a.name > b.name) return 1;
+        return 0;
+    });
+};
 
 const filterableSets = computed(() => {
     const sets = new Set<string>();
@@ -375,5 +439,12 @@ const visibleRows = computed(() => {
     margin-top: 16px;
     margin-bottom: 16px;
     text-align: right;
+}
+
+.expanded-content .card-image {
+    max-width: 400px;
+    height: auto;
+    border-radius: 4%;
+    top: 16px;
 }
 </style>

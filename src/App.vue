@@ -383,7 +383,6 @@ const cardsTableDataV2 = [
 ];
 
 const cardsTableData = computed(() => {
-    console.log("cardsTableData recomputed");
     if (Object.keys(loadedCubes).length === 0) {
         return [];
     }
