@@ -1,33 +1,30 @@
 <template>
+    <el-space direction="horizontal" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 1em;">
+        <el-input
+            v-model="searchInput"
+            @change="onSearchChange"
+            class="responsive-input"
+            placeholder="Search cards..."
+        >
+            <template #prefix>
+                <el-icon class="el-input__icon"><search /></el-icon>
+            </template>
+        </el-input>
+
+        <el-button @click="resetFilters">Reset Filters</el-button>
+    </el-space>
+
     <el-pagination
         style="margin-top: 16px; text-align: right;"
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
         layout="sizes, total, ->, prev, pager, next, jumper"
-        :total="filteredRows.length"
+        :total="searchedRows.length"
     />
 
-    <div style="height: 600px;" v-if="usev2">
-        <el-auto-resizer style="max-height: 600px;">
-            <template #default=" { height, width }">
-                <el-table-v2
-                    v-model:sort-state="sortState"
-                    :columns="columns"
-                    :data="visibleRows"
-                    :cache="50"
-                    :width="width"
-                    :height="height"
-                    @column-sort="onSort"
-                    fixed
-                />
-            </template>
-        </el-auto-resizer>
-        <!-- <div>{{ rows }}</div> -->
-        <!-- <div>{{ props.data }}</div> -->
-    </div>
-
     <el-table v-if="!usev2"
+        ref="cardSummaryTableRef"
         :data="visibleRows"
         :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
         :preserve-expanded-content="false"
@@ -141,13 +138,14 @@
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
         layout="sizes, total, ->, prev, pager, next, jumper"
-        :total="filteredRows.length"
+        :total="searchedRows.length"
     />
 </template>
 
 <script setup lang="ts">
-import { TableV2SortOrder } from 'element-plus';
+import { TableInstance, TableV2SortOrder } from 'element-plus';
 import type { SortBy, SortState } from 'element-plus';
+import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -161,9 +159,11 @@ const props = defineProps({
     },
 });
 
+const cardSummaryTableRef = ref<TableInstance>();
 const usev2 = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(50);
+const searchInput = ref('');
 const activeFilters = ref({});
 const activeSort = ref<SortBy | null>({ prop: 'cubeCount', order: 'descending' });
 
@@ -180,13 +180,28 @@ const filterableSets = computed(() => {
 });
 
 const onFilterChange = (filters: Record<string, string[]>) => {
-    activeFilters.value = filters;
+    activeFilters.value = {
+        ...activeFilters.value,
+        ...filters,
+    };
     currentPage.value = 1;
 };
 
 const onSortChange = (sortInfo: SortBy) => {
     activeSort.value = sortInfo;
     currentPage.value = 1;
+};
+
+const onSearchChange = (value: string) => {
+    // Set page to 1 to avoid displaying an invalid index.
+    currentPage.value = 1;
+};
+
+const resetFilters = () => {
+    activeFilters.value = {};
+    searchInput.value = '';
+    currentPage.value = 1;
+    cardSummaryTableRef.value?.clearFilter();
 };
 
 const tableData = computed(() => {
@@ -200,13 +215,15 @@ const tableData = computed(() => {
                     ...card,
                     effectiveColors: card.colorIdentity.length === 0 ? ['C'] : card.colorIdentity,
                     count: 0,
-                    cubes: [], // TODO:
+                    cubes: [],
                     cubeCount: 0,
                 };
             }
 
             allCards[card.oracleId].count += 1;
             if (!allCards[card.oracleId].cubes.includes(key)) {
+                // TODO: What's the best way to represent this?
+                //  I think it'd be nice to be able to expand and see which cubes (with links, owners, icons, size, etc) contain the card.
                 allCards[card.oracleId].cubes.push(key);
                 allCards[card.oracleId].cubeCount += 1;
             }
@@ -217,17 +234,6 @@ const tableData = computed(() => {
 
     return Object.values(allCards);
 });
-
-const columns = [
-    { key: 'name', title: 'Name', dataKey: 'name', sortable: true, width: 250, fixed: 'left', },
-    { key: 'typeLine', title: 'Type Line', dataKey: 'typeLine', width: 250 },
-    { key: 'cubeCount', title: 'Cube Count', dataKey: 'cubeCount', sortable: true, width: 100 },
-    { key: 'count', title: 'Total Count', dataKey: 'count', sortable: true, width: 100 },
-    { key: 'releaseDate', title: 'Release Date', dataKey: 'releaseDate', sortable: true, width: 150 },
-    { key: 'rarity', title: 'Rarity', dataKey: 'rarity', width: 100 },
-    { key: 'isUniversesBeyond', title: 'Universes Beyond', dataKey: 'isUniversesBeyond', width: 75 },
-    { key: 'isSupplementalProduct', title: 'Supplemental Product', dataKey: 'isSupplementalProduct', width: 75 },
-];
 
 const sortedRows = computed(() => {
     const alphaSorted = tableData.value.slice(0).sort((a, b) => {
@@ -269,7 +275,6 @@ const sortedRows = computed(() => {
 });
 
 const filteredRows = computed(() => {
-    console.log('Active Filters:', activeFilters.value);
     if (Object.keys(activeFilters.value).length === 0) {
         return sortedRows.value;
     } else {
@@ -308,7 +313,17 @@ const filteredRows = computed(() => {
     }
 });
 
+const searchedRows = computed(() => {
+    if (searchInput.value.trim() === '') {
+        return filteredRows.value;
+    }
+    const searchTerm = searchInput.value.toLowerCase();
+    return filteredRows.value.filter(row => {
+        return row.name.toLowerCase().includes(searchTerm);
+    });
+});
+
 const visibleRows = computed(() => {
-    return filteredRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+    return searchedRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 </script>
