@@ -52,12 +52,6 @@
         "popularity": 0.08353138890822485
       },
       {
-        "printingId": "0d16e8e0-31b2-4389-afd6-783c501f6fa0",
-        "oracleId": "2588f348-d7a3-46c8-9ace-dca53ed5ef99",
-        "elo": 1480.3000000014338,
-        "popularity": 1.895366991179483
-      },
-      {
         "printingId": "f1f374f7-5d0c-4965-97f0-cfc80f22b039",
         "oracleId": "774dce79-67e0-4820-8013-c7a7347993ce",
         "elo": 1275.5000000011323,
@@ -280,12 +274,6 @@
         "popularity": 7.283473049525496
       },
       {
-        "printingId": "23b95b26-0bbf-4fa1-80c1-f621f1a1b947",
-        "oracleId": "b01d61cc-9844-4191-86a0-f2db6d42d6e5",
-        "elo": 1245.9000000021479,
-        "popularity": 6.068953172701146
-      },
-      {
         "printingId": "96dd2d61-a43d-4582-b730-71d4fac0fa23",
         "oracleId": "34515b16-c9a4-4f98-8c77-416a7a523407",
         "elo": 1293.6000000014133,
@@ -350,12 +338,6 @@
         "oracleId": "0355249a-8e4e-41db-9cea-1b901faffbe6",
         "elo": 1293.3000000000484,
         "popularity": 1.5910740744423784
-      },
-      {
-        "printingId": "2a717b98-cdac-416d-bf6c-f6b6638e65d1",
-        "oracleId": "1ed9e351-0000-4b75-8ecb-d15bd88df68a",
-        "elo": 1632.7000000024757,
-        "popularity": 2.041215448003368
       },
       {
         "printingId": "2b58e47b-c165-4a58-aa2a-033a35645adc",
@@ -452,12 +434,6 @@
         "oracleId": "2f533667-e29b-4bec-897a-e7a9eee08314",
         "elo": 1682.6999999937048,
         "popularity": 4.170602917632084
-      },
-      {
-        "printingId": "7f8a6bfe-6033-4f6b-ab45-6b553f8b51a1",
-        "oracleId": "1c95b7cf-be4d-4961-9073-3e39487492c8",
-        "elo": 1304.2000000000007,
-        "popularity": 0.15943888120974664
       },
       {
         "printingId": "74b4c336-5d4c-4bc5-b82a-35084a6ad808",
@@ -814,12 +790,6 @@
         "popularity": 1.5032335265825387
       },
       {
-        "printingId": "026e7167-d665-43d0-a51e-8df2d68cdb5e",
-        "oracleId": "e4719557-d94e-490f-8a56-c1867a01d2ef",
-        "elo": 1356.2000000000003,
-        "popularity": 0.5207452856143701
-      },
-      {
         "printingId": "612b2e6e-fe8d-49ad-b845-6fa7fa59ffd1",
         "oracleId": "a3a56b02-7290-4352-a862-f2de608f2a86",
         "elo": 1267.2000000006663,
@@ -872,12 +842,6 @@
         "oracleId": "ea5103f5-27e0-4eb1-902c-7f34652d6bf3",
         "elo": 1789.1999999838358,
         "popularity": 4.204081767948476
-      },
-      {
-        "printingId": "1d7474fc-0042-4be9-81f3-5f66f4b16740",
-        "oracleId": "84e84532-498b-40ea-9510-46fb2403939b",
-        "elo": 1213.5000000000878,
-        "popularity": 0.9659145526927271
       },
       {
         "printingId": "d945e64f-cbe9-4b72-aaec-0b97be1e12d2",
@@ -1130,12 +1094,6 @@
         "oracleId": "992d9a72-d34d-47d7-96fb-37f0efb515ef",
         "elo": 1427.0000000024784,
         "popularity": 9.95349423069911
-      },
-      {
-        "printingId": "7ab75cdb-93a1-4f78-b404-37566295c321",
-        "oracleId": "d476f4b3-db63-4756-ab76-4b35f63c2825",
-        "elo": 1307.700000000402,
-        "popularity": 3.157950564002612
       },
       {
         "printingId": "61f0c6f6-b90d-4eb1-a5db-86e0a3997501",
@@ -1396,12 +1354,6 @@
         "popularity": 4.270376521050242
       },
       {
-        "printingId": "95c14c4d-6c16-4826-8d93-d89ad04aee09",
-        "oracleId": "7514e401-7aa1-405d-9f7a-312b4e630cc2",
-        "elo": 1413.900000000856,
-        "popularity": 2.893434499126567
-      },
-      {
         "printingId": "ff8086cd-b868-4f4e-823e-2635ad7ebc07",
         "oracleId": "12cc800c-c7be-4811-8207-fd01a99cc892",
         "elo": 1364.2000000013882,
@@ -1576,12 +1528,6 @@
         "popularity": 1.4114152935365931
       },
       {
-        "printingId": "7eb39e97-53c2-4df0-9fb3-a3d6a24ec41f",
-        "oracleId": "069f6530-e65c-4d52-85f3-e0a2acd148c5",
-        "elo": 1294.0000000003165,
-        "popularity": 8.798308157900843
-      },
-      {
         "printingId": "852d7a68-8682-4073-a44b-f10f5613879c",
         "oracleId": "d3a0b660-358c-41bd-9cd2-41fbf3491b1a",
         "elo": 1571.8000000060729,
@@ -1618,22 +1564,10 @@
         "popularity": 6.320210286956839
       },
       {
-        "printingId": "9417f14c-a853-42c6-a992-29139484260a",
-        "oracleId": "c8de43a3-ebd3-4000-b343-a6ffed11d34d",
-        "elo": 1406.9999999995775,
-        "popularity": 8.127405256510974
-      },
-      {
         "printingId": "abd80204-e9ba-483f-9b75-a69712545ba9",
         "oracleId": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
         "elo": 1424.900000001585,
         "popularity": 23.5104397662447
-      },
-      {
-        "printingId": "02b642ff-eb7d-4c10-9d5b-477af2e52e59",
-        "oracleId": "98aa9424-5912-4bd6-9300-b3972a31d8af",
-        "elo": 1483.3000000029654,
-        "popularity": 10.567052170655954
       },
       {
         "printingId": "f1b8413f-c9fc-4cea-b416-a1fcf651b009",
@@ -2230,36 +2164,6 @@
         "popularity": 2.9633754636489296
       },
       {
-        "printingId": "4cc40157-d062-46e5-b4e7-13514234d306",
-        "oracleId": "6c326439-5620-4ec6-a56a-fe9c3d5d2a46",
-        "elo": 1282.7000000011058,
-        "popularity": 5.784217208129062
-      },
-      {
-        "printingId": "21848067-02e7-4c50-8aae-05f84d81cbb0",
-        "oracleId": "14d2979d-5728-42d7-a027-0eb1f754655d",
-        "elo": 1335.000000000876,
-        "popularity": 6.3168955493017505
-      },
-      {
-        "printingId": "732f7ee6-1b54-4753-a77f-d984cbf9fdbf",
-        "oracleId": "8c34b089-aad1-476e-958a-3077bf1bbb51",
-        "elo": 1284.8000000006164,
-        "popularity": 5.485890819171117
-      },
-      {
-        "printingId": "991037a2-fea2-49f5-8ace-ebbf9f678cff",
-        "oracleId": "4c0a0448-b9d6-43a0-8549-64066dac63f0",
-        "elo": 1317.1000000007252,
-        "popularity": 6.20684625915282
-      },
-      {
-        "printingId": "41ff849e-2439-4690-8aa4-769039b6da4c",
-        "oracleId": "00e35322-1a9a-41e3-9ce1-359c8eaa3bc7",
-        "elo": 1382.6000000004888,
-        "popularity": 5.944319036869827
-      },
-      {
         "printingId": "3b6e5956-f795-451b-bb24-56462d1ced27",
         "oracleId": "1da10d5c-36a8-473f-a5d4-782ad61d8057",
         "elo": 1481.9000000037547,
@@ -2288,12 +2192,6 @@
         "oracleId": "04c7f4fe-2098-4311-866d-6733c08d5178",
         "elo": 1305.000000000381,
         "popularity": 4.38407202261977
-      },
-      {
-        "printingId": "175b3d28-5c74-4972-9b5c-5e39762c78f4",
-        "oracleId": "b3a81bb1-cbd5-41a0-8dd4-faea06593f84",
-        "elo": 1370.4000000001324,
-        "popularity": 1.14623628112953
       },
       {
         "printingId": "d5806e68-1054-458e-866d-1f2470f682b2",
@@ -2338,6 +2236,102 @@
         "popularity": 2.979949151924371
       },
       {
+        "printingId": "7eb39e97-53c2-4df0-9fb3-a3d6a24ec41f",
+        "oracleId": "069f6530-e65c-4d52-85f3-e0a2acd148c5",
+        "elo": 1294.0000000003165,
+        "popularity": 8.798308157900843
+      },
+      {
+        "printingId": "026e7167-d665-43d0-a51e-8df2d68cdb5e",
+        "oracleId": "e4719557-d94e-490f-8a56-c1867a01d2ef",
+        "elo": 1356.2000000000003,
+        "popularity": 0.5207452856143701
+      },
+      {
+        "printingId": "9417f14c-a853-42c6-a992-29139484260a",
+        "oracleId": "c8de43a3-ebd3-4000-b343-a6ffed11d34d",
+        "elo": 1406.9999999995775,
+        "popularity": 8.127405256510974
+      },
+      {
+        "printingId": "02b642ff-eb7d-4c10-9d5b-477af2e52e59",
+        "oracleId": "98aa9424-5912-4bd6-9300-b3972a31d8af",
+        "elo": 1483.3000000029654,
+        "popularity": 10.567052170655954
+      },
+      {
+        "printingId": "ac70573c-2ce3-4729-b71b-2763f6a1c033",
+        "oracleId": "383e3fe4-8558-4561-8632-6eadb5d5963c",
+        "elo": 1213.50000000173,
+        "popularity": 3.060828750708525
+      },
+      {
+        "printingId": "2a717b98-cdac-416d-bf6c-f6b6638e65d1",
+        "oracleId": "1ed9e351-0000-4b75-8ecb-d15bd88df68a",
+        "elo": 1632.7000000024757,
+        "popularity": 2.041215448003368
+      },
+      {
+        "printingId": "0d16e8e0-31b2-4389-afd6-783c501f6fa0",
+        "oracleId": "2588f348-d7a3-46c8-9ace-dca53ed5ef99",
+        "elo": 1480.3000000014338,
+        "popularity": 1.895366991179483
+      },
+      {
+        "printingId": "7feb1493-b73e-4ee3-968e-d69806360952",
+        "oracleId": "be48c721-bdc6-4f2c-96d6-82d934b31615",
+        "elo": 1200,
+        "popularity": 0.05038401235734198
+      },
+      {
+        "printingId": "da13a060-36ee-41e9-bab1-af8ddcc893b8",
+        "oracleId": "aa5b06a4-90c3-45e7-ab83-cb5c96ded21d",
+        "elo": 1200,
+        "popularity": 0.085188757735769
+      },
+      {
+        "printingId": "a301083a-9130-4384-a355-efe7050871ca",
+        "oracleId": "5f143d87-35fb-40e3-94ae-f85cfff9adb5",
+        "elo": 1200,
+        "popularity": 0.051709907419377296
+      },
+      {
+        "printingId": "1d7474fc-0042-4be9-81f3-5f66f4b16740",
+        "oracleId": "84e84532-498b-40ea-9510-46fb2403939b",
+        "elo": 1213.5000000000878,
+        "popularity": 0.9659145526927271
+      },
+      {
+        "printingId": "7f8a6bfe-6033-4f6b-ab45-6b553f8b51a1",
+        "oracleId": "1c95b7cf-be4d-4961-9073-3e39487492c8",
+        "elo": 1304.2000000000007,
+        "popularity": 0.15943888120974664
+      },
+      {
+        "printingId": "95c14c4d-6c16-4826-8d93-d89ad04aee09",
+        "oracleId": "7514e401-7aa1-405d-9f7a-312b4e630cc2",
+        "elo": 1413.900000000856,
+        "popularity": 2.893434499126567
+      },
+      {
+        "printingId": "7ab75cdb-93a1-4f78-b404-37566295c321",
+        "oracleId": "d476f4b3-db63-4756-ab76-4b35f63c2825",
+        "elo": 1307.700000000402,
+        "popularity": 3.157950564002612
+      },
+      {
+        "printingId": "278e97cf-312d-4e9e-bc39-023f4e547121",
+        "oracleId": "0b8c3337-04dd-4798-8203-6d8b8cfb936b",
+        "elo": 1311.599999999632,
+        "popularity": 14.161222210068184
+      },
+      {
+        "printingId": "23b95b26-0bbf-4fa1-80c1-f621f1a1b947",
+        "oracleId": "b01d61cc-9844-4191-86a0-f2db6d42d6e5",
+        "elo": 1245.9000000021479,
+        "popularity": 6.068953172701146
+      },
+      {
         "printingId": "fbf1ea21-2e90-4792-b399-111ff70a9d06",
         "oracleId": "be2b9c6d-4ecb-49ec-b276-4aa93c5dfc00",
         "elo": 1200,
@@ -2348,6 +2342,12 @@
         "oracleId": "ead1ee6a-e0da-46d5-89e8-31e8c0270bc2",
         "elo": 1341.2000000001271,
         "popularity": 2.155573897103914
+      },
+      {
+        "printingId": "41ff849e-2439-4690-8aa4-769039b6da4c",
+        "oracleId": "00e35322-1a9a-41e3-9ce1-359c8eaa3bc7",
+        "elo": 1382.6000000004888,
+        "popularity": 5.944319036869827
       },
       {
         "printingId": "5cb76266-ae50-4bbc-8f96-d98f309b02d3",
@@ -2384,6 +2384,12 @@
         "oracleId": "e157ad1e-be35-47f3-92db-01799f8fb6a5",
         "elo": 1556.800000002359,
         "popularity": 2.557651574666123
+      },
+      {
+        "printingId": "991037a2-fea2-49f5-8ace-ebbf9f678cff",
+        "oracleId": "4c0a0448-b9d6-43a0-8549-64066dac63f0",
+        "elo": 1317.1000000007252,
+        "popularity": 6.20684625915282
       },
       {
         "printingId": "7f7e780e-fbc5-4dc0-b5c7-efcb8645c7c6",
@@ -2426,12 +2432,6 @@
         "oracleId": "45f1e957-09f0-4d46-8e32-238f26060a87",
         "elo": 1292.6000000018862,
         "popularity": 10.696326939204397
-      },
-      {
-        "printingId": "ac70573c-2ce3-4729-b71b-2763f6a1c033",
-        "oracleId": "383e3fe4-8558-4561-8632-6eadb5d5963c",
-        "elo": 1213.50000000173,
-        "popularity": 3.060828750708525
       },
       {
         "printingId": "50283122-b8c4-4fb3-8eba-6252b72222f4",
@@ -2494,12 +2494,6 @@
         "popularity": 6.860181050970721
       },
       {
-        "printingId": "278e97cf-312d-4e9e-bc39-023f4e547121",
-        "oracleId": "0b8c3337-04dd-4798-8203-6d8b8cfb936b",
-        "elo": 1311.599999999632,
-        "popularity": 14.161222210068184
-      },
-      {
         "printingId": "5ad36fb2-c44e-4085-ba0d-54277841ad3a",
         "oracleId": "3bc757c1-3adb-4321-8832-8e1cc9e687f7",
         "elo": 1430.8000000014133,
@@ -2516,6 +2510,12 @@
         "oracleId": "c7aecca5-2f67-4245-ab2d-e723d8b23a67",
         "elo": 1274.7999999995907,
         "popularity": 8.676325812193594
+      },
+      {
+        "printingId": "21848067-02e7-4c50-8aae-05f84d81cbb0",
+        "oracleId": "14d2979d-5728-42d7-a027-0eb1f754655d",
+        "elo": 1335.000000000876,
+        "popularity": 6.3168955493017505
       },
       {
         "printingId": "f1a21287-e244-4960-84fb-c4f6e5c346d9",
@@ -2602,6 +2602,12 @@
         "popularity": 2.5593089434936673
       },
       {
+        "printingId": "4cc40157-d062-46e5-b4e7-13514234d306",
+        "oracleId": "6c326439-5620-4ec6-a56a-fe9c3d5d2a46",
+        "elo": 1282.7000000011058,
+        "popularity": 5.784217208129062
+      },
+      {
         "printingId": "e419cd0b-2449-4cc5-9ead-b9e45e271700",
         "oracleId": "3407eb6e-b74d-4159-a801-d7163937953c",
         "elo": 1428.2999999999806,
@@ -2618,6 +2624,12 @@
         "oracleId": "b081352b-d17b-4031-bbcc-c5c02cbfa6b6",
         "elo": 1350.6000000001134,
         "popularity": 1.961661744281249
+      },
+      {
+        "printingId": "732f7ee6-1b54-4753-a77f-d984cbf9fdbf",
+        "oracleId": "8c34b089-aad1-476e-958a-3077bf1bbb51",
+        "elo": 1284.8000000006164,
+        "popularity": 5.485890819171117
       },
       {
         "printingId": "94b67489-5eb0-4406-9bf3-27e50dc632eb",
@@ -2656,28 +2668,16 @@
         "popularity": 3.2288859498215015
       },
       {
-        "printingId": "da13a060-36ee-41e9-bab1-af8ddcc893b8",
-        "oracleId": "aa5b06a4-90c3-45e7-ab83-cb5c96ded21d",
-        "elo": 1200,
-        "popularity": 0.085188757735769
-      },
-      {
-        "printingId": "7feb1493-b73e-4ee3-968e-d69806360952",
-        "oracleId": "be48c721-bdc6-4f2c-96d6-82d934b31615",
-        "elo": 1200,
-        "popularity": 0.05038401235734198
+        "printingId": "175b3d28-5c74-4972-9b5c-5e39762c78f4",
+        "oracleId": "b3a81bb1-cbd5-41a0-8dd4-faea06593f84",
+        "elo": 1370.4000000001324,
+        "popularity": 1.14623628112953
       },
       {
         "printingId": "33c59c04-4c0b-4a60-826e-3a7757d0b2a2",
         "oracleId": "68c7e459-0932-4644-a3c0-9a1eae1db7a3",
         "elo": 1165.400000000142,
         "popularity": 0.4544505325126043
-      },
-      {
-        "printingId": "a301083a-9130-4384-a355-efe7050871ca",
-        "oracleId": "5f143d87-35fb-40e3-94ae-f85cfff9adb5",
-        "elo": 1200,
-        "popularity": 0.051709907419377296
       },
       {
         "printingId": "cedfc5b7-9242-4680-b284-debc8b5a9bc7",
@@ -3604,6 +3604,12 @@
         "popularity": 1.9623246918122665
       },
       {
+        "printingId": "8ebe4be7-e12a-4596-a899-fbd5b152e879",
+        "oracleId": "824597b8-c89a-47ec-8526-7efc6e24ef0e",
+        "elo": 14278.400000104773,
+        "popularity": 6.137568242161474
+      },
+      {
         "printingId": "80fca8c0-ae3e-439e-b202-228b9f360e9a",
         "oracleId": "5e57a8cd-f4f0-40b2-84a0-e002751c0d40",
         "elo": 1306.500000000715,
@@ -4018,6 +4024,18 @@
         "popularity": 14.772791307431973
       },
       {
+        "printingId": "82da0972-b17b-4600-9efd-e9430a0db04b",
+        "oracleId": "d5ed1233-df87-4b90-8918-13922ec95249",
+        "elo": 14672.00000022124,
+        "popularity": 6.3029736511503796
+      },
+      {
+        "printingId": "a54e8ce9-edd7-4ae7-9521-6fb6727cf63b",
+        "oracleId": "4b033a0a-c1ae-44d7-9662-72cbbfda024b",
+        "elo": 1355.700000000076,
+        "popularity": 4.637649453234024
+      },
+      {
         "printingId": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d",
         "oracleId": "c1cbbda0-e02b-4b9c-8669-ea87ca629520",
         "elo": 1237.7000000003945,
@@ -4216,6 +4234,12 @@
         "popularity": 13.729974841141198
       },
       {
+        "printingId": "35aa1476-f16a-45ae-b91a-4ea7e5fb0ba8",
+        "oracleId": "fd74f8eb-0253-42dd-8277-186d4934da38",
+        "elo": 1530.9000000046262,
+        "popularity": 12.132602765154152
+      },
+      {
         "printingId": "3caa9c55-5e3b-436b-84a9-b7ccebf63799",
         "oracleId": "299fc083-0834-4064-8344-f895aff68867",
         "elo": 1525.6000000031956,
@@ -4370,6 +4394,18 @@
         "oracleId": "78db3190-59bc-4033-95bc-32d8ed872b6a",
         "elo": 1292.300000000951,
         "popularity": 4.779851698637311
+      },
+      {
+        "printingId": "84325b23-ab76-46af-8df5-9d645bc0263c",
+        "oracleId": "d48e1545-7997-45ed-83a1-aee45b3d3d20",
+        "elo": 1244.9999999996435,
+        "popularity": 8.520201668638936
+      },
+      {
+        "printingId": "92bcd1ce-19b1-4d78-8b09-95242ca08d76",
+        "oracleId": "0677f49e-f8bf-4349-af52-2ccde9287c2e",
+        "elo": 14440.500000101962,
+        "popularity": 6.217121945883593
       },
       {
         "printingId": "07c17b01-ee5d-491a-8403-b3f819b778c4",
@@ -4768,6 +4804,18 @@
         "popularity": 7.556938906070279
       },
       {
+        "printingId": "8945585f-4773-493d-a0fe-d707db910b38",
+        "oracleId": "ed85fa82-e4fa-434b-92a8-36b6075708d1",
+        "elo": 14235.100000106815,
+        "popularity": 6.1982279412495895
+      },
+      {
+        "printingId": "97b9bab9-12ee-4da5-9d53-d0b82d9279cd",
+        "oracleId": "2c10cae2-951a-4f4f-94e4-8713b58d07dd",
+        "elo": 1285.8000000001546,
+        "popularity": 4.249162200057676
+      },
+      {
         "printingId": "5a077de0-1893-40d0-a499-ee2e6e2258f1",
         "oracleId": "c77dc11e-d95d-4e7e-bb24-d971c179e9b0",
         "elo": 1261.0000000001721,
@@ -4814,6 +4862,12 @@
         "oracleId": "94f01534-7bb3-4b1e-8f77-e84156408686",
         "elo": 1287.8000000008346,
         "popularity": 5.1961827481164
+      },
+      {
+        "printingId": "847a175e-ead1-4596-baf3-5f7f57859e0b",
+        "oracleId": "749d2994-44e7-40d3-8630-7bebed239e9e",
+        "elo": 1210.4000000006797,
+        "popularity": 3.3797065131280184
       },
       {
         "printingId": "fc415011-9a26-4afc-9dda-11533a50ba96",
@@ -5128,6 +5182,12 @@
         "popularity": 7.26225872853293
       },
       {
+        "printingId": "b0e1427c-05cd-465b-be59-97ed6e39f7ba",
+        "oracleId": "376ee366-e082-402f-b4db-6592fcfcacd2",
+        "elo": 13526.700000091747,
+        "popularity": 6.117016868699927
+      },
+      {
         "printingId": "a87606cc-fbf0-4e2c-9798-f1c935d0573d",
         "oracleId": "8e7b079d-9ede-421c-bd2b-f9a5126a8e6f",
         "elo": 1288.6000000003096,
@@ -5164,22 +5224,10 @@
         "popularity": 2.020001127010803
       },
       {
-        "printingId": "847a175e-ead1-4596-baf3-5f7f57859e0b",
-        "oracleId": "749d2994-44e7-40d3-8630-7bebed239e9e",
-        "elo": 1210.4000000006797,
-        "popularity": 3.3797065131280184
-      },
-      {
         "printingId": "77772c4e-0c93-4bb5-85b5-08b4a6cb0e4f",
         "oracleId": "786b3657-b595-4b38-83f2-d40915e51e2b",
         "elo": 1282.9000000012827,
         "popularity": 8.541747463397009
-      },
-      {
-        "printingId": "1fa48620-4c3d-4f75-be1f-c12c4aa59f51",
-        "oracleId": "efe9c3e0-7315-408e-9903-9d25a681039b",
-        "elo": 1290.7000000012101,
-        "popularity": 7.130000696094908
       },
       {
         "printingId": "a04ed861-56dc-4b7f-aa62-f6232ecc1ef7",
@@ -5236,12 +5284,6 @@
         "popularity": 0.673886165279449
       },
       {
-        "printingId": "35aa1476-f16a-45ae-b91a-4ea7e5fb0ba8",
-        "oracleId": "fd74f8eb-0253-42dd-8277-186d4934da38",
-        "elo": 1530.9000000046262,
-        "popularity": 12.132602765154152
-      },
-      {
         "printingId": "bd8fa327-dd41-4737-8f19-2cf5eb1f7cdd",
         "oracleId": "5089ec1a-f881-4d55-af14-5d996171203b",
         "elo": 29560.699999481752,
@@ -5284,40 +5326,10 @@
         "popularity": 6.992770557174253
       },
       {
-        "printingId": "b0e1427c-05cd-465b-be59-97ed6e39f7ba",
-        "oracleId": "376ee366-e082-402f-b4db-6592fcfcacd2",
-        "elo": 13526.700000091747,
-        "popularity": 6.117016868699927
-      },
-      {
-        "printingId": "92bcd1ce-19b1-4d78-8b09-95242ca08d76",
-        "oracleId": "0677f49e-f8bf-4349-af52-2ccde9287c2e",
-        "elo": 14440.500000101962,
-        "popularity": 6.217121945883593
-      },
-      {
         "printingId": "6be9b1d5-9ab8-4adb-ba54-2c0117e842fa",
         "oracleId": "de2440de-e948-4811-903c-0bbe376ff64d",
         "elo": 1530.9000000018198,
         "popularity": 4.900176675517017
-      },
-      {
-        "printingId": "8ebe4be7-e12a-4596-a899-fbd5b152e879",
-        "oracleId": "824597b8-c89a-47ec-8526-7efc6e24ef0e",
-        "elo": 14278.400000104773,
-        "popularity": 6.137568242161474
-      },
-      {
-        "printingId": "8945585f-4773-493d-a0fe-d707db910b38",
-        "oracleId": "ed85fa82-e4fa-434b-92a8-36b6075708d1",
-        "elo": 14235.100000106815,
-        "popularity": 6.1982279412495895
-      },
-      {
-        "printingId": "82da0972-b17b-4600-9efd-e9430a0db04b",
-        "oracleId": "d5ed1233-df87-4b90-8918-13922ec95249",
-        "elo": 14672.00000022124,
-        "popularity": 6.3029736511503796
       },
       {
         "printingId": "adee0858-7529-4e41-b045-3bcc0a3c56a7",
@@ -5330,12 +5342,6 @@
         "oracleId": "08cb8a30-9cb4-4517-bee5-8848aa60d1a2",
         "elo": 1302.7000000004423,
         "popularity": 3.768193766304366
-      },
-      {
-        "printingId": "a54e8ce9-edd7-4ae7-9521-6fb6727cf63b",
-        "oracleId": "4b033a0a-c1ae-44d7-9662-72cbbfda024b",
-        "elo": 1355.700000000076,
-        "popularity": 4.637649453234024
       },
       {
         "printingId": "f45aec99-5774-4b68-b9bb-91f90000c97e",
@@ -5372,12 +5378,6 @@
         "oracleId": "736892cb-a34b-4bb9-b56c-e26e3db207a2",
         "elo": 1825.3999999842601,
         "popularity": 7.0275753025526795
-      },
-      {
-        "printingId": "97b9bab9-12ee-4da5-9d53-d0b82d9279cd",
-        "oracleId": "2c10cae2-951a-4f4f-94e4-8713b58d07dd",
-        "elo": 1285.8000000001546,
-        "popularity": 4.249162200057676
       },
       {
         "printingId": "d9aa3c4e-b5fb-4443-b838-a9ba7f4b9be7",
@@ -5444,66 +5444,6 @@
         "oracleId": "49136bdc-bc50-49a2-999a-1ef9c16ea130",
         "elo": 1419.7000000048106,
         "popularity": 11.43683933135112
-      },
-      {
-        "printingId": "b0b2fca3-d91c-4c6b-8fa1-5a1394cf06d7",
-        "oracleId": "6c326439-5620-4ec6-a56a-fe9c3d5d2a46",
-        "elo": 1282.7000000011058,
-        "popularity": 5.784217208129062
-      },
-      {
-        "printingId": "248189cc-6177-43c1-9886-a4fa910b9353",
-        "oracleId": "14d2979d-5728-42d7-a027-0eb1f754655d",
-        "elo": 1335.000000000876,
-        "popularity": 6.3168955493017505
-      },
-      {
-        "printingId": "6cf3d01e-be49-454c-aae5-bd9634578f01",
-        "oracleId": "8c34b089-aad1-476e-958a-3077bf1bbb51",
-        "elo": 1284.8000000006164,
-        "popularity": 5.485890819171117
-      },
-      {
-        "printingId": "d46eb14b-bb67-48a7-822a-b49de6bd2e86",
-        "oracleId": "4c0a0448-b9d6-43a0-8549-64066dac63f0",
-        "elo": 1317.1000000007252,
-        "popularity": 6.20684625915282
-      },
-      {
-        "printingId": "511a42f1-2ed0-4d8b-a081-ec39700e4121",
-        "oracleId": "b693c3de-2eaf-4850-b405-e79d00adefda",
-        "elo": 1222.4000000008173,
-        "popularity": 5.199497485771489
-      },
-      {
-        "printingId": "4116fe25-dc81-4a57-8ce6-4cbcfe28ae81",
-        "oracleId": "f2ccc9e8-8e92-4f8c-8728-8c748630e0dd",
-        "elo": 1262.100000000394,
-        "popularity": 4.600192917731526
-      },
-      {
-        "printingId": "91c9ba12-cf68-4107-a2ec-7ed12d0e7016",
-        "oracleId": "1d9aeaaa-66f6-41cb-9bac-162d6fd8662c",
-        "elo": 1329.4000000009698,
-        "popularity": 5.582681158699694
-      },
-      {
-        "printingId": "3513b1e1-aac7-457b-a4ae-e0ef4831ba5c",
-        "oracleId": "00e35322-1a9a-41e3-9ce1-359c8eaa3bc7",
-        "elo": 1382.6000000004888,
-        "popularity": 5.944319036869827
-      },
-      {
-        "printingId": "180c7ee7-09f1-453a-91fd-428c45a62e5f",
-        "oracleId": "42b8aa14-10bc-4bd6-88d9-4bb287eadd19",
-        "elo": 1256.3000000006416,
-        "popularity": 4.675768936267539
-      },
-      {
-        "printingId": "c1b2f232-b165-4582-ad0a-d2079249c8b9",
-        "oracleId": "e5fcc5d7-6a60-4a5b-9d02-6c30041a95b9",
-        "elo": 1222.0000000006623,
-        "popularity": 4.407938133736406
       },
       {
         "printingId": "3b6e5956-f795-451b-bb24-56462d1ced27",
@@ -5602,6 +5542,12 @@
         "popularity": 2.155573897103914
       },
       {
+        "printingId": "3513b1e1-aac7-457b-a4ae-e0ef4831ba5c",
+        "oracleId": "00e35322-1a9a-41e3-9ce1-359c8eaa3bc7",
+        "elo": 1382.6000000004888,
+        "popularity": 5.944319036869827
+      },
+      {
         "printingId": "5cb76266-ae50-4bbc-8f96-d98f309b02d3",
         "oracleId": "ae7604bb-4818-45a3-960c-cf3d83f15964",
         "elo": 1520.1000000026681,
@@ -5632,6 +5578,12 @@
         "popularity": 2.557651574666123
       },
       {
+        "printingId": "d46eb14b-bb67-48a7-822a-b49de6bd2e86",
+        "oracleId": "4c0a0448-b9d6-43a0-8549-64066dac63f0",
+        "elo": 1317.1000000007252,
+        "popularity": 6.20684625915282
+      },
+      {
         "printingId": "7f7e780e-fbc5-4dc0-b5c7-efcb8645c7c6",
         "oracleId": "3d038f7c-95fa-4b71-8f74-b9b4dd45cde0",
         "elo": 1254.7000000003482,
@@ -5654,6 +5606,12 @@
         "oracleId": "2cb1c213-b3f2-4433-8f89-6a3b4c3d2795",
         "elo": 1305.5000000010305,
         "popularity": 6.077240016838867
+      },
+      {
+        "printingId": "91c9ba12-cf68-4107-a2ec-7ed12d0e7016",
+        "oracleId": "1d9aeaaa-66f6-41cb-9bac-162d6fd8662c",
+        "elo": 1329.4000000009698,
+        "popularity": 5.582681158699694
       },
       {
         "printingId": "f6fb576e-a4a4-496b-b553-3f81cc651210",
@@ -5680,6 +5638,12 @@
         "popularity": 1.9278514201993484
       },
       {
+        "printingId": "4116fe25-dc81-4a57-8ce6-4cbcfe28ae81",
+        "oracleId": "f2ccc9e8-8e92-4f8c-8728-8c748630e0dd",
+        "elo": 1262.100000000394,
+        "popularity": 4.600192917731526
+      },
+      {
         "printingId": "dc124a43-e4f5-488f-8747-92736fab8e09",
         "oracleId": "5f0be4ce-898e-4849-ab8f-a85fb05c3017",
         "elo": 1176.6000000011395,
@@ -5704,6 +5668,12 @@
         "popularity": 3.797363457669143
       },
       {
+        "printingId": "c1b2f232-b165-4582-ad0a-d2079249c8b9",
+        "oracleId": "e5fcc5d7-6a60-4a5b-9d02-6c30041a95b9",
+        "elo": 1222.0000000006623,
+        "popularity": 4.407938133736406
+      },
+      {
         "printingId": "ba6c11e2-22e4-440a-ac29-cf2c3b1db7db",
         "oracleId": "393e5331-4456-4ba3-b410-bb630bb053db",
         "elo": 1239.600000001722,
@@ -5714,6 +5684,12 @@
         "oracleId": "3b1c6c1e-e298-4f45-8ab7-e0bb5358e11f",
         "elo": 1287.1000000007775,
         "popularity": 1.5400271145540185
+      },
+      {
+        "printingId": "511a42f1-2ed0-4d8b-a081-ec39700e4121",
+        "oracleId": "b693c3de-2eaf-4850-b405-e79d00adefda",
+        "elo": 1222.4000000008173,
+        "popularity": 5.199497485771489
       },
       {
         "printingId": "7b76dafa-46ed-4b22-908a-8932505d4f4c",
@@ -5728,16 +5704,16 @@
         "popularity": 9.593845195122032
       },
       {
-        "printingId": "84325b23-ab76-46af-8df5-9d645bc0263c",
-        "oracleId": "d48e1545-7997-45ed-83a1-aee45b3d3d20",
-        "elo": 1244.9999999996435,
-        "popularity": 8.520201668638936
-      },
-      {
         "printingId": "31b770cc-09e7-4c0b-b2a4-462ab4f7200d",
         "oracleId": "c7aecca5-2f67-4245-ab2d-e723d8b23a67",
         "elo": 1274.7999999995907,
         "popularity": 8.676325812193594
+      },
+      {
+        "printingId": "248189cc-6177-43c1-9886-a4fa910b9353",
+        "oracleId": "14d2979d-5728-42d7-a027-0eb1f754655d",
+        "elo": 1335.000000000876,
+        "popularity": 6.3168955493017505
       },
       {
         "printingId": "f1a21287-e244-4960-84fb-c4f6e5c346d9",
@@ -5782,6 +5758,12 @@
         "popularity": 0.92547475330065
       },
       {
+        "printingId": "180c7ee7-09f1-453a-91fd-428c45a62e5f",
+        "oracleId": "42b8aa14-10bc-4bd6-88d9-4bb287eadd19",
+        "elo": 1256.3000000006416,
+        "popularity": 4.675768936267539
+      },
+      {
         "printingId": "a15570c0-4210-4959-8584-987ec85f8283",
         "oracleId": "4507df69-6bf7-43d6-a609-c032b61835d5",
         "elo": 1256.8000000004527,
@@ -5806,6 +5788,12 @@
         "popularity": 12.234033737399853
       },
       {
+        "printingId": "b0b2fca3-d91c-4c6b-8fa1-5a1394cf06d7",
+        "oracleId": "6c326439-5620-4ec6-a56a-fe9c3d5d2a46",
+        "elo": 1282.7000000011058,
+        "popularity": 5.784217208129062
+      },
+      {
         "printingId": "e419cd0b-2449-4cc5-9ead-b9e45e271700",
         "oracleId": "3407eb6e-b74d-4159-a801-d7163937953c",
         "elo": 1428.2999999999806,
@@ -5822,6 +5810,12 @@
         "oracleId": "6107f9aa-3373-4166-b4b8-a26fd6d69c72",
         "elo": 1254.2000000008857,
         "popularity": 3.59151824928816
+      },
+      {
+        "printingId": "6cf3d01e-be49-454c-aae5-bd9634578f01",
+        "oracleId": "8c34b089-aad1-476e-958a-3077bf1bbb51",
+        "elo": 1284.8000000006164,
+        "popularity": 5.485890819171117
       },
       {
         "printingId": "94b67489-5eb0-4406-9bf3-27e50dc632eb",
@@ -5870,6 +5864,12 @@
         "oracleId": "abbcb153-0763-44c6-964f-b4ff0eb64257",
         "elo": 1581.0000000019947,
         "popularity": 3.5616856103923653
+      },
+      {
+        "printingId": "1fa48620-4c3d-4f75-be1f-c12c4aa59f51",
+        "oracleId": "efe9c3e0-7315-408e-9903-9d25a681039b",
+        "elo": 1290.7000000012101,
+        "popularity": 7.130000696094908
       },
       {
         "printingId": "f6929259-2903-4f6f-9b06-42048fd55c6a",
