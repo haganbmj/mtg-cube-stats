@@ -132,10 +132,13 @@
         />
         <el-table-column
             prop="releaseDate"
+            column-key="releaseDate"
             label="Release Date"
             min-width="100"
             max-width="150"
+            :filters="filterableYears"
             sortable="custom"
+            filterable
         />
         <!-- <el-table-column prop="rarity" label="Rarity" min-width="75" max-width="100" sortable /> -->
         <!-- <el-table-column prop="oracleTextWordCount" label="Word Count" min-width="75" max-width="100" sortable /> -->
@@ -187,6 +190,18 @@ const filterableSets = computed(() => {
         });
     });
     return Array.from(sets).sort();
+});
+
+const filterableYears = computed(() => {
+    const years = new Set<number>();
+    Object.values(props.loadedCubes).forEach((cube: any) => {
+        cube.cards.forEach((card: any) => {
+            if (card.releaseYear) {
+                years.add(card.releaseYear);
+            }
+        });
+    });
+    return Array.from(years).sort((a, b) => b - a).map(year => { return { text: year.toString(), value: year.toString() }; });
 });
 
 const filterableCubes = computed(() => {
@@ -295,7 +310,8 @@ const filteredRows = computed(() => {
                 }
                 if (key === 'effectiveColors') {
                     const rowColors = row.effectiveColors.map((c: string) => c.toLowerCase());
-                    const matches = values.some(value => rowColors.includes(value.toLowerCase()));
+                    const matches = values.every((color: string) => rowColors.includes(color)) && values.length === rowColors.length;
+                    // const matches = values.some(value => rowColors.includes(value.toLowerCase()));
                     if (!matches) {
                         return false;
                     }
@@ -312,6 +328,11 @@ const filteredRows = computed(() => {
                     const cubeKeys = row.cubes;
                     const matches = values.some(value => cubeKeys.includes(value));
                     if (!matches) {
+                        return false;
+                    }
+                } else if (key === 'releaseDate') {
+                    const releaseYear = row.releaseYear ? row.releaseYear.toString() : '';
+                    if (!values.includes(releaseYear)) {
                         return false;
                     }
                 } else {
