@@ -57,6 +57,7 @@ export function enrichCubeContents(cards) {
             rarity: scryfallCard?.rarity ?? undefined,
             releaseDate: scryfallCard?.releaseDate ?? undefined,
             releaseYear: scryfallCard?.releaseDate ? parseInt(scryfallCard.releaseDate.split('-')[0]) : undefined,
+            setCode: scryfallCard?.setCode?.toUpperCase() ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,

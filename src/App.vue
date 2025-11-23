@@ -188,52 +188,8 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
-                            <!-- <el-row>
-                                <el-col :span="12">
-                                    <el-text tag="i">Total Unique Cards: {{ cardsTableData.length }}</el-text>
-                                </el-col>
-                                <el-col :span="12">
-                                    <el-text>TODO: Make this page useful (filters, column controls, performance via pagination(?), etc)</el-text>
-                                </el-col>
-                            </el-row>
-                            <el-table
-                            v-if="false"
-                                :data="cardsTableData"
-                                :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
-                                :preserve-expanded-content="false"
-                                style="width: 100%"
-                                table-layout="auto"
-                                stripe
-                            >
-                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable>
-                                    <template #default="{ row }">
-                                        <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column prop="typeLine" label="Type Line" min-width="150" max-width="300" show-overflow-tooltip sortable />
-
-                                <el-table-column prop="cubeCount" label="Cube Count" min-width="150" max-width="300" sortable />
-                                <el-table-column prop="count" label="Total Count" min-width="75" max-width="100" sortable />
-
-                                <el-table-column prop="releaseDate" label="Release Date" min-width="100" max-width="150" sortable />
-                                <el-table-column prop="rarity" label="Rarity" min-width="75" max-width="100" sortable />
-                                <el-table-column prop="oracleTextWordCount" label="Word Count" min-width="75" max-width="100" sortable />
-                                <el-table-column prop="isUniversesBeyond" label="Universes Beyond" min-width="50" max-width="75" sortable />
-                                <el-table-column prop="isSupplementalProduct" label="Supplemental Product" min-width="50" max-width="75" sortable />
-                            </el-table>
-
-                            <el-table-v2
-                                v-if="true"
-                                :columns="cardsTableColumnsV2"
-                                :data="cardsTableDataV2"
-                                :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
-                                :width="1000"
-                                :height="500"
-                            >
-                            </el-table-v2> -->
-
-                            <div style="width: 100%; max-height: 500px; overflow-y: scroll;">
-                                <CardSummaryTable :data="cardsTableData" />
+                            <div style="width: 100%;">
+                                <CardSummaryTable :data="cardsTableData" :loadedCubes="loadedCubes" />
                             </div>
                         </el-tab-pane>
 
