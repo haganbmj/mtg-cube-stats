@@ -21,33 +21,34 @@
                 </el-row>
             </el-header>
             <el-main>
-                <div id="inputs">
-                    <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
-                        <el-form-item>
-                            <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." style="width: 200px;">
-                                <el-option
-                                    v-for="option in presetComparisonsSelect"
-                                    :key="option.value"
-                                    :label="option.label"
-                                    :value="option.value"
-                                />
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item>OR</el-form-item>
-                        <el-form-item style="margin-right: 6px;">
-                            <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
-                            <input type="submit" style="display: none;" />
-                        </el-form-item>
-                    </el-form>
-                </div>
                 <div id="contents">
                     <el-tabs tab-position="top" v-model="activeTab">
-                        <el-tab-pane label="Overview" name="overview" :lazy="true">
+                        <el-tab-pane :label="'Cubes (' + Object.keys(loadedCubes).length + ')'" name="overview" :lazy="true">
+                            <div id="inputs">
+                                <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
+                                    <el-form-item>
+                                        <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." style="width: 200px;">
+                                            <el-option
+                                                v-for="option in presetComparisonsSelect"
+                                                :key="option.value"
+                                                :label="option.label"
+                                                :value="option.value"
+                                            />
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item>OR</el-form-item>
+                                    <el-form-item style="margin-right: 6px;">
+                                        <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
+                                        <input type="submit" style="display: none;" />
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+
                             <el-space direction="horizontal" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 1em;">
-                                <el-text tag="i">Loaded Cubes: {{ Object.keys(loadedCubes).length }}</el-text>
+                                <!-- <el-text tag="i">Loaded Cubes: {{ Object.keys(loadedCubes).length }}</el-text> -->
                                 <el-form :inline="true" style="justify-content: flex-end; display: flex;">
                                     <el-form-item label="Exclude Lands:">
                                         <el-switch v-model="config.excludeLands" active-color="#13ce66" inactive-color="#ff4949" />

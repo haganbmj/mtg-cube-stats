@@ -1,25 +1,33 @@
 <template>
-    <el-space direction="horizontal" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 1em;">
-        <el-input
-            v-model="searchInput"
-            @change="onSearchChange"
-            class="responsive-input"
-            placeholder="Search cards..."
-        >
-            <template #prefix>
-                <el-icon class="el-input__icon"><search /></el-icon>
-            </template>
-        </el-input>
+    <el-row
+        direction="horizontal"
+    >
+        <el-col :span="12" :xs="24">
+            <el-space>
+                <el-input
+                    v-model="searchInput"
+                    @change="onSearchChange"
+                    class="responsive-input"
+                    placeholder="Search cards..."
+                >
+                    <template #prefix>
+                        <el-icon class="el-input__icon"><search /></el-icon>
+                    </template>
+                </el-input>
 
-        <el-button @click="resetFilters">Reset Filters</el-button>
-    </el-space>
+                <el-button @click="resetFilters">Reset Filters</el-button>
+            </el-space>
+        </el-col>
+        <el-col :span="12" :xs="24" style="text-align: right;">
+            <el-text tag="i">Filtered to {{ searchedRows.length }} / {{ sortedRows.length }} Cards</el-text>
+        </el-col>
+    </el-row>
 
     <el-pagination
-        style="margin-top: 16px; text-align: right;"
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
-        layout="sizes, total, ->, prev, pager, next, jumper"
+        layout="->, prev, pager, next, sizes"
         :total="searchedRows.length"
     />
 
@@ -43,11 +51,14 @@
 
         <el-table-column
             prop="cubeCount"
+            column-key="cubes"
             label="Cubes"
             min-width="75"
             max-width="100"
             :align="'center'"
+            :filters="filterableCubes"
             sortable="custom"
+            filterable
         />
         <!-- <el-table-column prop="count" label="Total Count" min-width="75" max-width="100" sortable /> -->
 
@@ -133,11 +144,10 @@
     </el-table>
 
     <el-pagination
-        style="margin-top: 16px; text-align: right;"
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
-        layout="sizes, total, ->, prev, pager, next, jumper"
+        layout="->, prev, pager, next, sizes"
         :total="searchedRows.length"
     />
 </template>
@@ -177,6 +187,16 @@ const filterableSets = computed(() => {
         });
     });
     return Array.from(sets).sort();
+});
+
+const filterableCubes = computed(() => {
+    return Object.entries(props.loadedCubes).map(([key, v]) => {
+        return { text: v.name, value: key };
+    }).sort((a, b) => {
+        if (a.text < b.text) return -1;
+        if (a.text > b.text) return 1;
+        return 0;
+    });
 });
 
 const onFilterChange = (filters: Record<string, string[]>) => {
@@ -243,12 +263,7 @@ const sortedRows = computed(() => {
     });
 
     if (!activeSort.value) {
-        return alphaSorted.map((card, index) => {
-            return {
-                ...card,
-                index: index + 1, // Attach an index value to each row, using the full list rather than the visible one.
-            };
-        });
+        return alphaSorted;
     }
 
     // TODO: Manually sort color in WUBRG order.
@@ -266,11 +281,6 @@ const sortedRows = computed(() => {
             if (a[sortKey] < b[sortKey]) return 1;
             return 0;
         }
-    }).map((card, index) => {
-        return {
-            ...card,
-            index: index + 1, // Attach an index value to each row, using the full list rather than the visible one.
-        };
     });
 });
 
@@ -284,25 +294,27 @@ const filteredRows = computed(() => {
                     continue;
                 }
                 if (key === 'effectiveColors') {
-                    // Special handling for effectiveColors filter
                     const rowColors = row.effectiveColors.map((c: string) => c.toLowerCase());
                     const matches = values.some(value => rowColors.includes(value.toLowerCase()));
                     if (!matches) {
                         return false;
                     }
                 } else if (key === 'typeLine') {
-                    // Special handling for typeLine filter
                     const matches = values.some(value => row.typeLine.includes(value));
                     if (!matches) {
                         return false;
                     }
                 } else if (key === 'setCode') {
-                    // Special handling for setCode filter
                     if (!values.includes(row.setCode?.toUpperCase())) {
                         return false;
                     }
+                } else if (key === 'cubes') {
+                    const cubeKeys = row.cubes;
+                    const matches = values.some(value => cubeKeys.includes(value));
+                    if (!matches) {
+                        return false;
+                    }
                 } else {
-                    // General case
                     if (!values.includes(row[key])) {
                         return false;
                     }
@@ -323,7 +335,24 @@ const searchedRows = computed(() => {
     });
 });
 
+const numberedRows = computed(() => {
+    return searchedRows.value.map((row, index) => {
+        return {
+            ...row,
+            index: index + 1,
+        };
+    });
+});
+
 const visibleRows = computed(() => {
-    return searchedRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+    return numberedRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 </script>
+
+<style lang="scss">
+.el-pagination {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    text-align: right;
+}
+</style>
