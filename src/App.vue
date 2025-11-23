@@ -21,33 +21,34 @@
                 </el-row>
             </el-header>
             <el-main>
-                <div id="inputs">
-                    <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
-                        <el-form-item>
-                            <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." style="width: 200px;">
-                                <el-option
-                                    v-for="option in presetComparisonsSelect"
-                                    :key="option.value"
-                                    :label="option.label"
-                                    :value="option.value"
-                                />
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item>OR</el-form-item>
-                        <el-form-item style="margin-right: 6px;">
-                            <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
-                            <input type="submit" style="display: none;" />
-                        </el-form-item>
-                    </el-form>
-                </div>
                 <div id="contents">
                     <el-tabs tab-position="top" v-model="activeTab">
-                        <el-tab-pane label="Overview" name="overview" :lazy="true">
+                        <el-tab-pane :label="'Cubes (' + Object.keys(loadedCubes).length + ')'" name="overview" :lazy="true">
+                            <div id="inputs">
+                                <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
+                                    <el-form-item>
+                                        <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." style="width: 200px;">
+                                            <el-option
+                                                v-for="option in presetComparisonsSelect"
+                                                :key="option.value"
+                                                :label="option.label"
+                                                :value="option.value"
+                                            />
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item>OR</el-form-item>
+                                    <el-form-item style="margin-right: 6px;">
+                                        <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
+                                        <input type="submit" style="display: none;" />
+                                    </el-form-item>
+                                </el-form>
+                            </div>
+
                             <el-space direction="horizontal" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 1em;">
-                                <el-text tag="i">Loaded Cubes: {{ Object.keys(loadedCubes).length }}</el-text>
+                                <!-- <el-text tag="i">Loaded Cubes: {{ Object.keys(loadedCubes).length }}</el-text> -->
                                 <el-form :inline="true" style="justify-content: flex-end; display: flex;">
                                     <el-form-item label="Exclude Lands:">
                                         <el-switch v-model="config.excludeLands" active-color="#13ce66" inactive-color="#ff4949" />
@@ -187,50 +188,10 @@
                             </el-table>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Cards" name="cards" :lazy="true" v-if="false">
-                            <el-row>
-                                <el-col :span="12">
-                                    <el-text tag="i">Total Unique Cards: {{ cardsTableData.length }}</el-text>
-                                </el-col>
-                                <el-col :span="12">
-                                    <el-text>TODO: Make this page useful (filters, column controls, performance via pagination(?), etc)</el-text>
-                                </el-col>
-                            </el-row>
-                            <el-table
-                            v-if="false"
-                                :data="cardsTableData"
-                                :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
-                                :preserve-expanded-content="false"
-                                style="width: 100%"
-                                table-layout="auto"
-                                stripe
-                            >
-                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable>
-                                    <template #default="{ row }">
-                                        <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column prop="typeLine" label="Type Line" min-width="150" max-width="300" show-overflow-tooltip sortable />
-
-                                <el-table-column prop="cubeCount" label="Cube Count" min-width="150" max-width="300" sortable />
-                                <el-table-column prop="count" label="Total Count" min-width="75" max-width="100" sortable />
-
-                                <el-table-column prop="releaseDate" label="Release Date" min-width="100" max-width="150" sortable />
-                                <el-table-column prop="rarity" label="Rarity" min-width="75" max-width="100" sortable />
-                                <el-table-column prop="oracleTextWordCount" label="Word Count" min-width="75" max-width="100" sortable />
-                                <el-table-column prop="isUniversesBeyond" label="Universes Beyond" min-width="50" max-width="75" sortable />
-                                <el-table-column prop="isSupplementalProduct" label="Supplemental Product" min-width="50" max-width="75" sortable />
-                            </el-table>
-
-                            <el-table-v2
-                                v-if="true"
-                                :columns="cardsTableColumnsV2"
-                                :data="cardsTableDataV2"
-                                :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
-                                :width="1000"
-                                :height="500"
-                            >
-                            </el-table-v2>
+                        <el-tab-pane label="Cards" name="cards" :lazy="true">
+                            <div style="width: 100%;">
+                                <CardSummaryTable :data="cardsTableData" :loadedCubes="loadedCubes" />
+                            </div>
                         </el-tab-pane>
 
                         <el-tab-pane label="Keywords" name="keywords" :lazy="true" v-if="false">
@@ -309,6 +270,7 @@ import ReleaseYearChart from './components/ReleaseYearChart.vue';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
 import LegalityDistribution from './components/LegalityDistribution.vue';
+import CardSummaryTable from './components/CardSummaryTable.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 
@@ -421,7 +383,6 @@ const cardsTableDataV2 = [
 ];
 
 const cardsTableData = computed(() => {
-    console.log("cardsTableData recomputed");
     if (Object.keys(loadedCubes).length === 0) {
         return [];
     }
@@ -548,5 +509,10 @@ body {
         width: unset;
         margin: 0 auto;
     }
+}
+
+/* Fix for el-table-v2 scroll issue on mobile - https://github.com/element-plus/element-plus/issues/11775 */
+.el-table-v2__body > div:nth-child(1) {
+    overflow: auto !important;
 }
 </style>

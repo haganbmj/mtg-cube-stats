@@ -9,6 +9,7 @@ registerTheme('darkbmj', darkbmjTheme);
 
 import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css'
+import 'mana-font/css/mana.css';
 
 import App from './App.vue';
 
