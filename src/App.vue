@@ -187,8 +187,8 @@
                             </el-table>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Cards" name="cards" :lazy="true" v-if="false">
-                            <el-row>
+                        <el-tab-pane label="Cards" name="cards" :lazy="true">
+                            <!-- <el-row>
                                 <el-col :span="12">
                                     <el-text tag="i">Total Unique Cards: {{ cardsTableData.length }}</el-text>
                                 </el-col>
@@ -230,7 +230,11 @@
                                 :width="1000"
                                 :height="500"
                             >
-                            </el-table-v2>
+                            </el-table-v2> -->
+
+                            <div style="width: 100%; max-height: 500px; overflow-y: scroll;">
+                                <CardSummaryTable :data="cardsTableData" />
+                            </div>
                         </el-tab-pane>
 
                         <el-tab-pane label="Keywords" name="keywords" :lazy="true" v-if="false">
@@ -309,6 +313,7 @@ import ReleaseYearChart from './components/ReleaseYearChart.vue';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
 import LegalityDistribution from './components/LegalityDistribution.vue';
+import CardSummaryTable from './components/CardSummaryTable.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 
@@ -548,5 +553,10 @@ body {
         width: unset;
         margin: 0 auto;
     }
+}
+
+/* Fix for el-table-v2 scroll issue on mobile - https://github.com/element-plus/element-plus/issues/11775 */
+.el-table-v2__body > div:nth-child(1) {
+    overflow: auto !important;
 }
 </style>
