@@ -31,7 +31,7 @@
         :total="searchedRows.length"
     />
 
-    <el-table v-if="!usev2"
+    <el-table
         ref="cardSummaryTableRef"
         :data="visibleRows"
         :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
@@ -224,7 +224,6 @@ const props = defineProps({
 });
 
 const cardSummaryTableRef = ref<TableInstance>();
-const usev2 = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(50);
 const searchInput = ref('');

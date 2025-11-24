@@ -150,6 +150,8 @@
                                 <el-table-column prop="category" label="Category" min-width="100" max-width="125" sortable v-if="config.visibleColumns.includes('category')" />
                                 <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
                                 <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
+                                <el-table-column prop="stats.newCards" label="New Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.newCards')" />
+                                <el-table-column prop="stats.percentages.newCards" label="% New Cards" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.newCards')" />
                                 <el-table-column prop="stats.landCards" label="Lands" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.landCards')" />
                                 <el-table-column prop="stats.percentages.landCards" label="% Lands" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.landCards')" />
                                 <el-table-column prop="stats.averageNonLandCmc" label="Avg. Non-Land MV" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageNonLandCmc')" />
@@ -280,7 +282,18 @@ const presetComparisons = {
 // TODO: Bind this to localStorage.
 const config = reactive({
     excludeLands: false,
-    visibleColumns: ['rowNumber', 'name', 'owner', 'stats.totalCards', 'stats.percentages.landCards', 'stats.averageNonLandCmc', 'stats.averageWordCount', 'stats.averageWordCountMinusParen', 'stats.uniqueKeywords' ],
+    visibleColumns: [
+        'rowNumber',
+        'name',
+        'owner',
+        'stats.totalCards',
+        'stats.percentages.newCards',
+        'stats.percentages.landCards',
+        'stats.averageNonLandCmc',
+        'stats.averageWordCountMinusParen',
+        'stats.uniqueKeywords',
+        'stats.percentages.makesTokens',
+    ],
 });
 
 const addCubeForm = reactive({
@@ -317,6 +330,8 @@ const columnOptions = ref([
             { value: 'category', label: "Category" },
             { value: 'categoryPrefixes', label: "Category Prefixes" },
             { value: 'stats.totalCards', label: "Total Cards" },
+            { value: 'stats.newCards', label: "\"New\" Cards (Last 12 Months)" },
+            { value: 'stats.percentages.newCards', label: "% \"New\" Cards (Last 12 Months)" },
             { value: 'stats.landCards', label: "Lands" },
             { value: 'stats.percentages.landCards', label: "% Lands" },
             { value: 'stats.averageNonLandCmc', label: "Avg. Non-Land MV" },
@@ -357,24 +372,6 @@ const overviewTableData = computed(() => {
         }
     });
 });
-
-const cardsTableColumnsV2 = [
-    { key: 'name', title: 'Name', dataKey: 'name', width: 150, fixed: 'left', },
-    { key: 'typeLine', title: 'Type Line', dataKey: 'typeLine', width: 200 },
-    { key: 'cubeCount', title: 'Cube Count', dataKey: 'cubeCount', width: 100 },
-    { key: 'count', title: 'Total Count', dataKey: 'count', width: 100 },
-    { key: 'releaseDate', title: 'Release Date', dataKey: 'releaseDate', width: 150 },
-    { key: 'rarity', title: 'Rarity', dataKey: 'rarity', width: 100 },
-    { key: 'oracleTextWordCount', title: 'Word Count', dataKey: 'oracleTextWordCount', width: 100 },
-    { key: 'isUniversesBeyond', title: 'Universes Beyond', dataKey: 'isUniversesBeyond', width: 75 },
-    { key: 'isSupplementalProduct', title: 'Supplemental Product', dataKey: 'isSupplementalProduct', width: 75 },
-];
-
-const cardsTableDataV2 = [
-    { name: 'Test', typeLine: 'Creature — Human Wizard', cubeCount: 3, count: 5, releaseDate: '2021-09-03', rarity: 'R', oracleTextWordCount: 12, isUniversesBeyond: false, isSupplementalProduct: false },
-    { name: 'Test 2', typeLine: 'Creature — Human Wizard', cubeCount: 2, count: 4, releaseDate: '2021-09-03', rarity: 'R', oracleTextWordCount: 12, isUniversesBeyond: false, isSupplementalProduct: false },
-    { name: 'Test 3', typeLine: 'Creature — Human Wizard', cubeCount: 1, count: 3, releaseDate: '2021-09-03', rarity: 'R', oracleTextWordCount: 12, isUniversesBeyond: false, isSupplementalProduct: false },
-];
 
 const cardsTableData = computed(() => {
     if (Object.keys(loadedCubes).length === 0) {
@@ -507,10 +504,5 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
         width: unset;
         margin: 0 auto;
     }
-}
-
-/* Fix for el-table-v2 scroll issue on mobile - https://github.com/element-plus/element-plus/issues/11775 */
-.el-table-v2__body > div:nth-child(1) {
-    overflow: auto !important;
 }
 </style>
