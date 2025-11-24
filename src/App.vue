@@ -132,7 +132,10 @@
                                 </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
                                     <template #default="{ row }">
-                                        <el-image :src="row.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
+                                        <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
+                                        <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id, row.shortId)">
+                                            <el-icon><Delete /></el-icon>
+                                        </el-button>
                                     </template>
                                 </el-table-column>
                                 <el-table-column fixed type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
@@ -173,14 +176,6 @@
                                 <el-table-column prop="stats.percentages.makesTokens" label="% Makes Tokens" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.makesTokens')" />
                                 <el-table-column prop="stats.cardCounts.initiative" label="Initiative" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.initiative')" />
                                 <el-table-column prop="stats.percentages.initiative" label="% Initiative" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.initiative')" />
-
-                                <el-table-column label="" min-width="60">
-                                    <template #default="scope">
-                                        <el-button size="small" type="danger" @click="removeCube(scope.row.id)">
-                                            <el-icon><Delete /></el-icon>
-                                        </el-button>
-                                    </template>
-                                </el-table-column>
                             </el-table>
                         </el-tab-pane>
 
@@ -422,8 +417,13 @@ const submitAddCubeForm = async () => {
     addCubeForm.loading = false;
 };
 
-const removeCube = (cubeId: string) => {
+/**
+ * FIXME: Make this betterer.
+ *  Doing a terrible job currently with these multiple IDs, and I think mutating the reactive object is done improperly.
+ */
+const removeCube = (cubeId: string, shortId: string) => {
     delete loadedCubes[cubeId];
+    delete loadedCubes[shortId];
 };
 
 const toFixed2 = (row, column) => {
@@ -504,5 +504,18 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
         width: unset;
         margin: 0 auto;
     }
+}
+
+.remove-button {
+    position: absolute;
+    visibility: hidden;
+    top: 20%;
+    right: 25%;
+    width: 50%;
+    height: 50%;
+}
+
+.remove-thumbnail:hover + .remove-button, .remove-button:hover {
+    visibility: visible;
 }
 </style>
