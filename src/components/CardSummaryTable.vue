@@ -146,8 +146,10 @@
             label="MV"
             min-width="75"
             max-width="100"
+            :filters="filterableManaValues"
             :align="'center'"
             sortable="custom"
+            filterable
         />
         <el-table-column
             prop="typeLine"
@@ -248,6 +250,18 @@ const expandedCubeList = (cubeKeys: string[]) => {
         return 0;
     });
 };
+
+const filterableManaValues = computed(() => {
+    const cmcs = new Set<number>();
+    Object.values(props.loadedCubes).forEach((cube: any) => {
+        cube.cards.forEach((card: any) => {
+            if (card.cmc !== undefined && card.cmc !== null) {
+                cmcs.add(card.cmc);
+            }
+        });
+    });
+    return Array.from(cmcs).sort((a, b) => a - b).map(cmc => { return { text: cmc.toString(), value: cmc.toString() }; });
+});
 
 const filterableSets = computed(() => {
     const sets = new Set<string>();
@@ -382,6 +396,11 @@ const filteredRows = computed(() => {
                     const matches = values.every((color: string) => rowColors.includes(color)) && values.length === rowColors.length;
                     // const matches = values.some(value => rowColors.includes(value.toLowerCase()));
                     if (!matches) {
+                        return false;
+                    }
+                } else if (key === 'cmc') {
+                    const cmcString = row.cmc !== undefined && row.cmc !== null ? row.cmc.toString() : '';
+                    if (!values.includes(cmcString)) {
                         return false;
                     }
                 } else if (key === 'typeLine') {
