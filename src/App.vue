@@ -88,52 +88,46 @@
                                 stripe
                             >
                                 <el-table-column fixed width="25" type="expand">
-                                    <!-- <template #expand="props">
-                                        <el-image :src="props.row.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                                    </template> -->
                                     <template #default="props">
                                         <el-row>
-                                            <el-col :span="16">
+                                            <el-col :span="14" :xs="24" :sm="24" :md="24" :xl="16">
                                                 <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
-                                                    <el-col :span="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
                                                         <div style="height: 300px;">
                                                             <ManaValueChart class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
                                                         <div style="height: 300px;">
                                                             <ReleaseYearChart class="chart" :releaseYearDistribution="props.row.stats?.releaseYearDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
                                                         <div style="height: 300px;">
                                                             <ColorIdentityDistribution class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
                                                         <div style="height: 300px;">
                                                             <TypeLineDistribution class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
                                                         <div style="height: 300px;">
                                                             <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
                                                         <div style="height: 300px;">
                                                             <LegalityDistribution class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                 </el-row>
                                             </el-col>
-                                            <el-col :span="8">
+                                            <el-col :span="10" :xs="24" :sm="24" :md="24" :xl="8">
                                                 <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.filteredCards || 1" />
                                             </el-col>
                                         </el-row>
-
-                                        <!-- <pre>{{ { ...props.row, cards: undefined } }}</pre> -->
-                                         <!-- <pre>{{ { ...props.row } }}</pre> -->
                                     </template>
                                 </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
@@ -498,6 +492,10 @@ body {
 
 .el-table .cell {
     line-height: 20px;
+}
+
+td.el-table__cell.el-table__expanded-cell > div.el-row {
+    max-width: 95vw;
 }
 
 .el-select-group__title {
