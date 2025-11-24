@@ -73,11 +73,13 @@ export function enrichCubeContents(cards) {
 export function analyzeCubeContents(cards, excludeLands = false) {
     const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
     const filteredCards = excludeLands ? nonLandCards : cards;
+    const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
 
     const firstOrderStats = {
         totalCards: cards.length,
         totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
         landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
+        newCards: cards.filter(card => card.releaseDate >= newDateCutoff).length,
 
         filteredCards: filteredCards.length,
         averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
@@ -183,6 +185,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
     const thirdOrderStats = {
         ...secondOrderStats,
         percentages: {
+            newCards: (secondOrderStats.newCards / secondOrderStats.totalCards),
             landCards: (secondOrderStats.landCards / secondOrderStats.totalCards),
             makesTokens: (secondOrderStats.cardCounts.makesTokens / secondOrderStats.filteredCards),
             universesBeyond: (secondOrderStats.cardCounts.universesBeyond / secondOrderStats.filteredCards),
