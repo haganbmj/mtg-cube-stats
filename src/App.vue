@@ -494,6 +494,10 @@ body {
     line-height: 20px;
 }
 
+td.el-table__cell.el-table__expanded-cell > div.el-row {
+    max-width: 95vw;
+}
+
 .el-select-group__title {
     padding: 0 10px;
 }

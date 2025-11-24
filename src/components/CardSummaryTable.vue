@@ -45,43 +45,49 @@
         <el-table-column fixed width="25" type="expand">
             <template #default="props">
                 <el-row class="expanded-content" :gutter="20" justify="space-around">
-                    <el-col :span="8">
-                        <el-image
-                            :src="`https://api.scryfall.com/cards/${props.row.setCode?.toLowerCase()}/${props.row.collectorNumber}?format=image`"
-                            fit="contain"
-                            :alt="props.row.name"
-                            class="card-image"
-                        />
+                    <el-col :span="8" :xs="24" :sm="24" :md="8" :xl="8">
+                        <div style="text-align:center">
+                            <el-image
+                                :src="`https://api.scryfall.com/cards/${props.row.setCode?.toLowerCase()}/${props.row.collectorNumber}?format=image`"
+                                fit="contain"
+                                :alt="props.row.name"
+                                class="card-image"
+                            />
+                        </div>
                     </el-col>
-                    <el-col :span="8">
-                        <h3>Included In:</h3>
-                        <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
-                            <div v-if="cube.included">
-                                <el-row direction="horizontal">
-                                    <el-col :span="16">
-                                        <el-link :href="`https://cubecobra.com/cube/overview/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
-                                    </el-col>
-                                    <el-col :span="8">
-                                        <el-text tag="i">({{ cube.size }} Cards)</el-text>
-                                    </el-col>
-                                </el-row>
-                            </div>
-                        </template>
-                    </el-col>
-                    <el-col :span="8">
-                        <h3>Not Included In:</h3>
-                        <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
-                            <div v-if="!cube.included">
-                                <el-row direction="horizontal">
-                                    <el-col :span="16">
-                                        <el-link :href="`https://cubecobra.com/cube/overview/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
-                                    </el-col>
-                                    <el-col :span="8">
-                                        <el-text tag="i">({{ cube.size }} Cards)</el-text>
-                                    </el-col>
-                                </el-row>
-                            </div>
-                        </template>
+                    <el-col :span="16" :xs="24" :sm="24" :md="16" :xl="16">
+                        <el-row direction="horizontal">
+                            <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
+                                <h3>Included In:</h3>
+                                <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
+                                    <div v-if="cube.included">
+                                        <el-row direction="horizontal">
+                                            <el-col :span="16">
+                                                <el-link :href="`https://cubecobra.com/cube/overview/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                            </el-col>
+                                            <el-col :span="8">
+                                                <el-text tag="i">({{ cube.size }} Cards)</el-text>
+                                            </el-col>
+                                        </el-row>
+                                    </div>
+                                </template>
+                            </el-col>
+                            <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
+                                <h3>Not Included In:</h3>
+                                <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
+                                    <div v-if="!cube.included">
+                                        <el-row direction="horizontal">
+                                            <el-col :span="16">
+                                                <el-link :href="`https://cubecobra.com/cube/overview/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                            </el-col>
+                                            <el-col :span="8">
+                                                <el-text tag="i">({{ cube.size }} Cards)</el-text>
+                                            </el-col>
+                                        </el-row>
+                                    </div>
+                                </template>
+                            </el-col>
+                        </el-row>
                     </el-col>
                 </el-row>
             </template>
@@ -445,6 +451,5 @@ const visibleRows = computed(() => {
     max-width: 400px;
     height: auto;
     border-radius: 4%;
-    top: 16px;
 }
 </style>
