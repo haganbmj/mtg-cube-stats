@@ -199,16 +199,18 @@
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
                             <div style="width: 100%;">
-                                <CardSummaryTable :data="cardsTableData" :loadedCubes="loadedCubes" />
+                                <CardSummaryTable :loadedCubes="loadedCubes" />
+                            </div>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="Statistics" name="statistics" :lazy="true">
+                            <div style="width: 100%;">
+                                <StatisticsTab :loadedCubes="overviewTableData" />
                             </div>
                         </el-tab-pane>
 
                         <el-tab-pane label="Keywords" name="keywords" :lazy="true" v-if="false">
                             <p>Big old TODO.</p>
-                        </el-tab-pane>
-
-                        <el-tab-pane label="Statistics" name="statistics" :lazy="true" v-if="false">
-                            <p>Big old TODO. Probably just the same stats as per-cube, but at the aggregate level?</p>
                         </el-tab-pane>
 
                         <el-tab-pane label="Similarity Matrix" name="similarity-matrix" :lazy="true" v-if="false">
@@ -250,6 +252,7 @@ import darkbmjTheme from './echarts/theme.mjs';
 import LegalityDistribution from './components/LegalityDistribution.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
+import StatisticsTab from './tabs/StatisticsTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 
@@ -372,34 +375,6 @@ const overviewTableData = computed(() => {
             stats: analyzeCubeContents(cube.cards, config.excludeLands),
         }
     });
-});
-
-const cardsTableData = computed(() => {
-    if (Object.keys(loadedCubes).length === 0) {
-        return [];
-    }
-    const allCards = Object.keys(loadedCubes).reduce((allCards, key) => {
-        loadedCubes[key].cards.forEach(card => {
-            if (allCards[card.oracleId] === undefined) {
-                allCards[card.oracleId] = {
-                    ...card,
-                    count: 0,
-                    cubes: [], // TODO:
-                    cubeCount: 0,
-                };
-            }
-
-            allCards[card.oracleId].count += 1;
-            if (!allCards[card.oracleId].cubes.includes(key)) {
-                allCards[card.oracleId].cubes.push(key);
-                allCards[card.oracleId].cubeCount += 1;
-            }
-        });
-
-        return allCards;
-    }, {});
-
-    return Object.values(allCards);
 });
 
 const submitAddCubeForm = async () => {

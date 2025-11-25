@@ -226,10 +226,6 @@ import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
-    data: {
-        type: Object,
-        required: true,
-    },
     loadedCubes: {
         type: Object,
         required: true,
