@@ -241,6 +241,11 @@
                     </el-tabs>
                 </div>
             </el-main>
+            <el-footer>
+                <div style="text-align: center;">
+                    <el-text tag="small">{{ randomFooter() }}</el-text>
+                </div>
+            </el-footer>
         </el-container>
     </div>
 </template>
@@ -249,6 +254,7 @@
 import { ref, reactive, computed, watch, provide, onMounted } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
+import randomFooter from './util/RandomFooter.mjs';
 import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
