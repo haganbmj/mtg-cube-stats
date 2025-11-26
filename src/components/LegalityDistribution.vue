@@ -10,6 +10,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 
 import VChart from 'vue-echarts';
+import { capitalizeFirstLetter } from '../util/HelperFunctions.mjs';
 
 use([
     CanvasRenderer,
@@ -26,10 +27,13 @@ const props = defineProps({
     }
 });
 
+// TODO: Define a fixed set of options and assign each a consistent color.
+const formats = ['Standard', 'Pioneer', 'Modern', 'Legacy', 'Vintage', 'Cube'];
+
 const chartOptions = computed(() => {
     const data = Object.entries(props.legalityDistribution).map(([key, value]) => {
-        return { name: key, value };
-    });
+        return { name: capitalizeFirstLetter(key), value };
+    }).sort((a, b) => formats.indexOf(a.name) - formats.indexOf(b.name));
 
     return {
         title: {
