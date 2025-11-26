@@ -257,6 +257,7 @@ import { getNestedProp } from './util/HelperFunctions.mjs';
 import randomFooter from './util/RandomFooter.mjs';
 import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
+import { bindStorage } from './util/VueLocalStorage.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
 import ColorIdentityDistribution from './components/ColorIdentityDistribution.vue';
 import TypeLineDistribution from './components/TypeLineDistribution.vue';
@@ -281,8 +282,7 @@ const presetComparisons = {
     "Peasant Cubes": () => import("../preloads/cubes-peasant.json"),
 };
 
-// TODO: Bind this to localStorage.
-const config = reactive({
+const defaultConfig = {
     excludeLands: false,
     visibleColumns: [
         'rowNumber',
@@ -296,6 +296,18 @@ const config = reactive({
         'stats.uniqueKeywords',
         'stats.percentages.makesTokens',
     ],
+};
+
+const config = bindStorage('appConfig', (v) => {
+    if (v == undefined || v === null) {
+        return defaultConfig;
+    } else {
+        // FIXME: I'd like a more robust way to do this, but it's fine with only two props.
+        return {
+            excludeLands: v.excludeLands === true,
+            visibleColumns: Array.isArray(v.visibleColumns) ? v.visibleColumns : defaultConfig.visibleColumns,
+        }
+    }
 });
 
 const addCubeForm = reactive({
