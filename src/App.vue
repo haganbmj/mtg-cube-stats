@@ -246,10 +246,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, provide } from 'vue';
+import { ref, reactive, computed, watch, provide, onMounted } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
-import { remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
+import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
 import ColorIdentityDistribution from './components/ColorIdentityDistribution.vue';
@@ -408,7 +408,7 @@ const submitAddCubeForm = async () => {
     if (!(cubeId in loadedCubes)) {
         try {
             const rawCube = await getCubeData(cubeId);
-            loadedCubes[cubeId] = remapCube(rawCube);
+            loadedCubes[cubeId] = await remapCube(rawCube);
         } catch (e) {
             console.error("Error loading cube:", e);
         }
@@ -442,6 +442,12 @@ function getBuildTimestamp() {
 function getBuildSha() {
     return import.meta.env.VITE_BUILD_SHA || 'local';
 }
+
+onMounted(async () => {
+    addCubeForm.loading = true;
+    await initScryfall();
+    addCubeForm.loading = false;
+});
 </script>
 
 <style lang="scss">

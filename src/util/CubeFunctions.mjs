@@ -1,4 +1,12 @@
-import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
+// import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
+const scryfallLoad = () => import('../../data/cards-minimized.json');
+var scryfall = null;
+
+export async function initScryfall() {
+    console.time('Loading Scryfall card data.');
+    scryfall = (await scryfallLoad());
+    console.timeEnd('Loading Scryfall card data.');
+}
 
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
