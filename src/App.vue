@@ -267,6 +267,7 @@ registerTheme('darkbmj', darkbmjTheme);
 
 provide(THEME_KEY, "darkbmj");
 
+// FIXME: Move these somewhere else and dynamically include/exclude them based on the ENV.
 const presetComparisons = {
     "WotC MTGO/Arena": () => import("../preloads/cubes-wotc.json"),
     "CubeCon 2025": () => import("../preloads/cubes-cubecon2025.json"),
