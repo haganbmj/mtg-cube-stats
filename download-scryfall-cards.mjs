@@ -225,7 +225,7 @@ const minimized = stripped.sort((a, b) => {
                 pioneer: card.legalities?.pioneer === 'legal' ? true : undefined,
                 modern: card.legalities?.modern === 'legal' ? true : undefined,
                 legacy: card.legalities?.legacy === 'legal' ? true : undefined,
-                vintage: card.legalities?.vintage === 'legal' ? true : undefined,
+                vintage: (card.legalities?.vintage === 'legal' || card.legalities?.vintage === 'restricted') ? true : undefined,
             },
 
             urlFront: card.imageUris.front,
