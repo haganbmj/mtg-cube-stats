@@ -30,6 +30,14 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Restore Cached Preloads
+        uses: actions/cache/restore@v4.3.0
+        with:
+          path: |
+            preloads/
+          key: cube-preloads-${{ github.run_id }}
+          restore-keys: |
+            cube-preloads-
       - name: Restore Cached Card List
         uses: actions/cache/restore@v4.3.0
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
@@ -44,9 +52,8 @@ jobs:
       - run: echo "VITE_BUILD_SHA=$GITHUB_SHA" >> $GITHUB_ENV
       - run: npm ci
       - run: npm run cards
+      - run: npm run preload
       - run: VITE_BUILD_SHA=$GITHUB_SHA npm run build
-      # - run: npm run lint
-      # - run: npm run test
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v4
@@ -61,6 +68,12 @@ jobs:
             data/default-cards.json
             data/flavor-words.json
           key: scryfall-json-${{ github.run_id }}
+      - name: Save Cached Preloads
+        uses: actions/cache/save@v4.3.0
+        with:
+          path: |
+            preloads/
+          key: cube-preloads-${{ github.run_id }}
 
   deploy:
     needs: build
