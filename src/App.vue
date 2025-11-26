@@ -197,15 +197,15 @@
                             </el-table>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Cards" name="cards" :lazy="true">
-                            <div style="width: 100%;">
-                                <CardSummaryTable :loadedCubes="loadedCubes" />
-                            </div>
-                        </el-tab-pane>
-
                         <el-tab-pane label="Statistics" name="statistics" :lazy="true">
                             <div style="width: 100%;">
                                 <StatisticsTab :loadedCubes="overviewTableData" />
+                            </div>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="Cards" name="cards" :lazy="true">
+                            <div style="width: 100%;">
+                                <CardSummaryTable :loadedCubes="loadedCubes" />
                             </div>
                         </el-tab-pane>
 
