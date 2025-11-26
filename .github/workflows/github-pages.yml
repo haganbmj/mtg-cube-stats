@@ -70,7 +70,6 @@ jobs:
           key: scryfall-json-${{ github.run_id }}
       - name: Save Cached Preloads
         uses: actions/cache/save@v4.3.0
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         with:
           path: |
             preloads/
