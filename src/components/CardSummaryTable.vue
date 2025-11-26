@@ -193,6 +193,14 @@
             sortable="custom"
             filterable
         />
+        <el-table-column
+            prop="minPriceUsd"
+            label="Min Price (USD)"
+            min-width="75" max-width="100"
+            :formatter="(row) => row.minPriceUsd ? `$${row.minPriceUsd.toFixed(2)}` : 'N/A'"
+            sortable="custom"
+        />
+
         <!-- <el-table-column prop="rarity" label="Rarity" min-width="75" max-width="100" sortable /> -->
         <!-- <el-table-column prop="oracleTextWordCount" label="Word Count" min-width="75" max-width="100" sortable /> -->
         <!-- <el-table-column prop="isUniversesBeyond" label="Universes Beyond" min-width="50" max-width="75" sortable /> -->

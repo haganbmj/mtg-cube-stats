@@ -71,6 +71,7 @@ export function enrichCubeContents(cards) {
             keywords: scryfallCard?.keywords ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
+            minPriceUsd: scryfallCard?.minPriceUsd ?? null,
         };
     });
 }
@@ -174,6 +175,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             });
             return keywords;
         }, {}),
+        totalMinPriceUsd: filteredCards.reduce((sum, c) => sum + (c.minPriceUsd ?? 0), 0),
     }
 
     const secondOrderStats = {

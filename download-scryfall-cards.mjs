@@ -148,6 +148,7 @@ const stripped = cards.filter(card => {
             front: `https://api.scryfall.com/cards/${card.set}/${card.collector_number}?format=image&face=${card.reversible_face ?? 'front'}`,
             back: cardBackUri,
         },
+        priceUsd: card.prices?.usd ? parseFloat(card.prices.usd) : undefined,
     };
 }).flatMap(card => {
     // Create two entries for any adventure/dfc to allow for both naming conventions.
@@ -186,7 +187,7 @@ const minimized = stripped.sort((a, b) => {
 }).reduce((store, card) => {
     try {
         // And take that and tighten it down as much as possible.
-        // const name = card.name.toLowerCase();
+        // FIXME: Trim this model even more. Should strip everything I'm not using to reduce the bundle size.
         const key = card.oracleId;
         store.cards[key] = store.cards[key] || [];
         store.cards[key].push({
@@ -230,6 +231,7 @@ const minimized = stripped.sort((a, b) => {
 
             urlFront: card.imageUris.front,
             urlBack: card.imageUris.back,
+            priceUsd: card.priceUsd,
         });
 
         store.sets[card.set.code] = card.set.name;
@@ -247,6 +249,13 @@ const best = Object.keys(minimized.cards).reduce((store, key) => {
     store[key] = card.filter(printing => {
         return !printing.isDigital && !printing.isPromo && !printing.isToken;
     })?.[0] ?? card[0];
+
+    // FIXME: Should this store off which printing is the cheapest?
+    const minPriceUsd = Math.min(...card.map(c => c.priceUsd ?? Number.MAX_SAFE_INTEGER));
+    if (minPriceUsd != Number.MAX_SAFE_INTEGER) {
+        store[key].minPriceUsd = minPriceUsd;
+    }
+
     return store;
 }, {});
 

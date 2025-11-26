@@ -160,6 +160,7 @@
                                 <el-table-column prop="stats.averageNonLandCmc" label="Avg. Non-Land MV" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageNonLandCmc')" />
                                 <el-table-column prop="stats.averageElo" label="Avg. Card Elo" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageElo')" />
                                 <el-table-column prop="stats.averagePopularity" label="Avg. Card Popularity" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averagePopularity')" />
+                                <el-table-column prop="stats.totalMinPriceUsd" label="Min Price (USD)" min-width="75" max-width="100" sortable :formatter="toPriceUsd" v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')" />
 
                                 <el-table-column prop="stats.cardCounts.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')" />
                                 <el-table-column prop="stats.percentages.universesBeyond" label="% Universes Beyond" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.universesBeyond')" />
@@ -351,6 +352,7 @@ const columnOptions = ref([
             { value: 'stats.averageNonLandCmc', label: "Avg. Non-Land MV" },
             { value: 'stats.averageElo', label: "Avg. Card Elo" },
             { value: 'stats.averagePopularity', label: "Avg. Card Popularity" },
+            { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)" },
         ],
     },
     {
@@ -447,6 +449,10 @@ const removeCube = (cubeId: string, shortId: string) => {
 
 const toFixed2 = (row, column) => {
     return (getNestedProp(row, column.property) ?? 0).toFixed(2);
+}
+
+const toPriceUsd = (row, column) => {
+    return '$' + (getNestedProp(row, column.property) ?? 0).toFixed(2);
 }
 
 const percentageFormatter = (row, column) => {
