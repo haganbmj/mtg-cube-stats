@@ -3,9 +3,9 @@ const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
 
 export async function initScryfall() {
-    console.time('Loading Scryfall card data.');
+    console.time('Loading Scryfall card data');
     scryfall = (await scryfallLoad());
-    console.timeEnd('Loading Scryfall card data.');
+    console.timeEnd('Loading Scryfall card data');
 }
 
 /**
