@@ -27,57 +27,74 @@
                             <div id="inputs">
                                 <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
                                     <el-form-item>
-                                        <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." style="width: 200px;">
-                                            <el-option
-                                                v-for="option in presetComparisonsSelect"
-                                                :key="option.value"
-                                                :label="option.label"
-                                                :value="option.value"
-                                            />
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item>OR</el-form-item>
-                                    <el-form-item style="margin-right: 6px;">
-                                        <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
-                                    </el-form-item>
-                                    <el-form-item>
-                                        <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
-                                        <input type="submit" style="display: none;" />
+                                        <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
+                                            <el-form-item style="min-width: 200px; width: 100%;">
+                                                <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." >
+                                                    <el-option
+                                                        v-for="option in presetComparisonsSelect"
+                                                        :key="option.value"
+                                                        :label="option.label"
+                                                        :value="option.value"
+                                                    />
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="2" :xs="0" :sm="0" :md="2" :lg="2" style="text-align: center;">
+                                            <span class="text-gray-500">OR</span>
+                                        </el-col>
+                                        <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11" style="display: flex; align-items: center;">
+                                            <el-row :gutter="10">
+                                                <el-col :span="20">
+                                                    <el-form-item style="min-width: 200px; width: 100%;">
+                                                        <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                                                    </el-form-item>
+                                                </el-col>
+                                                <el-col :span="4">
+                                                    <el-form-item>
+                                                        <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
+                                                        <input type="submit" style="display: none;" />
+                                                    </el-form-item>
+                                                </el-col>
+                                            </el-row>
+                                        </el-col>
                                     </el-form-item>
                                 </el-form>
                             </div>
-
-                            <el-space direction="horizontal" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 1em;">
-                                <!-- <el-text tag="i">Loaded Cubes: {{ Object.keys(loadedCubes).length }}</el-text> -->
-                                <el-form :inline="true" style="justify-content: flex-end; display: flex;">
-                                    <el-form-item label="Exclude Lands:">
-                                        <el-switch v-model="config.excludeLands" active-color="#13ce66" inactive-color="#ff4949" />
-                                    </el-form-item>
-                                    <el-form-item label="Columns:">
-                                        <el-select
-                                            v-model="config.visibleColumns"
-                                            multiple
-                                            collapse-tags
-                                            label="Visible Columns"
-                                            placeholder="Select columns"
-                                            style="width:250px;"
-                                        >
-                                            <el-option-group
-                                                v-for="group in columnOptions"
-                                                :key="group.label"
-                                                :label="group.label"
-                                            >
-                                                <el-option
-                                                    v-for="item in group.options"
-                                                    :key="item.value"
-                                                    :label="item.label"
-                                                    :value="item.value"
-                                                />
-                                            </el-option-group>
-                                        </el-select>
+                            <div id="config">
+                                <el-form :inline="true">
+                                    <el-form-item>
+                                        <el-col :span="10" :xs="24" :sm="24" :md="10" :lg="10">
+                                            <el-form-item label="Exclude Lands:">
+                                                <el-switch v-model="config.excludeLands" active-color="#13ce66" inactive-color="#ff4949" />
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="14" :xs="24" :sm="24" :md="14" :lg="14">
+                                            <el-form-item label="Columns:" style="width: 100%;">
+                                                <el-select
+                                                    v-model="config.visibleColumns"
+                                                    multiple
+                                                    collapse-tags
+                                                    label="Visible Columns"
+                                                    placeholder="Select columns"
+                                                >
+                                                    <el-option-group
+                                                        v-for="group in columnOptions"
+                                                        :key="group.label"
+                                                        :label="group.label"
+                                                    >
+                                                        <el-option
+                                                            v-for="item in group.options"
+                                                            :key="item.value"
+                                                            :label="item.label"
+                                                            :value="item.value"
+                                                        />
+                                                    </el-option-group>
+                                                </el-select>
+                                            </el-form-item>
+                                        </el-col>
                                     </el-form-item>
                                 </el-form>
-                            </el-space>
+                            </div>
 
                             <el-table
                                 :data="overviewTableData"
@@ -87,7 +104,7 @@
                                 table-layout="auto"
                                 stripe
                             >
-                                <el-table-column fixed width="25" type="expand">
+                                <el-table-column :fixed="!isMobile" width="25" type="expand">
                                     <template #default="props">
                                         <el-row>
                                             <el-col :span="14" :xs="24" :sm="24" :md="24" :xl="16">
@@ -138,7 +155,7 @@
                                         </el-button>
                                     </template>
                                 </el-table-column>
-                                <el-table-column fixed type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
+                                <el-table-column type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
                                 <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
                                         <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
@@ -298,6 +315,10 @@ const defaultConfig = {
         'stats.percentages.makesTokens',
     ],
 };
+
+const isMobile = computed(() => {
+  return screen.width <= 760;
+});
 
 const config = bindStorage('appConfig', (v) => {
     if (v == undefined || v === null) {

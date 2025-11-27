@@ -1,6 +1,7 @@
 <template>
     <el-row
         direction="horizontal"
+        :gutter="20"
     >
         <el-col :span="12" :xs="24">
             <el-space>
@@ -18,7 +19,7 @@
                 <el-button @click="resetFilters">Reset Filters</el-button>
             </el-space>
         </el-col>
-        <el-col :span="12" :xs="24" style="text-align: right;">
+        <el-col :span="12" :xs="24" class="filtered-count">
             <el-text tag="i">Filtered to {{ searchedRows.length }} / {{ sortedRows.length }} Cards</el-text>
         </el-col>
     </el-row>
@@ -27,7 +28,8 @@
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
-        layout="->, prev, pager, next, sizes"
+        :pager-count="5"
+        :layout="paginationLayout"
         :total="searchedRows.length"
     />
 
@@ -42,7 +44,7 @@
         table-layout="auto"
         stripe
     >
-        <el-table-column fixed width="25" type="expand">
+        <el-table-column :fixed="!isMobile" width="25" type="expand">
             <template #default="props">
                 <el-row class="expanded-content" :gutter="20" justify="space-around">
                     <el-col :span="8" :xs="24" :sm="24" :md="8" :xl="8">
@@ -93,7 +95,7 @@
             </template>
         </el-table-column>
 
-        <el-table-column fixed prop="index" label="#" width="50" />
+        <el-table-column :fixed="!isMobile" prop="index" label="#" width="50" />
         <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable="custom">
             <template #default="{ row }">
                 <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
@@ -211,7 +213,8 @@
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
-        layout="->, prev, pager, next, sizes"
+        :pager-count="5"
+        :layout="paginationLayout"
         :total="searchedRows.length"
     />
 </template>
@@ -239,6 +242,14 @@ const pageSize = ref(50);
 const searchInput = ref('');
 const activeFilters = ref({});
 const activeSort = ref<SortBy | null>({ prop: 'cubeCount', order: 'descending' });
+
+const isMobile = computed(() => {
+  return screen.width <= 760;
+});
+
+const paginationLayout = computed(() => {
+    return isMobile.value ? 'prev, pager, next' : '->, prev, pager, next, sizes';
+});
 
 const expandedCubeList = (cubeKeys: string[]) => {
     const resp = Object.entries(props.loadedCubes).map(([key, cube]) => {
@@ -467,9 +478,18 @@ const visibleRows = computed(() => {
 </script>
 
 <style lang="scss">
+.filtered-count {
+    text-align: right;
+    line-height: 2em;
+
+    @media (max-width: 760px) {
+        text-align: left;
+        margin-top: 8px;
+    }
+}
+
 .el-pagination {
-    margin-top: 16px;
-    margin-bottom: 16px;
+    margin: 16px auto;
     text-align: right;
 }
 
