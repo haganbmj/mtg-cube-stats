@@ -29,7 +29,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-vue": "^10.5.1",
     "happy-dom": "^20.0.10",
-    "sass": "^1.93.3",
+    "sass": "^1.94.2",
     "vite": "7.1.12",
     "vitest": "^4.0.8",
     "vue-loader": "^17.4.2"
