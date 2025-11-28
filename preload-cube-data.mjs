@@ -6,7 +6,7 @@ import { getCubeData } from './src/util/CubeCobra.mjs';
 const batches = [
     // {
     //     name: 'haganbmj',
-    //     staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 7), // 7 day
+    //     staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 days
     //     cubes: [
     //         '5d5f69612af66a30f9bb9b10', // Peasant
     //         '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // Kuleshov
@@ -15,7 +15,7 @@ const batches = [
     // },
     {
         name: 'wotc',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 7), // 7 days
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 dayss
         cubes: [
             '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
             'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
@@ -23,7 +23,7 @@ const batches = [
     },
     {
         name: 'cubecobra-top100',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 7), // 7 days
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 dayss
         cubes: [
             // let a = ''; document.querySelectorAll("div.max-w-full .p-4 a[href*='/cube/overview']").forEach(i => a += `${i.href}\n`); console.log(a);
             '5d71a20e91560b5ef2891e6e', // Chimaera - Chimaera540
@@ -130,7 +130,7 @@ const batches = [
     },
     {
         name: 'peasant',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 7), // 7 day
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 days
         cubes: [
             // Combination of Peasant Discord + a few others that I follow.
             '5d5f69612af66a30f9bb9b10', // haganbmj - The Ham Sandwich
