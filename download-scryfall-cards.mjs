@@ -150,17 +150,6 @@ const stripped = cards.filter(card => {
         },
         priceUsd: card.prices?.usd ? parseFloat(card.prices.usd) : undefined,
     };
-}).flatMap(card => {
-    // Create two entries for any adventure/dfc to allow for both naming conventions.
-    // A more compact option would be to create some alias map, but this is simpler.
-    if (card.name.includes(" // ")) {
-        return [
-            card,
-            { ...card, name: card.name.split(" // ")[0] },
-        ]
-    }
-
-    return [ card ];
 });
 
 // fs.writeFileSync('./out.json', JSON.stringify(stripped, null, 2));
