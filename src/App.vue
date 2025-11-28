@@ -514,6 +514,10 @@ html.dark {
     --el-color-primary-dark-9: #3f3db6;
 }
 
+.el-button:hover {
+    color: var(--el-text-color-primary);
+}
+
 .el-header {
     padding-top: 1em;
     padding-bottom: 1em;
