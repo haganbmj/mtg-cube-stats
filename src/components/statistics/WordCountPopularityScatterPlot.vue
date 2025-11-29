@@ -34,7 +34,7 @@ const chartOptions = computed(() => {
     const series = Object.values(props.loadedCubes).map(cube => {
         return {
             name: cube.name,
-            data: [[cube.stats.uniqueKeywords, cube.stats.averageWordCountMinusParen]],
+            data: [[cube.stats.averagePopularity, cube.stats.averageWordCountMinusParen]],
             type: 'scatter',
             symbolSize: 10,
             itemStyle: {
@@ -53,7 +53,7 @@ const chartOptions = computed(() => {
 
     return {
         title: {
-            text: 'Unique Keywords vs Avg. Word Count',
+            text: 'Avg. Popularity vs Avg. Word Count',
             subtext: 'excluding reminder text',
             subtextStyle: {
                 fontStyle: 'italic',
@@ -63,11 +63,11 @@ const chartOptions = computed(() => {
         tooltip: {
             trigger: 'item',
             formatter: function(params: any) {
-                return `<b>${params.seriesName}</b><br/>Unique Keywords: ${params.value[0]}<br/>Avg. Word Count: ${params.value[1].toFixed(2)}`;
+                return `<b>${params.seriesName}</b><br/>Avg. Popularity: ${params.value[0]}<br/>Avg. Word Count: ${params.value[1].toFixed(2)}`;
             },
         },
         xAxis: {
-            name: 'Unique Keywords',
+            name: 'Avg. Popularity',
             nameLocation: 'middle',
             type: 'value',
             min: xMin,

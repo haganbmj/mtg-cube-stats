@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref } from 'vue';
 import { use } from 'echarts/core';
 import { ScatterChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
