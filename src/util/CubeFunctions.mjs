@@ -1,4 +1,6 @@
-// import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
+import { useMemoize } from '@vueuse/core';
+import { cosineSimilarity } from './SimiliartyFunctions.mjs';
+
 const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
 
@@ -11,9 +13,6 @@ export async function initScryfall() {
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
- *
- * @param {object} cube
- * @returns {object}
  */
 export function remapCube(cube, enrich = true) {
     const cards = cube.cards.mainboard.map(card => {
@@ -41,11 +40,8 @@ export function remapCube(cube, enrich = true) {
 
 /**
  * FIXME: This needs to handle Custom Cards on CubeCobra. I think those just have cardId="custom-card"
- * @param {object[]} cards
- * @returns {object[]}
  */
 export function enrichCubeContents(cards) {
-    console.log(`Enriching cube...`);
     return cards.map(card => {
         const scryfallCard = scryfall.cards[card.oracleId];
         if (!scryfallCard) {
@@ -76,9 +72,6 @@ export function enrichCubeContents(cards) {
     });
 }
 
-/**
- * @param {object[]} cards
- */
 export function analyzeCubeContents(cards, excludeLands = false) {
     const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
     const filteredCards = excludeLands ? nonLandCards : cards;
@@ -226,4 +219,18 @@ export function analyzeCubeContents(cards, excludeLands = false) {
     return thirdOrderStats;
 }
 
-export default { remapCube, analyzeCubeContents }
+export const determineCosineSimilarityScore = useMemoize(
+    (cubeA, cubeB) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
+    {
+        getKey: (cubeA, cubeB) => `${cubeA.id}|${cubeB.id}`,
+    },
+)
+
+function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
+    const cardsA = cubeA.cards.map(c => c.oracleId);
+    const cardsB = cubeB.cards.map(c => c.oracleId);
+
+    return cosineSimilarity(cardsA, cardsB);
+}
+
+// export { determineCosineSimilarityScore };

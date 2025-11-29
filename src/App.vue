@@ -169,6 +169,7 @@
 
                                 <el-table-column prop="category" label="Category" min-width="100" max-width="125" sortable v-if="config.visibleColumns.includes('category')" />
                                 <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
+                                <el-table-column prop="avgSimilarityScore" label="Avg. Cosine Similarity" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('avgSimilarityScore')" />
                                 <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
                                 <el-table-column prop="stats.newCards" label="New Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.newCards')" />
                                 <el-table-column prop="stats.percentages.newCards" label="% New Cards" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.newCards')" />
@@ -237,7 +238,7 @@ import { ref, reactive, computed, watch, provide, onMounted } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import randomFooter from './util/RandomFooter.mjs';
-import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
+import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents, determineSimilarityScores, determineCosineSimilarityScore } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import { bindStorage } from './util/VueLocalStorage.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
@@ -332,6 +333,7 @@ const columnOptions = ref([
             { value: 'owner', label: "Owner" },
             { value: 'category', label: "Category" },
             { value: 'categoryPrefixes', label: "Category Prefixes" },
+            { value: 'avgSimilarityScore', label: "Avg. Cosine Similarity" },
             { value: 'stats.totalCards', label: "Total Cards" },
             { value: 'stats.newCards', label: "\"New\" Cards (Last 12 Months)" },
             { value: 'stats.percentages.newCards', label: "% \"New\" Cards (Last 12 Months)" },
@@ -368,11 +370,41 @@ const columnOptions = ref([
     },
 ]);
 
+const similarityMatrix = computed(() => {
+    const result = {};
+    let calcs = 0;
+
+    Object.entries(loadedCubes).forEach(([id, cube]) => {
+        Object.entries(loadedCubes).forEach(([otherId, otherCube]) => {
+            if (id !== otherId && result[id]?.[otherId] === undefined) {
+                calcs += 1;
+                const score = determineCosineSimilarityScore(cube, otherCube);
+                if (!(id in result)) {
+                    result[id] = {};
+                }
+
+                if (!(otherId in result)) {
+                    result[otherId] = {};
+                }
+
+                result[id][otherId] = score;
+                result[otherId][id] = score;
+            }
+        });
+    });
+
+    return result;
+});
+
+// FIXME: Is there a way to indicate that this should wait until after similarityMatrix is recomputed?
 const overviewTableData = computed(() => {
     return Object.entries(loadedCubes).map(([id, cube]) => {
+        const similarityScores = similarityMatrix.value[id] || {};
         return {
             ...cube,
             stats: analyzeCubeContents(cube.cards, config.excludeLands),
+            similarityScores: similarityScores,
+            avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c, 0) / Object.values(similarityScores).length : 0,
         }
     });
 });
