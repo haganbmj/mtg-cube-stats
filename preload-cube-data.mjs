@@ -168,6 +168,11 @@ const batches = [
             '5e8c9f60a0c28578ee03de2d', // JankDiverGaming - Jank Diver Peasant Cube
             '5da9ff1872d31f3e1c1377ff', // CorakTM - Corak's Peasant Cube
             '5d5ed579726e4277c7bb1e32', // calibretto - Calibretto's Peasant Cube
+            'ea07f680-99f4-4a80-83ed-084a6d3b6121', // Leelue - 80th Percentile Peasant
+            '5ed29a43d44a3c102e14500a', // AmazIsCool - Amaz's Peasant+ Cube
+            '5d72c6cad13edd6540aff5f3', // cr4cksh07 - Mad Peasant
+            '5d498d7797ca265764f113bf', // DammitJoel - Peasant Synergy Cube
+            '5f76cacbdebf310362b90289', // ZeldaExplorer - ZeldaExplorer's Peasant Cube
         ],
     },
     {
