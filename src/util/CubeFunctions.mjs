@@ -94,6 +94,24 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
+        cmcByStrictColor: nonLandCards.reduce((sums, c) => {
+            let colorKey = '';
+            if (c.colorIdentity.length === 0) {
+                colorKey = 'C';
+            } else if (c.colorIdentity.length === 1) {
+                colorKey = c.colorIdentity[0];
+            } else {
+                colorKey = 'M';
+            }
+
+            if (!sums[colorKey]) {
+                sums[colorKey] = { totalCmc: 0, count: 0 };
+            }
+
+            sums[colorKey].totalCmc += (c.cmc ?? 0);
+            sums[colorKey].count += 1;
+            return sums;
+        }, {}),
         colorDistribution: {
             W: filteredCards.filter(c => c.colorIdentity.includes('W')).length,
             U: filteredCards.filter(c => c.colorIdentity.includes('U')).length,
