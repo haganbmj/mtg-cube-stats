@@ -106,43 +106,48 @@
                             >
                                 <el-table-column :fixed="!isMobile" width="25" type="expand">
                                     <template #default="props">
-                                        <el-row>
-                                            <el-col :span="14" :xs="24" :sm="24" :md="24" :xl="16">
+                                        <el-row :gutter="10">
+                                            <el-col :span="24">
                                                 <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <ManaValueChart class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <ReleaseYearChart class="chart" :releaseYearDistribution="props.row.stats?.releaseYearDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <ColorIdentityDistribution class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <TypeLineDistribution class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <LegalityDistribution class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                 </el-row>
                                             </el-col>
-                                            <el-col :span="10" :xs="24" :sm="24" :md="24" :xl="8">
+                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
+                                                <h3>Keywords</h3>
                                                 <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.filteredCards || 1" />
+                                            </el-col>
+                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
+                                                <h3>Similar Cubes</h3>
+                                                <SimilarCubesTable :similarityMatrix="similarityMatrix" :loadedCubes="overviewTableData" :cubeId="props.row.id" />
                                             </el-col>
                                         </el-row>
                                     </template>
@@ -169,6 +174,7 @@
 
                                 <el-table-column prop="category" label="Category" min-width="100" max-width="125" sortable v-if="config.visibleColumns.includes('category')" />
                                 <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
+                                <el-table-column prop="avgSimilarityScore" label="Avg. Cosine Similarity" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('avgSimilarityScore')" />
                                 <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
                                 <el-table-column prop="stats.newCards" label="New Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.newCards')" />
                                 <el-table-column prop="stats.percentages.newCards" label="% New Cards" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.newCards')" />
@@ -197,18 +203,20 @@
                             </el-table>
                         </el-tab-pane>
 
+                        <el-tab-pane label="Statistics" name="statistics" :lazy="true">
+                            <div style="width: 100%;">
+                                <StatisticsTab :loadedCubes="overviewTableData" />
+                            </div>
+                        </el-tab-pane>
+
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
                             <div style="width: 100%;">
-                                <CardSummaryTable :data="cardsTableData" :loadedCubes="loadedCubes" />
+                                <CardSummaryTable :loadedCubes="loadedCubes" />
                             </div>
                         </el-tab-pane>
 
                         <el-tab-pane label="Keywords" name="keywords" :lazy="true" v-if="false">
                             <p>Big old TODO.</p>
-                        </el-tab-pane>
-
-                        <el-tab-pane label="Statistics" name="statistics" :lazy="true" v-if="false">
-                            <p>Big old TODO. Probably just the same stats as per-cube, but at the aggregate level?</p>
                         </el-tab-pane>
 
                         <el-tab-pane label="Similarity Matrix" name="similarity-matrix" :lazy="true" v-if="false">
@@ -235,7 +243,7 @@ import { ref, reactive, computed, watch, provide, onMounted } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import randomFooter from './util/RandomFooter.mjs';
-import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents } from './util/CubeFunctions.mjs';
+import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents, determineSimilarityScores, determineCosineSimilarityScore } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import { bindStorage } from './util/VueLocalStorage.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
@@ -250,6 +258,8 @@ import darkbmjTheme from './echarts/theme.mjs';
 import LegalityDistribution from './components/LegalityDistribution.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
+import StatisticsTab from './tabs/StatisticsTab.vue';
+import SimilarCubesTable from './components/SimilarCubesTable.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 
@@ -329,6 +339,7 @@ const columnOptions = ref([
             { value: 'owner', label: "Owner" },
             { value: 'category', label: "Category" },
             { value: 'categoryPrefixes', label: "Category Prefixes" },
+            { value: 'avgSimilarityScore', label: "Avg. Cosine Similarity" },
             { value: 'stats.totalCards', label: "Total Cards" },
             { value: 'stats.newCards', label: "\"New\" Cards (Last 12 Months)" },
             { value: 'stats.percentages.newCards', label: "% \"New\" Cards (Last 12 Months)" },
@@ -365,41 +376,43 @@ const columnOptions = ref([
     },
 ]);
 
+const similarityMatrix = computed(() => {
+    const result = {};
+    let calcs = 0;
+
+    Object.entries(loadedCubes).forEach(([id, cube]) => {
+        Object.entries(loadedCubes).forEach(([otherId, otherCube]) => {
+            if (id !== otherId && result[id]?.[otherId] === undefined) {
+                calcs += 1;
+                const score = determineCosineSimilarityScore(cube, otherCube);
+                if (!(id in result)) {
+                    result[id] = {};
+                }
+
+                if (!(otherId in result)) {
+                    result[otherId] = {};
+                }
+
+                result[id][otherId] = score;
+                result[otherId][id] = score;
+            }
+        });
+    });
+
+    return result;
+});
+
+// FIXME: Is there a way to indicate that this should wait until after similarityMatrix is recomputed?
 const overviewTableData = computed(() => {
     return Object.entries(loadedCubes).map(([id, cube]) => {
+        const similarityScores = similarityMatrix.value[id] || {};
         return {
             ...cube,
             stats: analyzeCubeContents(cube.cards, config.excludeLands),
+            similarityScores: similarityScores,
+            avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c.cosineSimilarity, 0) / Object.values(similarityScores).length : 0,
         }
     });
-});
-
-const cardsTableData = computed(() => {
-    if (Object.keys(loadedCubes).length === 0) {
-        return [];
-    }
-    const allCards = Object.keys(loadedCubes).reduce((allCards, key) => {
-        loadedCubes[key].cards.forEach(card => {
-            if (allCards[card.oracleId] === undefined) {
-                allCards[card.oracleId] = {
-                    ...card,
-                    count: 0,
-                    cubes: [], // TODO:
-                    cubeCount: 0,
-                };
-            }
-
-            allCards[card.oracleId].count += 1;
-            if (!allCards[card.oracleId].cubes.includes(key)) {
-                allCards[card.oracleId].cubes.push(key);
-                allCards[card.oracleId].cubeCount += 1;
-            }
-        });
-
-        return allCards;
-    }, {});
-
-    return Object.values(allCards);
 });
 
 const submitAddCubeForm = async () => {

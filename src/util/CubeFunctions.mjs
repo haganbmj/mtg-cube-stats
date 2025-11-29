@@ -1,4 +1,6 @@
-// import scryfall from '../../data/cards-minimized.json' with { type: 'json' };
+import { useMemoize } from '@vueuse/core';
+import { cosineSimilarity, intersectionSizeOf } from './SimiliartyFunctions.mjs';
+
 const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
 
@@ -11,9 +13,6 @@ export async function initScryfall() {
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
- *
- * @param {object} cube
- * @returns {object}
  */
 export function remapCube(cube, enrich = true) {
     const cards = cube.cards.mainboard.map(card => {
@@ -41,11 +40,8 @@ export function remapCube(cube, enrich = true) {
 
 /**
  * FIXME: This needs to handle Custom Cards on CubeCobra. I think those just have cardId="custom-card"
- * @param {object[]} cards
- * @returns {object[]}
  */
 export function enrichCubeContents(cards) {
-    console.log(`Enriching cube...`);
     return cards.map(card => {
         const scryfallCard = scryfall.cards[card.oracleId];
         if (!scryfallCard) {
@@ -76,9 +72,6 @@ export function enrichCubeContents(cards) {
     });
 }
 
-/**
- * @param {object[]} cards
- */
 export function analyzeCubeContents(cards, excludeLands = false) {
     const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
     const filteredCards = excludeLands ? nonLandCards : cards;
@@ -94,6 +87,24 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
+        cmcByStrictColor: nonLandCards.reduce((sums, c) => {
+            let colorKey = '';
+            if (c.colorIdentity.length === 0) {
+                colorKey = 'C';
+            } else if (c.colorIdentity.length === 1) {
+                colorKey = c.colorIdentity[0];
+            } else {
+                colorKey = 'M';
+            }
+
+            if (!sums[colorKey]) {
+                sums[colorKey] = { totalCmc: 0, count: 0 };
+            }
+
+            sums[colorKey].totalCmc += (c.cmc ?? 0);
+            sums[colorKey].count += 1;
+            return sums;
+        }, {}),
         colorDistribution: {
             W: filteredCards.filter(c => c.colorIdentity.includes('W')).length,
             U: filteredCards.filter(c => c.colorIdentity.includes('U')).length,
@@ -208,4 +219,19 @@ export function analyzeCubeContents(cards, excludeLands = false) {
     return thirdOrderStats;
 }
 
-export default { remapCube, analyzeCubeContents }
+export const determineCosineSimilarityScore = useMemoize(
+    (cubeA, cubeB) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
+    {
+        getKey: (cubeA, cubeB) => `${cubeA.id}|${cubeB.id}`,
+    },
+)
+
+function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
+    const cardsA = cubeA.cards.map(c => c.oracleId);
+    const cardsB = cubeB.cards.map(c => c.oracleId);
+
+    return {
+        cosineSimilarity: cosineSimilarity(cardsA, cardsB),
+        insersectionSize: intersectionSizeOf(cardsA, cardsB),
+    };
+}
