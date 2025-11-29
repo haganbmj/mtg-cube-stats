@@ -24,6 +24,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    highlighted: {
+        type: Array as () => string[],
+        required: true,
+    },
 });
 
 const chartOptions = computed(() => {
@@ -33,6 +37,14 @@ const chartOptions = computed(() => {
             data: [[cube.stats.uniqueKeywords, cube.stats.averageWordCountMinusParen]],
             type: 'scatter',
             symbolSize: 10,
+            itemStyle: {
+                color: props.highlighted.includes(cube.id) ? '#ffffff' : '#5470c6',
+                opacity: props.highlighted.includes(cube.id) ? 1.0 : 0.6,
+                borderColor: props.highlighted.includes(cube.id) ? '#ffffff' : undefined,
+                borderWidth: props.highlighted.includes(cube.id) ? 2 : 0,
+                shadowBlur: props.highlighted.includes(cube.id) ? 10 : 0,
+                shadowColor: props.highlighted.includes(cube.id) ? 'rgba(255, 255, 255, 0.5)' : undefined,
+            },
         }
     });
 
