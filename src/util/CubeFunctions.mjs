@@ -1,5 +1,5 @@
 import { useMemoize } from '@vueuse/core';
-import { cosineSimilarity } from './SimiliartyFunctions.mjs';
+import { cosineSimilarity, intersectionSizeOf } from './SimiliartyFunctions.mjs';
 
 const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
@@ -230,7 +230,8 @@ function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
     const cardsA = cubeA.cards.map(c => c.oracleId);
     const cardsB = cubeB.cards.map(c => c.oracleId);
 
-    return cosineSimilarity(cardsA, cardsB);
+    return {
+        cosineSimilarity: cosineSimilarity(cardsA, cardsB),
+        insersectionSize: intersectionSizeOf(cardsA, cardsB),
+    };
 }
-
-// export { determineCosineSimilarityScore };

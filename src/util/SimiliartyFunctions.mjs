@@ -3,7 +3,7 @@
  * It's probably noticeably faster to calculate.
  */
 export function jaccardSimilarity(listA, listB) {
-    const intersection = new Set([...listA].filter(x => listB.has(x)));
+    const intersection = new Set([...listA].filter(x => listB.includes(x)));
     const union = new Set([...listA, ...listB]);
     return intersection.size / union.size;
 }
@@ -43,4 +43,8 @@ export function cosineSimilarity(listA, listB) {
     });
 
     return vectorCosineSimilarity(vecA, vecB);
+}
+
+export function intersectionSizeOf(listA, listB) {
+    return new Set([...listA].filter(x => listB.includes(x))).size;
 }

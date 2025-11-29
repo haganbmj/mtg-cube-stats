@@ -106,43 +106,48 @@
                             >
                                 <el-table-column :fixed="!isMobile" width="25" type="expand">
                                     <template #default="props">
-                                        <el-row>
-                                            <el-col :span="14" :xs="24" :sm="24" :md="24" :xl="16">
+                                        <el-row :gutter="10">
+                                            <el-col :span="24">
                                                 <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <ManaValueChart class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <ReleaseYearChart class="chart" :releaseYearDistribution="props.row.stats?.releaseYearDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <ColorIdentityDistribution class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <TypeLineDistribution class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" />
                                                         </div>
                                                     </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="12">
+                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
                                                             <LegalityDistribution class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                 </el-row>
                                             </el-col>
-                                            <el-col :span="10" :xs="24" :sm="24" :md="24" :xl="8">
+                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
+                                                <h3>Keywords</h3>
                                                 <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.filteredCards || 1" />
+                                            </el-col>
+                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
+                                                <h3>Similar Cubes</h3>
+                                                <SimilarCubesTable :similarityMatrix="similarityMatrix" :loadedCubes="overviewTableData" :cubeId="props.row.id" />
                                             </el-col>
                                         </el-row>
                                     </template>
@@ -254,6 +259,7 @@ import LegalityDistribution from './components/LegalityDistribution.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
+import SimilarCubesTable from './components/SimilarCubesTable.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 
@@ -404,7 +410,7 @@ const overviewTableData = computed(() => {
             ...cube,
             stats: analyzeCubeContents(cube.cards, config.excludeLands),
             similarityScores: similarityScores,
-            avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c, 0) / Object.values(similarityScores).length : 0,
+            avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c.cosineSimilarity, 0) / Object.values(similarityScores).length : 0,
         }
     });
 });
