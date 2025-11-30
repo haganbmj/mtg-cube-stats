@@ -155,7 +155,7 @@
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
                                     <template #default="{ row }">
                                         <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                                        <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id, row.shortId)">
+                                        <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
                                             <el-icon><Delete /></el-icon>
                                         </el-button>
                                     </template>
@@ -311,15 +311,16 @@ const addCubeForm = reactive({
     cubeId: '',
 });
 
-const loadedCubes = reactive({});
+const loadedCubes = ref({});
 
 const loadPresetCollection = async (presetName: string) => {
     if (presetName in presetComparisons) {
+        console.time(`Load Collection: ${presetName}`);
         addCubeForm.loading = true;
         const cubesModule = await presetComparisons[presetName]();
         const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default).map(cube => [cube[0], { ...cube[1], cards: enrichCubeContents(cube[1].cards) }]));
-        Object.keys(loadedCubes).forEach(key => delete loadedCubes[key]);
-        Object.assign(loadedCubes, enrichedCubes);
+        console.timeEnd(`Load Collection: ${presetName}`);
+        loadedCubes.value = enrichedCubes;
         addCubeForm.loading = false;
         addCubeForm.presetComparisonsSelection = '';
     }
@@ -380,8 +381,8 @@ const similarityMatrix = computed(() => {
     const result = {};
     let calcs = 0;
 
-    Object.entries(loadedCubes).forEach(([id, cube]) => {
-        Object.entries(loadedCubes).forEach(([otherId, otherCube]) => {
+    Object.entries(loadedCubes.value).forEach(([id, cube]) => {
+        Object.entries(loadedCubes.value).forEach(([otherId, otherCube]) => {
             if (id !== otherId && result[id]?.[otherId] === undefined) {
                 calcs += 1;
                 const score = determineCosineSimilarityScore(cube, otherCube);
@@ -404,7 +405,7 @@ const similarityMatrix = computed(() => {
 
 // FIXME: Is there a way to indicate that this should wait until after similarityMatrix is recomputed?
 const overviewTableData = computed(() => {
-    return Object.entries(loadedCubes).map(([id, cube]) => {
+    return Object.entries(loadedCubes.value).map(([id, cube]) => {
         const similarityScores = similarityMatrix.value[id] || {};
         return {
             ...cube,
@@ -422,11 +423,12 @@ const submitAddCubeForm = async () => {
     const input = addCubeForm.cubeId.split('?')[0].trim();
     const [ cubeId ] = input.match(/([^\/]+)\/?$/);
 
-    // FIXME: This ideally should handle deduping on both IDs for a cube. The user-defined and the system-defined.
-    if (!(cubeId in loadedCubes)) {
+    // If the cube is already loaded, skip it.
+    if (!Object.values(loadedCubes.value).some(cube => cube.id === cubeId || cube.shortId === cubeId)) {
         try {
             const rawCube = await getCubeData(cubeId);
-            loadedCubes[cubeId] = await remapCube(rawCube);
+            const remappedCube = await remapCube(rawCube);
+            loadedCubes.value[remappedCube.id] = remappedCube;
         } catch (e) {
             console.error("Error loading cube:", e);
         }
@@ -440,9 +442,8 @@ const submitAddCubeForm = async () => {
  * FIXME: Make this betterer.
  *  Doing a terrible job currently with these multiple IDs, and I think mutating the reactive object is done improperly.
  */
-const removeCube = (cubeId: string, shortId: string) => {
-    delete loadedCubes[cubeId];
-    delete loadedCubes[shortId];
+const removeCube = (cubeId: string) => {
+    delete loadedCubes.value[cubeId];
 };
 
 const toFixed2 = (row, column) => {
