@@ -2,7 +2,7 @@
     <el-table
         :data="keywords"
         style="width: 100%;"
-        max-height="775"
+        max-height="425"
         :default-sort = "{prop: 'count', order: 'descending'}"
     >
         <el-table-column fixed type="index" label="#" width="50" />
