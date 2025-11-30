@@ -19,20 +19,20 @@
         <el-table-column
             prop="score"
             label="Cosine Similarity"
-            width="100"
+            min-width="100"
             :formatter="(row) => (row.score * 100).toFixed(2) + '%'"
             sortable
         />
         <el-table-column
             prop="size"
             label="Size"
-            width="80"
+            min-width="80"
             sortable
         />
         <el-table-column
             prop="intersection"
             label="Intersection"
-            width="80"
+            min-width="80"
             sortable
         />
     </el-table>

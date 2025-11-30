@@ -9,19 +9,29 @@
         <el-table-column
             prop="keyword"
             label="Keyword"
-            min-width="180"
+            min-width="150"
             sortable
         />
         <el-table-column
+            prop="evergreen"
+            label="Evergreen"
+            min-width="100"
+        >
+            <template #default="{ row }">
+                <el-tag v-if="row.evergreen" type="success" size="small">Yes</el-tag>
+                <el-tag v-else type="info" size="small">No</el-tag>
+            </template>
+        </el-table-column>
+        <el-table-column
             prop="count"
             label="Count"
-            width="100"
+            min-width="100"
             sortable
         />
         <el-table-column
             prop="percentage"
             label="Percentage"
-            width="140"
+            min-width="140"
             :formatter="(row) => (row.percentage * 100).toFixed(2) + '%'"
             sortable
         />
@@ -30,6 +40,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { isEvergreenKeyword } from '../util/Keywords.mjs';
 
 const props = defineProps({
     keywords: {
@@ -44,7 +55,12 @@ const props = defineProps({
 
 const keywords = computed(() => {
     return Object.entries(props.keywords).map(([key, value]) => {
-        return { keyword: key, count: value, percentage: value / props.totalCards };
+        return {
+            keyword: key,
+            evergreen: isEvergreenKeyword(key),
+            count: value,
+            percentage: value / props.totalCards,
+        };
     });
 });
 </script>

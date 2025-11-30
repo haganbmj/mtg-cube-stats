@@ -192,7 +192,8 @@
 
                                 <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
                                 <el-table-column prop="stats.averageWordCountMinusParen" label="Avg. Word Count Excl. Reminder" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')" />
-                                <el-table-column prop="stats.uniqueKeywords" label="Unique Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
+                                <el-table-column prop="stats.uniqueKeywords" label="Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
+                                <el-table-column prop="stats.uniqueNonEvergreenKeywords" label="Non-Evergreen Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueNonEvergreenKeywords')" />
 
                                 <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
                                 <el-table-column prop="stats.percentages.abnormalLayout" label="% Abnormal Layout" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.abnormalLayout')" />
@@ -366,7 +367,8 @@ const columnOptions = ref([
         options: [
             { value: 'stats.averageWordCount', label: 'Avg. Word Count' },
             { value: 'stats.averageWordCountMinusParen', label: 'Avg. Word Count Excl. Reminder' },
-            { value: 'stats.uniqueKeywords', label: "Unique Keywords" },
+            { value: 'stats.uniqueKeywords', label: "Keywords" },
+            { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
             { value: 'stats.percentages.abnormalLayout', label: "% Abnormal Layout" },
             { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens" },

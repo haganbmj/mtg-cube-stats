@@ -1,5 +1,6 @@
 import { useMemoize } from '@vueuse/core';
 import { cosineSimilarity, intersectionSizeOf } from './SimiliartyFunctions.mjs';
+import { isEvergreenKeyword } from './Keywords.mjs';
 
 const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
@@ -192,6 +193,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
     const secondOrderStats = {
         ...firstOrderStats,
         uniqueKeywords: Object.keys(firstOrderStats.keywords).length,
+        uniqueNonEvergreenKeywords: Object.keys(firstOrderStats.keywords).filter(kw => !isEvergreenKeyword(kw)).length,
         cardCounts: {
             makesTokens: filteredCards.filter(c => c.makesTokens).length,
             universesBeyond: filteredCards.filter(c => c.isUniversesBeyond).length,
