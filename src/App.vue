@@ -411,7 +411,7 @@ const overviewTableData = computed(() => {
         const similarityScores = similarityMatrix.value[id] || {};
         return {
             ...cube,
-            stats: analyzeCubeContents(cube.cards, config.excludeLands),
+            stats: analyzeCubeContents(cube.cards, config.value.excludeLands),
             similarityScores: similarityScores,
             avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c.cosineSimilarity, 0) / Object.values(similarityScores).length : 0,
         }
