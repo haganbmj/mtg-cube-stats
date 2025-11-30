@@ -221,6 +221,12 @@ export function analyzeCubeContents(cards, excludeLands = false) {
     return thirdOrderStats;
 }
 
+/**
+ * FIXME: This doesn't evaluate filtered cards (eg. non-land).
+ * FIXME: This also caches based on purely the cube id,
+ *  so if the CubeCon static set is loaded then it will lock the evaluations
+ *  using those versions of the list even if you add the current ones.
+ */
 export const determineCosineSimilarityScore = useMemoize(
     (cubeA, cubeB) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
     {
