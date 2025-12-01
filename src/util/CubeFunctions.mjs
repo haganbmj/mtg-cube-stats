@@ -66,6 +66,7 @@ export function enrichCubeContents(cards) {
             collectorNumber: scryfallCard?.collectorNumber ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
+            tags: scryfallCard?.tags ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
@@ -85,8 +86,9 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         newCards: cards.filter(card => card.releaseDate >= newDateCutoff).length,
 
         filteredCards: filteredCards.length,
-        averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
-        averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
+        removalDensity: nonLandCards.filter(c => c.tags.includes('removal')).length / nonLandCards.length,
+        averageElo: filteredCards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / filteredCards.length,
+        averagePopularity: filteredCards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / filteredCards.length,
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
         cmcByStrictColor: nonLandCards.reduce((sums, c) => {
             let colorKey = '';

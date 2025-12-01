@@ -174,6 +174,26 @@
             filterable
         />
 
+        <!-- FIXME: I really really really need tri-state checkboxes in filters... -->
+        <el-table-column
+            prop="tags"
+            column-key="tags"
+            label="Tags"
+            min-width="75"
+            max-width="150"
+        >
+            <template #default="{ row }">
+                <el-tag
+                    v-for="tag in row.tags"
+                    :key="tag"
+                    size="small"
+                    type="info"
+                >
+                    {{ tag }}
+                </el-tag>
+            </template>
+        </el-table-column>
+
         <el-table-column
             prop="setCode"
             column-key="setCode"
@@ -346,6 +366,7 @@ const tableData = computed(() => {
             if (allCards[card.oracleId] === undefined) {
                 allCards[card.oracleId] = {
                     ...card,
+                    isRemoval: card.tags.includes('removal'),
                     effectiveColors: card.colorIdentity.length === 0 ? ['C'] : card.colorIdentity,
                     count: 0,
                     cubes: [],

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
+import removalOracleIds from './data/tagger-removal-oracle-ids.json' with { type: 'json'};
 
 if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update") {
     console.log('Downloading fresh card data.');
@@ -195,6 +196,8 @@ const minimized = stripped.sort((a, b) => {
             oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter(v => v != '').length,
             // This needs sanitization to use, it seems to including flavor abilities.
             keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
+            // FIXME: Exnted this with any future tags I think I care about.
+            tags: removalOracleIds.includes(card.oracleId) ? ['removal'] : [],
             rarity: card.rarity,
             setType: card.setType,
             fromBooster: card.fromBooster,

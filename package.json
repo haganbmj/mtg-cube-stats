@@ -10,6 +10,8 @@
     "lint:fix": "eslint --fix",
     "cards": "node download-scryfall-cards.mjs",
     "cards:update": "node download-scryfall-cards.mjs --update",
+    "tagger": "node download-tagger-data.mjs",
+    "tagger:update": "node download-tagger-data.mjs --update",
     "preload": "node preload-cube-data.mjs",
     "test": "vitest"
   },
