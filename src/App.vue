@@ -63,12 +63,7 @@
                             <div id="config">
                                 <el-form :inline="true">
                                     <el-form-item>
-                                        <el-col :span="10" :xs="24" :sm="24" :md="10" :lg="10">
-                                            <el-form-item label="Exclude Lands:">
-                                                <el-switch v-model="config.excludeLands" active-color="#13ce66" inactive-color="#ff4949" />
-                                            </el-form-item>
-                                        </el-col>
-                                        <el-col :span="14" :xs="24" :sm="24" :md="14" :lg="14">
+                                        <el-col :span="24">
                                             <el-form-item label="Columns:" style="width: 100%;">
                                                 <el-select
                                                     v-model="config.visibleColumns"
@@ -178,7 +173,7 @@
                                             </el-col>
                                             <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
                                                 <h3>Keywords ({{ props.row.stats.uniqueKeywords }})</h3>
-                                                <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.filteredCards || 1" />
+                                                <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.totalCards || 1" />
                                             </el-col>
                                             <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
                                                 <h3>Similar Cubes</h3>
@@ -209,34 +204,34 @@
 
                                 <el-table-column prop="category" label="Category" min-width="100" max-width="125" sortable v-if="config.visibleColumns.includes('category')" />
                                 <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
-                                <el-table-column prop="avgSimilarityScore" label="Avg. Cosine Similarity" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('avgSimilarityScore')" />
+                                <el-table-column prop="avgSimilarityScore" label="Avg. Cosine Similarity" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('avgSimilarityScore')" />
                                 <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
                                 <el-table-column prop="stats.newCards" label="New Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.newCards')" />
-                                <el-table-column prop="stats.percentages.newCards" label="% New Cards" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.newCards')" />
+                                <el-table-column prop="stats.percentages.newCards" label="% New Cards" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.newCards')" />
                                 <el-table-column prop="stats.landCards" label="Lands" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.landCards')" />
-                                <el-table-column prop="stats.percentages.landCards" label="% Lands" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.landCards')" />
-                                <el-table-column prop="stats.averageNonLandCmc" label="Avg. Non-Land MV" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageNonLandCmc')" />
-                                <el-table-column prop="stats.averageElo" label="Avg. Card Elo" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageElo')" />
-                                <el-table-column prop="stats.averagePopularity" label="Avg. Card Popularity" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averagePopularity')" />
-                                <el-table-column prop="stats.totalMinPriceUsd" label="Min Price (USD)" min-width="75" max-width="100" sortable :formatter="toPriceUsd" v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')" />
+                                <el-table-column prop="stats.percentages.landCards" label="% Lands" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.landCards')" />
+                                <el-table-column prop="stats.averageNonLandCmc" label="Avg. Non-Land MV" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageNonLandCmc')" />
+                                <el-table-column prop="stats.averageElo" label="Avg. Card Elo" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageElo')" />
+                                <el-table-column prop="stats.averagePopularity" label="Avg. Card Popularity" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averagePopularity')" />
+                                <el-table-column prop="stats.totalMinPriceUsd" label="Min Price (USD)" min-width="75" max-width="100" sortable :formatter="columnFormatters.toPriceUsd" v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')" />
 
                                 <el-table-column prop="stats.cardCounts.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')" />
-                                <el-table-column prop="stats.percentages.universesBeyond" label="% Universes Beyond" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.universesBeyond')" />
+                                <el-table-column prop="stats.percentages.universesBeyond" label="% Universes Beyond" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.universesBeyond')" />
                                 <el-table-column prop="stats.cardCounts.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')" />
-                                <el-table-column prop="stats.percentages.supplementalProduct" label="% Supplemental Product" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.supplementalProduct')" />
+                                <el-table-column prop="stats.percentages.supplementalProduct" label="% Supplemental Product" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.supplementalProduct')" />
 
-                                <el-table-column prop="stats.removalDensity" label="Removal Density" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.removalDensity')" />
-                                <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
-                                <el-table-column prop="stats.averageWordCountMinusParen" label="Avg. Word Count Excl. Reminder" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')" />
+                                <el-table-column prop="stats.removalDensity" label="Removal Density" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.removalDensity')" />
+                                <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
+                                <el-table-column prop="stats.averageWordCountMinusParen" label="Avg. Word Count Excl. Reminder" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')" />
                                 <el-table-column prop="stats.uniqueKeywords" label="Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
                                 <el-table-column prop="stats.uniqueNonEvergreenKeywords" label="Non-Evergreen Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueNonEvergreenKeywords')" />
 
                                 <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
-                                <el-table-column prop="stats.percentages.abnormalLayout" label="% Abnormal Layout" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.abnormalLayout')" />
+                                <el-table-column prop="stats.percentages.abnormalLayout" label="% Abnormal Layout" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.abnormalLayout')" />
                                 <el-table-column prop="stats.cardCounts.makesTokens" label="Makes Tokens" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')" />
-                                <el-table-column prop="stats.percentages.makesTokens" label="% Makes Tokens" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.makesTokens')" />
-                                <el-table-column prop="stats.cardCounts.initiative" label="Initiative" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.initiative')" />
-                                <el-table-column prop="stats.percentages.initiative" label="% Initiative" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.initiative')" />
+                                <el-table-column prop="stats.percentages.makesTokens" label="% Makes Tokens" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.makesTokens')" />
+                                <!-- <el-table-column prop="stats.cardCounts.initiative" label="Initiative" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.initiative')" />
+                                <el-table-column prop="stats.percentages.initiative" label="% Initiative" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.initiative')" /> -->
                             </el-table>
                         </el-tab-pane>
 
@@ -312,7 +307,6 @@ const presetComparisons = {
 };
 
 const defaultConfig = {
-    excludeLands: false,
     visibleColumns: [
         'rowNumber',
         'name',
@@ -337,7 +331,6 @@ const config = bindStorage('appConfig', (v) => {
     } else {
         // FIXME: I'd like a more robust way to do this, but it's fine with only two props.
         return {
-            excludeLands: v.excludeLands === true,
             visibleColumns: Array.isArray(v.visibleColumns) ? v.visibleColumns : defaultConfig.visibleColumns,
         }
     }
@@ -410,8 +403,8 @@ const columnOptions = ref([
             { value: 'stats.percentages.abnormalLayout', label: "% Abnormal Layout" },
             { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens" },
             { value: 'stats.percentages.makesTokens', label: "% Makes Tokens" },
-            { value: 'stats.cardCounts.initiative', label: "Initiative" },
-            { value: 'stats.percentages.initiative', label: "% Initiative" },
+            // { value: 'stats.cardCounts.initiative', label: "Initiative" },
+            // { value: 'stats.percentages.initiative', label: "% Initiative" },
         ],
     },
 ]);
@@ -448,7 +441,7 @@ const overviewTableData = computed(() => {
         const similarityScores = similarityMatrix.value[id] || {};
         return {
             ...cube,
-            stats: analyzeCubeContents(cube.cards, config.value.excludeLands),
+            stats: analyzeCubeContents(cube.cards),
             similarityScores: similarityScores,
             avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c.cosineSimilarity, 0) / Object.values(similarityScores).length : 0,
         }
@@ -464,6 +457,7 @@ const submitAddCubeForm = async () => {
 
     // If the cube is already loaded, skip it.
     if (!Object.values(loadedCubes.value).some(cube => cube.id === cubeId || cube.shortId === cubeId)) {
+        console.time(`Add Cube: ${cubeId}`);
         try {
             const rawCube = await getCubeData(cubeId);
             const remappedCube = await remapCube(rawCube);
@@ -471,6 +465,7 @@ const submitAddCubeForm = async () => {
         } catch (e) {
             console.error("Error loading cube:", e);
         }
+        console.timeEnd(`Add Cube: ${cubeId}`);
     }
 
     addCubeForm.cubeId = '';
@@ -485,19 +480,20 @@ const removeCube = (cubeId: string) => {
     delete loadedCubes.value[cubeId];
 };
 
-const toFixed2 = (row, column) => {
-    return (getNestedProp(row, column.property) ?? 0).toFixed(2);
-}
-
-const toPriceUsd = (row, column) => {
-    return '$' + (getNestedProp(row, column.property) ?? 0).toFixed(2);
-}
-
-const percentageFormatter = (row, column) => {
-    return ((getNestedProp(row, column.property) ?? 0) * 100).toFixed(2) + '%';
-}
+const columnFormatters = {
+    toFixed2: (row, column) => {
+        return (getNestedProp(row, column.property) ?? 0).toFixed(2);
+    },
+    toPriceUsd: (row, column) => {
+        return '$' + (getNestedProp(row, column.property) ?? 0).toFixed(2);
+    },
+    percentageFormatter: (row, column) => {
+        return ((getNestedProp(row, column.property) ?? 0) * 100).toFixed(2) + '%';
+    },
+};
 
 onMounted(async () => {
+    // FIXME: This doesn't have to block the cube form. Could just block the first access to the Scryfall data.
     addCubeForm.loading = true;
     await initScryfall();
     addCubeForm.loading = false;
