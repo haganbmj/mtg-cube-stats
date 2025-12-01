@@ -190,10 +190,10 @@
                                 <el-table-column prop="stats.cardCounts.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')" />
                                 <el-table-column prop="stats.percentages.supplementalProduct" label="% Supplemental Product" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.supplementalProduct')" />
 
+                                <el-table-column prop="stats.removalDensity" label="Removal Density" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.removalDensity')" />
                                 <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
                                 <el-table-column prop="stats.averageWordCountMinusParen" label="Avg. Word Count Excl. Reminder" min-width="75" max-width="100" sortable :formatter="toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')" />
                                 <el-table-column prop="stats.uniqueKeywords" label="Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
-                                <el-table-column prop="stats.removalDensity" label="Removal Density" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.removalDensity')" />
                                 <el-table-column prop="stats.uniqueNonEvergreenKeywords" label="Non-Evergreen Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueNonEvergreenKeywords')" />
 
                                 <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
@@ -366,10 +366,10 @@ const columnOptions = ref([
     {
         label: 'Characteristics',
         options: [
+            { value: 'stats.removalDensity', label: "Removal Density" },
             { value: 'stats.averageWordCount', label: 'Avg. Word Count' },
             { value: 'stats.averageWordCountMinusParen', label: 'Avg. Word Count Excl. Reminder' },
             { value: 'stats.uniqueKeywords', label: "Keywords" },
-            { value: 'stats.removalDensity', label: "Removal Density" },
             { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
             { value: 'stats.percentages.abnormalLayout', label: "% Abnormal Layout" },
