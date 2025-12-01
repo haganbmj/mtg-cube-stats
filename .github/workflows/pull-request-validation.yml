@@ -34,6 +34,7 @@ jobs:
           path: |
             data/default-cards.json
             data/flavor-words.json
+            data/tagger-removal-oracle-ids.json
           key: scryfall-json-${{ github.run_id }}
           restore-keys: |
             scryfall-json-
