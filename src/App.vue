@@ -106,6 +106,41 @@
                             >
                                 <el-table-column :fixed="!isMobile" width="25" type="expand">
                                     <template #default="props">
+                                        <el-row :gutter="20" justify="center" class="expanded-statistics">
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Total Cards" :value="props.row.stats.totalCards" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="New Cards (<1 yr)" :value="props.row.stats.newCards" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Land Cards" :value="props.row.stats.landCards" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Avg. Non-Land MV" :value="props.row.stats.averageNonLandCmc" :precision="2" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Avg. Card Elo" :value="props.row.stats.averageElo"/>
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Avg. Popularity" :value="props.row.stats.averagePopularity" :precision="2" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Universes Beyond" :value="props.row.stats.cardCounts.universesBeyond" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Supplmenetal Product" :value="props.row.stats.cardCounts.supplementalProduct" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Creature Removal" :value="props.row.stats.removalDensity * 100" :precision="2" suffix="%" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Avg. Word Count Excl. Reminder" :value="props.row.stats.averageWordCountMinusParen" :precision="2" />
+                                            </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-statistic title="Non-Evergreen Keywords" :value="props.row.stats.uniqueNonEvergreenKeywords" />
+                                            </el-col>
+                                        </el-row>
                                         <el-row :gutter="10">
                                             <el-col :span="24">
                                                 <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
@@ -142,7 +177,7 @@
                                                 </el-row>
                                             </el-col>
                                             <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                                                <h3>Keywords</h3>
+                                                <h3>Keywords ({{ props.row.stats.uniqueKeywords }})</h3>
                                                 <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.filteredCards || 1" />
                                             </el-col>
                                             <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
@@ -547,5 +582,13 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 
 .remove-thumbnail:hover + .remove-button, .remove-button:hover {
     visibility: visible;
+}
+
+.text-center,[text~=center] {
+    text-align: center
+}
+
+.expanded-statistics > .el-col {
+    margin-top: 1.5em;
 }
 </style>
