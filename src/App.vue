@@ -101,89 +101,9 @@
                                     </el-form>
                                 </el-col>
                                 <el-col :span="6" :xs="24" :sm="24" :md="6" :lg="6" style="text-align: right;">
-                                    <el-button plain @click="columnCustomizationVisible = true">Customize Columns</el-button>
-
-
+                                    <el-button plain @click="columnCustomizationVisible = true" style="width: 100%; max-width: 250px;">Customize Columns</el-button>
                                 </el-col>
                             </el-row>
-                            <!-- <div id="inputs">
-                                <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
-                                    <el-form-item>
-                                        <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
-                                            <el-form-item style="min-width: 200px; width: 100%;">
-                                                <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." >
-                                                    <el-option
-                                                        v-for="option in presetComparisonsSelect"
-                                                        :key="option.value"
-                                                        :label="option.label"
-                                                        :value="option.value"
-                                                    />
-                                                </el-select>
-                                            </el-form-item>
-                                        </el-col>
-                                        <el-col :span="2" :xs="0" :sm="0" :md="2" :lg="2" style="text-align: center;">
-                                            <span class="text-gray-500">OR</span>
-                                        </el-col>
-                                        <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11" style="display: flex; align-items: center;">
-                                            <el-row :gutter="10">
-                                                <el-col :span="20">
-                                                    <el-form-item style="min-width: 200px; width: 100%;">
-                                                        <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
-                                                    </el-form-item>
-                                                </el-col>
-                                                <el-col :span="4">
-                                                    <el-form-item>
-                                                        <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
-                                                        <input type="submit" style="display: none;" />
-                                                    </el-form-item>
-                                                </el-col>
-                                            </el-row>
-                                        </el-col>
-                                    </el-form-item>
-                                </el-form>
-                            </div> -->
-                            <!-- <div id="config">
-                                <el-button plain @click="columnCustomizationVisible = true">Customize Columns</el-button>
-
-                                <el-dialog
-                                    v-model="columnCustomizationVisible"
-                                    title="Customize Columns"
-                                    width="600"
-                                    align-center
-                                >
-                                    <div v-for="option in columnOptions" :key="option.label" style="margin-bottom: 1em;">
-                                        <h4>{{ option.label }}</h4>
-                                        <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
-                                            <el-row :gutter="10">
-                                                <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
-                                                    <el-checkbox
-                                                        :label="item.value"
-                                                    >
-                                                        {{ item.label }}
-                                                        <el-popover
-                                                            v-if="item.tooltip"
-                                                            placement="bottom"
-                                                            width="300"
-                                                            trigger="hover"
-                                                        >
-                                                            <template #reference>
-                                                                <el-icon><InfoFilled /></el-icon>
-                                                            </template>
-                                                            <template #default>
-                                                                <p>{{ item.tooltip }}</p>
-                                                            </template>
-                                                        </el-popover>
-                                                    </el-checkbox>
-                                                </el-col>
-                                            </el-row>
-                                        </el-checkbox-group>
-                                    </div>
-
-                                    <template #footer>
-                                        <el-button @click="columnCustomizationVisible = false">Close</el-button>
-                                    </template>
-                                </el-dialog>
-                            </div> -->
 
                             <el-table
                                 :data="overviewTableData"
