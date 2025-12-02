@@ -21,7 +21,11 @@ if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update"
         write.on('finish', res);
         write.on('error', rej);
     });
+} else {
+    console.log('Using existing card data.');
+}
 
+if (!fs.existsSync('./data/flavor-words.json') || process.argv[2] == "--update") {
     console.log('Downloading fresh flavor data.');
 
     const flavorWordsResp = await axios({
@@ -39,14 +43,32 @@ if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update"
         writeFlavor.on('finish', res);
         writeFlavor.on('error', rej);
     });
-
-    console.log('Finished piping results to file.');
 } else {
-    console.log('Using existing card data.');
+    console.log('Using existing flavor data.');
+}
+
+if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update") {
+    console.log('Downloading fresh tagger data.');
+
+    const taggerResp = await axios({
+        url: `https://api.scryfall.com/private/tags/oracle`,
+        method: 'GET',
+        responseType: 'stream',
+    })
+
+    const writeTagger = fs.createWriteStream('./data/tagger-data.json');
+    taggerResp.data.pipe(writeTagger);
+    await new Promise((res, rej) => {
+        writeTagger.on('finish', res);
+        writeTagger.on('error', rej);
+    });
+} else {
+    console.log('Using existing tagger data.');
 }
 
 const cards = JSON.parse(fs.readFileSync('./data/default-cards.json'));
 const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json'));
+const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json'));
 
 const customPromoSetTypes = [
     'from_the_vault',
@@ -90,6 +112,20 @@ const excludedSetTypes = [
 const excludedLayouts = [
     'art_series',
 ];
+
+const taggerOracleIds = {};
+
+taggerData.data.forEach(tag => {
+    // 'removal' is pretty broad, but probably the least likely to be extra confusing?
+    if (['removal'].includes(tag.label)) {
+        tag.oracle_ids.forEach(oracle => {
+            if (taggerOracleIds[oracle] === undefined) {
+                taggerOracleIds[oracle] = [];
+            }
+            taggerOracleIds[oracle].push(tag.label);
+        });
+    }
+});
 
 const effectiveTypes = (card) => {
     if (card.layout === 'adventure') {
@@ -214,7 +250,7 @@ const minimized = stripped.sort((a, b) => {
             // This needs sanitization to use, it seems to including flavor abilities.
             keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
             // FIXME: Exnted this with any future tags I think I care about.
-            tags: removalOracleIds.includes(card.oracleId) ? ['removal'] : [],
+            tags: taggerOracleIds[card.oracleId] || [],
             rarity: card.rarity,
             setType: card.setType,
             fromBooster: card.fromBooster,

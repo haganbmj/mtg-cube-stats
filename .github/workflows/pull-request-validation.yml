@@ -34,7 +34,7 @@ jobs:
           path: |
             data/default-cards.json
             data/flavor-words.json
-            data/tagger-removal-oracle-ids.json
+            data/tagger-data.json
           key: scryfall-json-${{ github.run_id }}
           restore-keys: |
             scryfall-json-
@@ -43,5 +43,3 @@ jobs:
       - run: npm ci
       - run: npm run cards
       - run: VITE_BUILD_SHA=$GITHUB_SHA npm run build
-      # - run: npm run lint
-      # - run: npm run test
