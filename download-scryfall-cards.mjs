@@ -1,7 +1,6 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import removalOracleIds from './data/tagger-removal-oracle-ids.json' with { type: 'json'};
 
 if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update") {
     console.log('Downloading fresh card data.');

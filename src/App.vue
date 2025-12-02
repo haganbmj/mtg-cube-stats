@@ -578,7 +578,7 @@ const columnOptions = ref([
             { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords", tooltip: "Number of Unique Non-Evergreen Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout", tooltip: "Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" },
             { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens", tooltip: "Cards that Create one or more Tokens" },
-            { value: 'stats.cardCounts.removal', label: "Removal Density", tooltip: "Cards tagged with `removal` in Scryfall's Tagger" },
+            { value: 'stats.cardCounts.removal', label: "Removal", tooltip: "Cards tagged with `removal` in Scryfall's Tagger" },
         ],
     },
     {
