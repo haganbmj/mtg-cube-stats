@@ -126,15 +126,20 @@ taggerData.data.forEach(tag => {
     }
 });
 
+const flatMapTypes = (typeLine) => {
+    // Some of the Spiderman cards are using the wrong dash character.
+    return typeLine.replace('—', '-').split('//')[0].split('-')[0].trim().split(' ');
+}
+
 const effectiveTypes = (card) => {
     if (card.layout === 'adventure') {
         // Consider only the primary type of Adventures.
         // Could probably do this better, but it gets around the FIN Adventure Lands...
-        return card.card_faces[0].type_line.split('—')[0].trim().split();
+        return flatMapTypes(card.card_faces[0].type_line);
     } else if (card.layout === 'modal_dfc' || card.layout === 'split') {
-        return card.card_faces.flatMap(face => face.type_line.split('—')[0].trim().split());
+        return card.card_faces.flatMap(face => flatMapTypes(face.type_line));
     } else {
-        return card.type_line.split('—')[0].trim().split();
+        return flatMapTypes(card.type_line);
     }
 };
 
