@@ -54,7 +54,7 @@ const cubeIds = computed(() => {
             label: cube.name,
             value: cube.id,
         };
-    });
+    }).sort((a, b) => a.label.localeCompare(b.label));
 });
 
 const highlightedCubeIds = ref<string[]>([]);
