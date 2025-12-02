@@ -22,9 +22,91 @@
             </el-header>
             <el-main>
                 <div id="contents">
+                    <el-dialog
+                        v-model="columnCustomizationVisible"
+                        title="Customize Columns"
+                        width="600"
+                        align-center
+                    >
+                        <div v-for="option in columnOptions" :key="option.label" style="margin-bottom: 1em;">
+                            <h4>{{ option.label }}</h4>
+                            <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
+                                <el-row :gutter="10">
+                                    <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
+                                        <el-checkbox
+                                            :label="item.value"
+                                        >
+                                            {{ item.label }}
+                                            <el-popover
+                                                v-if="item.tooltip"
+                                                placement="bottom"
+                                                width="300"
+                                                trigger="hover"
+                                            >
+                                                <template #reference>
+                                                    <el-icon><InfoFilled /></el-icon>
+                                                </template>
+                                                <template #default>
+                                                    <p>{{ item.tooltip }}</p>
+                                                </template>
+                                            </el-popover>
+                                        </el-checkbox>
+                                    </el-col>
+                                </el-row>
+                            </el-checkbox-group>
+                        </div>
+
+                        <template #footer>
+                            <el-button @click="columnCustomizationVisible = false">Close</el-button>
+                        </template>
+                    </el-dialog>
+
                     <el-tabs tab-position="top" v-model="activeTab">
                         <el-tab-pane :label="'Cubes (' + Object.keys(loadedCubes).length + ')'" name="overview" :lazy="true">
-                            <div id="inputs">
+                            <el-row>
+                                <el-col :span="18" :xs="24" :sm="24" :md="18" :lg="18">
+                                    <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
+                                        <el-form-item>
+                                            <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
+                                                <el-form-item style="min-width: 200px; width: 100%;">
+                                                    <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="loadPresetCollection" placeholder="Load Collection..." >
+                                                        <el-option
+                                                            v-for="option in presetComparisonsSelect"
+                                                            :key="option.value"
+                                                            :label="option.label"
+                                                            :value="option.value"
+                                                        />
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-col>
+                                            <el-col :span="2" :xs="0" :sm="0" :md="2" :lg="2" style="text-align: center;">
+                                                <span class="text-gray-500">OR</span>
+                                            </el-col>
+                                            <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11" style="display: flex; align-items: center;">
+                                                <el-row :gutter="10">
+                                                    <el-col :span="20">
+                                                        <el-form-item style="min-width: 200px; width: 100%;">
+                                                            <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                                                        </el-form-item>
+                                                    </el-col>
+                                                    <el-col :span="4">
+                                                        <el-form-item>
+                                                            <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
+                                                            <input type="submit" style="display: none;" />
+                                                        </el-form-item>
+                                                    </el-col>
+                                                </el-row>
+                                            </el-col>
+                                        </el-form-item>
+                                    </el-form>
+                                </el-col>
+                                <el-col :span="6" :xs="24" :sm="24" :md="6" :lg="6" style="text-align: right;">
+                                    <el-button plain @click="columnCustomizationVisible = true">Customize Columns</el-button>
+
+
+                                </el-col>
+                            </el-row>
+                            <!-- <div id="inputs">
                                 <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
                                     <el-form-item>
                                         <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
@@ -59,37 +141,49 @@
                                         </el-col>
                                     </el-form-item>
                                 </el-form>
-                            </div>
-                            <div id="config">
-                                <el-form :inline="true">
-                                    <el-form-item>
-                                        <el-col :span="24">
-                                            <el-form-item label="Columns:" style="width: 100%;">
-                                                <el-select
-                                                    v-model="config.visibleColumns"
-                                                    multiple
-                                                    collapse-tags
-                                                    label="Visible Columns"
-                                                    placeholder="Select columns"
-                                                >
-                                                    <el-option-group
-                                                        v-for="group in columnOptions"
-                                                        :key="group.label"
-                                                        :label="group.label"
+                            </div> -->
+                            <!-- <div id="config">
+                                <el-button plain @click="columnCustomizationVisible = true">Customize Columns</el-button>
+
+                                <el-dialog
+                                    v-model="columnCustomizationVisible"
+                                    title="Customize Columns"
+                                    width="600"
+                                    align-center
+                                >
+                                    <div v-for="option in columnOptions" :key="option.label" style="margin-bottom: 1em;">
+                                        <h4>{{ option.label }}</h4>
+                                        <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
+                                            <el-row :gutter="10">
+                                                <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
+                                                    <el-checkbox
+                                                        :label="item.value"
                                                     >
-                                                        <el-option
-                                                            v-for="item in group.options"
-                                                            :key="item.value"
-                                                            :label="item.label"
-                                                            :value="item.value"
-                                                        />
-                                                    </el-option-group>
-                                                </el-select>
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-form-item>
-                                </el-form>
-                            </div>
+                                                        {{ item.label }}
+                                                        <el-popover
+                                                            v-if="item.tooltip"
+                                                            placement="bottom"
+                                                            width="300"
+                                                            trigger="hover"
+                                                        >
+                                                            <template #reference>
+                                                                <el-icon><InfoFilled /></el-icon>
+                                                            </template>
+                                                            <template #default>
+                                                                <p>{{ item.tooltip }}</p>
+                                                            </template>
+                                                        </el-popover>
+                                                    </el-checkbox>
+                                                </el-col>
+                                            </el-row>
+                                        </el-checkbox-group>
+                                    </div>
+
+                                    <template #footer>
+                                        <el-button @click="columnCustomizationVisible = false">Close</el-button>
+                                    </template>
+                                </el-dialog>
+                            </div> -->
 
                             <el-table
                                 :data="overviewTableData"
@@ -101,7 +195,7 @@
                             >
                                 <el-table-column :fixed="!isMobile" width="25" type="expand">
                                     <template #default="props">
-                                        <el-row :gutter="20" justify="center" class="expanded-statistics">
+                                        <el-row :gutter="20" justify="center" class="expanded-statistics" v-if="false">
                                             <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
                                                 <el-statistic title="Total Cards" :value="props.row.stats.totalCards" />
                                             </el-col>
@@ -127,7 +221,7 @@
                                                 <el-statistic title="Supplmenetal Product" :value="props.row.stats.cardCounts.supplementalProduct" />
                                             </el-col>
                                             <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Creature Removal" :value="props.row.stats.removalDensity * 100" :precision="2" suffix="%" />
+                                                <el-statistic title="Removal" :value="props.row.stats.cardCounts.removal / props.row.stats.totalCards * 100" :precision="2" suffix="%" />
                                             </el-col>
                                             <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
                                                 <el-statistic title="Avg. Word Count Excl. Reminder" :value="props.row.stats.averageWordCountMinusParen" :precision="2" />
@@ -202,36 +296,207 @@
                                     </template>
                                 </el-table-column>
 
-                                <el-table-column prop="category" label="Category" min-width="100" max-width="125" sortable v-if="config.visibleColumns.includes('category')" />
-                                <el-table-column prop="categoryPrefixes" label="Category Prefixes" min-width="100" max-width="125" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('categoryPrefixes')" />
-                                <el-table-column prop="avgSimilarityScore" label="Avg. Cosine Similarity" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('avgSimilarityScore')" />
-                                <el-table-column prop="stats.totalCards" label="Total Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.totalCards')" />
-                                <el-table-column prop="stats.newCards" label="New Cards" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.newCards')" />
-                                <el-table-column prop="stats.percentages.newCards" label="% New Cards" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.newCards')" />
-                                <el-table-column prop="stats.landCards" label="Lands" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.landCards')" />
-                                <el-table-column prop="stats.percentages.landCards" label="% Lands" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.landCards')" />
-                                <el-table-column prop="stats.averageNonLandCmc" label="Avg. Non-Land MV" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageNonLandCmc')" />
-                                <el-table-column prop="stats.averageElo" label="Avg. Card Elo" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageElo')" />
-                                <el-table-column prop="stats.averagePopularity" label="Avg. Card Popularity" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averagePopularity')" />
-                                <el-table-column prop="stats.totalMinPriceUsd" label="Min Price (USD)" min-width="75" max-width="100" sortable :formatter="columnFormatters.toPriceUsd" v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')" />
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')"
+                                    prop="stats.totalMinPriceUsd"
+                                    label="Price (USD)"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toPriceUsd"
+                                />
 
-                                <el-table-column prop="stats.cardCounts.universesBeyond" label="Universes Beyond" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')" />
-                                <el-table-column prop="stats.percentages.universesBeyond" label="% Universes Beyond" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.universesBeyond')" />
-                                <el-table-column prop="stats.cardCounts.supplementalProduct" label="Supplemental Product" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')" />
-                                <el-table-column prop="stats.percentages.supplementalProduct" label="% Supplemental Product" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.supplementalProduct')" />
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.totalCards')"
+                                    prop="stats.totalCards"
+                                    label="Total Cards"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                />
 
-                                <el-table-column prop="stats.removalDensity" label="Removal Density" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.removalDensity')" />
-                                <el-table-column prop="stats.averageWordCount" label="Avg. Word Count" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCount')" />
-                                <el-table-column prop="stats.averageWordCountMinusParen" label="Avg. Word Count Excl. Reminder" min-width="75" max-width="100" sortable :formatter="columnFormatters.toFixed2" v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')" />
-                                <el-table-column prop="stats.uniqueKeywords" label="Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueKeywords')" />
-                                <el-table-column prop="stats.uniqueNonEvergreenKeywords" label="Non-Evergreen Keywords" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.uniqueNonEvergreenKeywords')" />
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.newCards')"
+                                    prop="stats.newCards"
+                                    :sort-method="(a, b) => (a.stats.newCards / a.stats.totalCards) - (b.stats.newCards / b.stats.totalCards)"
+                                    label="New Cards"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
+                                    </template>
+                                </el-table-column>
 
-                                <el-table-column prop="stats.cardCounts.abnormalLayout" label="Abnormal Layout" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')" />
-                                <el-table-column prop="stats.percentages.abnormalLayout" label="% Abnormal Layout" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.abnormalLayout')" />
-                                <el-table-column prop="stats.cardCounts.makesTokens" label="Makes Tokens" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')" />
-                                <el-table-column prop="stats.percentages.makesTokens" label="% Makes Tokens" min-width="75" max-width="100" sortable :formatter="columnFormatters.percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.makesTokens')" />
-                                <!-- <el-table-column prop="stats.cardCounts.initiative" label="Initiative" min-width="75" max-width="100" sortable v-if="config.visibleColumns.includes('stats.cardCounts.initiative')" />
-                                <el-table-column prop="stats.percentages.initiative" label="% Initiative" min-width="75" max-width="100" sortable :formatter="percentageFormatter" v-if="config.visibleColumns.includes('stats.percentages.initiative')" /> -->
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.landCards')"
+                                    prop="stats.landCards"
+                                    :sort-method="(a, b) => (a.stats.landCards / a.stats.totalCards) - (b.stats.landCards / b.stats.totalCards)"
+                                    label="Lands"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('avgSimilarityScore')"
+                                    prop="avgSimilarityScore"
+                                    label="Avg. Similarity"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.percentageFormatter"
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averageNonLandCmc')"
+                                    prop="stats.averageNonLandCmc"
+                                    label="Avg. Mana Value"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averageElo')"
+                                    prop="stats.averageElo"
+                                    label="Avg. Elo"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averagePopularity')"
+                                    prop="stats.averagePopularity"
+                                    label="Avg. Popularity"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averageWordCount')"
+                                    prop="stats.averageWordCount"
+                                    label="Avg. Word Count"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')"
+                                    prop="stats.averageWordCountMinusParen"
+                                    label="Avg. Word Count Excl. Reminder"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.uniqueKeywords')"
+                                    prop="stats.uniqueKeywords"
+                                    label="Keywords"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.uniqueNonEvergreenKeywords')"
+                                    prop="stats.uniqueNonEvergreenKeywords"
+                                    label="Non-Evergreen Keywords"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')"
+                                    prop="stats.cardCounts.abnormalLayout"
+                                    :sort-method="(a, b) => (a.stats.cardCounts.abnormalLayout / a.stats.totalCards) - (b.stats.cardCounts.abnormalLayout / b.stats.totalCards)"
+                                    label="Abnormal Layout"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')"
+                                    prop="stats.cardCounts.makesTokens"
+                                    :sort-method="(a, b) => (a.stats.cardCounts.makesTokens / a.stats.totalCards) - (b.stats.cardCounts.makesTokens / b.stats.totalCards)"
+                                    label="Makes Tokens"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.makesTokens / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.cardCounts.removal')"
+                                    prop="stats.cardCounts.removal"
+                                    :sort-method="(a, b) => (a.stats.cardCounts.removal / a.stats.totalCards) - (b.stats.cardCounts.removal / b.stats.totalCards)"
+                                    label="Removal"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')"
+                                    prop="stats.cardCounts.universesBeyond"
+                                    :sort-method="(a, b) => (a.stats.cardCounts.universesBeyond / a.stats.totalCards) - (b.stats.cardCounts.universesBeyond / b.stats.totalCards)"
+                                    label="Universes Beyond"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')"
+                                    prop="stats.cardCounts.supplementalProduct"
+                                    :sort-method="(a, b) => (a.stats.cardCounts.supplementalProduct / a.stats.totalCards) - (b.stats.cardCounts.supplementalProduct / b.stats.totalCards)"
+                                    label="Supplemental Product"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
+                                    </template>
+                                </el-table-column>
                             </el-table>
                         </el-tab-pane>
 
@@ -312,12 +577,11 @@ const defaultConfig = {
         'name',
         'owner',
         'stats.totalCards',
-        'stats.percentages.newCards',
-        'stats.percentages.landCards',
+        'avgSimilarityScore',
         'stats.averageNonLandCmc',
         'stats.averageWordCountMinusParen',
-        'stats.uniqueKeywords',
-        'stats.percentages.makesTokens',
+        'stats.cardCounts.removal',
+        'stats.uniqueNonEvergreenKeywords',
     ],
 };
 
@@ -325,7 +589,7 @@ const isMobile = computed(() => {
   return screen.width <= 760;
 });
 
-const config = bindStorage('appConfig', (v) => {
+const config = bindStorage('cube-app-config', (v) => {
     if (v == undefined || v === null) {
         return defaultConfig;
     } else {
@@ -335,6 +599,8 @@ const config = bindStorage('appConfig', (v) => {
         }
     }
 });
+
+const columnCustomizationVisible = ref(false);
 
 const addCubeForm = reactive({
     loading: false,
@@ -365,46 +631,41 @@ const columnOptions = ref([
         label: 'Core',
         options: [
             { value: 'rowNumber', label: "Row Number" },
-            // { value: 'thumbnail', label: "Thumbnail" },
+            // { value: 'thumbnail', label: "Thumbnail" }, // Not letting this be configurable at the moment...
             { value: 'name', label: "Name" },
             { value: 'owner', label: "Owner" },
-            { value: 'category', label: "Category" },
-            { value: 'categoryPrefixes', label: "Category Prefixes" },
-            { value: 'avgSimilarityScore', label: "Avg. Cosine Similarity" },
-            { value: 'stats.totalCards', label: "Total Cards" },
-            { value: 'stats.newCards', label: "\"New\" Cards (Last 12 Months)" },
-            { value: 'stats.percentages.newCards', label: "% \"New\" Cards (Last 12 Months)" },
-            { value: 'stats.landCards', label: "Lands" },
-            { value: 'stats.percentages.landCards', label: "% Lands" },
-            { value: 'stats.averageNonLandCmc', label: "Avg. Non-Land MV" },
-            { value: 'stats.averageElo', label: "Avg. Card Elo" },
-            { value: 'stats.averagePopularity', label: "Avg. Card Popularity" },
-            { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)" },
+            { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
+            { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
+            { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
+            { value: 'stats.landCards', label: "Lands", tooltip: "Total Number of Land Cards, includes MDFCs" },
         ],
     },
     {
-        label: 'Product Line',
+        label: 'Summary Stats',
         options: [
-            { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond" },
-            { value: 'stats.percentages.universesBeyond', label: "% Universes Beyond" },
-            { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product" },
-            { value: 'stats.percentages.supplementalProduct', label: "% Supplemental Product" },
+            { value: 'avgSimilarityScore', label: "Avg. Similarity", tooltip: "Average Cosine Similarity Score vs. Other Loaded Cubes" },
+            { value: 'stats.averageNonLandCmc', label: "Avg. Mana Value", tooltip: "Average Mana Value of Non-Land Cards" },
+            { value: 'stats.averageElo', label: "Avg. Card Elo", tooltip: "Average CubeCobra Card Elo Rating" },
+            { value: 'stats.averagePopularity', label: "Avg. Card Popularity", tooltip: "Average CubeCobra Card Popularity Score" },
         ],
     },
     {
         label: 'Characteristics',
         options: [
-            { value: 'stats.removalDensity', label: "Removal Density" },
-            { value: 'stats.averageWordCount', label: 'Avg. Word Count' },
-            { value: 'stats.averageWordCountMinusParen', label: 'Avg. Word Count Excl. Reminder' },
-            { value: 'stats.uniqueKeywords', label: "Keywords" },
-            { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords" },
-            { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout" },
-            { value: 'stats.percentages.abnormalLayout', label: "% Abnormal Layout" },
-            { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens" },
-            { value: 'stats.percentages.makesTokens', label: "% Makes Tokens" },
-            // { value: 'stats.cardCounts.initiative', label: "Initiative" },
-            // { value: 'stats.percentages.initiative', label: "% Initiative" },
+            { value: 'stats.averageWordCount', label: 'Avg. Word Count', tooltip: "Average Oracle Text Word Count" },
+            { value: 'stats.averageWordCountMinusParen', label: 'Avg. Word Count Excl. Reminder', tooltip: "Average Oracle Text Word Count, excluding anything in Parentheses" },
+            { value: 'stats.uniqueKeywords', label: "Keywords", tooltip: "Number of Unique Keywords" },
+            { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords", tooltip: "Number of Unique Non-Evergreen Keywords" },
+            { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout", tooltip: "Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" },
+            { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens", tooltip: "Cards that Create one or more Tokens" },
+            { value: 'stats.cardCounts.removal', label: "Removal Density", tooltip: "Cards tagged with `removal` in Scryfall's Tagger" },
+        ],
+    },
+    {
+        label: 'Product Line',
+        options: [
+            { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond", tooltip: "Cards from Universes Beyond Products (includes Standard sets)" },
+            { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product", tooltip: "Cards from Supplemental Products (includes Portal)" },
         ],
     },
 ]);
@@ -478,6 +739,18 @@ const submitAddCubeForm = async () => {
  */
 const removeCube = (cubeId: string) => {
     delete loadedCubes.value[cubeId];
+};
+
+const formatters = {
+    toFixed2: (value: number) => {
+        return value.toFixed(2);
+    },
+    toPriceUsd: (value: number) => {
+        return '$' + value.toFixed(2);
+    },
+    percentageFormatter: (value: number) => {
+        return (value * 100).toFixed(2) + '%';
+    },
 };
 
 const columnFormatters = {
@@ -586,5 +859,10 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 
 .expanded-statistics > .el-col {
     margin-top: 1.5em;
+}
+
+.cell-secondary {
+    color: var(--el-text-color-secondary);
+    margin-left: 0.5em;
 }
 </style>

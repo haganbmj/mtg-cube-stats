@@ -2,8 +2,7 @@
     <h3>Notes</h3>
     <h4>Card Data:</h4>
     <ul>
-        <li>All cards are evaluated using their original printings only for consistency.</li>
-        <li>Cards with multiple faces (MDFCs especially) are a bit janky at the moment, need to adjust that.</li>
+        <li>All cards are evaluated using their original printings only for consistency and to indicate the design goals of the time.</li>
         <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
         <li>There are a number of things not classified as "keywords" by the comp rules (Initiative, Monarch, "Becomes Day", etc) and things like Adventure are considered card layouts rather than keywords.</li>
         <li>"Removal" is evaluated using Scryfall Tagger's otag:removal-creature filter.</li>

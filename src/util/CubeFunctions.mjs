@@ -56,6 +56,7 @@ export function enrichCubeContents(cards) {
             cmc: scryfallCard?.cmc ?? 0,
             colorIdentity: scryfallCard?.colorIdentity ?? [],
             typeLine: scryfallCard?.typeLine ?? '',
+            effectiveTypes: scryfallCard?.effectiveTypes ?? [],
             oracleText: scryfallCard?.oracleText ?? '',
             oracleTextWordCount: scryfallCard?.oracleTextWordCount ?? 0,
             oracleTextWordCountMinusParen: scryfallCard?.oracleTextWordCountMinusParen ?? 0,
@@ -81,18 +82,21 @@ export function enrichCubeContents(cards) {
  *  Unclear if that means I should break out the calculations to their own functions.
  *  Also, need to work out how Vue is handling reactivity with these as props on an object, might be better to use a Map or some other structure to avoid recomputes.
  */
-export function analyzeCubeContents(cards, excludeLands = false) {
+export function analyzeCubeContents(cards) {
     // FIXME: Handle DFCs better here. MDFCs should be considered nonLand for the side that is, but DFCs that flip into lands (or vice-versa) should use their primary side?
-    const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
+    //  It's awkward too because the FIN Adventure lands are 0 CMC, despite being non-land spells if you want.
+    // const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
+    const nonLandCards = cards.filter(card => !card.effectiveTypes.includes('Land'));
     const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
 
     const firstOrderStats = {
         totalCards: cards.length,
         totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
-        landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
+        // FIXME: This is only handling the front of DFCs.
+        // landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
+        landCards: cards.filter(card => card.effectiveTypes.includes('Land')).length,
         newCards: cards.filter(card => card.releaseDate >= newDateCutoff).length,
 
-        removalDensity: cards.filter(c => c.tags.includes('removal')).length / cards.length,
         averageElo: cards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: cards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
@@ -127,7 +131,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         cmcDistribution: (() => {
             // FIXME: Should this just try and account for Lands as their own entry?
             const distribution = {};
-            distribution["L"] = excludeLands ? 0 : cards.length - nonLandCards.length;
+            distribution["L"] = cards.length - nonLandCards.length;
             for (let i = 0; i < 10; i++) {
                 distribution[i] = nonLandCards.filter(c => Math.floor(c.cmc) === i).length;
             }
@@ -143,8 +147,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
             // This would just be the front side of any DFCs.
             cards.forEach(card => {
                 // Look only at the front face? This is probably naive and needs to handle MDFCs.
-                const cardTypes = card.typeLine.split('//')[0].split('—')[0].trim().split(' ');
-                for (const type of cardTypes) {
+                for (const type of card.effectiveTypes) {
                     // Maybe keep the basics to be able to identify those?
                     if (type === 'Legendary' || type === 'Basic' || type === 'Snow' || type === 'World') {
                         continue;
@@ -207,7 +210,7 @@ export function analyzeCubeContents(cards, excludeLands = false) {
         uniqueNonEvergreenKeywords: Object.keys(firstOrderStats.keywords).filter(kw => !isEvergreenKeyword(kw)).length,
         cardCounts: {
             // FIXME: Move the rest of the counts into this prop, then do percentages in a consistent way.
-            // removal: cards.filter(c => c.tags.includes('removal')).length,
+            removal: cards.filter(c => c.tags.includes('removal')).length,
             makesTokens: cards.filter(c => c.makesTokens).length,
             universesBeyond: cards.filter(c => c.isUniversesBeyond).length,
             supplementalProduct: cards.filter(c => c.isSupplementalProduct).length,
