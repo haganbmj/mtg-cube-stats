@@ -3,11 +3,11 @@ import axios from 'axios';
 
 // TODO: Might be better to call this as part of a dedicated script to manage all these data loads.
 
-// otag:removal includes land/artifact/enchantment so it's probably a bit misleading.
-// otag:removal-creature might be more meaningful for the average cube.
+// otag:removal includes land/artifact/enchantment just as a note.
+// otag:removal-creature might be more meaningful for the average cube, but it's kind of confusing to use?
 
 let oracleIds = [];
-let nextPage = 'https://api.scryfall.com/cards/search?dir=asc&format=json&include_extras=false&include_multilingual=false&include_variations=false&order=set&page=1&q=otag%3Aremoval-creature&unique=cards';
+let nextPage = 'https://api.scryfall.com/cards/search?dir=asc&format=json&include_extras=false&include_multilingual=false&include_variations=false&order=set&page=1&q=otag%3Aremoval&unique=cards';
 
 if (!fs.existsSync('./data/tagger-removal-oracle-ids.json') || process.argv[2] == "--update") {
     console.log('Downloading fresh tagger data.');

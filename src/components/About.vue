@@ -2,11 +2,10 @@
     <h3>Notes</h3>
     <h4>Card Data:</h4>
     <ul>
-        <li>All cards are evaluated using their original printings only for consistency.</li>
-        <li>Cards with multiple faces are (currently) evaluated using their front face only.</li>
+        <li>All cards are evaluated using their original printings only for consistency and to indicate the design goals of the time.</li>
         <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
         <li>There are a number of things not classified as "keywords" by the comp rules (Initiative, Monarch, "Becomes Day", etc) and things like Adventure are considered card layouts rather than keywords.</li>
-        <li>"Removal" is evaluated using Scryfall Tagger's otag:removal-creature filter.</li>
+        <li>"Removal" is evaluated using Scryfall Tagger's <code>otag:removal</code> filter.</li>
         <li>Word count is a best effort. Using Scryfall's oracle text which sometimes includes reminder text. The column excluding reminder text is just a naive stripping of any text between parenthesis in the oracle text, which will catch some false positives.</li>
         <li>Minimum Format Legality is looking to represent the "smallest" sanctioned paper format that the cards are legal in? (Standard < Pioneer < Modern < Legacy < Vintage < Cube).</li>
     </ul>

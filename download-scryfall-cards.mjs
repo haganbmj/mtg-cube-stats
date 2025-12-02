@@ -91,6 +91,18 @@ const excludedLayouts = [
     'art_series',
 ];
 
+const effectiveTypes = (card) => {
+    if (card.layout === 'adventure') {
+        // Consider only the primary type of Adventures.
+        // Could probably do this better, but it gets around the FIN Adventure Lands...
+        return card.card_faces[0].type_line.split('—')[0].trim().split();
+    } else if (card.layout === 'modal_dfc' || card.layout === 'split') {
+        return card.card_faces.flatMap(face => face.type_line.split('—')[0].trim().split());
+    } else {
+        return card.type_line.split('—')[0].trim().split();
+    }
+};
+
 const stripped = cards.filter(card => {
     // Process the exclusions.
     return includedSets.includes(card.set) ||
@@ -100,11 +112,14 @@ const stripped = cards.filter(card => {
         && !excludedSets.includes(card.set));
 }).flatMap(card => {
     // Do some handling for the stupid Reversible Card bullshit.
+    // FIXME: Skipping these for the moment, they get screwy with the TDM Adventure Dragons and I don't need them.
+    //  I think I'm missing 1 card by doing this so need to figure that out.
     if (card.layout === 'reversible_card') {
-        return [
-            { ...card, ...card.card_faces[0], collector_number: card.collector_number, card_faces: undefined, overridden_collector_number: `${card.collector_number}a`, reversible_face: 'front' },
-            { ...card, ...card.card_faces[1], collector_number: card.collector_number, card_faces: undefined, overridden_collector_number: `${card.collector_number}b`,reversible_face: 'back' },
-        ];
+        return [];
+        // return [
+        //     { ...card, ...card.card_faces[0], collector_number: card.collector_number, card_faces: undefined, overridden_collector_number: `${card.collector_number}a`, reversible_face: 'front' },
+        //     { ...card, ...card.card_faces[1], collector_number: card.collector_number, card_faces: undefined, overridden_collector_number: `${card.collector_number}b`,reversible_face: 'back' },
+        // ];
     }
 
     return [ card ];
@@ -132,6 +147,7 @@ const stripped = cards.filter(card => {
         colors: card.colors || [],
         colorIdentity: card.color_identity || [],
         typeLine: card.type_line,
+        effectiveTypes: effectiveTypes(card),
         oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text !== undefined ? card.card_faces.map(face => face.oracle_text).join('\n\n') : ''),
         keywords: card.keywords || [],
         allParts: card.all_parts || [],
@@ -191,6 +207,7 @@ const minimized = stripped.sort((a, b) => {
             // This is one we want, it is based on the mana cost.
             colorIdentity: card.colorIdentity,
             typeLine: card.typeLine,
+            effectiveTypes: card.effectiveTypes,
             oracleText: card.oracleText,
             oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).filter(v => v != '').length,
             oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter(v => v != '').length,
