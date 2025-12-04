@@ -11,6 +11,14 @@ export async function initScryfall() {
     console.timeEnd('Loading Scryfall card data');
 }
 
+const rarityScoreMap = {
+    common: 0.333,
+    uncommon: 0.666,
+    rare: 1.000,
+    mythic: 1.200,
+    bonus: 1.000,
+};
+
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
@@ -100,6 +108,7 @@ export function analyzeCubeContents(cards) {
 
         averageElo: cards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: cards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
+        blendedRarityScore: cards.reduce((sum, c) => sum + rarityScoreMap[c.minRarity ?? 'bonus'], 0.0) / cards.length,
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
 
         // FIXME: Strict color category should be something I embed on the main card model.
