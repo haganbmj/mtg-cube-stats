@@ -154,6 +154,8 @@ const effectiveTypes = (card) => {
     }
 };
 
+const minRarityOrder = ['common', 'uncommon', 'rare', 'mythic', 'special', 'bonus'];
+
 const stripped = cards.filter(card => {
     // Process the exclusions.
     return includedSets.includes(card.set) ||
@@ -315,6 +317,14 @@ const best = Object.keys(minimized.cards).reduce((store, key) => {
     if (minPriceUsd != Number.MAX_SAFE_INTEGER) {
         store[key].minPriceUsd = minPriceUsd;
     }
+
+    const allRarities = Array.from(new Set(card.map(c => c.rarity)));
+    store[key].rarities = allRarities;
+
+    const minRarity = allRarities.sort((a, b) => {
+        return minRarityOrder.indexOf(a) - minRarityOrder.indexOf(b);
+    })[0];
+    store[key].minRarity = minRarity;
 
     return store;
 }, {});
