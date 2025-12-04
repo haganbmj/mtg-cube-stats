@@ -24,7 +24,11 @@ const props = defineProps({
     rarityDistribution: {
         type: Object,
         required: true,
-    }
+    },
+    minimumRarityDistribution: {
+        type: Object,
+        required: true,
+    },
 });
 
 const chartOptions = computed(() => {
@@ -32,24 +36,39 @@ const chartOptions = computed(() => {
         return { name: capitalizeFirstLetter(key), value };
     });
 
+    const minData = Object.entries(props.minimumRarityDistribution).map(([key, value]) => {
+        return { name: capitalizeFirstLetter(key), value };
+    });
+
     return {
         title: {
-            text: 'Original Rarity',
+            text: 'Minimum/Original Rarity',
             left: 'center',
         },
         tooltip: {
             trigger: 'item',
-            formatter: '{b}<br/>{c} Cards ({d}%)',
+            formatter: '<b>{a}</b><br/>{b}<br/>{c} Cards ({d}%)',
         },
         series: [
             {
                 data,
+                name: 'Original Rarity',
                 type: 'pie',
+                radius: ['0%', '40%'],
+                label: {
+                    show: false,
+                },
+            },
+            {
+                data: minData,
+                name: 'Minimum Rarity',
+                type: 'pie',
+                radius: ['42%', '50%'],
                 label: {
                     color: 'rgba(255, 255, 255, 0.3)',
                     formatter: '{b} ({d}%)',
                 },
-            }
+            },
         ],
     };
 });

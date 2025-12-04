@@ -63,6 +63,7 @@ export function enrichCubeContents(cards) {
             legality: scryfallCard?.legality ?? {},
             isUniversesBeyond: scryfallCard?.isUniversesBeyond ?? false,
             rarity: scryfallCard?.rarity ?? undefined,
+            minRarity: scryfallCard?.minRarity ?? undefined,
             releaseDate: scryfallCard?.releaseDate ?? undefined,
             releaseYear: scryfallCard?.releaseDate ? parseInt(scryfallCard.releaseDate.split('-')[0]) : undefined,
             setCode: scryfallCard?.setCode?.toUpperCase() ?? '',
@@ -189,6 +190,11 @@ export function analyzeCubeContents(cards) {
         })(),
         rarityDistribution: cards.reduce((rarities, c) => {
             const rarity = c.rarity ?? 'unknown';
+            rarities[rarity] = (rarities[rarity] ?? 0) + 1;
+            return rarities;
+        }, {}),
+        minRarityDistribution: cards.reduce((rarities, c) => {
+            const rarity = c.minRarity ?? 'unknown';
             rarities[rarity] = (rarities[rarity] ?? 0) + 1;
             return rarities;
         }, {}),

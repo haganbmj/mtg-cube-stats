@@ -175,7 +175,7 @@
                                                     </el-col>
                                                     <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
-                                                            <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" />
+                                                            <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" :minimumRarityDistribution="props.row.stats?.minRarityDistribution" />
                                                         </div>
                                                     </el-col>
                                                     <el-col :span="12" :xs="24" :md="12" :xl="8">
