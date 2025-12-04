@@ -173,6 +173,7 @@ const batches = [
             '5d72c6cad13edd6540aff5f3', // cr4cksh07 - Mad Peasant
             '5d498d7797ca265764f113bf', // DammitJoel - Peasant Synergy Cube
             '5f76cacbdebf310362b90289', // ZeldaExplorer - ZeldaExplorer's Peasant Cube
+            '5e4fec00b2fc055a2a149986', // WasherDryer - Peasant Cube
         ],
     },
     {
