@@ -169,15 +169,24 @@
             min-width="175"
             max-width="350"
             :filters="[
+                { text: 'Land', value: 'Land' },
                 { text: 'Creature', value: 'Creature' },
                 { text: 'Instant', value: 'Instant' },
                 { text: 'Sorcery', value: 'Sorcery' },
-                { text: 'Enchantment', value: 'Enchantment' },
                 { text: 'Artifact', value: 'Artifact' },
+                { text: 'Enchantment', value: 'Enchantment' },
                 { text: 'Planeswalker', value: 'Planeswalker' },
-                { text: 'Land', value: 'Land' }
+                { text: 'Battle', value: 'Battle' },
+
+                { text: 'Legendary', value: 'Legendary' },
+                { text: 'Aura', value: 'Aura' },
+                { text: 'Equipment', value: 'Equipment' },
+                { text: 'Vehicle', value: 'Vehicle' },
+                { text: 'Lesson', value: 'Lesson' },
+                { text: 'Kindred', value: 'Kindred' },
+                { text: 'Conspiracy', value: 'Conspiracy' },
             ]"
-            :filter-multiple="false"
+            :filter-multiple="true"
             show-overflow-tooltip
             sortable="custom"
             filterable
@@ -470,7 +479,7 @@ const filteredRows = computed(() => {
                         return false;
                     }
                 } else if (key === 'typeLine') {
-                    const matches = values.some(value => row.typeLine.includes(value));
+                    const matches = values.every(value => row.typeLine.includes(value));
                     if (!matches) {
                         return false;
                     }
