@@ -56,6 +56,15 @@
                                 class="card-image"
                             />
                         </div>
+
+                        <el-row justify="center" :gutter="10" class="row-rarities" style="margin-top: 10px; text-align: center;">
+                            <el-col :span="24">
+                                <el-text>Original Rarity: {{ capitalizeFirstLetter(props.row.rarity) }}</el-text>
+                            </el-col>
+                            <el-col :span="24">
+                                <el-text>Minimum Rarity: {{ capitalizeFirstLetter(props.row.minRarity) }}</el-text>
+                            </el-col>
+                        </el-row>
                     </el-col>
                     <el-col :span="16" :xs="24" :sm="24" :md="16" :xl="16">
                         <el-row direction="horizontal">
@@ -250,6 +259,7 @@ import { TableInstance, TableV2SortOrder } from 'element-plus';
 import type { SortBy, SortState } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
+import { capitalizeFirstLetter } from '../util/HelperFunctions.mjs';
 
 const props = defineProps({
     loadedCubes: {
@@ -546,5 +556,14 @@ const visibleRows = computed(() => {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+}
+
+.row-rarities {
+    margin-top: 10px;
+    text-align: center;
+
+    .el-text {
+        line-height: 1.5em;
+    }
 }
 </style>
