@@ -101,7 +101,7 @@
 
                             <el-table
                                 :data="overviewTableData"
-                                :defaut-sort="{ prop: 'name', order: 'ascending' }"
+                                :default-sort="{ prop: 'name', order: 'ascending' }"
                                 :preserve-expanded-content="false"
                                 style="width: 100%"
                                 table-layout="auto"

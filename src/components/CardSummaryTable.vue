@@ -36,7 +36,7 @@
     <el-table
         ref="cardSummaryTableRef"
         :data="visibleRows"
-        :defaut-sort="{ prop: 'cubeCount', order: 'descending' }"
+        :default-sort="{ prop: 'cubeCount', order: 'descending' }"
         :preserve-expanded-content="false"
         @filter-change="onFilterChange"
         @sort-change="onSortChange"
