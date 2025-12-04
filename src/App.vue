@@ -260,6 +260,21 @@
                                 </el-table-column>
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.singletonCards')"
+                                    prop="stats.singletonCards"
+                                    :sort-method="(a, b) => (a.stats.singletonCards / a.stats.totalCards) - (b.stats.singletonCards / b.stats.totalCards)"
+                                    label="Singleton"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.singletonCards / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.singletonCards }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('avgSimilarityScore')"
                                     prop="avgSimilarityScore"
                                     label="Avg. Similarity"
@@ -561,7 +576,8 @@ const columnOptions = ref([
             { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
-            { value: 'stats.landCards', label: "Lands", tooltip: "Total Number of Land Cards, includes MDFCs" },
+            { value: 'stats.landCards', label: "Lands", tooltip: "Cards that are playable from hand as a Land, includes MDFCs" },
+            { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy." },
         ],
     },
     {
