@@ -60,7 +60,7 @@
                     <el-col :span="16" :xs="24" :sm="24" :md="16" :xl="16">
                         <el-row direction="horizontal">
                             <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
-                                <h3>Included In:</h3>
+                                <h3>Included In ({{ props.row.cubeCount }}):</h3>
                                 <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
                                     <div v-if="cube.included">
                                         <el-row direction="horizontal">
@@ -75,7 +75,7 @@
                                 </template>
                             </el-col>
                             <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
-                                <h3>Not Included In:</h3>
+                                <h3>Not Included In ({{ expandedCubeList(props.row.cubes).length - props.row.cubeCount }}):</h3>
                                 <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
                                     <div v-if="!cube.included">
                                         <el-row direction="horizontal">
