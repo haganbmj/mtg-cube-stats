@@ -101,6 +101,7 @@ export function analyzeCubeContents(cards) {
     const firstOrderStats = {
         totalCards: cards.length,
         totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
+        singletonCards: cards.filter(c => c.oracleId && cards.filter(c2 => c2.oracleId === c.oracleId).length === 1).length,
         // FIXME: This is only handling the front of DFCs.
         // landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
         landCards: cards.filter(card => card.effectiveTypes.includes('Land')).length,
@@ -236,20 +237,7 @@ export function analyzeCubeContents(cards) {
         },
     }
 
-    const thirdOrderStats = {
-        ...secondOrderStats,
-        percentages: {
-            newCards: (secondOrderStats.newCards / secondOrderStats.totalCards),
-            landCards: (secondOrderStats.landCards / secondOrderStats.totalCards),
-            makesTokens: (secondOrderStats.cardCounts.makesTokens / secondOrderStats.totalCards),
-            universesBeyond: (secondOrderStats.cardCounts.universesBeyond / secondOrderStats.totalCards),
-            supplementalProduct: (secondOrderStats.cardCounts.supplementalProduct / secondOrderStats.totalCards),
-            abnormalLayout: (secondOrderStats.cardCounts.abnormalLayout / secondOrderStats.totalCards),
-            initiative: (secondOrderStats.cardCounts.initiative / secondOrderStats.totalCards),
-        },
-    }
-
-    return thirdOrderStats;
+    return secondOrderStats;
 }
 
 /**
