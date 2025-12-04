@@ -264,8 +264,8 @@
 </template>
 
 <script setup lang="ts">
-import { TableInstance, TableV2SortOrder } from 'element-plus';
-import type { SortBy, SortState } from 'element-plus';
+import { TableInstance } from 'element-plus';
+import type { SortBy } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions.mjs';
@@ -442,10 +442,9 @@ const sortedRows = computed(() => {
     // TODO: Manually sort color in WUBRG order.
     return alphaSorted.slice(0).sort((a, b) => {
         const sortKey = activeSort.value.prop;
-        const sortOrder = activeSort.value.order === 'ascending' ? TableV2SortOrder.ASC : TableV2SortOrder.DESC;
 
         // FIXME: Add a default secondary sort to alphabetize by name.
-        if (sortOrder === TableV2SortOrder.ASC) {
+        if (activeSort.value.order === 'ascending') {
             if (a[sortKey] < b[sortKey]) return -1;
             if (a[sortKey] > b[sortKey]) return 1;
             return 0;
