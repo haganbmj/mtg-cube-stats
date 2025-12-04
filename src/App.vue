@@ -300,6 +300,16 @@
                                 />
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.blendedRarityScore')"
+                                    prop="stats.blendedRarityScore"
+                                    label="Rarity Score"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.averageWordCount')"
                                     prop="stats.averageWordCount"
                                     label="Avg. Word Count"
@@ -561,6 +571,7 @@ const columnOptions = ref([
             { value: 'stats.averageNonLandCmc', label: "Avg. Mana Value", tooltip: "Average Mana Value of Non-Land Cards" },
             { value: 'stats.averageElo', label: "Avg. Card Elo", tooltip: "Average CubeCobra Card Elo Rating" },
             { value: 'stats.averagePopularity', label: "Avg. Card Popularity", tooltip: "Average CubeCobra Card Popularity Score" },
+            { value: 'stats.blendedRarityScore', label: "Rarity Score", tooltip: "Card Minimum Rarity Score, using C=0.33, U=0.66, R=1.0, M=1.2" },
         ],
     },
     {
