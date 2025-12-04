@@ -180,17 +180,23 @@
             column-key="tags"
             label="Tags"
             min-width="75"
-            max-width="150"
+            max-width="250"
+            :filters="tags"
+            filterable
         >
             <template #default="{ row }">
-                <el-tag
-                    v-for="tag in row.tags"
-                    :key="tag"
-                    size="small"
-                    type="info"
-                >
-                    {{ tag }}
-                </el-tag>
+                <div class="tag-list flex gap-2">
+                    <el-tag
+                        v-for="tag in row.tags"
+                        :key="tag"
+                        size="small"
+                        type="info"
+                        :color="getTagColor(tag)"
+                        disable-transitions
+                    >
+                        {{ tag }}
+                    </el-tag>
+                </div>
             </template>
         </el-table-column>
 
@@ -266,6 +272,20 @@ const isMobile = computed(() => {
 const paginationLayout = computed(() => {
     return isMobile.value ? 'prev, pager, next' : '->, prev, pager, next, sizes';
 });
+
+const tags = [
+    { text: 'counterspell', value: 'counterspell', color: 'rgba(20, 155, 226, 0.3)' },
+    { text: 'draw', value: 'draw', color: 'rgba(30, 144, 255, 0.3)' },
+    { text: 'flicker', value: 'flicker', color: 'rgba(255, 140, 0, 0.3)' },
+    { text: 'ramp', value: 'ramp', color: 'rgba(60, 179, 113, 0.3)' },
+    { text: 'removal', value: 'removal', color: 'rgba(255, 99, 71, 0.3)' },
+    { text: 'token', value: 'token', color: 'rgba(255, 215, 0, 0.3)' },
+    { text: 'tutor', value: 'tutor', color: 'rgba(153, 102, 255, 0.3)' },
+];
+
+const getTagColor = (tag: string) => {
+    return tags.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+};
 
 const expandedCubeList = (cubeKeys: string[]) => {
     const resp = Object.entries(props.loadedCubes).map(([key, cube]) => {
@@ -459,6 +479,12 @@ const filteredRows = computed(() => {
                     if (!values.includes(releaseYear)) {
                         return false;
                     }
+                } else if (key === 'tags') {
+                    const rowTags = row.tags.map((t: string) => t.toLowerCase());
+                    const matches = values.every((tag: string) => rowTags.includes(tag.toLowerCase()));
+                    if (!matches) {
+                        return false;
+                    }
                 } else {
                     if (!values.includes(row[key])) {
                         return false;
@@ -514,5 +540,11 @@ const visibleRows = computed(() => {
     max-width: 400px;
     height: auto;
     border-radius: 4%;
+}
+
+.tag-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 </style>

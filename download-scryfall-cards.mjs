@@ -116,13 +116,24 @@ const taggerOracleIds = {};
 
 taggerData.data.forEach(tag => {
     // 'removal' is pretty broad, but probably the least likely to be extra confusing?
-    if (['removal'].includes(tag.label)) {
+    // 'tutor' includes fetch lands, so that's annoying.
+    if (['removal', 'tutor', 'ramp', 'draw', 'flicker', 'counterspell'].includes(tag.label)) {
         tag.oracle_ids.forEach(oracle => {
             if (taggerOracleIds[oracle] === undefined) {
-                taggerOracleIds[oracle] = [];
+                taggerOracleIds[oracle] = new Set();
             }
-            taggerOracleIds[oracle].push(tag.label);
+            taggerOracleIds[oracle].add(tag.label);
         });
+    }
+});
+
+// Slap on another tag entry for every card that relates to a token.
+cards.forEach(card => {
+    if (card.all_parts?.some(part => part.component === 'token')) {
+        if (taggerOracleIds[card.oracle_id] === undefined) {
+            taggerOracleIds[card.oracle_id] = new Set();
+        }
+        taggerOracleIds[card.oracle_id].add('token');
     }
 });
 
@@ -254,7 +265,7 @@ const minimized = stripped.sort((a, b) => {
             // This needs sanitization to use, it seems to including flavor abilities.
             keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
             // FIXME: Exnted this with any future tags I think I care about.
-            tags: taggerOracleIds[card.oracleId] || [],
+            tags: taggerOracleIds[card.oracleId] !== undefined ? Array.from(taggerOracleIds[card.oracleId]) : [],
             rarity: card.rarity,
             setType: card.setType,
             fromBooster: card.fromBooster,
