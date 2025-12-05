@@ -4,6 +4,7 @@
     <ul>
         <li>All cards are evaluated using their original printing for consistency and to indicate the design goals of the time.</li>
         <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
+        <li>Card data is refreshed weekly, so price updates will be delayed.</li>
         <li>"New" cards are those printed within the last 12 months.</li>
         <li>There are a number of things not classified as "keywords" by the comp rules (Initiative, Monarch, "Becomes Day", etc) and things like Adventure are considered card layouts rather than keywords.</li>
         <li>"Removal" is evaluated using Scryfall Tagger's <code>otag:removal</code> filter.</li>
@@ -17,6 +18,7 @@
     </ul>
     <h4>Miscellaneous:</h4>
     <ul>
+        <li>Cube Collections are refreshed weekly.</li>
         <li>I really, really want tri-state checkboxes in the Table Header filters, but will need to write a custom table component for that.</li>
         <li>Need to figure out good patterns for cross-filtering on some of the Charts.</li>
         <li>This site is statically compiled and uses cached information where possible, so collections or card details may be (slightly) out of date.</li>

@@ -211,6 +211,16 @@
                                 </el-table-column>
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('lastModified')"
+                                    prop="lastModified"
+                                    label="Last Modified"
+                                    min-width="100"
+                                    max-width="125"
+                                    sortable
+                                    :formatter="columnFormatters.toDate"
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')"
                                     prop="stats.totalMinPriceUsd"
                                     label="Price (USD)"
@@ -496,6 +506,7 @@ import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import SimilarCubesTable from './components/SimilarCubesTable.vue';
+import { useDateFormat } from '@vueuse/core';
 
 registerTheme('darkbmj', darkbmjTheme);
 
@@ -573,6 +584,7 @@ const columnOptions = ref([
             // { value: 'thumbnail', label: "Thumbnail" }, // Not letting this be configurable at the moment...
             { value: 'name', label: "Name" },
             { value: 'owner', label: "Owner" },
+            { value: 'lastModified', label: "Last Modified", tooltip: "Date when the contents or description of the cube was last modified" },
             { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
@@ -703,6 +715,14 @@ const columnFormatters = {
     },
     percentageFormatter: (row, column) => {
         return ((getNestedProp(row, column.property) ?? 0) * 100).toFixed(2) + '%';
+    },
+    toDate: (row, column) => {
+        const unixTimestamp = getNestedProp(row, column.property);
+        if (unixTimestamp === undefined || unixTimestamp === null) {
+            return 'N/A';
+        }
+
+        return useDateFormat(new Date(unixTimestamp), 'YYYY-MM-DD').value;
     },
 };
 

@@ -42,6 +42,7 @@ export function remapCube(cube, enrich = true) {
         thumbnail: cube.image.uri,
         category: cube.categoryOverride ?? '',
         categoryPrefixes: (cube.categoryPrefixes ?? []).sort(), // This is an array, so unclear how to get the best use out of it.
+        lastModified: cube.date ?? undefined,
 
         cards: enrich ? enrichCubeContents(cards) : cards,
     };
