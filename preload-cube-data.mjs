@@ -176,6 +176,7 @@ const batches = [
             '5e4fec00b2fc055a2a149986', // WasherDryer - Peasant Cube
             'f0a3ee59-d86b-4449-a8af-a90ed977089a', // Shrimp72 - Shrimp Cube (Peasant)
             '5f02e8171a314e101892d630', // resporius (Herr Lich) - Peasant
+            '899cecd6-78cd-4c8f-a3df-ae08244e8de7', // r2d551/SHRIKE - Peasant+ 2025
         ],
     },
     {
