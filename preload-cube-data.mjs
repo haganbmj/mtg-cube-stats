@@ -2,6 +2,9 @@ import fs from 'fs';
 import { remapCube } from './src/util/CubeFunctions.mjs';
 import { getCubeData } from './src/util/CubeCobra.mjs';
 
+const shard = process.env.shard_number || 'unset';
+console.log(`Determined run/shard number: ${shard}`);
+
 // Prefer using Cube IDs here rather than the user-defined short IDs that can change.
 const batches = [
     // {
@@ -15,7 +18,7 @@ const batches = [
     // },
     {
         name: 'wotc',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 dayss
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         cubes: [
             '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
             'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
@@ -23,7 +26,7 @@ const batches = [
     },
     {
         name: 'cubecobra-top100',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 dayss
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         cubes: [
             // let a = ''; document.querySelectorAll("div.max-w-full .p-4 a[href*='/cube/overview']").forEach(i => a += `${i.href}\n`); console.log(a);
             '5d71a20e91560b5ef2891e6e', // Chimaera - Chimaera540
@@ -130,7 +133,7 @@ const batches = [
     },
     {
         name: 'peasant',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 days
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         cubes: [
             // Combination of Peasant Discord + a few others that I follow.
             '5d5f69612af66a30f9bb9b10', // haganbmj - The Ham Sandwich
@@ -291,10 +294,17 @@ for (const batch of batches) {
     }
 
     const batchResult = {};
-    for (const cubeId of batch.cubes) {
+    for (const [index, cubeId] of batch.cubes.entries()) {
         console.log(`Fetching cube ${cubeId}...`);
         if (fs.existsSync(`./preloads/cubes/${cubeId}.json`)) {
             console.log(`Found local copy, loading from disk...`);
+
+            if (shard !== 'unset' && index % 3 !== parseInt(shard, 10) % 3) {
+                console.log('Skipping due to sharding...');
+                continue;
+            }
+
+
             const stats = fs.statSync(`./preloads/cubes/${cubeId}.json`);
 
             if (stats.size === 0 || stats.mtimeMs <= batch.staleThreshold) {
