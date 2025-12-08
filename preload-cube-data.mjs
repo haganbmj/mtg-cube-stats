@@ -9,7 +9,8 @@ console.log(`Determined run/shard number: ${shard}`);
 const batches = [
     // {
     //     name: 'haganbmj',
-    //     staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 6), // 6 days
+    //     staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+    //     shardCount: 3,
     //     cubes: [
     //         '5d5f69612af66a30f9bb9b10', // Peasant
     //         '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // Kuleshov
@@ -19,6 +20,7 @@ const batches = [
     {
         name: 'wotc',
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 4,
         cubes: [
             '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
             'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
@@ -27,6 +29,7 @@ const batches = [
     {
         name: 'cubecobra-top100',
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 4,
         cubes: [
             // let a = ''; document.querySelectorAll("div.max-w-full .p-4 a[href*='/cube/overview']").forEach(i => a += `${i.href}\n`); console.log(a);
             '5d71a20e91560b5ef2891e6e', // Chimaera - Chimaera540
@@ -134,6 +137,7 @@ const batches = [
     {
         name: 'peasant',
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 3,
         cubes: [
             // Combination of Peasant Discord + a few others that I follow.
             '5d5f69612af66a30f9bb9b10', // haganbmj - The Ham Sandwich
@@ -185,6 +189,7 @@ const batches = [
     {
         name: 'cubecon2025',
         staleThreshold: undefined,
+        shardCount: undefined,
         cubes: [
             // var a = ""; document.querySelectorAll('h5.card-title a[href*="https://cubecobra.com/cube/overview/"]').forEach(e => { a += `'${e.href}', // ${e.innerText}\n`; }); console.log(a);
             '99fb819f-e4b3-44bc-becd-1ec878e7d044', // 100 Ways to Draft
@@ -299,8 +304,8 @@ for (const batch of batches) {
         if (fs.existsSync(`./preloads/cubes/${cubeId}.json`)) {
             console.log(`Found local copy, loading from disk...`);
 
-            if (shard !== 'unset' && index % 3 !== parseInt(shard, 10) % 3) {
-                console.log('Skipping due to sharding...');
+            if (shard !== 'unset' && batch.shardCount !== undefined && index % batch.shardCount !== parseInt(shard, 10) % batch.shardCount) {
+                console.log('Skipping due to sharding policy...');
                 continue;
             }
 
