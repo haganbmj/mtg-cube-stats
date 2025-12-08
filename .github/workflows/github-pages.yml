@@ -5,12 +5,15 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 13 * * 6"
+    - cron: "0 13 * * *"
   workflow_dispatch:
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
+
+env:
+  SHARD_NUMBER: ${{ github.run_number }}
 
 jobs:
   build:
