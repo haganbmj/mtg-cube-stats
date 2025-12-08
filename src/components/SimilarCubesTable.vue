@@ -13,7 +13,9 @@
             sortable
         >
             <template #default="{ row }">
-                <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
+                    <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                </el-tooltip>
             </template>
         </el-table-column>
         <el-table-column
@@ -73,6 +75,7 @@ const mostSimilarCubes = (cubeId: string) => {
                 score: entry[1].cosineSimilarity,
                 intersection: entry[1].insersectionSize,
                 name: otherCube?.name || 'Unknown',
+                owner: otherCube?.owner || 'Unknown',
                 size: otherCube?.stats?.totalCards || 0,
             };
         });

@@ -41,6 +41,7 @@
                                                 v-if="item.tooltip"
                                                 :content="item.tooltip"
                                                 placement="top"
+                                                :hide-after="50"
                                             >
                                                 <el-icon><InfoFilled /></el-icon>
                                             </el-tooltip>
