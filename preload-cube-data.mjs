@@ -2,7 +2,7 @@ import fs from 'fs';
 import { remapCube } from './src/util/CubeFunctions.mjs';
 import { getCubeData } from './src/util/CubeCobra.mjs';
 
-const shard = process.env.shard_number || 'unset';
+const shard = process.env.SHARD_NUMBER || 'unset';
 console.log(`Determined run/shard number: ${shard}`);
 
 // Prefer using Cube IDs here rather than the user-defined short IDs that can change.
