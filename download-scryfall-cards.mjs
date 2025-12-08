@@ -2,7 +2,17 @@ import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
 
-if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update") {
+const runNumber = process.env.RUN_NUMBER || 'unset';
+const refreshCache = process.env.REFRESH_CACHE || 'true';
+let ciRefresh = false;
+
+if (refreshCache.toLowerCase() === 'true' && runNumber !== 'unset' && parseInt(runNumber) % 7 === 0) {
+    ciRefresh = true;
+}
+
+console.log(`Context: RUN_NUMBER=${runNumber}, REFRESH_CACHE=${refreshCache}, ciRefresh=${ciRefresh}`);
+
+if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update" || ciRefresh) {
     console.log('Downloading fresh card data.');
 
     const dataResp = await axios({
@@ -24,7 +34,7 @@ if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update"
     console.log('Using existing card data.');
 }
 
-if (!fs.existsSync('./data/flavor-words.json') || process.argv[2] == "--update") {
+if (!fs.existsSync('./data/flavor-words.json') || process.argv[2] == "--update" || ciRefresh) {
     console.log('Downloading fresh flavor data.');
 
     const flavorWordsResp = await axios({
@@ -46,7 +56,7 @@ if (!fs.existsSync('./data/flavor-words.json') || process.argv[2] == "--update")
     console.log('Using existing flavor data.');
 }
 
-if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update") {
+if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" || ciRefresh) {
     console.log('Downloading fresh tagger data.');
 
     const taggerResp = await axios({
