@@ -2,8 +2,8 @@ import fs from 'fs';
 import { remapCube } from './src/util/CubeFunctions.mjs';
 import { getCubeData } from './src/util/CubeCobra.mjs';
 
-const shard = process.env.SHARD_NUMBER || 'unset';
-console.log(`Determined run/shard number: ${shard}`);
+const runNumber = process.env.RUN_NUMBER || 'unset';
+console.log(`Determined run/shard number: ${runNumber}`);
 
 // Prefer using Cube IDs here rather than the user-defined short IDs that can change.
 const batches = [
@@ -303,16 +303,16 @@ for (const batch of batches) {
         console.log(`Fetching cube ${cubeId}...`);
         if (fs.existsSync(`./preloads/cubes/${cubeId}.json`)) {
             console.log(`Found local copy, loading from disk...`);
+            let skip = false;
 
-            if (shard !== 'unset' && batch.shardCount !== undefined && index % batch.shardCount !== parseInt(shard, 10) % batch.shardCount) {
+            if (runNumber !== 'unset' && batch.shardCount !== undefined && index % batch.shardCount !== parseInt(runNumber) % batch.shardCount) {
                 console.log('Skipping due to sharding policy...');
-                continue;
+                skip = true;
             }
-
 
             const stats = fs.statSync(`./preloads/cubes/${cubeId}.json`);
 
-            if (stats.size === 0 || stats.mtimeMs <= batch.staleThreshold) {
+            if (stats.size === 0 || (!skip && stats.mtimeMs <= batch.staleThreshold)) {
                 console.log(`Local copy is stale or empty, re-fetching...`);
             } else {
                 console.log(`Local copy is fresh, using cached version.`);
