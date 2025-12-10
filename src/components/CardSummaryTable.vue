@@ -111,7 +111,21 @@
         <el-table-column :fixed="!isMobile" prop="index" label="#" width="50" />
         <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable="custom">
             <template #default="{ row }">
-                <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
+                <el-tooltip
+                    placement="right"
+                    effect="light"
+                    popper-class="card-tooltip"
+                >
+                    <template #content>
+                        <el-image
+                                :src="`https://api.scryfall.com/cards/${row.setCode?.toLowerCase()}/${row.collectorNumber}?format=image`"
+                                fit="contain"
+                                :alt="row.name"
+                                :class="'card-image ' + row.setCode?.toLowerCase()"
+                            />
+                    </template>
+                    <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
+                </el-tooltip>
             </template>
         </el-table-column>
 
@@ -576,6 +590,17 @@ const visibleRows = computed(() => {
 
     .el-text {
         line-height: 1.5em;
+    }
+}
+
+.el-popper.card-tooltip {
+    padding: 6px 8px;
+    width: 250px;
+    height: 350px;
+
+    .card-image {
+        width: 100%;
+        height: auto;
     }
 }
 </style>
