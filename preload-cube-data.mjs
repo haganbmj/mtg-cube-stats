@@ -3,7 +3,7 @@ import { remapCube } from './src/util/CubeFunctions.mjs';
 import { getCubeData } from './src/util/CubeCobra.mjs';
 
 const runNumber = process.env.RUN_NUMBER || 'unset';
-console.log(`Determined run/shard number: ${runNumber}`);
+const refresh = process.env.REFRESH_PRELOADS || 'false';
 
 // Prefer using Cube IDs here rather than the user-defined short IDs that can change.
 const batches = [
@@ -294,28 +294,39 @@ const batches = [
 // FIXME: Also would need to backfill a timestamp for the cubecon2025 batch, which I'm considering static for the moment.
 for (const batch of batches) {
     if (batch.staleThreshold === undefined) {
-        console.log(`Skipping ${batch.name}`);
+        console.log(`Skipping batch: ${batch.name}`);
         continue;
     }
+    console.group(`Processing batch: ${batch.name}`);
 
     const batchResult = {};
     for (const [index, cubeId] of batch.cubes.entries()) {
-        console.log(`Fetching cube ${cubeId}...`);
         if (fs.existsSync(`./preloads/cubes/${cubeId}.json`)) {
-            console.log(`Found local copy, loading from disk...`);
             let skip = false;
 
-            if (runNumber !== 'unset' && batch.shardCount !== undefined && index % batch.shardCount !== parseInt(runNumber) % batch.shardCount) {
-                console.log('Skipping due to sharding policy...');
+            if (
+                // If we're running in a CI Context, evaluate whether this is an execution that should evaluate Refreshes.
+                refresh.toLowerCase() !== 'true'
+                && runNumber !== 'unset'
+            ) {
+                console.log(`[${cubeId}] Skipping due to refresh policy...`);
+                skip = true;
+            } else if (
+                // If we're in a refresh run, then determine if sharding would eliminate this cube from the current refresh.
+                runNumber !== 'unset'
+                && batch.shardCount !== undefined
+                && index % batch.shardCount !== parseInt(runNumber) % batch.shardCount
+            ) {
+                console.log(`[${cubeId}] Skipping due to sharding policy...`);
                 skip = true;
             }
 
             const stats = fs.statSync(`./preloads/cubes/${cubeId}.json`);
 
             if (stats.size === 0 || (!skip && stats.mtimeMs <= batch.staleThreshold)) {
-                console.log(`Local copy is stale or empty, re-fetching...`);
+                console.log(`[${cubeId}] Local copy is stale or empty, fetching...`);
             } else {
-                console.log(`Local copy is fresh, using cached version.`);
+                console.log(`[${cubeId}] Local copy is fresh, using cached version.`);
                 const cube = JSON.parse(fs.readFileSync(`./preloads/cubes/${cubeId}.json`, 'utf-8'));
                 batchResult[cubeId] = remapCube(cube, false);
                 continue;
@@ -324,16 +335,16 @@ for (const batch of batches) {
 
         try {
             const cube = await getCubeData(cubeId);
-            console.log(`Fetched cube ${cubeId}, writing to disk...`);
             fs.writeFileSync(`./preloads/cubes/${cubeId}.json`, JSON.stringify(cube, null, 2));
             batchResult[cubeId] = remapCube(cube, false);
         } catch (e) {
-            console.error(`Failed to fetch cube ${cubeId}: ${e.message}`);
+            console.error(`[${cubeId}] Failed to fetch cube: ${e.message}`);
             // FIXME: Should this fault here, or can we proceed then just error out at the end?
         }
     }
+
+    console.groupEnd();
     fs.writeFileSync(`./preloads/cubes-${batch.name}.json`, JSON.stringify(batchResult, null, 2));
-    console.log(`Wrote batch ${batch.name} to file.`);
 
     // Utility for logging out the Cube IDs.
     // Object.values(batchResult).forEach(cube => {
