@@ -53,7 +53,7 @@
                                 :src="`https://api.scryfall.com/cards/${props.row.setCode?.toLowerCase()}/${props.row.collectorNumber}?format=image`"
                                 fit="contain"
                                 :alt="props.row.name"
-                                class="card-image"
+                                :class="'card-image ' + props.row.setCode?.toLowerCase()"
                             />
                         </div>
 
@@ -558,10 +558,17 @@ const visibleRows = computed(() => {
     text-align: right;
 }
 
+.card-image {
+    border-radius: 4.75% / 3.5%;
+
+    &.lea {
+        border-radius: 7% / 5.5%;
+    }
+}
+
 .expanded-content .card-image {
     max-width: 400px;
     height: auto;
-    border-radius: 4%;
 }
 
 .tag-list {
