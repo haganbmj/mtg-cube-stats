@@ -5,7 +5,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 13 * * *"
+    - cron: "0 13 * * *" # Daily at 13:00 UTC; Update preloads.
+    - cron: "0 9 * * 1"  # Weekly on Monday at 09:00 UTC; Update Scryfall data.
   workflow_dispatch:
 
 concurrency:
@@ -14,7 +15,8 @@ concurrency:
 
 env:
   RUN_NUMBER: ${{ github.run_number }}
-  REFRESH_CACHE: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+  REFRESH_SCRYFALL: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1') || github.event_name == 'workflow_dispatch' }}
+  REFRESH_PRELOADS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 13 * * *') || github.event_name == 'workflow_dispatch' }}
 
 jobs:
   build:
