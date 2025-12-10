@@ -184,6 +184,7 @@ const batches = [
             'f0a3ee59-d86b-4449-a8af-a90ed977089a', // Shrimp72 - Shrimp Cube (Peasant)
             '5f02e8171a314e101892d630', // resporius (Herr Lich) - Peasant
             '899cecd6-78cd-4c8f-a3df-ae08244e8de7', // r2d551/SHRIKE - Peasant+ 2025
+            '768c2165-e9d7-4485-9a4e-d7ce0754303b', // eklug - C/Ube
         ],
     },
     {
