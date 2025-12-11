@@ -1,5 +1,5 @@
 import { useMemoize } from '@vueuse/core';
-import { cosineSimilarity, intersectionSizeOf } from './SimiliartyFunctions.mjs';
+import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions.mjs';
 import { isEvergreenKeyword } from './Keywords.mjs';
 
 const scryfallLoad = () => import('../../data/cards-minimized.json');
@@ -50,6 +50,7 @@ export function remapCube(cube, enrich = true) {
         followerCount: cube.following?.length ?? 0,
 
         cards: cards,
+        suffixedCardIds: suffixedDuplicates(cards.map(c => c.oracleId)),
     };
 
     if (enrich) {
@@ -284,8 +285,9 @@ export const determineCosineSimilarityScore = useMemoize(
 );
 
 function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
-    const cardsA = cubeA.cards.map(c => c.oracleId);
-    const cardsB = cubeB.cards.map(c => c.oracleId);
+    // Use pre-suffixed lists to prevent re-running that function an excessive number of times.
+    const cardsA = cubeA.suffixedCardIds;
+    const cardsB = cubeB.suffixedCardIds;
 
     return {
         cosineSimilarity: cosineSimilarity(cardsA, cardsB),

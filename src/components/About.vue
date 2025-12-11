@@ -13,8 +13,8 @@
     </ul>
     <h4>Calculations:</h4>
     <ul>
-        <li>Currently using <a href="https://en.wikipedia.org/wiki/Cosine_similarity">Cosine Similarity</a> to compare cubes, which means it's only looking at the unique card contents of each list. Duplicates and the significance/role of each card is not considered.</li>
-        <li>Rarity Score is an effort to provide a comparative stat about the rarity distribution of the cube, assigning a value of <code>C=0.333, U=0.666, R=1.000, M=1.200</code> to each card.</li>
+        <li>Currently using <a href="https://en.wikipedia.org/wiki/Cosine_similarity">Cosine Similarity</a> to compare cubes, which helps with lists of different sizes. The significance/role of each card is not considered, but duplicate copies of cards are evaluated in an effort to better support non-singleton cubes.</li>
+        <li>Rarity Score is an effort to provide a comparative stat about the (minimum) rarity distribution of the cube by assigning a value of <code>C=0.333, U=0.666, R=1.000, M=1.200</code> to each card and taking the average.</li>
     </ul>
     <h4>Miscellaneous:</h4>
     <ul>
