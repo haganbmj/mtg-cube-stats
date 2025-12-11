@@ -667,6 +667,7 @@ const overviewTableData = computed(() => {
             // This seems to save ~500ms for ~50 cubes (600ms vs 100ms), and ~1200ms for ~100 cubes (1400ms vs 200ms).
             // There might be even more to strip from this object to shave a few more ms.
             cards: undefined,
+            suffixedCardIds: undefined,
             avgSimilarityScore: getAverageSimilarityScore(id),
         }
     });
