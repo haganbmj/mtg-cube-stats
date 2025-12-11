@@ -222,6 +222,15 @@
                                 />
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('followerCount')"
+                                    prop="followerCount"
+                                    label="Followers"
+                                    min-width="100"
+                                    max-width="125"
+                                    sortable
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')"
                                     prop="stats.totalMinPriceUsd"
                                     label="Price (USD)"
@@ -593,11 +602,12 @@ const columnOptions = ref([
             { value: 'name', label: "Name" },
             { value: 'owner', label: "Owner" },
             { value: 'lastModified', label: "Last Modified", tooltip: "Date when the contents or description of the cube was last modified" },
+            { value: 'followerCount', label: "Followers", tooltip: "Number of users following the cube on CubeCobra" },
             { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
             { value: 'stats.landCards', label: "Lands", tooltip: "Cards that are playable from hand as a Land, includes MDFCs" },
-            { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy." },
+            { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
         ],
     },
     {
