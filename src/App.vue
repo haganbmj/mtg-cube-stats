@@ -490,7 +490,7 @@ import { ref, reactive, computed, provide, onMounted, nextTick } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import randomFooter from './util/RandomFooter.mjs';
-import { initScryfall, remapCube, enrichCube, determineCosineSimilarityScore, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions.mjs';
+import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import { bindStorage } from './util/VueLocalStorage.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
@@ -631,6 +631,7 @@ const columnOptions = ref([
     },
 ]);
 
+// FIXME: Still getting a double render on this for some reason, but the memoization is absorbing the hit.
 const similarityMatrix = computed(() => {
     return computeSimilarityMatrix(loadedCubes.value);
 });
@@ -652,6 +653,10 @@ const overviewTableData = computed(() => {
     return Object.entries(loadedCubes.value).map(([id, cube]) => {
         return {
             ...cube,
+            // Strip cards from the table object to improve render performance.
+            // This seems to save ~500ms for ~50 cubes (600ms vs 100ms), and ~1200ms for ~100 cubes (1400ms vs 200ms).
+            // There might be even more to strip from this object to shave a few more ms.
+            cards: undefined,
             avgSimilarityScore: getAverageSimilarityScore(id),
         }
     });
