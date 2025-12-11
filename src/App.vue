@@ -270,21 +270,6 @@
                                 </el-table-column>
 
                                 <el-table-column
-                                    v-if="config.visibleColumns.includes('stats.landCards')"
-                                    prop="stats.landCards"
-                                    :sort-method="(a, b) => (a.stats.landCards / a.stats.totalCards) - (b.stats.landCards / b.stats.totalCards)"
-                                    label="Lands"
-                                    min-width="75"
-                                    max-width="100"
-                                    sortable
-                                >
-                                    <template #default="{ row }">
-                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
-                                        <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
-                                    </template>
-                                </el-table-column>
-
-                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.singletonCards')"
                                     prop="stats.singletonCards"
                                     :sort-method="(a, b) => (a.stats.singletonCards / a.stats.totalCards) - (b.stats.singletonCards / b.stats.totalCards)"
@@ -301,6 +286,36 @@
                                     <template #default="{ row }">
                                         <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.singletonCards / row.stats.totalCards) }}</el-text>
                                         <el-text class="cell-secondary">({{ row.stats.singletonCards }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.landCards')"
+                                    prop="stats.landCards"
+                                    :sort-method="(a, b) => (a.stats.landCards / a.stats.totalCards) - (b.stats.landCards / b.stats.totalCards)"
+                                    label="Lands"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.creatureCards')"
+                                    prop="stats.creatureCards"
+                                    :sort-method="(a, b) => (a.stats.creatureCards / a.stats.totalCards) - (b.stats.creatureCards / b.stats.totalCards)"
+                                    label="Creatures"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                >
+                                    <template #default="{ row }">
+                                        <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.creatureCards / row.stats.totalCards) }}</el-text>
+                                        <el-text class="cell-secondary">({{ row.stats.creatureCards }})</el-text>
                                     </template>
                                 </el-table-column>
 
@@ -570,6 +585,7 @@ const defaultConfig = {
         'name',
         'owner',
         'stats.totalCards',
+        'stats.newCards',
         'avgSimilarityScore',
         'stats.averageNonLandCmc',
         'stats.averageWordCountMinusParen',
@@ -639,8 +655,9 @@ const columnOptions = ref([
             { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
-            { value: 'stats.landCards', label: "Lands", tooltip: "Cards that are playable from hand as a Land, includes MDFCs" },
             { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
+            { value: 'stats.landCards', label: "Lands", tooltip: "Cards that are playable from hand as a Land, includes MDFCs" },
+            { value: 'stats.creatureCards', label: "Creatures", tooltip: "Cards with 'Creature' in their Type Line" },
         ],
     },
     {
