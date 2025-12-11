@@ -258,6 +258,11 @@
                                     max-width="100"
                                     sortable
                                 >
+                                    <template #header>
+                                        <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50">
+                                            <span>New Cards</span>
+                                        </el-tooltip>
+                                    </template>
                                     <template #default="{ row }">
                                         <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
                                         <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
@@ -288,6 +293,11 @@
                                     max-width="100"
                                     sortable
                                 >
+                                    <template #header>
+                                        <el-tooltip content="Cards with only one copy" placement="top" :hide-after="50">
+                                            <span>Singleton</span>
+                                        </el-tooltip>
+                                    </template>
                                     <template #default="{ row }">
                                         <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.singletonCards / row.stats.totalCards) }}</el-text>
                                         <el-text class="cell-secondary">({{ row.stats.singletonCards }})</el-text>
@@ -302,7 +312,13 @@
                                     max-width="100"
                                     sortable
                                     :formatter="columnFormatters.percentageFormatter"
-                                />
+                                >
+                                    <template #header>
+                                        <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50">
+                                            <span>Avg. Similarity</span>
+                                        </el-tooltip>
+                                    </template>
+                                </el-table-column>
 
                                 <el-table-column
                                     v-if="config.visibleColumns.includes('stats.averageNonLandCmc')"
@@ -312,7 +328,13 @@
                                     max-width="100"
                                     sortable
                                     :formatter="columnFormatters.toFixed2"
-                                />
+                                >
+                                    <template #header>
+                                        <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50">
+                                            <span>Avg. Mana Value</span>
+                                        </el-tooltip>
+                                    </template>
+                                </el-table-column>
 
                                 <el-table-column
                                     v-if="config.visibleColumns.includes('stats.averageElo')"
@@ -342,7 +364,13 @@
                                     max-width="100"
                                     sortable
                                     :formatter="columnFormatters.toFixed2"
-                                />
+                                >
+                                    <template #header>
+                                        <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50">
+                                            <span>Rarity Score</span>
+                                        </el-tooltip>
+                                    </template>
+                                </el-table-column>
 
                                 <el-table-column
                                     v-if="config.visibleColumns.includes('stats.averageWordCount')"
@@ -391,6 +419,11 @@
                                     max-width="100"
                                     sortable
                                 >
+                                    <template #header>
+                                        <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50">
+                                            <span>Abnormal Layout</span>
+                                        </el-tooltip>
+                                    </template>
                                     <template #default="{ row }">
                                         <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
                                         <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
@@ -617,7 +650,7 @@ const columnOptions = ref([
             { value: 'stats.averageNonLandCmc', label: "Avg. Mana Value", tooltip: "Average Mana Value of Non-Land Cards" },
             { value: 'stats.averageElo', label: "Avg. Card Elo", tooltip: "Average CubeCobra Card Elo Rating" },
             { value: 'stats.averagePopularity', label: "Avg. Card Popularity", tooltip: "Average CubeCobra Card Popularity Score" },
-            { value: 'stats.blendedRarityScore', label: "Rarity Score", tooltip: "Card Minimum Rarity Score, using C=0.33, U=0.66, R=1.0, M=1.2" },
+            { value: 'stats.blendedRarityScore', label: "Rarity Score", tooltip: "Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" },
         ],
     },
     {
