@@ -205,6 +205,7 @@ const stripped = cards.filter(card => {
         effectiveTypes: effectiveTypes(card),
         oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text !== undefined ? card.card_faces.map(face => face.oracle_text).join('\n\n') : ''),
         keywords: card.keywords || [],
+        games: card.games || [],
         allParts: card.all_parts || [],
         legalities: card.legalities || {},
         rarity: card.rarity,
@@ -268,6 +269,7 @@ const minimized = stripped.sort((a, b) => {
             oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter(v => v != '').length,
             // This needs sanitization to use, it seems to including flavor abilities.
             keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
+            games: card.games,
             // FIXME: Exnted this with any future tags I think I care about.
             tags: taggerOracleIds[card.oracleId] !== undefined ? Array.from(taggerOracleIds[card.oracleId]) : [],
             rarity: card.rarity,
@@ -327,6 +329,9 @@ const best = Object.keys(minimized.cards).reduce((store, key) => {
         return minRarityOrder.indexOf(a) - minRarityOrder.indexOf(b);
     })[0];
     store[key].minRarity = minRarity;
+
+    const allGames = Array.from(new Set(card.flatMap(c => c.games)));
+    store[key].games = allGames;
 
     return store;
 }, {});
