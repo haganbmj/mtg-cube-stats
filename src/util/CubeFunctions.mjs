@@ -99,6 +99,7 @@ function enrichCubeContents(cards) {
             collectorNumber: scryfallCard?.collectorNumber ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
+            games: scryfallCard?.games ?? [],
             tags: scryfallCard?.tags ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,

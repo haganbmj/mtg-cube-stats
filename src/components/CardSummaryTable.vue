@@ -57,6 +57,23 @@
                             />
                         </div>
 
+                        <el-row justify="center" :gutter="10" class="row-games" style="margin-top: 10px; text-align: center;">
+                            <el-col :span="24">
+                                <div class="tag-list flex gap-2 justify-center">
+                                <el-tag
+                                    v-for="game in props.row.games"
+                                    :key="game"
+                                    size="small"
+                                    type="info"
+                                    :color="getGameTagColor(game)"
+                                    disable-transitions
+                                >
+                                    {{ game }}
+                                </el-tag>
+                            </div>
+                            </el-col>
+                        </el-row>
+
                         <el-row justify="center" :gutter="10" class="row-rarities" style="margin-top: 10px; text-align: center;">
                             <el-col :span="24">
                                 <el-text>Original Rarity: {{ capitalizeFirstLetter(props.row.rarity) }}</el-text>
@@ -320,9 +337,19 @@ const tags = [
     { text: 'tutor', value: 'tutor', color: 'rgba(153, 102, 255, 0.3)' },
 ];
 
+const games = [
+    { text: 'paper', value: 'paper', color: 'rgba(34, 139, 34, 0.3)' },
+    { text: 'mtgo', value: 'mtgo', color: 'rgba(70, 130, 180, 0.3)' },
+    { text: 'arena', value: 'arena', color: 'rgba(218, 112, 214, 0.3)' },
+];
+
 const getTagColor = (tag: string) => {
     return tags.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
 };
+
+const getGameTagColor = (game: string) => {
+    return games.find(g => g.value.toLowerCase() === game.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+}
 
 const expandedCubeList = (cubeKeys: string[]) => {
     const resp = Object.entries(props.loadedCubes).map(([key, cube]) => {
@@ -609,5 +636,9 @@ const visibleRows = computed(() => {
         width: 100%;
         height: auto;
     }
+}
+
+.flex.justify-center {
+    justify-content: center;
 }
 </style>
