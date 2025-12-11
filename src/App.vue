@@ -200,12 +200,12 @@
                                     </template>
                                 </el-table-column>
                                 <el-table-column type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
-                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('name')" >
+                                <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveName" v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
                                         <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
                                     </template>
                                 </el-table-column>
-                                <el-table-column prop="owner" label="Owner" min-width="100" max-width="150" show-overflow-tooltip sortable v-if="config.visibleColumns.includes('owner')" >
+                                <el-table-column prop="owner" label="Owner" min-width="100" max-width="150" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveOwner"  v-if="config.visibleColumns.includes('owner')" >
                                     <template #default="{ row }">
                                         <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
                                     </template>
@@ -497,7 +497,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, provide, onMounted, nextTick } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
-import { getNestedProp } from './util/HelperFunctions.mjs';
+import { getNestedProp, castInensitiveSort } from './util/HelperFunctions.mjs';
 import randomFooter from './util/RandomFooter.mjs';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
@@ -703,6 +703,15 @@ const submitAddCubeForm = async () => {
  */
 const removeCube = (cubeId: string) => {
     delete loadedCubes.value[cubeId];
+};
+
+const sortMethods = {
+    caseInsensitiveName: (a, b) => {
+        return castInensitiveSort(a.name, b.name);
+    },
+    caseInsensitiveOwner: (a, b) => {
+        return castInensitiveSort(a.owner, b.owner);
+    },
 };
 
 const formatters = {

@@ -8,3 +8,11 @@ export function capitalizeFirstLetter(str) {
     }
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+export function castInensitiveSort(a, b) {
+    const aStr = (a ?? '').toString().toLowerCase();
+    const bStr = (b ?? '').toString().toLowerCase();
+    if (aStr < bStr) return -1;
+    if (aStr > bStr) return 1;
+    return 0;
+};
