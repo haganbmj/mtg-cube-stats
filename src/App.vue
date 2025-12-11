@@ -632,36 +632,7 @@ const columnOptions = ref([
 ]);
 
 const similarityMatrix = computed(() => {
-    // const result = {};
-    // let calcs = 0;
-
-    // console.time('Similarity Matrix');
-
     return computeSimilarityMatrix(loadedCubes.value);
-
-    // Object.entries(loadedCubes.value).forEach(([id, cube]) => {
-    //     Object.entries(loadedCubes.value).forEach(([otherId, otherCube]) => {
-    //         if (id !== otherId && result[id]?.[otherId] === undefined) {
-    //             calcs += 1;
-    //             const score = determineCosineSimilarityScore(cube, otherCube);
-    //             if (!(id in result)) {
-    //                 result[id] = {};
-    //             }
-
-    //             if (!(otherId in result)) {
-    //                 result[otherId] = {};
-    //             }
-
-    //             result[id][otherId] = score;
-    //             result[otherId][id] = score;
-    //         }
-    //     });
-    // });
-
-    console.timeEnd('Similarity Matrix');
-    console.log(`Calculated ${calcs} similarity score(s).`);
-
-    return result;
 });
 
 const getAverageSimilarityScore = (cubeId: string) => {
