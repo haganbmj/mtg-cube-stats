@@ -128,6 +128,7 @@ function analyzeCubeContents(cards) {
         // FIXME: This is only handling the front of DFCs.
         // landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
         landCards: cards.filter(card => card.effectiveTypes.includes('Land')).length,
+        creatureCards: cards.filter(card => card.effectiveTypes.includes('Creature')).length,
         newCards: cards.filter(card => card.releaseDate >= newDateCutoff).length,
 
         averageElo: cards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
