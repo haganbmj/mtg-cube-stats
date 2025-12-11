@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { isEvergreenKeyword } from '../util/Keywords.mjs';
+import { castInensitiveSort } from '../util/HelperFunctions.mjs';
 
 const props = defineProps({
     keywords: {
@@ -54,6 +55,8 @@ const props = defineProps({
 });
 
 const keywords = computed(() => {
+    // Note that while the sort here appears backwards, it seems el-table uses the active sort order.
+    // So when you do a descending sort on the count column, it should actually reverse this and show as ascending by name.
     return Object.entries(props.keywords).map(([key, value]) => {
         return {
             keyword: key,
@@ -61,6 +64,6 @@ const keywords = computed(() => {
             count: value,
             percentage: value / props.totalCards,
         };
-    });
+    }).sort((a, b) => castInensitiveSort(b.keyword, a.keyword));
 });
 </script>
