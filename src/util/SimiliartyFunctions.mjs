@@ -32,6 +32,15 @@ function vectorCosineSimilarity(vecA, vecB) {
     return dotProduct / (magnitudeA * magnitudeB);
 }
 
+export function suffixedDuplicates(list) {
+    if (list.length === 0) return [];
+
+    const dupes = list.sort().filter((item, index, arr) => item === arr[index + 1]);
+    const suffixed = dupes.map(dupe => `${dupe}+`);
+    return [...new Set(list), ...suffixedDuplicates(suffixed)];
+}
+
+// Assume that the lists are already suffixed.
 export function cosineSimilarity(listA, listB) {
     const allElements = new Set([...listA, ...listB]);
     const vecA = [];
@@ -45,6 +54,7 @@ export function cosineSimilarity(listA, listB) {
     return vectorCosineSimilarity(vecA, vecB);
 }
 
+// Assume that the lists are already suffixed.
 export function intersectionSizeOf(listA, listB) {
     return new Set([...listA].filter(x => listB.includes(x))).size;
 }
