@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { remapCube } from './src/util/CubeFunctions.mjs';
+import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions.mjs';
 import { getCubeData } from './src/util/CubeCobra.mjs';
 
 const runNumber = process.env.RUN_NUMBER || 'unset';
@@ -344,8 +344,10 @@ for (const batch of batches) {
         }
     }
 
+    const similarityMatrix = computeSimilarityMatrix(batchResult);
+
     console.groupEnd();
-    fs.writeFileSync(`./preloads/cubes-${batch.name}.json`, JSON.stringify(batchResult, null, 2));
+    fs.writeFileSync(`./preloads/cubes-${batch.name}.json`, JSON.stringify({ cubes: batchResult, similarities: similarityMatrix }, null, 2));
 
     // Utility for logging out the Cube IDs.
     // Object.values(batchResult).forEach(cube => {

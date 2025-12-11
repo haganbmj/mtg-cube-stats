@@ -22,6 +22,8 @@ const rarityScoreMap = {
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
+ *
+ * FIXME: This should probably be done as part of the function that fetches from Scryfall to remap that response object rather than relying on the caller to do it.
  */
 export function remapCube(cube, enrich = true) {
     const cards = cube.cards.mainboard.map(card => {
@@ -33,7 +35,7 @@ export function remapCube(cube, enrich = true) {
         };
     });
 
-    return {
+    const remappedCube = {
         id: cube.id,
         shortId: cube.shortId,
         name: cube.name,
@@ -44,14 +46,29 @@ export function remapCube(cube, enrich = true) {
         categoryPrefixes: (cube.categoryPrefixes ?? []).sort(), // This is an array, so unclear how to get the best use out of it.
         lastModified: cube.date ?? undefined,
 
-        cards: enrich ? enrichCubeContents(cards) : cards,
+        cards: cards,
+    };
+
+    if (enrich) {
+        return enrichCube(remappedCube);
+    } else {
+        return remappedCube;
+    }
+}
+
+export function enrichCube(cube) {
+    const enrichedCards = enrichCubeContents(cube.cards);
+    return {
+        ...cube,
+        stats: analyzeCubeContents(enrichedCards),
+        cards: enrichedCards
     };
 }
 
 /**
  * FIXME: This needs to handle Custom Cards on CubeCobra. I think those just have cardId="custom-card"
  */
-export function enrichCubeContents(cards) {
+function enrichCubeContents(cards) {
     return cards.map(card => {
         const scryfallCard = scryfall.cards[card.oracleId];
         if (!scryfallCard) {
@@ -92,7 +109,7 @@ export function enrichCubeContents(cards) {
  *  Unclear if that means I should break out the calculations to their own functions.
  *  Also, need to work out how Vue is handling reactivity with these as props on an object, might be better to use a Map or some other structure to avoid recomputes.
  */
-export function analyzeCubeContents(cards) {
+function analyzeCubeContents(cards) {
     // FIXME: Handle DFCs better here. MDFCs should be considered nonLand for the side that is, but DFCs that flip into lands (or vice-versa) should use their primary side?
     //  It's awkward too because the FIN Adventure lands are 0 CMC, despite being non-land spells if you want.
     // const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
@@ -241,6 +258,14 @@ export function analyzeCubeContents(cards) {
     return secondOrderStats;
 }
 
+function similarityScoreKey(keyA, keyB) {
+    if (keyA < keyB) {
+        return `${keyA}|${keyB}`;
+    } else {
+        return `${keyB}|${keyA}`;
+    }
+}
+
 /**
  * FIXME: This doesn't evaluate filtered cards (eg. non-land).
  * FIXME: This also caches based on purely the cube id,
@@ -250,9 +275,9 @@ export function analyzeCubeContents(cards) {
 export const determineCosineSimilarityScore = useMemoize(
     (cubeA, cubeB) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
     {
-        getKey: (cubeA, cubeB) => `${cubeA.id}|${cubeB.id}`,
+        getKey: (cubeA, cubeB) => similarityScoreKey(cubeA.id, cubeB.id),
     },
-)
+);
 
 function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
     const cardsA = cubeA.cards.map(c => c.oracleId);
@@ -263,3 +288,43 @@ function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
         insersectionSize: intersectionSizeOf(cardsA, cardsB),
     };
 }
+
+export const computeSimilarityMatrix = (cubes) => {
+    const result = {};
+    let calcs = 0;
+
+    console.time('Similarity Matrix');
+
+    Object.entries(cubes).forEach(([id, cube]) => {
+        Object.entries(cubes).forEach(([otherId, otherCube]) => {
+            if (id !== otherId && result[id]?.[otherId] === undefined) {
+                calcs += 1;
+                const score = determineCosineSimilarityScore(cube, otherCube);
+
+                if (!(id in result)) {
+                    result[id] = {};
+                }
+
+                if (!(otherId in result)) {
+                    result[otherId] = {};
+                }
+
+                result[id][otherId] = score;
+                result[otherId][id] = score;
+            }
+        });
+    });
+
+    console.timeEnd('Similarity Matrix');
+    console.log(`Calculated ${calcs} similarity score(s).`);
+
+    return result;
+};
+
+export const preloadSimiliarityMatrix = (matrix) => {
+    Object.entries(matrix).forEach(([id, scores]) => {
+        Object.entries(scores).forEach(([otherId, score]) => {
+            determineCosineSimilarityScore.cache.set(similarityScoreKey(id, otherId), score);
+        });
+    });
+};

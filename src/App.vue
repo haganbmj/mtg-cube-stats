@@ -486,11 +486,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, provide, onMounted } from 'vue';
+import { ref, reactive, computed, provide, onMounted, nextTick } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
 import { getNestedProp } from './util/HelperFunctions.mjs';
 import randomFooter from './util/RandomFooter.mjs';
-import { initScryfall, remapCube, analyzeCubeContents, enrichCubeContents, determineSimilarityScores, determineCosineSimilarityScore } from './util/CubeFunctions.mjs';
+import { initScryfall, remapCube, enrichCube, determineCosineSimilarityScore, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import { bindStorage } from './util/VueLocalStorage.mjs';
 import ManaValueChart from './components/ManaValueChart.vue';
@@ -517,7 +517,7 @@ provide(THEME_KEY, "darkbmj");
 const presetComparisons = {
     "WotC MTGO/Arena": () => import("../preloads/cubes-wotc.json"),
     "CubeCobra Top 100": () => import("../preloads/cubes-cubecobra-top100.json"),
-    "CubeCon 2025": () => import("../preloads/cubes-cubecon2025.json"),
+    // "CubeCon 2025": () => import("../preloads/cubes-cubecon2025.json"),
     // "haganbmj": () => import("../preloads/cubes-haganbmj.json"),
     "Peasant Cubes": () => import("../preloads/cubes-peasant.json"),
 };
@@ -562,14 +562,21 @@ const loadedCubes = ref({});
 
 const loadPresetCollection = async (presetName: string) => {
     if (presetName in presetComparisons) {
+        console.time(`Render Collection: ${presetName}`);
         console.time(`Load Collection: ${presetName}`);
+
         addCubeForm.loading = true;
         const cubesModule = await presetComparisons[presetName]();
-        const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default).map(cube => [cube[0], { ...cube[1], cards: enrichCubeContents(cube[1].cards) }]));
+        preloadSimiliarityMatrix(cubesModule.default.similarities);
+        const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+
         console.timeEnd(`Load Collection: ${presetName}`);
         loadedCubes.value = enrichedCubes;
         addCubeForm.loading = false;
         addCubeForm.presetComparisonsSelection = '';
+        await nextTick();
+
+        console.timeEnd(`Render Collection: ${presetName}`);
     }
 };
 
@@ -625,40 +632,27 @@ const columnOptions = ref([
 ]);
 
 const similarityMatrix = computed(() => {
-    const result = {};
-    let calcs = 0;
-
-    Object.entries(loadedCubes.value).forEach(([id, cube]) => {
-        Object.entries(loadedCubes.value).forEach(([otherId, otherCube]) => {
-            if (id !== otherId && result[id]?.[otherId] === undefined) {
-                calcs += 1;
-                const score = determineCosineSimilarityScore(cube, otherCube);
-                if (!(id in result)) {
-                    result[id] = {};
-                }
-
-                if (!(otherId in result)) {
-                    result[otherId] = {};
-                }
-
-                result[id][otherId] = score;
-                result[otherId][id] = score;
-            }
-        });
-    });
-
-    return result;
+    return computeSimilarityMatrix(loadedCubes.value);
 });
+
+const getAverageSimilarityScore = (cubeId: string) => {
+    const scores = similarityMatrix.value[cubeId] || {};
+    const totalCubes = Object.keys(loadedCubes.value).length - 1;
+
+    if (totalCubes === 0) {
+        return 0;
+    }
+
+    const totalScore = Object.values(scores).reduce((acc, c) => acc + c.cosineSimilarity, 0);
+    return totalScore / totalCubes;
+};
 
 // FIXME: Is there a way to indicate that this should wait until after similarityMatrix is recomputed?
 const overviewTableData = computed(() => {
     return Object.entries(loadedCubes.value).map(([id, cube]) => {
-        const similarityScores = similarityMatrix.value[id] || {};
         return {
             ...cube,
-            stats: analyzeCubeContents(cube.cards),
-            similarityScores: similarityScores,
-            avgSimilarityScore: Object.values(similarityScores).length > 0 ? Object.values(similarityScores).reduce((acc, c) => acc + c.cosineSimilarity, 0) / Object.values(similarityScores).length : 0,
+            avgSimilarityScore: getAverageSimilarityScore(id),
         }
     });
 });
@@ -675,11 +669,12 @@ const submitAddCubeForm = async () => {
         console.time(`Add Cube: ${cubeId}`);
         try {
             const rawCube = await getCubeData(cubeId);
-            const remappedCube = await remapCube(rawCube);
-            loadedCubes.value[remappedCube.id] = remappedCube;
+            const enrichedCube = remapCube(rawCube);
+            loadedCubes.value[enrichedCube.id] = enrichedCube;
         } catch (e) {
             console.error("Error loading cube:", e);
         }
+        await nextTick();
         console.timeEnd(`Add Cube: ${cubeId}`);
     }
 
