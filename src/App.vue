@@ -260,7 +260,7 @@
                                 >
                                     <template #header>
                                         <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50">
-                                            <span>New Cards</span>
+                                            <span>New Cards <el-icon><InfoFilled /></el-icon></span>
                                         </el-tooltip>
                                     </template>
                                     <template #default="{ row }">
@@ -280,7 +280,7 @@
                                 >
                                     <template #header>
                                         <el-tooltip content="Cards with only one copy" placement="top" :hide-after="50">
-                                            <span>Singleton</span>
+                                            <span>Singleton <el-icon><InfoFilled /></el-icon></span>
                                         </el-tooltip>
                                     </template>
                                     <template #default="{ row }">
@@ -330,7 +330,7 @@
                                 >
                                     <template #header>
                                         <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50">
-                                            <span>Avg. Similarity</span>
+                                            <span>Avg. Similarity <el-icon><InfoFilled /></el-icon></span>
                                         </el-tooltip>
                                     </template>
                                 </el-table-column>
@@ -346,7 +346,7 @@
                                 >
                                     <template #header>
                                         <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50">
-                                            <span>Avg. Mana Value</span>
+                                            <span>Avg. Mana Value <el-icon><InfoFilled /></el-icon></span>
                                         </el-tooltip>
                                     </template>
                                 </el-table-column>
@@ -382,7 +382,7 @@
                                 >
                                     <template #header>
                                         <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50">
-                                            <span>Rarity Score</span>
+                                            <span>Rarity Score <el-icon><InfoFilled /></el-icon></span>
                                         </el-tooltip>
                                     </template>
                                 </el-table-column>
@@ -436,7 +436,7 @@
                                 >
                                     <template #header>
                                         <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50">
-                                            <span>Abnormal Layout</span>
+                                            <span>Abnormal Layout <el-icon><InfoFilled /></el-icon></span>
                                         </el-tooltip>
                                     </template>
                                     <template #default="{ row }">
