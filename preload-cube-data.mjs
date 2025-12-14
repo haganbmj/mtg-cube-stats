@@ -186,6 +186,11 @@ const batches = [
             '899cecd6-78cd-4c8f-a3df-ae08244e8de7', // r2d551/SHRIKE - Peasant+ 2025
             '768c2165-e9d7-4485-9a4e-d7ce0754303b', // eklug - C/Ube
             '5dc5a6af83065f5e62dd3e35', // RosencrantzDies - The Elysian Cube
+            '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube
+            '480e729f-55bd-423d-8c38-7ed8fbead377', // Illuminous - Illuminous Peasant 360 Plus
+            '5d9fd6df1f2af308d72ddf35', // UlkaMTGN - Ulka's Peasant Cube
+            '5f6f2e34dc7295103b6290ff', // Shadowkillerx7 - Peasant all Foils
+            '5d95438ad09b6308ae8e8d43', // cVantez - vVantez Peasant
         ],
     },
     {
