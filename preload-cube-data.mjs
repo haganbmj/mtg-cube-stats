@@ -191,6 +191,7 @@ const batches = [
             '5d9fd6df1f2af308d72ddf35', // UlkaMTGN - Ulka's Peasant Cube
             '5f6f2e34dc7295103b6290ff', // Shadowkillerx7 - Peasant all Foils
             '5d95438ad09b6308ae8e8d43', // cVantez - vVantez Peasant
+            '758acb73-3cf5-4789-b29e-f9b0e4a11aa1', // Alakokain - Peasant Cube (2025)
         ],
     },
     {
