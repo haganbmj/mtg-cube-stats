@@ -193,6 +193,9 @@ const batches = [
             '5d95438ad09b6308ae8e8d43', // cVantez - vVantez Peasant
             '758acb73-3cf5-4789-b29e-f9b0e4a11aa1', // Alakokain - Peasant Cube (2025)
             '617acd9065d6d310149192fc', // ilovebaskets - Pretentious Wind Socks
+            'c952401b-1cea-4a4d-837f-b335e28e078e', // pastinflames - Middle-Class Peasant
+            '5ec5c9197868862b1f42c0d1', // Double - The Silver Lining
+            '60eb90e47bdeb510201cb11e', // RyanOverdrive - Peasant Twobert
         ],
     },
     {
