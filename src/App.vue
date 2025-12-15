@@ -286,7 +286,7 @@
                                 <el-table-column
                                     v-if="config.visibleColumns.includes('stats.assumedCategories')"
                                     prop="stats.assumedCategories"
-                                    label="Assumed Categories"
+                                    label="Categories"
                                     min-width="75"
                                     max-width="100"
                                 >
