@@ -60,17 +60,17 @@
                         <el-row justify="center" :gutter="10" class="row-games" style="margin-top: 10px; text-align: center;">
                             <el-col :span="24">
                                 <div class="tag-list flex gap-2 justify-center">
-                                <el-tag
-                                    v-for="game in props.row.games"
-                                    :key="game"
-                                    size="small"
-                                    type="info"
-                                    :color="getGameTagColor(game)"
-                                    disable-transitions
-                                >
-                                    {{ game }}
-                                </el-tag>
-                            </div>
+                                    <el-tag
+                                        v-for="game in props.row.games"
+                                        :key="game"
+                                        size="small"
+                                        type="info"
+                                        :color="getGameTagColor(game)"
+                                        disable-transitions
+                                    >
+                                        {{ game }}
+                                    </el-tag>
+                                </div>
                             </el-col>
                         </el-row>
 
@@ -248,6 +248,33 @@
                         disable-transitions
                     >
                         {{ tag }}
+                    </el-tag>
+                </div>
+            </template>
+        </el-table-column>
+
+        <!-- I don't like the look of this, I think I would need a way to condense it if anything. -->
+        <!-- Entirely possible that this is just better suited inside the expanded content, and then the filters are external to the table. -->
+        <el-table-column v-if="false"
+            prop="games"
+            column-key="games"
+            label="Games"
+            min-width="75"
+            max-width="150"
+            :filters="games"
+            filterable
+        >
+            <template #default="{ row }">
+                <div class="tag-list flex gap-2">
+                    <el-tag
+                        v-for="game in row.games"
+                        :key="game"
+                        size="small"
+                        type="info"
+                        :color="getGameTagColor(game)"
+                        disable-transitions
+                    >
+                        {{ game }}
                     </el-tag>
                 </div>
             </template>
@@ -545,6 +572,12 @@ const filteredRows = computed(() => {
                 } else if (key === 'tags') {
                     const rowTags = row.tags.map((t: string) => t.toLowerCase());
                     const matches = values.every((tag: string) => rowTags.includes(tag.toLowerCase()));
+                    if (!matches) {
+                        return false;
+                    }
+                } else if (key === 'games') {
+                    const rowGames = row.games.map((g: string) => g.toLowerCase());
+                    const matches = values.every((game: string) => rowGames.includes(game.toLowerCase()));
                     if (!matches) {
                         return false;
                     }
