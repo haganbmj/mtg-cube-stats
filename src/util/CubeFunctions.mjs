@@ -100,7 +100,7 @@ function enrichCubeContents(cards) {
             collectorNumber: scryfallCard?.collectorNumber ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
-            games: scryfallCard?.games ?? [],
+            games: scryfallCard?.games ?? [], // custom cards won't have a game listed.
             tags: scryfallCard?.tags ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
@@ -242,6 +242,9 @@ function analyzeCubeContents(cards) {
             return keywords;
         }, {}),
         totalMinPriceUsd: cards.reduce((sum, c) => sum + (c.minPriceUsd ?? 0), 0),
+        arenaPlayable: cards.every(c => c.games.includes('arena')),
+        mtgoPlayable: cards.every(c => c.games.includes('mtgo')),
+        paperPlayable: cards.every(c => c.games.includes('paper')),
     }
 
     const secondOrderStats = {

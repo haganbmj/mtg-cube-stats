@@ -144,6 +144,17 @@
                                             <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
                                                 <el-statistic title="Non-Evergreen Keywords" :value="props.row.stats.uniqueNonEvergreenKeywords" />
                                             </el-col>
+                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
+                                                <el-tag :type="props.row.stats.arenaPlayable ? 'success' : 'danger'">
+                                                    Arena Playable: {{ props.row.stats.arenaPlayable ? 'Yes' : 'No' }}
+                                                </el-tag>
+                                                <el-tag :type="props.row.stats.mtgoPlayable ? 'success' : 'danger'">
+                                                    MTGO Playable: {{ props.row.stats.mtgoPlayable ? 'Yes' : 'No' }}
+                                                </el-tag>
+                                                <el-tag :type="props.row.stats.paperPlayable ? 'success' : 'danger'">
+                                                    Paper Playable: {{ props.row.stats.paperPlayable ? 'Yes' : 'No' }}
+                                                </el-tag>
+                                            </el-col>
                                         </el-row>
                                         <el-row :gutter="10">
                                             <el-col :span="24">
@@ -229,6 +240,48 @@
                                     max-width="125"
                                     sortable
                                 />
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('arenaPlayable')"
+                                    prop="stats.arenaPlayable"
+                                    label="Arena Playable"
+                                    min-width="75"
+                                    max-width="75"
+                                >
+                                    <template #default="{ row }">
+                                        <el-tag :type="row.stats.arenaPlayable ? 'success' : 'danger'">
+                                            {{ row.stats.arenaPlayable ? 'Yes' : 'No' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('mtgoPlayable')"
+                                    prop="stats.mtgoPlayable"
+                                    label="MTGO Playable"
+                                    min-width="75"
+                                    max-width="75"
+                                >
+                                    <template #default="{ row }">
+                                        <el-tag :type="row.stats.mtgoPlayable ? 'success' : 'danger'">
+                                            {{ row.stats.mtgoPlayable ? 'Yes' : 'No' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('paperPlayable')"
+                                    prop="stats.paperPlayable"
+                                    label="Paper Playable"
+                                    min-width="75"
+                                    max-width="75"
+                                >
+                                    <template #default="{ row }">
+                                        <el-tag :type="row.stats.paperPlayable ? 'success' : 'danger'">
+                                            {{ row.stats.paperPlayable ? 'Yes' : 'No' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
 
                                 <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')"
@@ -484,6 +537,11 @@
                                     max-width="100"
                                     sortable
                                 >
+                                    <template #header>
+                                        <el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50">
+                                            <span>Universes Beyond <el-icon><InfoFilled /></el-icon></span>
+                                        </el-tooltip>
+                                    </template>
                                     <template #default="{ row }">
                                         <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
                                         <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
@@ -499,6 +557,11 @@
                                     max-width="100"
                                     sortable
                                 >
+                                    <template #header>
+                                        <el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50">
+                                            <span>Supplemental Product <el-icon><InfoFilled /></el-icon></span>
+                                        </el-tooltip>
+                                    </template>
                                     <template #default="{ row }">
                                         <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
                                         <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
@@ -653,6 +716,9 @@ const columnOptions = ref([
             { value: 'owner', label: "Owner" },
             { value: 'lastModified', label: "Last Modified", tooltip: "Date when the contents or description of the cube was last modified" },
             { value: 'followerCount', label: "Followers", tooltip: "Number of users following the cube on CubeCobra" },
+            { value: 'arenaPlayable', label: "Arena Playable", tooltip: "Whether the cube is playable on MTG Arena" },
+            { value: 'mtgoPlayable', label: "MTGO Playable", tooltip: "Whether the cube is playable on MTGO" },
+            { value: 'paperPlayable', label: "Paper Playable", tooltip: "Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" },
             { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
@@ -686,8 +752,8 @@ const columnOptions = ref([
     {
         label: 'Product Line',
         options: [
-            { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond", tooltip: "Cards from Universes Beyond Products (includes Standard sets)" },
-            { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product", tooltip: "Cards from Supplemental Products (includes Portal)" },
+            { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond", tooltip: "Cards originally from Universes Beyond Products (includes Standard sets)" },
+            { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product", tooltip: "Cards originally from Supplemental Products (includes Portal)" },
         ],
     },
 ]);
