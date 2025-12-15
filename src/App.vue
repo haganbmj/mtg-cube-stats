@@ -242,7 +242,7 @@
                                 />
 
                                 <el-table-column
-                                    v-if="config.visibleColumns.includes('arenaPlayable')"
+                                    v-if="config.visibleColumns.includes('stats.arenaPlayable')"
                                     prop="stats.arenaPlayable"
                                     label="Arena Playable"
                                     min-width="75"
@@ -256,7 +256,7 @@
                                 </el-table-column>
 
                                 <el-table-column
-                                    v-if="config.visibleColumns.includes('mtgoPlayable')"
+                                    v-if="config.visibleColumns.includes('stats.mtgoPlayable')"
                                     prop="stats.mtgoPlayable"
                                     label="MTGO Playable"
                                     min-width="75"
@@ -270,7 +270,7 @@
                                 </el-table-column>
 
                                 <el-table-column
-                                    v-if="config.visibleColumns.includes('paperPlayable')"
+                                    v-if="config.visibleColumns.includes('stats.paperPlayable')"
                                     prop="stats.paperPlayable"
                                     label="Paper Playable"
                                     min-width="75"
@@ -280,6 +280,29 @@
                                         <el-tag :type="row.stats.paperPlayable ? 'success' : 'danger'">
                                             {{ row.stats.paperPlayable ? 'Yes' : 'No' }}
                                         </el-tag>
+                                    </template>
+                                </el-table-column>
+
+                                <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.assumedCategories')"
+                                    prop="stats.assumedCategories"
+                                    label="Assumed Categories"
+                                    min-width="75"
+                                    max-width="100"
+                                >
+                                    <template #default="{ row }">
+                                        <div class="tag-list flex gap-2">
+                                            <el-tag
+                                                v-for="category in row.stats.assumedCategories"
+                                                :key="category"
+                                                size="small"
+                                                type="info"
+                                                :color="getCategoryTagColor(category)"
+                                                disable-transitions
+                                            >
+                                                {{ category }}
+                                            </el-tag>
+                                        </div>
                                     </template>
                                 </el-table-column>
 
@@ -716,9 +739,10 @@ const columnOptions = ref([
             { value: 'owner', label: "Owner" },
             { value: 'lastModified', label: "Last Modified", tooltip: "Date when the contents or description of the cube was last modified" },
             { value: 'followerCount', label: "Followers", tooltip: "Number of users following the cube on CubeCobra" },
-            { value: 'arenaPlayable', label: "Arena Playable", tooltip: "Whether the cube is playable on MTG Arena" },
-            { value: 'mtgoPlayable', label: "MTGO Playable", tooltip: "Whether the cube is playable on MTGO" },
-            { value: 'paperPlayable', label: "Paper Playable", tooltip: "Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" },
+            { value: 'stats.arenaPlayable', label: "Arena Playable", tooltip: "Whether the cube is playable on MTG Arena" },
+            { value: 'stats.mtgoPlayable', label: "MTGO Playable", tooltip: "Whether the cube is playable on MTGO" },
+            { value: 'stats.paperPlayable', label: "Paper Playable", tooltip: "Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" },
+            { value: 'stats.assumedCategories', label: "Categories", tooltip: "Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" },
             { value: 'stats.totalMinPriceUsd', label: "Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
@@ -757,6 +781,21 @@ const columnOptions = ref([
         ],
     },
 ]);
+
+const categories = [
+    { text: 'pauper', value: 'pauper', color: 'rgba(255, 165, 0, 0.2)' },
+    { text: 'pauper (+lands)', value: 'pauper+ (lands)', color: 'rgba(0, 255, 115, 0.2)' },
+    { text: 'pauper+', value: 'pauper+', color: 'rgba(95, 95, 235, 0.2)' },
+    { text: 'peasant', value: 'peasant', color: 'rgba(0, 128, 0, 0.2)' },
+    { text: 'peasant (+lands)', value: 'peasant (+lands)', color: 'rgba(34, 145, 169, 0.2)' },
+    { text: 'peasant+', value: 'peasant+', color: 'rgba(128, 0, 128, 0.2)' },
+    { text: 'powered', value: 'powered', color: 'rgba(128, 0, 20, 0.2)' },
+    { text: 'desert?', value: 'desert?', color: 'rgba(169, 150, 35, 0.2)' },
+];
+
+const getCategoryTagColor = (category: string) => {
+    return categories.find(c => c.value.toLowerCase() === category.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+}
 
 // FIXME: Still getting a double render on this for some reason, but the memoization is absorbing the hit.
 const similarityMatrix = computed(() => {
@@ -963,5 +1002,11 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 .cell-secondary {
     color: var(--el-text-color-secondary);
     margin-left: 0.5em;
+}
+
+.tag-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 </style>
