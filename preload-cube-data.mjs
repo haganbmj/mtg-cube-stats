@@ -192,6 +192,7 @@ const batches = [
             '5f6f2e34dc7295103b6290ff', // Shadowkillerx7 - Peasant all Foils
             '5d95438ad09b6308ae8e8d43', // cVantez - vVantez Peasant
             '758acb73-3cf5-4789-b29e-f9b0e4a11aa1', // Alakokain - Peasant Cube (2025)
+            '617acd9065d6d310149192fc', // ilovebaskets - Pretentious Wind Socks
         ],
     },
     {
