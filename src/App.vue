@@ -790,11 +790,11 @@ const columnOptions = ref([
 
 const categories = [
     { text: 'pauper', value: 'pauper', color: 'rgba(255, 165, 0, 0.2)', tooltip: 'All cards are commons.' },
-    { text: 'pauper (+lands)', value: 'pauper+ (lands)', color: 'rgba(0, 255, 115, 0.2)', tooltip: 'All non-land cards are commons.' },
-    { text: 'pauper+', value: 'pauper+', color: 'rgba(95, 95, 235, 0.2)', tooltip: '≥92.5% of non-land cards are commons.' },
+    { text: 'pauper+', value: 'pauper+', color: 'rgba(0, 255, 115, 0.2)', tooltip: 'All non-land cards are commons.' },
+    { text: 'pauper-ish', value: 'pauper-ish', color: 'rgba(95, 95, 235, 0.2)', tooltip: '≥92.5% of non-land cards are commons.' },
     { text: 'peasant', value: 'peasant', color: 'rgba(0, 128, 0, 0.2)', tooltip: 'All cards are common or uncommon.' },
-    { text: 'peasant (+lands)', value: 'peasant (+lands)', color: 'rgba(34, 145, 169, 0.2)', tooltip: 'All non-land cards are common or uncommon.' },
-    { text: 'peasant+', value: 'peasant+', color: 'rgba(128, 0, 128, 0.2)', tooltip: '≥92.5% of non-land cards are common or uncommon.' },
+    { text: 'peasant+', value: 'peasant+', color: 'rgba(34, 145, 169, 0.2)', tooltip: 'All non-land cards are common or uncommon.' },
+    { text: 'peasant-ish', value: 'peasant-ish', color: 'rgba(128, 0, 128, 0.2)', tooltip: '≥92.5% of non-land cards are common or uncommon.' },
     { text: 'powered', value: 'powered', color: 'rgba(128, 0, 20, 0.2)', tooltip: 'Contains one or more pieces of the Power 9.' },
     { text: 'desert?', value: 'desert?', color: 'rgba(169, 150, 35, 0.2)', tooltip: 'Contains more than 28% lands.' },
 ];

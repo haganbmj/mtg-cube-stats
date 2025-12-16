@@ -324,15 +324,15 @@ function assumedCategories(cards) {
     if (mappedRarities.all.common === totalCards) {
         categories.add('pauper');
     } else if (mappedRarities.nonLand.common + mappedRarities.land.total === totalCards) {
-        categories.add('pauper (+lands)');
-    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925) {
         categories.add('pauper+');
+    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925) {
+        categories.add('pauper-ish');
     } else if (mappedRarities.all.common + mappedRarities.all.uncommon === totalCards) {
         categories.add('peasant');
     } else if (mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon + mappedRarities.land.total === totalCards) {
-        categories.add('peasant (+lands)');
-    } else if ((mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon) >= (mappedRarities.nonLand.total * 0.925)) {
         categories.add('peasant+');
+    } else if ((mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon) >= (mappedRarities.nonLand.total * 0.925)) {
+        categories.add('peasant-ish');
     }
 
     if (cards.some(c => powerOracleIds.includes(c.oracleId))) {
