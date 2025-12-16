@@ -292,16 +292,22 @@
                                 >
                                     <template #default="{ row }">
                                         <div class="tag-list flex gap-2">
-                                            <el-tag
+                                            <el-tooltip
                                                 v-for="category in row.stats.assumedCategories"
                                                 :key="category"
-                                                size="small"
-                                                type="info"
-                                                :color="getCategoryTagColor(category)"
-                                                disable-transitions
+                                                :content="getCategoryTooltip(category)"
+                                                placement="top"
+                                                :hide-after="50"
                                             >
-                                                {{ category }}
-                                            </el-tag>
+                                                <el-tag
+                                                    size="small"
+                                                    type="info"
+                                                    :color="getCategoryTagColor(category)"
+                                                    disable-transitions
+                                                >
+                                                    {{ category }}
+                                                </el-tag>
+                                            </el-tooltip>
                                         </div>
                                     </template>
                                 </el-table-column>
@@ -783,18 +789,22 @@ const columnOptions = ref([
 ]);
 
 const categories = [
-    { text: 'pauper', value: 'pauper', color: 'rgba(255, 165, 0, 0.2)' },
-    { text: 'pauper (+lands)', value: 'pauper+ (lands)', color: 'rgba(0, 255, 115, 0.2)' },
-    { text: 'pauper+', value: 'pauper+', color: 'rgba(95, 95, 235, 0.2)' },
-    { text: 'peasant', value: 'peasant', color: 'rgba(0, 128, 0, 0.2)' },
-    { text: 'peasant (+lands)', value: 'peasant (+lands)', color: 'rgba(34, 145, 169, 0.2)' },
-    { text: 'peasant+', value: 'peasant+', color: 'rgba(128, 0, 128, 0.2)' },
-    { text: 'powered', value: 'powered', color: 'rgba(128, 0, 20, 0.2)' },
-    { text: 'desert?', value: 'desert?', color: 'rgba(169, 150, 35, 0.2)' },
+    { text: 'pauper', value: 'pauper', color: 'rgba(255, 165, 0, 0.2)', tooltip: 'All cards are commons.' },
+    { text: 'pauper (+lands)', value: 'pauper+ (lands)', color: 'rgba(0, 255, 115, 0.2)', tooltip: 'All non-land cards are commons.' },
+    { text: 'pauper+', value: 'pauper+', color: 'rgba(95, 95, 235, 0.2)', tooltip: '95% of non-land cards are commons.' },
+    { text: 'peasant', value: 'peasant', color: 'rgba(0, 128, 0, 0.2)', tooltip: 'All cards are common or uncommon.' },
+    { text: 'peasant (+lands)', value: 'peasant (+lands)', color: 'rgba(34, 145, 169, 0.2)', tooltip: 'All non-land cards are common or uncommon.' },
+    { text: 'peasant+', value: 'peasant+', color: 'rgba(128, 0, 128, 0.2)', tooltip: '95% of non-land cards are common or uncommon.' },
+    { text: 'powered', value: 'powered', color: 'rgba(128, 0, 20, 0.2)', tooltip: 'Contains one or more pieces of the Power 9.' },
+    { text: 'desert?', value: 'desert?', color: 'rgba(169, 150, 35, 0.2)', tooltip: 'Contains more than 28% lands.' },
 ];
 
 const getCategoryTagColor = (category: string) => {
-    return categories.find(c => c.value.toLowerCase() === category.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+    return categories.find(c => c.value.toLowerCase() === category?.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+}
+
+const getCategoryTooltip = (category: string) => {
+    return categories.find(c => c.value.toLowerCase() === category?.toLowerCase())?.tooltip ?? '';
 }
 
 // FIXME: Still getting a double render on this for some reason, but the memoization is absorbing the hit.
