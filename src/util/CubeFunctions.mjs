@@ -19,6 +19,18 @@ const rarityScoreMap = {
     bonus: 1.000,
 };
 
+const powerOracleIds = [
+    '550c74d4-1fcb-406a-b02a-639a760a4380', // Ancestral Recall
+    '5089ec1a-f881-4d55-af14-5d996171203b', // Black Lotus
+    '376ee366-e082-402f-b4db-6592fcfcacd2', // Mox Emerald
+    '0677f49e-f8bf-4349-af52-2ccde9287c2e', // Mox Jet
+    '824597b8-c89a-47ec-8526-7efc6e24ef0e', // Mox Pearl
+    'ed85fa82-e4fa-434b-92a8-36b6075708d1', // Mox Ruby
+    'd5ed1233-df87-4b90-8918-13922ec95249', // Mox Sapphire
+    'c823e687-6311-4c99-974b-fd77d204141a', // Timetwister
+    'd0209d3f-3f7e-4fd5-bce5-10bce6f29c86', // Time Walk
+];
+
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
@@ -245,6 +257,7 @@ function analyzeCubeContents(cards) {
         arenaPlayable: cards.every(c => c.games.includes('arena')),
         mtgoPlayable: cards.every(c => c.games.includes('mtgo')),
         paperPlayable: cards.every(c => c.games.includes('paper')),
+        assumedCategories: assumedCategories(cards),
     }
 
     const secondOrderStats = {
@@ -265,6 +278,78 @@ function analyzeCubeContents(cards) {
     }
 
     return secondOrderStats;
+}
+
+function assumedCategories(cards) {
+    const totalCards = cards.length;
+    const categories = new Set(); // Not really necessary here since we should be only appending unique entries.
+
+    const mappedRarities = cards.reduce((catCounts, c) => {
+        const isLand = c.effectiveTypes.includes('Land') ? 'land' : 'nonLand';
+        const minRarity = c.minRarity ?? 'common';
+
+        catCounts['all'] = catCounts['all'] || {};
+        catCounts['all'][minRarity] = (catCounts['all'][minRarity] || 0) + 1;
+        catCounts['all']['total'] = (catCounts['all']['total'] || 0) + 1;
+
+        catCounts[isLand] = catCounts[isLand] || {};
+        catCounts[isLand][minRarity] = (catCounts[isLand][minRarity] || 0) + 1;
+        catCounts[isLand]['total'] = (catCounts[isLand]['total'] || 0) + 1;
+
+        return catCounts;
+    }, {
+        all: {
+            common: 0,
+            uncommon: 0,
+            rare: 0,
+            mythic: 0,
+            total: 0,
+        },
+        nonLand: {
+            common: 0,
+            uncommon: 0,
+            rare: 0,
+            mythic: 0,
+            total: 0,
+        },
+        land: {
+            common: 0,
+            uncommon: 0,
+            rare: 0,
+            mythic: 0,
+            total: 0,
+        },
+    });
+
+    if (mappedRarities.all.common === totalCards) {
+        categories.add('pauper');
+    } else if (mappedRarities.nonLand.common + mappedRarities.land.total === totalCards) {
+        categories.add('pauper (+lands)');
+    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.95) {
+        categories.add('pauper+');
+    } else if (mappedRarities.all.common + mappedRarities.all.uncommon === totalCards) {
+        categories.add('peasant');
+    } else if (mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon + mappedRarities.land.total === totalCards) {
+        categories.add('peasant (+lands)');
+    } else if ((mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon) >= (mappedRarities.nonLand.total * 0.95)) {
+        categories.add('peasant+');
+    }
+
+    if (cards.some(c => powerOracleIds.includes(c.oracleId))) {
+        categories.add('powered');
+    } else {
+        // I don't think it's worth flagging this as it's kind of implied by the absence of another tag.
+        // categories.add('unpowered');
+    }
+
+    // Flag something as a desert if it has more than 28% lands?
+    // Just opening up a few it looks like 31% is pretty typical, but we'll swing a bit lower.
+    // We can't really make assumptions about how big the draft pool is, so we can't really use asfans.
+    if (mappedRarities.land.total >= totalCards * 0.28) {
+        categories.add('desert?');
+    }
+
+    return Array.from(categories);
 }
 
 function similarityScoreKey(keyA, keyB) {
