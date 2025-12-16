@@ -592,18 +592,8 @@ const filteredRows = computed(() => {
     }
 });
 
-const searchedRows = computed(() => {
-    if (searchInput.value.trim() === '') {
-        return filteredRows.value;
-    }
-    const searchTerm = searchInput.value.toLowerCase();
-    return filteredRows.value.filter(row => {
-        return row.name.toLowerCase().includes(searchTerm);
-    });
-});
-
 const numberedRows = computed(() => {
-    return searchedRows.value.map((row, index) => {
+    return filteredRows.value.map((row, index) => {
         return {
             ...row,
             index: index + 1,
@@ -611,8 +601,18 @@ const numberedRows = computed(() => {
     });
 });
 
+const searchedRows = computed(() => {
+    if (searchInput.value.trim() === '') {
+        return numberedRows.value;
+    }
+    const searchTerm = searchInput.value.toLowerCase();
+    return numberedRows.value.filter(row => {
+        return row.name.toLowerCase().includes(searchTerm);
+    });
+});
+
 const visibleRows = computed(() => {
-    return numberedRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+    return searchedRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 </script>
 
