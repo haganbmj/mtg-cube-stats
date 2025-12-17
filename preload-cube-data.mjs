@@ -196,6 +196,7 @@ const batches = [
             'c952401b-1cea-4a4d-837f-b335e28e078e', // pastinflames - Middle-Class Peasant
             '5ec5c9197868862b1f42c0d1', // Double - The Silver Lining
             '60eb90e47bdeb510201cb11e', // RyanOverdrive - Peasant Twobert
+            '557847ff-ac94-428e-89ab-4d8991c45266', // Oophies - Peasant Desert Cube
         ],
     },
     {
