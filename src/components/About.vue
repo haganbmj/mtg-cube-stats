@@ -15,7 +15,7 @@
     <ul>
         <li>Currently using <a href="https://en.wikipedia.org/wiki/Cosine_similarity">Cosine Similarity</a> to compare cubes, which helps with lists of different sizes. The significance/role of each card is not considered, but duplicate copies of cards are evaluated in an effort to better support non-singleton cubes.</li>
         <li>Rarity Score is an effort to provide a comparative stat about the (minimum) rarity distribution of the cube by assigning a value of <code>C=0.333, U=0.666, R=1.000, M=1.200</code> to each card and taking the average.</li>
-        <li>Categories are a best guess using the contents of the cube rather than CubeCobra's classifications. A pauper/peasant cube earns a "+" if 95% of the non-land cards satisfy the restriction. Desert is flagged if the cube contains >28% lands.</li>
+        <li>Categories are a best guess using the contents of the cube rather than CubeCobra's classifications. A pauper/peasant cube earns a "+" if ≥92.5% of the non-land cards satisfy the restriction. Desert is flagged if the cube contains ≥28% lands.</li>
     </ul>
     <h4>Miscellaneous:</h4>
     <ul>
