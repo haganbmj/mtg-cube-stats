@@ -281,6 +281,22 @@
         </el-table-column>
 
         <el-table-column
+            prop="minRarity"
+            column-key="minRarity"
+            label="Min Rarity"
+            min-width="75"
+            max-width="100"
+            :filters="[
+                { text: 'Common', value: 'common' },
+                { text: 'Uncommon', value: 'uncommon' },
+                { text: 'Rare', value: 'rare' },
+                { text: 'Mythic', value: 'mythic' },
+            ]"
+            sortable="custom"
+            filterable
+        />
+
+        <el-table-column
             prop="setCode"
             column-key="setCode"
             label="Set"
@@ -512,6 +528,7 @@ const sortedRows = computed(() => {
     }
 
     // TODO: Manually sort color in WUBRG order.
+    // TODO: Manually sort rarity in CUMR order.
     return alphaSorted.slice(0).sort((a, b) => {
         const sortKey = activeSort.value.prop;
 
