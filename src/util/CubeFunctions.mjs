@@ -325,20 +325,24 @@ function assumedCategories(cards) {
         categories.add('pauper');
     } else if (mappedRarities.nonLand.common + mappedRarities.land.total === totalCards) {
         categories.add('pauper+');
-    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925) {
+    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925 && mappedRarities.land.common === mappedRarities.land.total) {
         categories.add('pauper-ish');
+    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925) {
+        categories.add('pauper+ish');
     } else if (mappedRarities.all.common + mappedRarities.all.uncommon === totalCards) {
         categories.add('peasant');
     } else if (mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon + mappedRarities.land.total === totalCards) {
         categories.add('peasant+');
-    } else if ((mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon) >= (mappedRarities.nonLand.total * 0.925)) {
+    } else if (mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon >= (mappedRarities.nonLand.total) * 0.925 && mappedRarities.land.common + mappedRarities.land.uncommon === mappedRarities.land.total) {
         categories.add('peasant-ish');
+    } else if ((mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon) >= (mappedRarities.nonLand.total * 0.925)) {
+        categories.add('peasant+ish');
     }
 
     if (cards.some(c => powerOracleIds.includes(c.oracleId))) {
         categories.add('powered');
     } else {
-        // I don't think it's worth flagging this as it's kind of implied by the absence of another tag.
+        // TODO: I don't think it's worth flagging this as it's kind of implied by the absence of another tag?
         // categories.add('unpowered');
     }
 
@@ -346,6 +350,7 @@ function assumedCategories(cards) {
     // Just opening up a few it looks like 31% is pretty typical, but we'll swing a bit lower.
     // We can't really make assumptions about how big the draft pool is, so we can't really use asfans.
     if (mappedRarities.land.total >= totalCards * 0.28) {
+        // Is it worth throwing these secondary categories in their own prop?
         categories.add('desert?');
     }
 
