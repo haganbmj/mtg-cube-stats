@@ -32,6 +32,10 @@
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
             <WordCountPopularityScatterPlot :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
+
+        <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+            <CategoryTable :loadedCubes="loadedCubes" />
+        </el-col>
     </el-row>
 </template>
 
@@ -40,6 +44,7 @@ import { ref, computed } from 'vue';
 import WordCountScatterPlot from '../components/statistics/WordCountScatterPlot.vue';
 import AvgCmcByColorScatterPlot from '../components/statistics/AvgCmcByColorScatterPlot.vue';
 import WordCountPopularityScatterPlot from '../components/statistics/WordCountPopularityScatterPlot.vue';
+import CategoryTable from '../components/statistics/CategoryTable.vue';
 
 const props = defineProps({
     loadedCubes: {
