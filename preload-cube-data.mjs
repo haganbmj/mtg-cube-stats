@@ -198,6 +198,7 @@ const batches = [
             '60eb90e47bdeb510201cb11e', // RyanOverdrive - Peasant Twobert
             '557847ff-ac94-428e-89ab-4d8991c45266', // Oophies - Peasant Desert Cube
             'fab2344b-bfaf-4140-96a7-42ad314e5b44', // Sharkman1231 - Fetch Peasant
+            '75b74553-bb0e-4cc0-bfc5-232b94dabb6e', // Magnet - 375 Black & Silver Cube
         ],
     },
     {
