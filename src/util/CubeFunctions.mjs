@@ -257,6 +257,7 @@ function analyzeCubeContents(cards) {
         arenaPlayable: cards.every(c => c.games.includes('arena')),
         mtgoPlayable: cards.every(c => c.games.includes('mtgo')),
         paperPlayable: cards.every(c => c.games.includes('paper')),
+        graveyardOrderMatters: cards.some(c => c.tags.includes('graveyard-order-matters')),
         assumedCategories: assumedCategories(cards),
     }
 

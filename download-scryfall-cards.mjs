@@ -119,7 +119,7 @@ const taggerOracleIds = {};
 taggerData.data.forEach(tag => {
     // 'removal' is pretty broad, but probably the least likely to be extra confusing?
     // 'tutor' includes fetch lands, so that's annoying.
-    if (['removal', 'tutor', 'ramp', 'draw', 'flicker', 'counterspell'].includes(tag.label)) {
+    if (['removal', 'tutor', 'ramp', 'draw', 'flicker', 'counterspell', 'graveyard-order-matters'].includes(tag.label)) {
         tag.oracle_ids.forEach(oracle => {
             if (taggerOracleIds[oracle] === undefined) {
                 taggerOracleIds[oracle] = new Set();
