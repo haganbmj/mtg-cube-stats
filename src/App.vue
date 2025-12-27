@@ -214,6 +214,15 @@
                                 <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveName" v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
                                         <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                                        <template v-if="row.stats.graveyardOrderMatters">
+                                            <el-tooltip
+                                                content="This cube contains cards that care about Graveyard Order."
+                                                placement="top"
+                                                :hide-after="50"
+                                            >
+                                                <el-icon color="yellow" style="margin-left: 0.25rem;"><WarnTriangleFilled /></el-icon>
+                                            </el-tooltip>
+                                        </template>
                                     </template>
                                 </el-table-column>
                                 <el-table-column prop="owner" label="Owner" min-width="100" max-width="150" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveOwner"  v-if="config.visibleColumns.includes('owner')" >
