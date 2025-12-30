@@ -195,6 +195,7 @@ const batches = [
             '617acd9065d6d310149192fc', // ilovebaskets - Pretentious Wind Socks
             'c952401b-1cea-4a4d-837f-b335e28e078e', // pastinflames - Middle-Class Peasant
             '5ec5c9197868862b1f42c0d1', // Double - The Silver Lining
+            'd9c10213-59d8-46ae-9941-78d523adc52e', // Double - TSL Testing Zone
             '60eb90e47bdeb510201cb11e', // RyanOverdrive - Peasant Twobert
             '557847ff-ac94-428e-89ab-4d8991c45266', // Oophies - Peasant Desert Cube
             'fab2344b-bfaf-4140-96a7-42ad314e5b44', // Sharkman1231 - Fetch Peasant
