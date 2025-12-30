@@ -200,6 +200,7 @@ const batches = [
             '557847ff-ac94-428e-89ab-4d8991c45266', // Oophies - Peasant Desert Cube
             'fab2344b-bfaf-4140-96a7-42ad314e5b44', // Sharkman1231 - Fetch Peasant
             '75b74553-bb0e-4cc0-bfc5-232b94dabb6e', // Magnet - 375 Black & Silver Cube
+            '74ae63f5-af7e-43af-81e5-5c87fd849102', // F1etcher7 - The Peasant+ Buildaround Cube
         ],
     },
     {
