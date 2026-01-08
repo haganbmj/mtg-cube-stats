@@ -679,6 +679,7 @@ const presetComparisons = {
     // "haganbmj": () => import("../preloads/cubes-haganbmj.json"),
     "Peasant Cubes": () => import("../preloads/cubes-peasant.json"),
     "Vertex Philly 2026": () => import("../preloads/cubes-vertex-philly-2026.json"),
+    "Connecticube 2026": () => import("../preloads/cubes-connecticube-2026.json"),
 };
 
 const defaultConfig = {
