@@ -205,7 +205,8 @@ const batches = [
     },
     {
         name: 'vertex-philly-2026',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        // staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        staleThreshold: undefined,
         shardCount: 3,
         cubes: [
             '05426587-9751-4292-b1f8-e85c37e74223', // monicamillions - Girls' Night
@@ -225,6 +226,23 @@ const batches = [
             '8e138c2c-0011-4cd0-aead-ac9c50f53939', // AndyOnline - The Space Between
             'e353934d-cfe8-4eb2-90f5-6e6688b86ebb', // monadic - The Trading Post Cube
             '9612ef94-a40f-446d-9244-a19a94dbcbcb', // SoftMaurice - Trenchfight
+        ],
+    },
+    {
+        name: 'connecticube-2026',
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 2,
+        cubes: [
+            'a053a34d-2aca-41bf-902b-63f57872c20b', // FinMint - The Circle of Life
+            'e6350388-effe-463f-8bc5-76bc99ba6e98', // kfergy2323123 - The Control Cube
+            'b02c4845-651c-4ecb-89cf-43956bc7404e', // Graham - Graham's Mono Red Cube
+            '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // haganbmj - The Kuleshov Cube
+            '517cd182-38af-4a5f-a12e-50ced313078a', // dekkerglen - Loam Cube
+            '5ee84f3e7c9901100bc212d1', // DoctorDapper - Fifteen Card Highlander
+            '63f8e97f81e88359951591ee', // Jarizos32 - The Altered Cube [Top 8 Only]
+            'a71be443-3aef-424a-bc37-64af56b6c1e7', // LuckyLooter - Museum of Modern
+            '5fc9e578bada5f7f15feb582', // aquaone - aquaone powered
+            'e353934d-cfe8-4eb2-90f5-6e6688b86ebb', // monadic - The Trading Post Cube [Is this the right one?]
         ],
     },
     {
