@@ -144,7 +144,7 @@ const batches = [
             '61f51c3df1d9250f21664d1a', // AlfonsoGallegoF - 450 Peasant+
             '5d838062b656d33b0d553226', // ArBoR4817 - Peasant Cube
             '5ef783a507ee7f4bdce2bd3d', // CSabor9 - Peasant Cube
-            '578d0a76-59b4-4414-a121-25676a2baf86', // villeneuve - Peasant Cube v1
+            // '578d0a76-59b4-4414-a121-25676a2baf86', // villeneuve - Peasant Cube v1 [404?]
             '63aa6dd3331aeb270eda1573', // daneelius - Daneelius's Peasant All Stars
             '1ecdc12c-d99e-465a-9bf0-1d68dfb8238e', // djsterlingsilva - Arena Peasant Twobert (@AA3)
             '6003518eeaf0061046b4c9ae', // AirborneMoxen - The Peasant+ Cube
