@@ -50,7 +50,7 @@
                     <el-col :span="8" :xs="24" :sm="24" :md="8" :xl="8">
                         <div style="text-align:center">
                             <el-image
-                                :src="`https://api.scryfall.com/cards/${props.row.setCode?.toLowerCase()}/${props.row.collectorNumber}?format=image`"
+                                :src="`${props.row.urlFront}`"
                                 fit="contain"
                                 :alt="props.row.name"
                                 :class="'card-image ' + props.row.setCode?.toLowerCase()"
@@ -135,7 +135,7 @@
                 >
                     <template #content>
                         <el-image
-                                :src="`https://api.scryfall.com/cards/${row.setCode?.toLowerCase()}/${row.collectorNumber}?format=image`"
+                                :src="`${row.urlFront}`"
                                 fit="contain"
                                 :alt="row.name"
                                 :class="'card-image ' + row.setCode?.toLowerCase()"
