@@ -332,6 +332,16 @@
                                 />
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.totalMinPriceTix')"
+                                    prop="stats.totalMinPriceTix"
+                                    label="Min Price (Tix)"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.toFixed2"
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalCards')"
                                     prop="stats.totalCards"
                                     label="Total Cards"
@@ -760,6 +770,7 @@ const columnOptions = ref([
             { value: 'stats.paperPlayable', label: "Paper Playable", tooltip: "Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" },
             { value: 'stats.assumedCategories', label: "Categories", tooltip: "Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" },
             { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
+            { value: 'stats.totalMinPriceTix', label: "Min Price (Tix)", tooltip: "Total Minimum Price of the Cube in MTGO Tix" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
             { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
