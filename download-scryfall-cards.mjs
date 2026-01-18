@@ -218,7 +218,7 @@ const stripped = cards.filter(card => {
         isPromo: !customNotPromoSets.includes(card.set) && (card.promo || applicablePromoTypes.length > 0 || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
         isToken: card.layout === 'token' || card.layout === 'double_faced_token',
         imageUris: {
-            front: `https://api.scryfall.com/cards/${card.set}/${card.collector_number}?format=image&face=${card.reversible_face ?? 'front'}`,
+            front: `https://cards.scryfall.io/large/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.jpg`,
             back: cardBackUri,
         },
         priceUsd: card.prices?.usd ? parseFloat(card.prices.usd) : undefined,

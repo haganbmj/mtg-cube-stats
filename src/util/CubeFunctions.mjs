@@ -118,6 +118,8 @@ function enrichCubeContents(cards) {
             makesTokens: scryfallCard?.makesTokens ?? false,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
             minPriceTix: scryfallCard?.minPriceTix ?? null,
+            urlFront: scryfallCard?.urlFront ?? '',
+            urlBack: scryfallCard?.urlBack ?? '',
         };
     });
 }
