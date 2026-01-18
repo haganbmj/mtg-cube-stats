@@ -222,6 +222,7 @@ const stripped = cards.filter(card => {
             back: cardBackUri,
         },
         priceUsd: card.prices?.usd ? parseFloat(card.prices.usd) : undefined,
+        priceTix: card.prices?.tix ? parseFloat(card.prices.tix) : undefined,
     };
 });
 
@@ -298,6 +299,7 @@ const minimized = stripped.sort((a, b) => {
             urlFront: card.imageUris.front,
             urlBack: card.imageUris.back,
             priceUsd: card.priceUsd,
+            priceTix: card.priceTix,
         });
 
         store.sets[card.set.code] = card.set.name;
@@ -320,6 +322,11 @@ const best = Object.keys(minimized.cards).reduce((store, key) => {
     const minPriceUsd = Math.min(...card.map(c => c.priceUsd ?? Number.MAX_SAFE_INTEGER));
     if (minPriceUsd != Number.MAX_SAFE_INTEGER) {
         store[key].minPriceUsd = minPriceUsd;
+    }
+
+    const minPriceTix = Math.min(...card.map(c => c.priceTix ?? Number.MAX_SAFE_INTEGER));
+    if (minPriceTix != Number.MAX_SAFE_INTEGER) {
+        store[key].minPriceTix = minPriceTix;
     }
 
     const allRarities = Array.from(new Set(card.map(c => c.rarity)));

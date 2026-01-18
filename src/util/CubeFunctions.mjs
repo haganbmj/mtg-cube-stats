@@ -117,6 +117,7 @@ function enrichCubeContents(cards) {
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
+            minPriceTix: scryfallCard?.minPriceTix ?? null,
         };
     });
 }
@@ -254,6 +255,7 @@ function analyzeCubeContents(cards) {
             return keywords;
         }, {}),
         totalMinPriceUsd: cards.reduce((sum, c) => sum + (c.minPriceUsd ?? 0), 0),
+        totalMinPriceTix: cards.reduce((sum, c) => sum + (c.minPriceTix ?? 0), 0),
         arenaPlayable: cards.every(c => c.games.includes('arena')),
         mtgoPlayable: cards.every(c => c.games.includes('mtgo')),
         paperPlayable: cards.every(c => c.games.includes('paper')),
