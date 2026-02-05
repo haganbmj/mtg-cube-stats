@@ -30,14 +30,14 @@ jobs:
           node-version: "24.x"
 
       - name: Cache dependencies
-        uses: actions/cache@v5.0.2
+        uses: actions/cache@v5.0.3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Restore Cached Preloads
-        uses: actions/cache/restore@v5.0.2
+        uses: actions/cache/restore@v5.0.3
         with:
           path: |
             preloads/
@@ -45,7 +45,7 @@ jobs:
           restore-keys: |
             cube-preloads-
       - name: Restore Cached Card List
-        uses: actions/cache/restore@v5.0.2
+        uses: actions/cache/restore@v5.0.3
         with:
           path: |
             data/default-cards.json
@@ -67,7 +67,7 @@ jobs:
           path: ./dist
 
       - name: Save Cached Card List
-        uses: actions/cache/save@v5.0.2
+        uses: actions/cache/save@v5.0.3
         with:
           path: |
             data/default-cards.json
@@ -75,7 +75,7 @@ jobs:
             data/tagger-data.json
           key: scryfall-json-${{ github.run_id }}
       - name: Save Cached Preloads
-        uses: actions/cache/save@v5.0.2
+        uses: actions/cache/save@v5.0.3
         with:
           path: |
             preloads/
