@@ -213,7 +213,7 @@
                                 <el-table-column type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
                                 <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveName" v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
-                                        <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                                        <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
                                         <template v-if="row.stats.graveyardOrderMatters">
                                             <el-tooltip
                                                 content="This cube contains cards that care about Graveyard Order."
