@@ -14,7 +14,7 @@
         >
             <template #default="{ row }">
                 <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
-                    <el-link :href="`https://cubecobra.com/cube/overview/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                    <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
                 </el-tooltip>
             </template>
         </el-table-column>
