@@ -268,6 +268,8 @@ const batches = [
             '7bbdee85-a91b-4b23-b64b-c8c98aea1d1e', // frauwacholder - BONG Cube: C4AC Edition
             '61454789685c83106293be3c', // Deinonychus - Bodleian Cube
             'b67c9d5e-5cf5-46f6-bb3d-58a014df6a1a', // dinrovahorror - Companion Cube
+            'e2f39081-b6f3-4b96-a1f4-890379d68a4d', // Isticle - The Perilous Seas
+            '6158155be62adc101e305eb6', // ecide - Zonal Synergy Cube
         ],
     },
     {
