@@ -242,8 +242,9 @@ const batches = [
             '63f8e97f81e88359951591ee', // Jarizos32 - The Altered Cube [Top 8 Only]
             'a71be443-3aef-424a-bc37-64af56b6c1e7', // LuckyLooter - Museum of Modern
             '5fc9e578bada5f7f15feb582', // aquaone - aquaone powered
-            'e353934d-cfe8-4eb2-90f5-6e6688b86ebb', // monadic - The Trading Post Cube [Is this the right one?]
-            'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // ianbraverman - The Trinket Cube
+            'e353934d-cfe8-4eb2-90f5-6e6688b86ebb', // monadic - The Trading Post Cube
+            // 'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // ianbraverman - The Trinket Cube
+            '62b445e1f1c7606591687389', // blizzyg - Modern Antiquities
             '5fba82998e1dc31071ad84a4', // ianbraverman - Ian's Peasant Cube
         ],
     },
