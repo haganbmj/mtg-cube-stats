@@ -189,6 +189,8 @@ const batches = [
             '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube
             '480e729f-55bd-423d-8c38-7ed8fbead377', // Illuminous - Illuminous Peasant 360 Plus
             '5d9fd6df1f2af308d72ddf35', // UlkaMTGN - Ulka's Peasant Cube
+            '90d860e8-ab6c-4163-b1fb-19722ac000b5', // UlkaMTGN - Peasant's Past
+            '620e7a29eeb8c87a13d0e8ca', // UlkaMTGN - Turbo Peasant Cube
             '5f6f2e34dc7295103b6290ff', // Shadowkillerx7 - Peasant all Foils
             '5d95438ad09b6308ae8e8d43', // cVantez - vVantez Peasant
             '758acb73-3cf5-4789-b29e-f9b0e4a11aa1', // Alakokain - Peasant Cube (2025)
@@ -201,6 +203,8 @@ const batches = [
             'fab2344b-bfaf-4140-96a7-42ad314e5b44', // Sharkman1231 - Fetch Peasant
             '75b74553-bb0e-4cc0-bfc5-232b94dabb6e', // Magnet - 375 Black & Silver Cube
             '74ae63f5-af7e-43af-81e5-5c87fd849102', // F1etcher7 - The Peasant+ Buildaround Cube
+            '131ac14b-6d71-40b7-8acd-d43c34d53317', // Psykomantisss - You Talking About Cubes?
+            
         ],
     },
     {
