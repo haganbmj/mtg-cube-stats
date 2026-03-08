@@ -249,6 +249,10 @@ function analyzeCubeContents(cards) {
         }, {}),
         averageWordCount: cards.reduce((sum, c) => sum + (c.oracleTextWordCount ?? 0), 0) / cards.length,
         averageWordCountMinusParen: cards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / cards.length,
+        averageReleaseYear: (() => {
+            const validCards = cards.filter(c => c.releaseYear);
+            return validCards.length > 0 ? validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length : 2000;
+        })(),
         // This is a map of keyword -> count
         keywords: cards.reduce((keywords, c) => {
             c.keywords?.forEach(kw => {

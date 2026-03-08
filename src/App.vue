@@ -342,6 +342,16 @@
                                 />
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averageReleaseYear')"
+                                    prop="stats.averageReleaseYear"
+                                    label="Avg. Release Year"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.roundedInteger"
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalCards')"
                                     prop="stats.totalCards"
                                     label="Total Cards"
@@ -681,6 +691,16 @@ registerTheme('darkbmj', darkbmjTheme);
 
 provide(THEME_KEY, "darkbmj");
 
+// Track scryfall initialization promise
+let scryfallInitPromise = null;
+
+const ensureScryfallInitialized = async () => {
+    if (scryfallInitPromise === null) {
+        scryfallInitPromise = initScryfall();
+    }
+    return scryfallInitPromise;
+};
+
 // FIXME: Move these somewhere else and dynamically include/exclude them based on the ENV.
 const presetComparisons = {
     "WotC MTGO/Arena": () => import("../preloads/cubes-wotc.json"),
@@ -689,8 +709,8 @@ const presetComparisons = {
     // "haganbmj": () => import("../preloads/cubes-haganbmj.json"),
     "Peasant Cubes": () => import("../preloads/cubes-peasant.json"),
     // "Vertex Philly 2026": () => import("../preloads/cubes-vertex-philly-2026.json"),
-    "Cube For A Cause 2026": () => import("../preloads/cubes-c4ac-feb2026.json"),
-    "Connecticube 2026": () => import("../preloads/cubes-connecticube-2026.json"),
+    // "Cube For A Cause 2026": () => import("../preloads/cubes-c4ac-feb2026.json"),
+    // "Connecticube 2026": () => import("../preloads/cubes-connecticube-2026.json"),
 };
 
 const defaultConfig = {
@@ -738,6 +758,10 @@ const loadPresetCollection = async (presetName: string) => {
         console.time(`Load Collection: ${presetName}`);
 
         addCubeForm.loading = true;
+
+        // Wait for scryfall to be initialized
+        await ensureScryfallInitialized();
+
         const cubesModule = await presetComparisons[presetName]();
         preloadSimiliarityMatrix(cubesModule.default.similarities);
         const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
@@ -772,6 +796,7 @@ const columnOptions = ref([
             { value: 'stats.assumedCategories', label: "Categories", tooltip: "Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" },
             { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalMinPriceTix', label: "Min Price (Tix)", tooltip: "Total Minimum Price of the Cube in MTGO Tix" },
+            { value: 'stats.averageReleaseYear', label: 'Avg. Release Year', tooltip: "Average Release Year of Cards in the Cube" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
             { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
@@ -866,6 +891,9 @@ const overviewTableData = computed(() => {
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
 
+    // Wait for scryfall to be initialized
+    await ensureScryfallInitialized();
+
     // Attempt to take just the Cube ID based on multiple possible input formats.
     const input = addCubeForm.cubeId.split('?')[0].trim();
     const [ cubeId ] = input.match(/([^\/]+)\/?$/);
@@ -918,6 +946,9 @@ const formatters = {
 };
 
 const columnFormatters = {
+    roundedInteger: (row, column) => {
+        return Math.round(getNestedProp(row, column.property) ?? 0);
+    },
     toFixed2: (row, column) => {
         return (getNestedProp(row, column.property) ?? 0).toFixed(2);
     },
@@ -938,10 +969,8 @@ const columnFormatters = {
 };
 
 onMounted(async () => {
-    // FIXME: This doesn't have to block the cube form. Could just block the first access to the Scryfall data.
-    addCubeForm.loading = true;
-    await initScryfall();
-    addCubeForm.loading = false;
+    // Start scryfall initialization in the background without blocking the UI
+    ensureScryfallInitialized();
 });
 </script>
 
