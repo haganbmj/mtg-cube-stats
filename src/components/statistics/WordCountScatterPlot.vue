@@ -40,10 +40,10 @@ const chartOptions = computed(() => {
             itemStyle: {
                 color: props.highlighted.includes(cube.id) ? '#ffffff' : '#5470c6',
                 opacity: props.highlighted.includes(cube.id) ? 1.0 : 0.6,
-                borderColor: props.highlighted.includes(cube.id) ? '#ffffff' : undefined,
+                borderColor: props.highlighted.includes(cube.id) ? '#ff6b6b' : undefined,
                 borderWidth: props.highlighted.includes(cube.id) ? 2 : 0,
-                shadowBlur: props.highlighted.includes(cube.id) ? 10 : 0,
-                shadowColor: props.highlighted.includes(cube.id) ? 'rgba(255, 255, 255, 0.5)' : undefined,
+                shadowBlur: props.highlighted.includes(cube.id) ? 5 : 0,
+                shadowColor: props.highlighted.includes(cube.id) ? 'rgba(255, 107, 107, 0.5)' : undefined,
             },
         }
     });
