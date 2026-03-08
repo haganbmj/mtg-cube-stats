@@ -342,6 +342,16 @@
                                 />
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.averageReleaseYear')"
+                                    prop="stats.averageReleaseYear"
+                                    label="Avg. Release Year"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.roundedInteger"
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalCards')"
                                     prop="stats.totalCards"
                                     label="Total Cards"
@@ -786,6 +796,7 @@ const columnOptions = ref([
             { value: 'stats.assumedCategories', label: "Categories", tooltip: "Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" },
             { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalMinPriceTix', label: "Min Price (Tix)", tooltip: "Total Minimum Price of the Cube in MTGO Tix" },
+            { value: 'stats.averageReleaseYear', label: 'Avg. Release Year', tooltip: "Average Release Year of Cards in the Cube" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
             { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
@@ -935,6 +946,9 @@ const formatters = {
 };
 
 const columnFormatters = {
+    roundedInteger: (row, column) => {
+        return Math.round(getNestedProp(row, column.property) ?? 0);
+    },
     toFixed2: (row, column) => {
         return (getNestedProp(row, column.property) ?? 0).toFixed(2);
     },
