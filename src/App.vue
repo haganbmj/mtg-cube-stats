@@ -681,6 +681,16 @@ registerTheme('darkbmj', darkbmjTheme);
 
 provide(THEME_KEY, "darkbmj");
 
+// Track scryfall initialization promise
+let scryfallInitPromise = null;
+
+const ensureScryfallInitialized = async () => {
+    if (scryfallInitPromise === null) {
+        scryfallInitPromise = initScryfall();
+    }
+    return scryfallInitPromise;
+};
+
 // FIXME: Move these somewhere else and dynamically include/exclude them based on the ENV.
 const presetComparisons = {
     "WotC MTGO/Arena": () => import("../preloads/cubes-wotc.json"),
@@ -738,6 +748,10 @@ const loadPresetCollection = async (presetName: string) => {
         console.time(`Load Collection: ${presetName}`);
 
         addCubeForm.loading = true;
+
+        // Wait for scryfall to be initialized
+        await ensureScryfallInitialized();
+
         const cubesModule = await presetComparisons[presetName]();
         preloadSimiliarityMatrix(cubesModule.default.similarities);
         const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
@@ -866,6 +880,9 @@ const overviewTableData = computed(() => {
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
 
+    // Wait for scryfall to be initialized
+    await ensureScryfallInitialized();
+
     // Attempt to take just the Cube ID based on multiple possible input formats.
     const input = addCubeForm.cubeId.split('?')[0].trim();
     const [ cubeId ] = input.match(/([^\/]+)\/?$/);
@@ -938,10 +955,8 @@ const columnFormatters = {
 };
 
 onMounted(async () => {
-    // FIXME: This doesn't have to block the cube form. Could just block the first access to the Scryfall data.
-    addCubeForm.loading = true;
-    await initScryfall();
-    addCubeForm.loading = false;
+    // Start scryfall initialization in the background without blocking the UI
+    ensureScryfallInitialized();
 });
 </script>
 
