@@ -204,7 +204,7 @@ const batches = [
             '75b74553-bb0e-4cc0-bfc5-232b94dabb6e', // Magnet - 375 Black & Silver Cube
             '74ae63f5-af7e-43af-81e5-5c87fd849102', // F1etcher7 - The Peasant+ Buildaround Cube
             '131ac14b-6d71-40b7-8acd-d43c34d53317', // Psykomantisss - You Talking About Cubes?
-            
+
         ],
     },
     {
@@ -234,7 +234,7 @@ const batches = [
     },
     {
         name: 'connecticube-2026',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        staleThreshold: undefined,
         shardCount: 2,
         cubes: [
             'a053a34d-2aca-41bf-902b-63f57872c20b', // FinMint - The Circle of Life
@@ -254,7 +254,7 @@ const batches = [
     },
     {
         name: 'c4ac-feb2026',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        staleThreshold: undefined,
         shardCount: 2,
         cubes: [
             '66a046f0-d853-4588-9c23-77c4ea262039', // mgr4dv - Strixhaven Study Abroad
