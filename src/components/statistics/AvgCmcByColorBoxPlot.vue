@@ -111,8 +111,6 @@ const chartOptions = computed(() => {
         return [min, q1, median, q3, max];
     });
 
-    console.log('test');
-
     const series = [
         {
             name: 'Distribution',

@@ -196,6 +196,10 @@
                                                 <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.totalCards || 1" />
                                             </el-col>
                                             <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
+                                                <h3>Sets ({{ Object.keys(props.row.stats?.setCodeDistribution || {}).length }})</h3>
+                                                <SetNameTable :setCodeDistribution="props.row.stats?.setCodeDistribution || {}" :totalCards="props.row.stats?.totalCards || 1" />
+                                            </el-col>
+                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
                                                 <h3>Similar Cubes</h3>
                                                 <SimilarCubesTable :similarityMatrix="similarityMatrix" :loadedCubes="overviewTableData" :cubeId="props.row.id" />
                                             </el-col>
@@ -675,6 +679,7 @@ import ManaValueChart from './components/ManaValueChart.vue';
 import ColorIdentityDistribution from './components/ColorIdentityDistribution.vue';
 import TypeLineDistribution from './components/TypeLineDistribution.vue';
 import KeywordTable from './components/KeywordTable.vue';
+import SetNameTable from './components/SetNameTable.vue';
 import RarityDistribution from './components/RarityDistribution.vue';
 import ReleaseYearChart from './components/ReleaseYearChart.vue';
 
