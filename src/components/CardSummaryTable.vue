@@ -17,6 +17,7 @@
                 </el-input>
 
                 <el-button @click="resetFilters">Reset Filters</el-button>
+                <el-button @click="exportToCsv" type="primary">Export CSV</el-button>
             </el-space>
         </el-col>
         <el-col :span="12" :xs="24" class="filtered-count">
@@ -482,6 +483,68 @@ const resetFilters = () => {
     searchInput.value = '';
     currentPage.value = 1;
     cardSummaryTableRef.value?.clearFilter();
+};
+
+const exportToCsv = () => {
+    // Helper function to escape CSV values
+    const escapeCsvValue = (value) => {
+        if (value === null || value === undefined) return '';
+        const stringValue = String(value);
+        // Escape quotes by doubling them and wrap in quotes if contains comma, quote, or newline
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+    };
+
+    // Define CSV headers
+    const headers = [
+        'Index',
+        'Name',
+        'Cubes',
+        'Colors',
+        'Mana Value',
+        'Type Line',
+        'Tags',
+        'Min Rarity',
+        'Set Code',
+        'Release Date',
+        'Min Price (USD)'
+    ].map(escapeCsvValue).join(',');
+
+    // Convert data to CSV rows
+    const csvRows = searchedRows.value.map(row => [
+        row.index,
+        row.name,
+        row.cubeCount,
+        row.effectiveColors.join(''),
+        row.cmc ?? '',
+        row.typeLine,
+        row.tags.join(', '),
+        row.minRarity ?? '',
+        row.setCode ?? '',
+        row.releaseDate ?? '',
+        row.minPriceUsd ? `$${row.minPriceUsd.toFixed(2)}` : ''
+    ].map(escapeCsvValue).join(','));
+
+    // Combine headers and rows
+    const csvContent = [headers, ...csvRows].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', `cube-cards-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
 };
 
 const tableData = computed(() => {
