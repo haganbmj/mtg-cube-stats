@@ -31,6 +31,10 @@ const powerOracleIds = [
     'd0209d3f-3f7e-4fd5-bce5-10bce6f29c86', // Time Walk
 ];
 
+export function getSetName(setCode) {
+    return scryfall.sets[setCode.toLowerCase()] ?? setCode;
+}
+
 /**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
@@ -109,6 +113,7 @@ function enrichCubeContents(cards) {
             releaseDate: scryfallCard?.releaseDate ?? undefined,
             releaseYear: scryfallCard?.releaseDate ? parseInt(scryfallCard.releaseDate.split('-')[0]) : undefined,
             setCode: scryfallCard?.setCode?.toUpperCase() ?? '',
+            setName: scryfall.sets[scryfallCard?.setCode] ?? '',
             collectorNumber: scryfallCard?.collectorNumber ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
@@ -237,6 +242,11 @@ function analyzeCubeContents(cards) {
             });
             return distribution;
         })(),
+        setCodeDistribution: cards.reduce((sets, c) => {
+            const setCode = c.setCode ?? 'unknown';
+            sets[setCode] = (sets[setCode] ?? 0) + 1;
+            return sets;
+        }, {}),
         rarityDistribution: cards.reduce((rarities, c) => {
             const rarity = c.rarity ?? 'unknown';
             rarities[rarity] = (rarities[rarity] ?? 0) + 1;
