@@ -208,6 +208,33 @@ const batches = [
         ],
     },
     {
+        name: 'shoebox-2026',
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 2,
+        cubes: [
+            '5fc9e578bada5f7f15feb582', // aquaone - aquaone powered
+            'b67c9d5e-5cf5-46f6-bb3d-58a014df6a1a', // dinrovahorror - Companion Cube
+            'aa4ef3f9-0b4f-4bf0-9fbc-5cc3d3ec5e37', // andymangold - 100 Ornithopters
+            '61454789685c83106293be3c', // Deinonychus - Bodleian Cube
+            '62028de443cd0c53e6e1d661', // LuckyLooter - Eiganjo Drift
+            '6a54d0b5-493f-4339-b652-fd277d177717', // JaneMcKinney - The Ball Pit
+            '0870c9d6-b66e-4647-beda-6f1942b672b9', // aibretty - The Fire Swamp
+            '27227872-7676-4df8-bc04-4c32ddc7924d', // brinkleysound - Hoopin
+            'a71be443-3aef-424a-bc37-64af56b6c1e7', // LuckyLooter - Museum of Modern
+            '5d39e7f38472c42aab0b73d6', // dekkerglen - Tiny Leaders
+            '636e940b282cc10f6a181e75', // Kapernaumov - The Penrose Cube
+            '5dc9a64553f3101ce8e1d08c', // Isticle - The Devoid Cube
+            'cb3f23e0-5e6e-44e3-bc40-45b1132942ad', // griffv - Hall of Legends
+            '1efd75a8-91de-498c-b3ee-24df7bde3a38', // IslandPonder - Alternate History Powered Cube
+            '63322a647545331a605f8df1', // Rinth - Spicy Ramen Cube
+            '5d6c2b61de02de10673665f7', // JaneMcKinney - The Tabletop Cube
+            '6c078fb9-5559-4296-a57b-5d86ed19ae90', // IanGitax - HeatherCube
+            'f65374a7-f50c-45a6-a6e2-97093854a36d', // gogt200 - Avishkube
+            '623220f59876560fe936f3b9', // inkfathom - Budget synergy cube
+            '68d9dfb8-2e06-4735-a4aa-535255e66c15', // DarthPinkHippo - Disaster Movie Cube, convention edition
+        ],
+    },
+    {
         name: 'vertex-philly-2026',
         // staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         staleThreshold: undefined,
