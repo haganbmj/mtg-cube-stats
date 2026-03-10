@@ -181,6 +181,12 @@ const chartOptions = computed(() => {
             name: 'Color Category',
             nameLocation: 'middle',
             type: 'category',
+            axisTick: {
+                alignWithLabel: true
+            },
+            axisLabel: {
+                rotate: 30
+            },
             data: xDimensions.map(dim => dim.name),
             nameGap: 25,
         },

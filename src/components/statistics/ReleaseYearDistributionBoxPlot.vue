@@ -171,15 +171,15 @@ const chartOptions = computed(() => {
                 formatter: '{value}%'
             }
         },
-        // dataZoom: [
-        //     {
-        //         type: 'slider',
-        //         show: true,
-        //         xAxisIndex: [0],
-        //         start: 0,
-        //         end: 100
-        //     }
-        // ],
+        dataZoom: [
+            {
+                type: 'slider',
+                show: true,
+                xAxisIndex: [0],
+                start: 0,
+                end: 100
+            }
+        ],
         series,
     };
 });

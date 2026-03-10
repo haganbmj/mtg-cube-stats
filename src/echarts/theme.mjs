@@ -1,23 +1,37 @@
-// Nord-based dark theme for ECharts
 export default {
     "color": [
-        "#fc97af",
-        "#87f7cf",
-        "#f7f494",
-        "#72ccff",
-        "#f7c5a0",
-        "#d4a4eb",
-        "#d2f5a6",
-        "#76f2f2"
+        // "#5755d9",
+        // "#667eea",
+        // "#764ba2",
+        // "#f093fb",
+        // "#4facfe",
+        // "#43e97b",
+        // "#38ef7d",
+        // "#fad0c4"
+
+        "#5755d9",
+        "#91ca8c",
+        "#f49f42",
+        "#dd6b66",
+        "#759aa0",
+        "#e69d87",
+        "#8dc1a9",
+        "#ea7e53",
+        "#eedd78",
+        "#73a373",
+        "#73b9bc",
+        "#7289ab",
     ],
     "backgroundColor": "rgba(41,52,65,0.0)",
-    "textStyle": {},
+    "textStyle": {
+        "color": "#ffffff"
+    },
     "title": {
         "textStyle": {
-            "color": "#eeeeee"
+            "color": "#ffffff"
         },
         "subtextStyle": {
-            "color": "#dddddd"
+            "color": "#cccccc"
         }
     },
     "line": {
@@ -88,13 +102,15 @@ export default {
     },
     "boxplot": {
         "itemStyle": {
+            "color": "rgba(41,52,65,1)",
+            "borderWidth": 2,
             "normal": {
                 "borderWidth": 0,
-                "borderColor": "#ccc"
+                "borderColor": "rgba(255, 255, 255, 0.2)"
             },
             "emphasis": {
                 "borderWidth": 0,
-                "borderColor": "#ccc"
+                "borderColor": "rgba(255, 255, 255, 0.2)"
             }
         }
     },
@@ -247,13 +263,13 @@ export default {
         "axisLine": {
             "show": true,
             "lineStyle": {
-                "color": "#666666"
+                "color": "rgba(255, 255, 255, 0.7)"
             }
         },
         "axisTick": {
-            "show": false,
+            "show": true,
             "lineStyle": {
-                "color": "#333"
+                "color": "rgba(255, 255, 255, 0.7)"
             }
         },
         "axisLabel": {
@@ -284,13 +300,13 @@ export default {
         "axisLine": {
             "show": true,
             "lineStyle": {
-                "color": "#666666"
+                "color": "rgba(255, 255, 255, 0.7)"
             }
         },
         "axisTick": {
-            "show": false,
+            "show": true,
             "lineStyle": {
-                "color": "#333"
+                "color": "rgba(255, 255, 255, 0.7)"
             }
         },
         "axisLabel": {
@@ -300,19 +316,20 @@ export default {
             }
         },
         "splitLine": {
-            "show": false,
+            "show": true,
             "lineStyle": {
+                "type": "dashed",
                 "color": [
                     "#e6e6e6"
                 ]
             }
         },
         "splitArea": {
-            "show": false,
+            "show": true,
             "areaStyle": {
                 "color": [
-                    "rgba(250,250,250,0.05)",
-                    "rgba(200,200,200,0.02)"
+                    "rgba(250,250,250,0.03)",
+                    "rgba(200,200,200,0.01)"
                 ]
             }
         }
@@ -325,9 +342,9 @@ export default {
             }
         },
         "axisTick": {
-            "show": false,
+            "show": true,
             "lineStyle": {
-                "color": "#333"
+                "color": "rgba(255, 255, 255, 0.7)"
             }
         },
         "axisLabel": {
@@ -362,9 +379,9 @@ export default {
             }
         },
         "axisTick": {
-            "show": false,
+            "show": true,
             "lineStyle": {
-                "color": "#333"
+                "color": "rgba(255, 255, 255, 0.7)"
             }
         },
         "axisLabel": {
