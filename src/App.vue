@@ -693,8 +693,7 @@ import SimilarCubesTable from './components/SimilarCubesTable.vue';
 import { useDateFormat } from '@vueuse/core';
 
 registerTheme('darkbmj', darkbmjTheme);
-
-provide(THEME_KEY, "darkbmj");
+provide(THEME_KEY, 'darkbmj');
 
 // Track scryfall initialization promise
 let scryfallInitPromise = null;

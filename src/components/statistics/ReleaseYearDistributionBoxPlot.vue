@@ -110,10 +110,6 @@ const chartOptions = computed(() => {
             name: 'Distribution',
             type: 'boxplot',
             data: boxplotData.map((data, index) => [...data, index]),
-            itemStyle: {
-                color: 'rgba(84, 112, 198, 0.1)',
-                borderColor: '#5470c6'
-            }
         }
     ];
 
@@ -175,15 +171,15 @@ const chartOptions = computed(() => {
                 formatter: '{value}%'
             }
         },
-        // dataZoom: [
-        //     {
-        //         type: 'slider',
-        //         show: true,
-        //         xAxisIndex: [0],
-        //         start: 0,
-        //         end: 100
-        //     }
-        // ],
+        dataZoom: [
+            {
+                type: 'slider',
+                show: true,
+                xAxisIndex: [0],
+                start: 0,
+                end: 100
+            }
+        ],
         series,
     };
 });

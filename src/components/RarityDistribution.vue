@@ -34,10 +34,16 @@ const props = defineProps({
 const chartOptions = computed(() => {
     const data = Object.entries(props.rarityDistribution).map(([key, value]) => {
         return { name: capitalizeFirstLetter(key), value };
+    }).sort((a, b) => {
+        const order = ['common', 'uncommon', 'rare', 'mythic'];
+        return order.indexOf(a.name.toLowerCase()) - order.indexOf(b.name.toLowerCase());
     });
 
     const minData = Object.entries(props.minimumRarityDistribution).map(([key, value]) => {
         return { name: capitalizeFirstLetter(key), value };
+    }).sort((a, b) => {
+        const order = ['common', 'uncommon', 'rare', 'mythic'];
+        return order.indexOf(a.name.toLowerCase()) - order.indexOf(b.name.toLowerCase());
     });
 
     return {
@@ -51,7 +57,7 @@ const chartOptions = computed(() => {
         },
         series: [
             {
-                data,
+                data: data,
                 name: 'Original Rarity',
                 type: 'pie',
                 radius: ['0%', '40%'],
