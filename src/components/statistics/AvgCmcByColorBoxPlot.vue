@@ -116,15 +116,13 @@ const chartOptions = computed(() => {
             name: 'Distribution',
             type: 'boxplot',
             data: boxplotData.map((data, index) => [...data, index]),
-            // itemStyle: (params) => {
-            //     console.log(params);
-            //     const color = xDimensions[params.dataIndex]?.color || '#5470c6';
-            //     return {
-            //         color,
-            //         borderColor: color,
-            //         borderWidth: 2,
-            //     };
-            // },
+            itemStyle: {
+                borderColor: (params) => {
+                    const color = xDimensions[params.dataIndex]?.color || '#5755d9';
+                    return color;
+                },
+                borderWidth: 2,
+            },
         }
     ];
 
