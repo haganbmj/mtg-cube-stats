@@ -632,24 +632,20 @@
                             </el-table>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Statistics" name="statistics" :lazy="true">
+                        <el-tab-pane label="Infographic" name="infographic" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
+                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" />
+                        </el-tab-pane>
+
+                        <el-tab-pane label="Statistics" name="statistics" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <div style="width: 100%;">
                                 <StatisticsTab :loadedCubes="overviewTableData" />
                             </div>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Cards" name="cards" :lazy="true">
+                        <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <div style="width: 100%;">
                                 <CardSummaryTable :loadedCubes="loadedCubes" />
                             </div>
-                        </el-tab-pane>
-
-                        <el-tab-pane label="Keywords" name="keywords" :lazy="true" v-if="false">
-                            <p>Big old TODO.</p>
-                        </el-tab-pane>
-
-                        <el-tab-pane label="Similarity Matrix" name="similarity-matrix" :lazy="true" v-if="false">
-                            <p>Big old TODO. Cosine similarity matrix perhaps?</p>
                         </el-tab-pane>
 
                         <el-tab-pane label="About" name="about" :lazy="true">
@@ -689,6 +685,7 @@ import LegalityDistribution from './components/LegalityDistribution.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
+import InfographicTab from './tabs/InfographicTab.vue';
 import SimilarCubesTable from './components/SimilarCubesTable.vue';
 import { useDateFormat } from '@vueuse/core';
 
