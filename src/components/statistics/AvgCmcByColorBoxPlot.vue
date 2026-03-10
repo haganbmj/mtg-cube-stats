@@ -116,10 +116,6 @@ const chartOptions = computed(() => {
             name: 'Distribution',
             type: 'boxplot',
             data: boxplotData.map((data, index) => [...data, index]),
-            itemStyle: {
-                color: 'rgba(84, 112, 198, 0.1)',
-                borderColor: '#5470c6',
-            },
             // itemStyle: (params) => {
             //     console.log(params);
             //     const color = xDimensions[params.dataIndex]?.color || '#5470c6';

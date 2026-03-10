@@ -1,11 +1,6 @@
-import { createApp } from 'vue';
+import { createApp, provide } from 'vue';
 import ElementPlus from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
-
-import { registerTheme } from 'echarts';
-import darkbmjTheme from './echarts/theme.mjs';
-
-registerTheme('darkbmj', darkbmjTheme);
 
 import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css'
