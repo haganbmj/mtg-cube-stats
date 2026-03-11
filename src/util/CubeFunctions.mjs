@@ -139,6 +139,15 @@ function analyzeCubeContents(cards) {
     //  It's awkward too because the FIN Adventure lands are 0 CMC, despite being non-land spells if you want.
     // const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
     const nonLandCards = cards.filter(card => !card.effectiveTypes.includes('Land'));
+    const uniqueCards = Array.from(
+        cards.reduce((map, card) => {
+            // Only keep the first occurrence of each oracleId
+            if (!map.has(card.oracleId)) {
+                map.set(card.oracleId, card);
+            }
+            return map;
+        }, new Map()).values()
+    );
     const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
 
     const firstOrderStats = {
@@ -258,7 +267,12 @@ function analyzeCubeContents(cards) {
             return rarities;
         }, {}),
         averageWordCount: cards.reduce((sum, c) => sum + (c.oracleTextWordCount ?? 0), 0) / cards.length,
-        averageWordCountMinusParen: cards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / cards.length,
+        // averageWordCountMinusParen: cards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / cards.length,
+        averageWordCountMinusParen: (() => {
+            return uniqueCards.length > 0
+                ? uniqueCards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / uniqueCards.length
+                : 0;
+        })(),
         averageReleaseYear: (() => {
             const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes.includes('Basic'));
             return validCards.length > 0 ? validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length : 2000;

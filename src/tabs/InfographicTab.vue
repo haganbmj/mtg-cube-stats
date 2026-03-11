@@ -265,7 +265,7 @@
                 <el-card class="content-card" v-if="mostWordyCube">
                     <template #header>
                         <h3>Most Wordy</h3>
-                        <p class="subtitle">Cube with most average words per card</p>
+                        <p class="subtitle">Cube with most average words per unique card</p>
                     </template>
                     <div class="cube-stat">
                         <div class="cube-info-compact">
@@ -284,7 +284,7 @@
                 <el-card class="content-card" v-if="leastWordyCube">
                     <template #header>
                         <h3>Least Wordy</h3>
-                        <p class="subtitle">Cube with fewest average words per card</p>
+                        <p class="subtitle">Cube with fewest average words per unique card</p>
                     </template>
                     <div class="cube-stat">
                         <div class="cube-info-compact">
@@ -458,6 +458,7 @@ const topPopularCards = computed(() => {
             ...data.card,
             cubeCount: data.count,
         }))
+        .sort((a, b) => a.popularity - b.popularity) // Reverse sort by popularity.
         .sort((a, b) => b.cubeCount - a.cubeCount)
         .slice(0, 10);
 
