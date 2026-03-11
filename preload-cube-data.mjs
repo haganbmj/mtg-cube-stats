@@ -204,7 +204,7 @@ const batches = [
             '75b74553-bb0e-4cc0-bfc5-232b94dabb6e', // Magnet - 375 Black & Silver Cube
             '74ae63f5-af7e-43af-81e5-5c87fd849102', // F1etcher7 - The Peasant+ Buildaround Cube
             '131ac14b-6d71-40b7-8acd-d43c34d53317', // Psykomantisss - You Talking About Cubes?
-
+            'e50ee9af-f70d-4f77-826b-eb6030bede71', // Komali - The "Dog Walker" Cube [360 cards]
         ],
     },
     {
