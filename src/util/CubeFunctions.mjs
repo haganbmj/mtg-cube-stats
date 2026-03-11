@@ -232,7 +232,7 @@ function analyzeCubeContents(cards) {
         releaseYearDistribution: (() => {
             const distribution = {};
             cards.forEach(card => {
-                if (!card.releaseYear) {
+                if (!card.releaseYear || card.effectiveTypes.includes('Basic')) {
                     return;
                 }
                 if (!distribution[card.releaseYear]) {
@@ -260,7 +260,7 @@ function analyzeCubeContents(cards) {
         averageWordCount: cards.reduce((sum, c) => sum + (c.oracleTextWordCount ?? 0), 0) / cards.length,
         averageWordCountMinusParen: cards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / cards.length,
         averageReleaseYear: (() => {
-            const validCards = cards.filter(c => c.releaseYear);
+            const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes.includes('Basic'));
             return validCards.length > 0 ? validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length : 2000;
         })(),
         // This is a map of keyword -> count

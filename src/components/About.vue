@@ -6,6 +6,7 @@
         <li>Any card overrides (color, cmc, etc) made in CubeCobra are ignored.</li>
         <li>Card data is refreshed weekly, so price updates will be delayed.</li>
         <li>"New" cards are those printed within the last 12 months.</li>
+        <li>Release Year calculations ignore basic lands.</li>
         <li>There are a number of things not classified as "keywords" by the comp rules (Initiative, Monarch, "Becomes Day", etc) and things like Adventure are considered card layouts rather than keywords.</li>
         <li>"Removal" is evaluated using Scryfall Tagger's <code>otag:removal</code> filter.</li>
         <li>Word count is a best effort using Scryfall's oracle text which sometimes includes reminder text. The column excluding reminder text is just a naive stripping of any text between parenthesis in the oracle text, which will catch some false positives.</li>
