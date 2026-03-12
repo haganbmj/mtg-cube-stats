@@ -205,6 +205,29 @@ const batches = [
             '74ae63f5-af7e-43af-81e5-5c87fd849102', // F1etcher7 - The Peasant+ Buildaround Cube
             '131ac14b-6d71-40b7-8acd-d43c34d53317', // Psykomantisss - You Talking About Cubes?
             'e50ee9af-f70d-4f77-826b-eb6030bede71', // Komali - The "Dog Walker" Cube [360 cards]
+            '616f6b81302701102974518b', // zacthecrafter - Standard Cube - Peasant Edition
+            '5fd9198667f5213e0da09af8', // SwitchCase - The No Nonsense Bar Cube
+            '5dc9a40346d0bd7d478b6c3c', // Isticle - Evergreen Cube
+            '5f3aac1135fe7a0fb6c68f58', // michael921 - The Collection Cube
+            '5d8c01586800702babd1a76d', // Silverblood - The Noob Cube
+            '5f232572d869941039352417', // digitalSloth - The Polished Peasant
+            '5ecd72cf4022a8067a2bd959', // ReleaseTheAllicin - Rally the Peasants
+            '5fe77e9126f9a30fd142788b', // gbrell - GBrell's Peasant+
+            '629004baa478db0ff2c963ff', // dnolan08 - The G.O.A.T. Peasant Cube
+            'b3436656-0dfa-40d8-a11d-698c7791e9b6', // livethedream - The Peasant+ Combat Cube
+            '5e26d17463c7ef63a8986401', // Purtagio - To Synergy and Beyond
+            '60345f7e98852d10440afc4b', // cubedraft - Dominaria Peasant Cube
+            '604fd7038858261043aff963', // ArborAxis - PeasantCube
+            '5e78e0ef40eaf0158e593517', // FiniteMTG - Limited as Garfield Intended
+            '5ecae527f3c65270129f5a28', // Tiray - Synergy Peasant Cube
+            '60994bd609fbf3107a183e62', // mythighs - Budget Peasant Cube
+            '5ee1b71164abb70f9b426faf', // Jagomu - Super Peasant Arena Cube
+            '5e8ef1cfa0c28578ee18a51c', // VariSami - VariSami's Peasant Cube
+            '60432223f5b25f105ab4a1cc', // Char7 - Peasant Arena Cube (The Noob Cube)
+            '630ac3e02107c1434437113f', // PangasKhan - The Basement Peasant Cube
+            '5d8ff216f1db0749f1396834', // n00b1n8R - n00b's Peasant Cube
+            '608565bb3d2514106efdf765', // razorlead - Power for the People
+            '5e6014d7f9730a46084c1e96', // FunkyDragon - FunkyDragon's Peasant Cube
         ],
     },
     {
