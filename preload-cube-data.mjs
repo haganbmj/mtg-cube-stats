@@ -258,6 +258,22 @@ const batches = [
         ],
     },
     {
+        name: 'cube-corner-2026',
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 2,
+        cubes: [
+            'Twee-Violen-en-een-Trommel-en-een-Fluit',
+            'Straight2TheThop',
+            '2eb1b1e5-0389-4799-9054-9207d724e899',
+            'DAF-IPA',
+            'meansofproduction',
+            'improbable-alliances',
+            'Prismatic-Desert-Magiccon',
+            '360.cube',
+            '962ec01b-c119-484e-a1c0-e4e0eeebe7d1',
+        ],
+    },
+    {
         name: 'vertex-philly-2026',
         // staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         staleThreshold: undefined,
