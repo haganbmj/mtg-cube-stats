@@ -108,14 +108,31 @@
                                 <el-col :span="24">
                                     <h4>Supporting Cards ({{ row.cards.length }}):</h4>
                                     <div class="supporting-cards">
-                                        <el-tag
+                                        <el-tooltip
                                             v-for="cardName in row.cards.slice(0, showAllCards[row.name] ? row.cards.length : 10)"
                                             :key="cardName"
-                                            size="small"
-                                            class="card-tag"
+                                            effect="dark"
+                                            placement="top"
+                                            popper-class="card-image-tooltip"
+                                            :show-after="500"
                                         >
-                                            {{ cardName }}
-                                        </el-tag>
+                                            <template #content>
+                                                <div class="card-tooltip-content">
+                                                    <img
+                                                        :src="getCardImageUrl(cardName)"
+                                                        :alt="cardName"
+                                                        class="card-tooltip-image"
+                                                        @error="handleImageError"
+                                                    />
+                                                </div>
+                                            </template>
+                                            <el-tag
+                                                size="small"
+                                                class="card-tag"
+                                            >
+                                                {{ cardName }}
+                                            </el-tag>
+                                        </el-tooltip>
                                         <el-button
                                             v-if="row.cards.length > 10 && !showAllCards[row.name]"
                                             link
@@ -156,6 +173,23 @@
 import { computed, ref } from 'vue';
 import { Check, Close } from '@element-plus/icons-vue';
 import { detectCubeArchetypes, getSupportLevelColor } from '../util/ArchetypeDetection.mjs';
+
+// Simple function to generate Scryfall image URL from card name
+const getCardImageUrl = (cardName: string) => {
+    // This is a simplified approach - ideally you'd have oracle IDs
+    // For now, use Scryfall's named API endpoint
+    const encodedName = encodeURIComponent(cardName);
+    return `https://api.scryfall.com/cards/named?exact=${encodedName}&format=image&version=normal`;
+};
+
+const handleImageError = (event: Event) => {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const parent = img.parentElement;
+    if (parent) {
+        parent.innerHTML = '<div class="card-name-fallback">Image not available</div>';
+    }
+};
 
 const props = defineProps({
     cubeCards: {
@@ -259,6 +293,12 @@ const archetypeDensity = computed(() => {
 
 .card-tag {
     margin: 0;
+    color: white !important;
+    cursor: help;
+}
+
+.card-tag:hover {
+    opacity: 0.8;
 }
 
 .view-options {
@@ -268,6 +308,26 @@ const archetypeDensity = computed(() => {
     border-top: 1px solid var(--el-border-color-light);
 }
 
+.card-tooltip-content {
+    padding: 0;
+    margin: 0;
+    max-width: 250px;
+}
+
+.card-tooltip-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    display: block;
+}
+
+.card-name-fallback {
+    padding: 8px;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+}
+
 @media (max-width: 768px) {
     .archetype-summary .el-col {
         margin-bottom: 16px;
@@ -275,6 +335,10 @@ const archetypeDensity = computed(() => {
 
     .supporting-cards {
         justify-content: flex-start;
+    }
+
+    .card-tooltip-content {
+        max-width: 200px;
     }
 }
 </style>

@@ -344,6 +344,135 @@ minimized.cards = best;
 
 console.log(`Found ${Object.keys(minimized.cards).length} distinct cards from ${Object.keys(minimized.sets).length} sets.`);
 
+// Analyze tagger data for archetype relevance
+console.log('Analyzing tagger data for archetype insights...');
+const taggerAnalysis = {
+    totalTags: taggerData.data.length,
+    highUsageTags: [],
+    archetypeRelevantTags: {},
+    summary: {}
+};
+
+// Categorize tags by usage count and archetype relevance
+taggerData.data.forEach(tag => {
+    const cardCount = tag.oracle_ids.length;
+    const tagInfo = {
+        label: tag.label,
+        description: tag.description,
+        cardCount: cardCount,
+        percentage: ((cardCount / Object.keys(minimized.cards).length) * 100).toFixed(2)
+    };
+
+    // High usage tags (more than 50 cards)
+    if (cardCount > 50) {
+        taggerAnalysis.highUsageTags.push(tagInfo);
+    }
+
+    // Archetype relevant tags - categorize by common themes
+    const label = tag.label.toLowerCase();
+
+    // Lands matter
+    if (label.includes('land') || label.includes('ramp') || label.includes('landfall')) {
+        if (!taggerAnalysis.archetypeRelevantTags['lands-matter']) taggerAnalysis.archetypeRelevantTags['lands-matter'] = [];
+        taggerAnalysis.archetypeRelevantTags['lands-matter'].push(tagInfo);
+    }
+
+    // Energy
+    if (label.includes('energy')) {
+        if (!taggerAnalysis.archetypeRelevantTags['energy']) taggerAnalysis.archetypeRelevantTags['energy'] = [];
+        taggerAnalysis.archetypeRelevantTags['energy'].push(tagInfo);
+    }
+
+    // Equipment
+    if (label.includes('equipment') || label.includes('equip')) {
+        if (!taggerAnalysis.archetypeRelevantTags['equipment']) taggerAnalysis.archetypeRelevantTags['equipment'] = [];
+        taggerAnalysis.archetypeRelevantTags['equipment'].push(tagInfo);
+    }
+
+    // Flicker
+    if (label.includes('flicker') || label.includes('blink') || label.includes('enter') || label.includes('etb')) {
+        if (!taggerAnalysis.archetypeRelevantTags['flicker']) taggerAnalysis.archetypeRelevantTags['flicker'] = [];
+        taggerAnalysis.archetypeRelevantTags['flicker'].push(tagInfo);
+    }
+
+    // Artifacts
+    if (label.includes('artifact')) {
+        if (!taggerAnalysis.archetypeRelevantTags['artifacts']) taggerAnalysis.archetypeRelevantTags['artifacts'] = [];
+        taggerAnalysis.archetypeRelevantTags['artifacts'].push(tagInfo);
+    }
+
+    // Graveyard
+    if (label.includes('graveyard') || label.includes('mill') || label.includes('reanimation')) {
+        if (!taggerAnalysis.archetypeRelevantTags['graveyard']) taggerAnalysis.archetypeRelevantTags['graveyard'] = [];
+        taggerAnalysis.archetypeRelevantTags['graveyard'].push(tagInfo);
+    }
+
+    // Tokens
+    if (label.includes('token')) {
+        if (!taggerAnalysis.archetypeRelevantTags['tokens']) taggerAnalysis.archetypeRelevantTags['tokens'] = [];
+        taggerAnalysis.archetypeRelevantTags['tokens'].push(tagInfo);
+    }
+
+    // Spells matter
+    if (label.includes('spell') || label.includes('instant') || label.includes('sorcery') || label.includes('prowess') || label.includes('storm')) {
+        if (!taggerAnalysis.archetypeRelevantTags['spells-matter']) taggerAnalysis.archetypeRelevantTags['spells-matter'] = [];
+        taggerAnalysis.archetypeRelevantTags['spells-matter'].push(tagInfo);
+    }
+
+    // Sacrifice
+    if (label.includes('sacrifice') || label.includes('dies') || label.includes('death')) {
+        if (!taggerAnalysis.archetypeRelevantTags['sacrifice']) taggerAnalysis.archetypeRelevantTags['sacrifice'] = [];
+        taggerAnalysis.archetypeRelevantTags['sacrifice'].push(tagInfo);
+    }
+
+    // Lifegain
+    if (label.includes('lifegain') || label.includes('life') || label.includes('lifelink')) {
+        if (!taggerAnalysis.archetypeRelevantTags['lifegain']) taggerAnalysis.archetypeRelevantTags['lifegain'] = [];
+        taggerAnalysis.archetypeRelevantTags['lifegain'].push(tagInfo);
+    }
+
+    // Counters
+    if (label.includes('counter') && !label.includes('counterspell')) {
+        if (!taggerAnalysis.archetypeRelevantTags['counters']) taggerAnalysis.archetypeRelevantTags['counters'] = [];
+        taggerAnalysis.archetypeRelevantTags['counters'].push(tagInfo);
+    }
+
+    // Burn/Aggro
+    if (label.includes('burn') || label.includes('aggro') || label.includes('haste') || label.includes('damage')) {
+        if (!taggerAnalysis.archetypeRelevantTags['burn-aggro']) taggerAnalysis.archetypeRelevantTags['burn-aggro'] = [];
+        taggerAnalysis.archetypeRelevantTags['burn-aggro'].push(tagInfo);
+    }
+
+    // Enchantments
+    if (label.includes('enchantment') || label.includes('constellation')) {
+        if (!taggerAnalysis.archetypeRelevantTags['enchantments']) taggerAnalysis.archetypeRelevantTags['enchantments'] = [];
+        taggerAnalysis.archetypeRelevantTags['enchantments'].push(tagInfo);
+    }
+});
+
+// Sort high usage tags by card count
+taggerAnalysis.highUsageTags.sort((a, b) => b.cardCount - a.cardCount);
+
+// Sort archetype relevant tags by card count within each category
+Object.keys(taggerAnalysis.archetypeRelevantTags).forEach(archetype => {
+    taggerAnalysis.archetypeRelevantTags[archetype].sort((a, b) => b.cardCount - a.cardCount);
+});
+
+// Create summary stats
+taggerAnalysis.summary = {
+    totalTags: taggerData.data.length,
+    highUsageTagCount: taggerAnalysis.highUsageTags.length,
+    archetypeCategories: Object.keys(taggerAnalysis.archetypeRelevantTags).length,
+    topTagsByUsage: taggerAnalysis.highUsageTags.slice(0, 10).map(t => ({ label: t.label, cards: t.cardCount })),
+    recommendations: {
+        newArchetypes: ['lands-matter', 'energy', 'equipment', 'flicker'],
+        enrichmentOpportunities: Object.keys(taggerAnalysis.archetypeRelevantTags)
+    }
+};
+
+fs.writeFileSync('./data/tagger-analysis.json', JSON.stringify(taggerAnalysis, null, 2));
+console.log(`Tagger analysis complete. Found ${taggerAnalysis.summary.totalTags} total tags, ${taggerAnalysis.summary.highUsageTagCount} high-usage tags, and categorized ${taggerAnalysis.summary.archetypeCategories} archetype-relevant categories.`);
+
 assert.equal(
     minimized.sets['plc'],
     'Planar Chaos',

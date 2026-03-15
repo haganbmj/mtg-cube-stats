@@ -76,16 +76,16 @@ const ARCHETYPE_DEFINITIONS = {
         },
         threshold: 6
     },
-    'Ramp': {
-        description: 'Accelerating mana development',
-        color: '#229954',
-        detectBy: {
-            tags: ['ramp', 'lands-matter', 'landfall'],
-            oracleText: [/search your library for.*land/i, /add.*mana/i, /lands you control/i],
-            types: ['Artifact — Treasure', 'Land']
-        },
-        threshold: 8
-    },
+    // 'Ramp': {
+    //     description: 'Accelerating mana development',
+    //     color: '#229954',
+    //     detectBy: {
+    //         tags: ['ramp', 'lands-matter', 'landfall'],
+    //         oracleText: [/search your library for.*land/i, /add.*mana/i, /lands you control/i],
+    //         types: ['Artifact — Treasure', 'Land']
+    //     },
+    //     threshold: 8
+    // },
     'Removal Suite': {
         description: 'Comprehensive removal package',
         color: '#E74C3C',
@@ -128,7 +128,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies focusing on enchantments and constellation',
         color: '#9C27B0',
         detectBy: {
-            tags: ['enchantment', 'enchantmentfall', 'constellation'],
+            tags: ['enchantment', 'enchantmentfall', 'constellation', 'enchantment-engine', 'enchantmentize'],
             keywords: ['constellation'],
             oracleText: [/enchantment/i, /constellation/i]
         },
@@ -138,20 +138,51 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Milling cards from libraries as a strategy',
         color: '#607D8B',
         detectBy: {
-            tags: ['mill', 'graveyard-fuel-self'],
+            tags: ['mill', 'graveyard-fuel-self', 'mill-self', 'mill-target'],
             oracleText: [/mill/i, /put.*cards from.*library into.*graveyard/i]
         },
         threshold: 4
     },
-    'Activated Abilities': {
-        description: 'Cards with repeatable activated abilities',
-        color: '#795548',
+    'Lands Matter': {
+        description: 'Strategies that care about lands and landfall',
+        color: '#8D6E63',
         detectBy: {
-            tags: ['activated-ability', 'mana-sink'],
-            oracleText: [/:\s*[^:,)]*$/m] // Matches patterns ending with ":"
+            tags: ['lands-matter', 'landfall', 'land-animate', 'land-count-matters', 'land-etb'],
+            keywords: ['landfall'],
+            oracleText: [/landfall/i, /whenever a land enters/i, /lands you control/i, /basic land types/i]
         },
         threshold: 6
-    }
+    },
+    'Energy': {
+        description: 'Strategies utilizing energy counters',
+        color: '#FBC02D',
+        detectBy: {
+            tags: ['energy', 'energy-matters'],
+            keywords: ['fabricate'],
+            oracleText: [/energy counter/i, /get.*energy/i, /pay.*energy/i]
+        },
+        threshold: 4
+    },
+    'Equipment': {
+        description: 'Strategies focused on equipment and voltron',
+        color: '#757575',
+        detectBy: {
+            tags: ['equipment', 'equip', 'voltron'],
+            types: ['Artifact — Equipment'],
+            keywords: ['equip'],
+            oracleText: [/equipment/i, /equip/i, /equipped creature/i]
+        },
+        threshold: 5
+    },
+    'Flicker': {
+        description: 'Strategies that flicker creatures for value',
+        color: '#00BCD4',
+        detectBy: {
+            tags: ['flicker', 'blink', 'etb', 'enters-the-battlefield'],
+            oracleText: [/exile.*return/i, /flicker/i, /enters the battlefield/i, /when.*enters/i]
+        },
+        threshold: 6
+    },
 };
 
 /**
