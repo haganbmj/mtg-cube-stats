@@ -9,16 +9,25 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Cards that care about artifacts or artifact synergies',
         color: '#8C7853',
         detectBy: {
-            tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'tutor-artifact'],
+            tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'synergy-artifact-creature','tutor-artifact'],
             keywords: ['affinity-for-artifacts', 'improvise', 'fabricate']
         },
         threshold: 8
+    },
+    'Enchantments Matter': {
+        description: 'Strategies focusing on enchantments',
+        color: '#9C27B0',
+        detectBy: {
+            tags: ['enchantmentfall', 'enchantmentize', 'synergy-enchantment', 'synergy-enchantment-creature', 'tutor-enchantment', 'enchantment-engine'],
+            keywords: ['constellation', 'waterbend']
+        },
+        threshold: 5
     },
     'Graveyard Value': {
         description: 'Strategies that utilize the graveyard as a resource',
         color: '#4A4A4A',
         detectBy: {
-            tags: ['graveyard-fuel'],
+            tags: ['graveyard-fuel', 'graveyard-fuel-enchantment', 'graveyard-fuel-instant', 'graveyard-fuel-sorcery', 'graveyard-fuel-creature', 'graveyard-fuel-self', 'graveyard-fuel-target'],
             keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth', 'delirium', 'threshold', 'jump-start']
         },
         threshold: 6
@@ -63,8 +72,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies involving +1/+1 counters or other counters',
         color: '#27AE60',
         detectBy: {
-            tags: ['counter'],
-            keywords: ['modular', 'graft', 'undying', 'persist', 'evolve', 'adapt']
+            tags: ['counter-fuel', 'counters-matter', 'remove-counters', 'gives-pp-counters'],
+            keywords: ['modular', 'graft', 'undying', 'persist', 'evolve', 'adapt', 'proliferate']
         },
         threshold: 6
     },
@@ -77,10 +86,10 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 8
     },
     'Card Draw': {
-        description: 'Card advantage and selection',
+        description: 'Card draw/advantage',
         color: '#3F51B5',
         detectBy: {
-            tags: ['draw', 'scry', 'card-advantage']
+            tags: ['draw', 'card-advantage']
         },
         threshold: 10
     },
@@ -91,15 +100,6 @@ const ARCHETYPE_DEFINITIONS = {
             tags: ['tribal', 'creature-type-matters']
         },
         threshold: 4
-    },
-    'Enchantments Matter': {
-        description: 'Strategies focusing on enchantments',
-        color: '#9C27B0',
-        detectBy: {
-            tags: ['enchantmentfall', 'enchantment-removal'],
-            keywords: ['constellation']
-        },
-        threshold: 5
     },
     'Mill/Self-Mill': {
         description: 'Milling cards from libraries as a strategy',
@@ -197,9 +197,44 @@ const ARCHETYPE_DEFINITIONS = {
 };
 
 /**
- * Analyzes a cube's cards to detect supported archetypes
- * @param {Array} cards - Array of cube card objects with enriched data
- * @returns {Array} Array of detected archetype objects with support counts
+ * Detects which archetypes a single card supports
+ * @param {Object} card - Card object with tags and keywords
+ * @returns {Array} Array of archetype names that this card supports
+ */
+export function detectCardArchetypes(card) {
+    const supportedArchetypes = [];
+
+    Object.entries(ARCHETYPE_DEFINITIONS).forEach(([archetypeName, archetype]) => {
+        let supportsArchetype = false;
+
+        // Check tags
+        if (archetype.detectBy.tags) {
+            supportsArchetype = supportsArchetype ||
+                archetype.detectBy.tags.some(tag =>
+                    card.tags?.some(cardTag => cardTag.toLowerCase() === tag.toLowerCase())
+                );
+        }
+
+        // Check keywords
+        if (archetype.detectBy.keywords) {
+            supportsArchetype = supportsArchetype ||
+                archetype.detectBy.keywords.some(keyword =>
+                    card.keywords?.some(cardKeyword => cardKeyword.toLowerCase() === keyword.toLowerCase())
+                );
+        }
+
+        if (supportsArchetype) {
+            supportedArchetypes.push(archetypeName);
+        }
+    });
+
+    return supportedArchetypes;
+}
+
+/**
+ * Aggregates pre-computed archetype data from cards (new approach)
+ * @param {Array} cards - Array of cube card objects with pre-computed archetypes
+ * @returns {Array} Array of aggregated archetype objects with support counts
  */
 export function detectCubeArchetypes(cards) {
     const archetypeSupport = {};
@@ -213,36 +248,19 @@ export function detectCubeArchetypes(cards) {
         };
     });
 
-    // Analyze each card for archetype support
+    // Aggregate archetype data from cards that have pre-computed archetypes
     cards.forEach(card => {
-        Object.keys(ARCHETYPE_DEFINITIONS).forEach(archetypeName => {
-            const archetype = ARCHETYPE_DEFINITIONS[archetypeName];
-            let supportsArchetype = false;
-
-            // Check tags
-            if (archetype.detectBy.tags) {
-                supportsArchetype = supportsArchetype ||
-                    archetype.detectBy.tags.some(tag =>
-                        card.tags?.some(cardTag => cardTag.toLowerCase() === tag.toLowerCase())
-                    );
-            }
-
-            // Check keywords
-            if (archetype.detectBy.keywords) {
-                supportsArchetype = supportsArchetype ||
-                    archetype.detectBy.keywords.some(keyword =>
-                        card.keywords?.some(cardKeyword => cardKeyword.toLowerCase() === keyword.toLowerCase())
-                    );
-            }
-
-            if (supportsArchetype) {
-                archetypeSupport[archetypeName].count++;
-                archetypeSupport[archetypeName].cards.push(card.name);
-            }
-        });
+        if (card.archetypes && Array.isArray(card.archetypes)) {
+            card.archetypes.forEach(archetypeName => {
+                if (archetypeSupport[archetypeName]) {
+                    archetypeSupport[archetypeName].count++;
+                    archetypeSupport[archetypeName].cards.push(card.name);
+                }
+            });
+        }
     });
 
-    // Filter archetypes that meet threshold and add support level
+    // Filter archetypes that have at least one supporting card and add support level
     const supportedArchetypes = Object.entries(archetypeSupport)
         .map(([name, data]) => ({
             name,

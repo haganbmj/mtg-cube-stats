@@ -120,6 +120,7 @@ function enrichCubeContents(cards) {
             keywords: scryfallCard?.keywords ?? [],
             games: scryfallCard?.games ?? [], // custom cards won't have a game listed.
             tags: scryfallCard?.tags ?? [],
+            archetypes: scryfallCard?.archetypes ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
