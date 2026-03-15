@@ -78,29 +78,6 @@
 
                 <el-table-column prop="percentage" label="%" width="70" align="center" sortable />
 
-                <el-table-column prop="supportLevel" label="Support" width="100" align="center" sortable>
-                    <template #default="{ row }">
-                        <el-tag
-                            :color="getSupportLevelColor(row.supportLevel)"
-                            size="small"
-                            effect="plain"
-                        >
-                            {{ row.supportLevel }}
-                        </el-tag>
-                    </template>
-                </el-table-column>
-
-                <el-table-column prop="supported" label="Viable" width="80" align="center">
-                    <template #default="{ row }">
-                        <el-icon v-if="row.supported" color="#67C23A">
-                            <Check />
-                        </el-icon>
-                        <el-icon v-else color="#F56C6C">
-                            <Close />
-                        </el-icon>
-                    </template>
-                </el-table-column>
-
                 <el-table-column type="expand">
                     <template #default="{ row }">
                         <div class="archetype-details">
@@ -171,8 +148,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Check, Close } from '@element-plus/icons-vue';
-import { detectCubeArchetypes, getSupportLevelColor } from '../util/ArchetypeDetection.mjs';
+import { detectCubeArchetypes } from '../util/ArchetypeDetection.mjs';
 
 // Simple function to generate Scryfall image URL from card name
 const getCardImageUrl = (cardName: string) => {
