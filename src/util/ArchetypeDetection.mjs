@@ -9,7 +9,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Cards that care about artifacts or artifact synergies',
         color: '#8C7853',
         detectBy: {
-            tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'synergy-artifact-creature','tutor-artifact'],
+            tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'synergy-artifact-*', 'tutor-artifact'],
             keywords: ['affinity-for-artifacts', 'improvise', 'fabricate']
         },
         threshold: 8
@@ -18,7 +18,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies focusing on enchantments',
         color: '#9C27B0',
         detectBy: {
-            tags: ['enchantmentfall', 'enchantmentize', 'synergy-enchantment', 'synergy-enchantment-creature', 'tutor-enchantment', 'enchantment-engine'],
+            tags: ['enchantmentfall', 'enchantmentize', 'synergy-enchantment', 'synergy-enchantment-*', 'tutor-enchantment', 'enchantment-engine'],
             keywords: ['constellation', 'waterbend']
         },
         threshold: 5
@@ -27,7 +27,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies that utilize the graveyard as a resource',
         color: '#4A4A4A',
         detectBy: {
-            tags: ['graveyard-fuel', 'graveyard-fuel-enchantment', 'graveyard-fuel-instant', 'graveyard-fuel-sorcery', 'graveyard-fuel-creature', 'graveyard-fuel-self', 'graveyard-fuel-target'],
+            tags: ['graveyard-fuel', 'graveyard-fuel-*'],
             keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth', 'delirium', 'threshold', 'jump-start']
         },
         threshold: 6
@@ -36,7 +36,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Creating and benefiting from token creatures',
         color: '#F4D03F',
         detectBy: {
-            tags: ['repeatable-token-generator', 'repeatable-creature-tokens'],
+            tags: ['repeatable-token-generator', 'repeatable-creature-tokens', 'synergy-token', 'synergy-token-*'],
             keywords: ['populate', 'convoke']
         },
         threshold: 8
@@ -210,9 +210,17 @@ export function detectCardArchetypes(card) {
         // Check tags
         if (archetype.detectBy.tags) {
             supportsArchetype = supportsArchetype ||
-                archetype.detectBy.tags.some(tag =>
-                    card.tags?.some(cardTag => cardTag.toLowerCase() === tag.toLowerCase())
-                );
+                archetype.detectBy.tags.some(tag => {
+                    if (tag.includes('*')) {
+                        // Wildcard matching - convert * to regex pattern
+                        const regexPattern = tag.toLowerCase().replace(/\*/g, '.*');
+                        const regex = new RegExp(`^${regexPattern}$`);
+                        return card.tags?.some(cardTag => regex.test(cardTag.toLowerCase()));
+                    } else {
+                        // Exact matching
+                        return card.tags?.some(cardTag => cardTag.toLowerCase() === tag.toLowerCase());
+                    }
+                });
         }
 
         // Check keywords
