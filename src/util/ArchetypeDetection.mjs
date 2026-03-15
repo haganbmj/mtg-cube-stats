@@ -9,8 +9,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Cards that care about artifacts or artifact synergies',
         color: '#8C7853',
         detectBy: {
-            tags: ['artifactfall', 'artifactify', 'artifact-removal'],
-            keywords: ['affinity', 'improvise', 'fabricate']
+            tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'tutor-artifact'],
+            keywords: ['affinity-for-artifacts', 'improvise', 'fabricate']
         },
         threshold: 8
     },
@@ -19,11 +19,11 @@ const ARCHETYPE_DEFINITIONS = {
         color: '#4A4A4A',
         detectBy: {
             tags: ['graveyard-fuel'],
-            keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth']
+            keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth', 'delirium', 'threshold', 'jump-start']
         },
         threshold: 6
     },
-    'Tokens Matter': {
+    'Token Generators': {
         description: 'Creating and benefiting from token creatures',
         color: '#F4D03F',
         detectBy: {
@@ -33,19 +33,20 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 8
     },
     'Spells Matter': {
-        description: 'Cards that reward casting instants and sorceries',
+        description: 'Cards that reward casting spells',
         color: '#3498DB',
         detectBy: {
-            tags: ['single-target-spell', 'single-target-instant-sorcery'],
+            tags: ['synergy-noncreature', 'synergy-instant', 'synergy-sorcery'],
             keywords: ['prowess', 'storm']
         },
         threshold: 6
     },
-    'Sacrifice': {
+    'Sacrifice/Aristocrats': {
         description: 'Strategies built around sacrificing permanents',
         color: '#8E44AD',
         detectBy: {
-            tags: ['sacrifice-outlet']
+            tags: ['sacrifice-outlet', 'blood-artist-ability', 'synergy-sacrifice', 'death-trigger', 'leaves-body-behind'],
+            keywords: ['afterlife', 'undying', 'persist']
         },
         threshold: 6
     },
@@ -75,14 +76,6 @@ const ARCHETYPE_DEFINITIONS = {
         },
         threshold: 8
     },
-    'Removal Suite': {
-        description: 'Comprehensive removal package',
-        color: '#E74C3C',
-        detectBy: {
-            tags: ['removal', 'creature-removal', 'artifact-removal', 'enchantment-removal']
-        },
-        threshold: 12
-    },
     'Card Draw': {
         description: 'Card advantage and selection',
         color: '#3F51B5',
@@ -99,17 +92,8 @@ const ARCHETYPE_DEFINITIONS = {
         },
         threshold: 4
     },
-    'Burn/Aggro': {
-        description: 'Fast aggressive strategies',
-        color: '#D32F2F',
-        detectBy: {
-            tags: ['burn'],
-            keywords: ['haste', 'first strike', 'double strike']
-        },
-        threshold: 8
-    },
     'Enchantments Matter': {
-        description: 'Strategies focusing on enchantments and constellation',
+        description: 'Strategies focusing on enchantments',
         color: '#9C27B0',
         detectBy: {
             tags: ['enchantmentfall', 'enchantment-removal'],
@@ -126,11 +110,11 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 4
     },
     'Lands Matter': {
-        description: 'Strategies that care about lands and landfall',
+        description: 'Effects that care about lands',
         color: '#8D6E63',
         detectBy: {
             tags: ['lands-matter', 'landfall', 'land-animate', 'land-count-matters', 'land-etb'],
-            keywords: ['landfall']
+            keywords: ['landfall', 'domain']
         },
         threshold: 6
     },
@@ -138,27 +122,78 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies utilizing energy counters',
         color: '#FBC02D',
         detectBy: {
-            tags: []
+            tags: ['energy-generator', 'counter-fuel-energy']
         },
         threshold: 4
     },
     'Equipment': {
-        description: 'Strategies focused on equipment and voltron',
+        description: 'Strategies focused on equipment',
         color: '#757575',
         detectBy: {
             tags: ['synergy-equipment', 'quick-equip'],
-            keywords: ['equip']
+            keywords: ['equip', 'living weapon']
         },
         threshold: 5
     },
     'Flicker': {
-        description: 'Strategies that flicker creatures for value',
+        description: 'Strategies that flicker for value',
         color: '#00BCD4',
         detectBy: {
-            tags: ['flicker', 'blink']
+            tags: ['flicker']
         },
         threshold: 6
     },
+    'Reanimation': {
+        description: 'Bringing stuff back from the graveyard to play',
+        color: '#2C1810',
+        detectBy: {
+            tags: ['reanimate', 'creature-reanimation-automatic', 'temporary-reanimation', 'mass-reanimation']
+        },
+        threshold: 4
+    },
+    'Auras': {
+        description: 'Enchant creature strategies and aura synergies',
+        color: '#9575CD',
+        detectBy: {
+            tags: ['synergy-aura', 'tutor-enchantment-aura'],
+            keywords: ['enchant', 'bestow']
+        },
+        threshold: 4
+    },
+    'Storm': {
+        description: 'The actual Storm mechanic',
+        color: '#1976D2',
+        detectBy: {
+            keywords: ['storm']
+        },
+        threshold: 3
+    },
+    'Madness/Self-Discard': {
+        description: 'Strategies that benefit from discarding cards',
+        color: '#7B1FA2',
+        detectBy: {
+            tags: ['madness', 'discard-outlet', 'self-discard-matters', 'synergy-discard-self'],
+            keywords: ['madness']
+        },
+        threshold: 4
+    },
+    'Sneak': {
+        description: 'Putting creatures into play from hand without paying costs',
+        color: '#D84315',
+        detectBy: {
+            tags: ['sneak', 'sneak-creature', 'sneak-self']
+        },
+        threshold: 3
+    },
+    'Morph': {
+        description: 'Cards that interact with face-down creatures or morph',
+        color: '#616161',
+        detectBy: {
+            tags: ['face-up-face-down-effects', 'face-down-face-up-effects', 'turn-face-down'],
+            keywords: ['morph', 'manifest', 'manifest dread']
+        },
+        threshold: 4
+    }
 };
 
 /**
