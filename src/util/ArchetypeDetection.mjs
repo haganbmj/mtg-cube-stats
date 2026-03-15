@@ -9,10 +9,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Cards that care about artifacts or artifact synergies',
         color: '#8C7853',
         detectBy: {
-            tags: ['artifact', 'artifactfall', 'artifactify', 'artifact-removal'],
-            types: ['Artifact'],
-            keywords: ['affinity', 'improvise', 'fabricate'],
-            oracleText: [/artifact/i, /metalcraft/i, /modular/i]
+            tags: ['artifactfall', 'artifactify', 'artifact-removal'],
+            keywords: ['affinity', 'improvise', 'fabricate']
         },
         threshold: 8
     },
@@ -20,9 +18,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies that utilize the graveyard as a resource',
         color: '#4A4A4A',
         detectBy: {
-            tags: ['graveyard', 'graveyard-fuel', 'reanimation', 'mill'],
-            keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth'],
-            oracleText: [/graveyard/i, /mill/i, /from your graveyard/i, /cards in your graveyard/i]
+            tags: ['graveyard-fuel'],
+            keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth']
         },
         threshold: 6
     },
@@ -30,10 +27,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Creating and benefiting from token creatures',
         color: '#F4D03F',
         detectBy: {
-            tags: ['token', 'tokenize', 'populate'],
-            keywords: ['populate', 'convoke'],
-            oracleText: [/token/i, /create.*creature token/i],
-            properties: ['makesTokens']
+            tags: ['repeatable-token-generator', 'repeatable-creature-tokens'],
+            keywords: ['populate', 'convoke']
         },
         threshold: 8
     },
@@ -41,9 +36,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Cards that reward casting instants and sorceries',
         color: '#3498DB',
         detectBy: {
-            tags: ['spells-matter', 'storm', 'prowess'],
-            keywords: ['prowess', 'storm'],
-            oracleText: [/instant or sorcery/i, /noncreature spell/i, /whenever you cast/i]
+            tags: ['single-target-spell', 'single-target-instant-sorcery'],
+            keywords: ['prowess', 'storm']
         },
         threshold: 6
     },
@@ -51,8 +45,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies built around sacrificing permanents',
         color: '#8E44AD',
         detectBy: {
-            tags: ['sacrifice', 'sacrifice-outlet', 'sacrifice-cost', 'death-trigger'],
-            oracleText: [/sacrifice/i, /when.*dies/i, /whenever.*is put into.*graveyard from the battlefield/i]
+            tags: ['sacrifice-outlet']
         },
         threshold: 6
     },
@@ -61,8 +54,7 @@ const ARCHETYPE_DEFINITIONS = {
         color: '#F8F9FA',
         detectBy: {
             tags: ['lifegain', 'lifegain-matters', 'lifegain-increaser'],
-            keywords: ['lifelink'],
-            oracleText: [/gain.*life/i, /whenever you gain life/i, /lifegain/i]
+            keywords: ['lifelink']
         },
         threshold: 5
     },
@@ -70,28 +62,24 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies involving +1/+1 counters or other counters',
         color: '#27AE60',
         detectBy: {
-            tags: ['counter', 'counter-fuel', 'counter-doubler', 'proliferate'],
-            keywords: ['modular', 'graft', 'undying', 'persist', 'evolve', 'adapt'],
-            oracleText: [/\+1\/\+1 counter/i, /counter.*on/i, /proliferate/i]
+            tags: ['counter'],
+            keywords: ['modular', 'graft', 'undying', 'persist', 'evolve', 'adapt']
         },
         threshold: 6
     },
-    // 'Ramp': {
-    //     description: 'Accelerating mana development',
-    //     color: '#229954',
-    //     detectBy: {
-    //         tags: ['ramp', 'lands-matter', 'landfall'],
-    //         oracleText: [/search your library for.*land/i, /add.*mana/i, /lands you control/i],
-    //         types: ['Artifact — Treasure', 'Land']
-    //     },
-    //     threshold: 8
-    // },
+    'Ramp': {
+        description: 'Accelerating mana development',
+        color: '#229954',
+        detectBy: {
+            tags: ['ramp', 'lands-matter', 'landfall'],
+        },
+        threshold: 8
+    },
     'Removal Suite': {
         description: 'Comprehensive removal package',
         color: '#E74C3C',
         detectBy: {
-            tags: ['removal', 'creature-removal', 'artifact-removal', 'enchantment-removal'],
-            oracleText: [/destroy target/i, /exile target/i, /damage to target/i]
+            tags: ['removal', 'creature-removal', 'artifact-removal', 'enchantment-removal']
         },
         threshold: 12
     },
@@ -99,8 +87,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Card advantage and selection',
         color: '#3F51B5',
         detectBy: {
-            tags: ['draw', 'card-selection', 'scry'],
-            oracleText: [/draw.*card/i, /scry/i, /look at.*cards/i]
+            tags: ['draw', 'scry', 'card-advantage']
         },
         threshold: 10
     },
@@ -108,9 +95,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Creature type synergies',
         color: '#FF7043',
         detectBy: {
-            tags: ['tribal', 'creature-type-matters'],
-            types: ['Kindred'],
-            oracleText: [/choose a creature type/i, /creatures you control/i, /creature types/i]
+            tags: ['tribal', 'creature-type-matters']
         },
         threshold: 4
     },
@@ -118,9 +103,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Fast aggressive strategies',
         color: '#D32F2F',
         detectBy: {
-            tags: ['aggressive', 'burn', 'burn-any', 'burn-player', 'haste'],
-            keywords: ['haste', 'first strike', 'double strike'],
-            oracleText: [/damage to any target/i, /damage to target player/i]
+            tags: ['burn'],
+            keywords: ['haste', 'first strike', 'double strike']
         },
         threshold: 8
     },
@@ -128,9 +112,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies focusing on enchantments and constellation',
         color: '#9C27B0',
         detectBy: {
-            tags: ['enchantment', 'enchantmentfall', 'constellation', 'enchantment-engine', 'enchantmentize'],
-            keywords: ['constellation'],
-            oracleText: [/enchantment/i, /constellation/i]
+            tags: ['enchantmentfall', 'enchantment-removal'],
+            keywords: ['constellation']
         },
         threshold: 5
     },
@@ -138,8 +121,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Milling cards from libraries as a strategy',
         color: '#607D8B',
         detectBy: {
-            tags: ['mill', 'graveyard-fuel-self', 'mill-self', 'mill-target'],
-            oracleText: [/mill/i, /put.*cards from.*library into.*graveyard/i]
+            tags: ['mill', 'graveyard-fuel-self', 'mill-self', 'mill-target']
         },
         threshold: 4
     },
@@ -148,8 +130,7 @@ const ARCHETYPE_DEFINITIONS = {
         color: '#8D6E63',
         detectBy: {
             tags: ['lands-matter', 'landfall', 'land-animate', 'land-count-matters', 'land-etb'],
-            keywords: ['landfall'],
-            oracleText: [/landfall/i, /whenever a land enters/i, /lands you control/i, /basic land types/i]
+            keywords: ['landfall']
         },
         threshold: 6
     },
@@ -157,9 +138,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies utilizing energy counters',
         color: '#FBC02D',
         detectBy: {
-            tags: ['energy', 'energy-matters'],
-            keywords: ['fabricate'],
-            oracleText: [/energy counter/i, /get.*energy/i, /pay.*energy/i]
+            tags: []
         },
         threshold: 4
     },
@@ -167,10 +146,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies focused on equipment and voltron',
         color: '#757575',
         detectBy: {
-            tags: ['equipment', 'equip', 'voltron'],
-            types: ['Artifact — Equipment'],
-            keywords: ['equip'],
-            oracleText: [/equipment/i, /equip/i, /equipped creature/i]
+            tags: ['synergy-equipment', 'quick-equip'],
+            keywords: ['equip']
         },
         threshold: 5
     },
@@ -178,8 +155,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Strategies that flicker creatures for value',
         color: '#00BCD4',
         detectBy: {
-            tags: ['flicker', 'blink', 'etb', 'enters-the-battlefield'],
-            oracleText: [/exile.*return/i, /flicker/i, /enters the battlefield/i, /when.*enters/i]
+            tags: ['flicker', 'blink']
         },
         threshold: 6
     },
@@ -212,7 +188,7 @@ export function detectCubeArchetypes(cards) {
             if (archetype.detectBy.tags) {
                 supportsArchetype = supportsArchetype ||
                     archetype.detectBy.tags.some(tag =>
-                        card.tags?.some(cardTag => cardTag.toLowerCase().includes(tag.toLowerCase()))
+                        card.tags?.some(cardTag => cardTag.toLowerCase() === tag.toLowerCase())
                     );
             }
 
@@ -220,31 +196,7 @@ export function detectCubeArchetypes(cards) {
             if (archetype.detectBy.keywords) {
                 supportsArchetype = supportsArchetype ||
                     archetype.detectBy.keywords.some(keyword =>
-                        card.keywords?.some(cardKeyword => cardKeyword.toLowerCase().includes(keyword.toLowerCase()))
-                    );
-            }
-
-            // Check type line
-            if (archetype.detectBy.types) {
-                supportsArchetype = supportsArchetype ||
-                    archetype.detectBy.types.some(type =>
-                        card.typeLine?.includes(type)
-                    );
-            }
-
-            // Check oracle text patterns
-            if (archetype.detectBy.oracleText) {
-                supportsArchetype = supportsArchetype ||
-                    archetype.detectBy.oracleText.some(pattern =>
-                        pattern.test(card.oracleText || '')
-                    );
-            }
-
-            // Check special properties
-            if (archetype.detectBy.properties) {
-                supportsArchetype = supportsArchetype ||
-                    archetype.detectBy.properties.some(prop =>
-                        card[prop] === true
+                        card.keywords?.some(cardKeyword => cardKeyword.toLowerCase() === keyword.toLowerCase())
                     );
             }
 
