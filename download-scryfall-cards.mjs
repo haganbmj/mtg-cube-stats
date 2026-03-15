@@ -116,17 +116,14 @@ const excludedLayouts = [
 
 const taggerOracleIds = {};
 
+// Include ALL tags from tagger data to enhance archetype detection
 taggerData.data.forEach(tag => {
-    // 'removal' is pretty broad, but probably the least likely to be extra confusing?
-    // 'tutor' includes fetch lands, so that's annoying.
-    if (['removal', 'tutor', 'ramp', 'draw', 'flicker', 'counterspell', 'graveyard-order-matters'].includes(tag.label)) {
-        tag.oracle_ids.forEach(oracle => {
-            if (taggerOracleIds[oracle] === undefined) {
-                taggerOracleIds[oracle] = new Set();
-            }
-            taggerOracleIds[oracle].add(tag.label);
-        });
-    }
+    tag.oracle_ids.forEach(oracle => {
+        if (taggerOracleIds[oracle] === undefined) {
+            taggerOracleIds[oracle] = new Set();
+        }
+        taggerOracleIds[oracle].add(tag.label);
+    });
 });
 
 // Slap on another tag entry for every card that relates to a token.

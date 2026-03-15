@@ -1,6 +1,7 @@
 import { useMemoize } from '@vueuse/core';
 import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions.mjs';
 import { isEvergreenKeyword } from './Keywords.mjs';
+import { detectCubeArchetypes } from './ArchetypeDetection.mjs';
 
 const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
@@ -308,6 +309,7 @@ function analyzeCubeContents(cards) {
             // There are others too; Become the Monarch, Becomes Day/Night, etc.
             initiative: cards.filter(c => c.oracleText?.toLowerCase().includes('take the initiative')).length,
         },
+        archetypes: detectCubeArchetypes(cards),
     }
 
     return secondOrderStats;

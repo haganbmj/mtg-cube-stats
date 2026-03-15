@@ -204,6 +204,12 @@
                                                 <SimilarCubesTable :similarityMatrix="similarityMatrix" :loadedCubes="overviewTableData" :cubeId="props.row.id" />
                                             </el-col>
                                         </el-row>
+                                        <el-row :gutter="10" style="margin-top: 20px;">
+                                            <el-col :span="24">
+                                                <h3>Supported Archetypes</h3>
+                                                <ArchetypeAnalysis :cubeCards="loadedCubes[props.row.id]?.cards || []" />
+                                            </el-col>
+                                        </el-row>
                                     </template>
                                 </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
@@ -642,6 +648,14 @@
                             </div>
                         </el-tab-pane>
 
+                        <el-tab-pane label="Archetypes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
+                            <div style="width: 100%;">
+                                <div v-for="(cube, cubeId) in loadedCubes" :key="cubeId">
+                                    <ArchetypeAnalysis :cubeCards="cube.cards" />
+                                </div>
+                            </div>
+                        </el-tab-pane>
+
                         <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <div style="width: 100%;">
                                 <CardSummaryTable :loadedCubes="loadedCubes" />
@@ -684,6 +698,7 @@ import darkbmjTheme from './echarts/theme.mjs';
 import LegalityDistributionChart from './components/charts/distributions/LegalityDistributionChart.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
+import ArchetypeAnalysis from './components/ArchetypeAnalysis.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import SimilarCubesTable from './components/SimilarCubesTable.vue';
