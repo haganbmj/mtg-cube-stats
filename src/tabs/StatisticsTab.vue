@@ -22,27 +22,27 @@
 
     <el-row id="charts" :gutter="10">
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <CubeCardCountHistogram :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <CubeCardCountHistogramChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <ReleaseYearDistributionBoxPlot :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <ReleaseYearDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <AvgCmcByColorBoxPlot :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <AvgCmcByColorBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <ManaValueDistributionBoxPlot :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <ManaValueDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <WordCountScatterPlot :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <WordCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <WordCountPopularityScatterPlot :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <WordCountPopularityScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
         <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
@@ -57,13 +57,13 @@
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import WordCountScatterPlot from '../components/statistics/WordCountScatterPlot.vue';
-import AvgCmcByColorBoxPlot from '../components/statistics/AvgCmcByColorBoxPlot.vue';
-import WordCountPopularityScatterPlot from '../components/statistics/WordCountPopularityScatterPlot.vue';
+import WordCountScatterPlotChart from '../components/statistics/WordCountScatterPlotChart.vue';
+import AvgCmcByColorBoxPlotChart from '../components/statistics/AvgCmcByColorBoxPlotChart.vue';
+import WordCountPopularityScatterPlotChart from '../components/statistics/WordCountPopularityScatterPlotChart.vue';
 import CategoryTable from '../components/statistics/CategoryTable.vue';
-import CubeCardCountHistogram from '../components/statistics/CubeCardCountHistogram.vue';
-import ManaValueDistributionBoxPlot from '../components/statistics/ManaValueDistributionBoxPlot.vue';
-import ReleaseYearDistributionBoxPlot from '../components/statistics/ReleaseYearDistributionBoxPlot.vue';
+import CubeCardCountHistogramChart from '../components/statistics/CubeCardCountHistogramChart.vue';
+import ManaValueDistributionBoxPlotChart from '../components/statistics/ManaValueDistributionBoxPlotChart.vue';
+import ReleaseYearDistributionBoxPlotChart from '../components/statistics/ReleaseYearDistributionBoxPlotChart.vue';
 import ReleaseYearDistributionChart from '../components/statistics/ReleaseYearDistributionChart.vue';
 
 const props = defineProps({
