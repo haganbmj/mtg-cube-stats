@@ -10,7 +10,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 
 import VChart from 'vue-echarts';
-import { capitalizeFirstLetter } from '../util/HelperFunctions.mjs';
+import { capitalizeFirstLetter } from '../../../util/HelperFunctions.mjs';
 
 use([
     CanvasRenderer,

@@ -171,22 +171,22 @@
                                                     </el-col>
                                                     <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
-                                                            <ColorIdentityDistribution class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
+                                                            <ColorIdentityDistributionChart class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                     <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
-                                                            <TypeLineDistribution class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
+                                                            <TypeLineDistributionChart class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                     <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
-                                                            <RarityDistribution class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" :minimumRarityDistribution="props.row.stats?.minRarityDistribution" />
+                                                            <RarityDistributionChart class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" :minimumRarityDistribution="props.row.stats?.minRarityDistribution" />
                                                         </div>
                                                     </el-col>
                                                     <el-col :span="12" :xs="24" :md="12" :xl="8">
                                                         <div style="height: 300px;">
-                                                            <LegalityDistribution class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
+                                                            <LegalityDistributionChart class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
                                                         </div>
                                                     </el-col>
                                                 </el-row>
@@ -671,17 +671,17 @@ import randomFooter from './util/RandomFooter.mjs';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions.mjs';
 import { getCubeData } from './util/CubeCobra.mjs';
 import { bindStorage } from './util/VueLocalStorage.mjs';
-import ManaValueChart from './components/ManaValueChart.vue';
-import ColorIdentityDistribution from './components/ColorIdentityDistribution.vue';
-import TypeLineDistribution from './components/TypeLineDistribution.vue';
+import ManaValueChart from './components/charts/basic/ManaValueChart.vue';
+import ColorIdentityDistributionChart from './components/charts/distributions/ColorIdentityDistributionChart.vue';
+import TypeLineDistributionChart from './components/charts/distributions/TypeLineDistributionChart.vue';
 import KeywordTable from './components/KeywordTable.vue';
 import SetNameTable from './components/SetNameTable.vue';
-import RarityDistribution from './components/RarityDistribution.vue';
-import ReleaseYearChart from './components/ReleaseYearChart.vue';
+import RarityDistributionChart from './components/charts/distributions/RarityDistributionChart.vue';
+import ReleaseYearChart from './components/charts/basic/ReleaseYearChart.vue';
 
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
-import LegalityDistribution from './components/LegalityDistribution.vue';
+import LegalityDistributionChart from './components/charts/distributions/LegalityDistributionChart.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
