@@ -666,7 +666,7 @@
             </el-main>
             <el-footer>
                 <div style="text-align: center;">
-                    <el-text tag="small">{{ randomFooter() }}</el-text>
+                    <el-text tag="small">{{ getRandomFooter() }}</el-text>
                 </div>
             </el-footer>
         </el-container>
@@ -676,11 +676,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, provide, onMounted, nextTick } from 'vue';
 import { THEME_KEY } from 'vue-echarts';
-import { getNestedProp, castInensitiveSort } from './util/HelperFunctions.mjs';
-import randomFooter from './util/RandomFooter.mjs';
-import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions.mjs';
-import { getCubeData } from './util/CubeCobra.mjs';
-import { bindStorage } from './util/VueLocalStorage.mjs';
+import { getNestedProp, castInensitiveSort } from './util/HelperFunctions';
+import { getRandomFooter } from './util/RandomFooter';
+import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
+import { getCubeData } from './util/CubeCobra';
+import { bindStorage } from './util/VueLocalStorage';
 import ManaValueChart from './components/charts/basic/ManaValueChart.vue';
 import ColorIdentityDistributionChart from './components/charts/distributions/ColorIdentityDistributionChart.vue';
 import TypeLineDistributionChart from './components/charts/distributions/TypeLineDistributionChart.vue';

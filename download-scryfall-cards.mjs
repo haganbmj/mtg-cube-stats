@@ -1,7 +1,7 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import { detectCardArchetypes } from './src/util/ArchetypeDetection.mjs';
+import { detectCardArchetypes } from './src/util/ArchetypeDetection.js';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
 

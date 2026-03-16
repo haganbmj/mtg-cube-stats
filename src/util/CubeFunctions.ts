@@ -1,18 +1,32 @@
 import { useMemoize } from '@vueuse/core';
-import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions.mjs';
-import { isEvergreenKeyword } from './Keywords.mjs';
-import { detectCubeArchetypes } from './ArchetypeDetection.mjs';
+import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions';
+import { isEvergreenKeyword } from './Keywords';
+import { detectCubeArchetypes } from './ArchetypeDetection';
+import type {
+    ScryfallDataStructure,
+    ScryfallCard,
+    Cube,
+    CubeCard,
+    CubeStats,
+    SimilarityScore,
+    SimilarityMatrix
+} from '../types';
 
-const scryfallLoad = () => import('../../data/cards-minimized.json');
-var scryfall = null;
+const scryfallLoad = () => import('../../data/cards-minimized.json') as Promise<{ default: ScryfallDataStructure }>;
 
-export async function initScryfall() {
+let scryfall: ScryfallDataStructure | null = null;
+
+/**
+ * Initialize Scryfall card data from the minimized JSON file
+ */
+export async function initScryfall(): Promise<void> {
     console.time('Loading Scryfall card data');
-    scryfall = (await scryfallLoad());
+    const module = await scryfallLoad();
+    scryfall = module.default;
     console.timeEnd('Loading Scryfall card data');
 }
 
-const rarityScoreMap = {
+const rarityScoreMap: Record<string, number> = {
     common: 0.333,
     uncommon: 0.666,
     rare: 1.000,
@@ -32,8 +46,11 @@ const powerOracleIds = [
     'd0209d3f-3f7e-4fd5-bce5-10bce6f29c86', // Time Walk
 ];
 
-export function getSetName(setCode) {
-    return scryfall.sets[setCode.toLowerCase()] ?? setCode;
+/**
+ * Get the full set name for a given set code
+ */
+export function getSetName(setCode: string): string {
+    return scryfall?.sets[setCode.toLowerCase()] ?? setCode;
 }
 
 /**
@@ -42,23 +59,21 @@ export function getSetName(setCode) {
  *
  * FIXME: This should probably be done as part of the function that fetches from Scryfall to remap that response object rather than relying on the caller to do it.
  */
-export function remapCube(cube, enrich = true) {
-    const cards = cube.cards.mainboard.map(card => {
-        return {
-            printingId: card.details.scryfall_id,
-            oracleId: card.details.oracle_id,
-            elo: card.details.elo,
-            popularity: card.details.popularity,
-        };
-    });
+export function remapCube(cube: any, enrich: boolean = true): Cube {
+    const cards: CubeCard[] = cube.cards.mainboard.map((card: any) => ({
+        printingId: card.details.scryfall_id,
+        oracleId: card.details.oracle_id,
+        elo: card.details.elo,
+        popularity: card.details.popularity,
+    }));
 
-    const remappedCube = {
+    const remappedCube: Cube = {
         id: cube.id,
         shortId: cube.shortId,
         name: cube.name,
         owner: cube.owner.username,
         ownerId: cube.owner.id,
-        thumbnail: cube.image.uri,
+        thumbnail: cube.image?.uri,
         // These categories/prefixes are pretty unreliable.
         // Might have to devise some way to categorize cubes myself.
         category: cube.categoryOverride ?? '',
@@ -77,7 +92,10 @@ export function remapCube(cube, enrich = true) {
     }
 }
 
-export function enrichCube(cube) {
+/**
+ * Enrich a remapped cube with Scryfall data and compute statistics
+ */
+export function enrichCube(cube: Cube): Cube {
     const enrichedCards = enrichCubeContents(cube.cards);
     return {
         ...cube,
@@ -89,9 +107,9 @@ export function enrichCube(cube) {
 /**
  * FIXME: This needs to handle Custom Cards on CubeCobra. I think those just have cardId="custom-card"
  */
-function enrichCubeContents(cards) {
+function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
     return cards.map(card => {
-        const scryfallCard = scryfall.cards[card.oracleId];
+        const scryfallCard: ScryfallCard | undefined = scryfall?.cards[card.oracleId];
         if (!scryfallCard) {
             console.warn(`Could not find card with oracle ID ${card.oracleId} in Scryfall data.`);
         }
@@ -114,7 +132,7 @@ function enrichCubeContents(cards) {
             releaseDate: scryfallCard?.releaseDate ?? undefined,
             releaseYear: scryfallCard?.releaseDate ? parseInt(scryfallCard.releaseDate.split('-')[0]) : undefined,
             setCode: scryfallCard?.setCode?.toUpperCase() ?? '',
-            setName: scryfall.sets[scryfallCard?.setCode] ?? '',
+            setName: scryfall?.sets[scryfallCard?.setCode || ''] ?? '',
             collectorNumber: scryfallCard?.collectorNumber ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
@@ -136,11 +154,11 @@ function enrichCubeContents(cards) {
  *  Unclear if that means I should break out the calculations to their own functions.
  *  Also, need to work out how Vue is handling reactivity with these as props on an object, might be better to use a Map or some other structure to avoid recomputes.
  */
-function analyzeCubeContents(cards) {
+function analyzeCubeContents(cards: CubeCard[]): CubeStats {
     // FIXME: Handle DFCs better here. MDFCs should be considered nonLand for the side that is, but DFCs that flip into lands (or vice-versa) should use their primary side?
     //  It's awkward too because the FIN Adventure lands are 0 CMC, despite being non-land spells if you want.
     // const nonLandCards = cards.filter(card => !card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land'));
-    const nonLandCards = cards.filter(card => !card.effectiveTypes.includes('Land'));
+    const nonLandCards = cards.filter(card => !card.effectiveTypes?.includes('Land'));
     const uniqueCards = Array.from(
         cards.reduce((map, card) => {
             // Only keep the first occurrence of each oracleId
@@ -148,7 +166,7 @@ function analyzeCubeContents(cards) {
                 map.set(card.oracleId, card);
             }
             return map;
-        }, new Map()).values()
+        }, new Map<string, CubeCard>()).values()
     );
     const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
 
@@ -158,9 +176,9 @@ function analyzeCubeContents(cards) {
         singletonCards: cards.filter(c => c.oracleId && cards.filter(c2 => c2.oracleId === c.oracleId).length === 1).length,
         // FIXME: This is only handling the front of DFCs.
         // landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
-        landCards: cards.filter(card => card.effectiveTypes.includes('Land')).length,
-        creatureCards: cards.filter(card => card.effectiveTypes.includes('Creature')).length,
-        newCards: cards.filter(card => card.releaseDate >= newDateCutoff).length,
+        landCards: cards.filter(card => card.effectiveTypes?.includes('Land')).length,
+        creatureCards: cards.filter(card => card.effectiveTypes?.includes('Creature')).length,
+        newCards: cards.filter(card => card.releaseDate && card.releaseDate >= newDateCutoff).length,
 
         averageElo: cards.reduce((sum, c) => sum + (c.elo ?? 1200), 0) / cards.length,
         averagePopularity: cards.reduce((sum, c) => sum + (c.popularity ?? 1200), 0) / cards.length,
@@ -168,9 +186,9 @@ function analyzeCubeContents(cards) {
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
 
         // FIXME: Strict color category should be something I embed on the main card model.
-        cmcByStrictColor: nonLandCards.reduce((sums, c) => {
+        cmcByStrictColor: nonLandCards.reduce((sums: Record<string, {totalCmc: number, count: number}>, c) => {
             let colorKey = '';
-            if (c.colorIdentity.length === 0) {
+            if (!c.colorIdentity || c.colorIdentity.length === 0) {
                 colorKey = 'C';
             } else if (c.colorIdentity.length === 1) {
                 colorKey = c.colorIdentity[0];
@@ -187,21 +205,21 @@ function analyzeCubeContents(cards) {
             return sums;
         }, {}),
         colorDistribution: {
-            W: nonLandCards.filter(c => c.colorIdentity.includes('W')).length,
-            U: nonLandCards.filter(c => c.colorIdentity.includes('U')).length,
-            B: nonLandCards.filter(c => c.colorIdentity.includes('B')).length,
-            R: nonLandCards.filter(c => c.colorIdentity.includes('R')).length,
-            G: nonLandCards.filter(c => c.colorIdentity.includes('G')).length,
-            C: nonLandCards.filter(c => c.colorIdentity.length === 0).length,
+            W: nonLandCards.filter(c => c.colorIdentity?.includes('W')).length,
+            U: nonLandCards.filter(c => c.colorIdentity?.includes('U')).length,
+            B: nonLandCards.filter(c => c.colorIdentity?.includes('B')).length,
+            R: nonLandCards.filter(c => c.colorIdentity?.includes('R')).length,
+            G: nonLandCards.filter(c => c.colorIdentity?.includes('G')).length,
+            C: nonLandCards.filter(c => !c.colorIdentity || c.colorIdentity.length === 0).length,
         },
         cmcDistribution: (() => {
             // FIXME: Should this just try and account for Lands as their own entry?
-            const distribution = {};
+            const distribution: Record<string | number, number> = {};
             distribution["L"] = cards.length - nonLandCards.length;
             for (let i = 0; i < 10; i++) {
-                distribution[i] = nonLandCards.filter(c => Math.floor(c.cmc) === i).length;
+                distribution[i] = nonLandCards.filter(c => Math.floor(c.cmc ?? 0) === i).length;
             }
-            distribution['10+'] = nonLandCards.filter(c => c.cmc >= 10).length;
+            distribution['10+'] = nonLandCards.filter(c => (c.cmc ?? 0) >= 10).length;
             return distribution;
         })(),
 
@@ -209,29 +227,31 @@ function analyzeCubeContents(cards) {
         //  And it doesn't handle MDFCs as being functionally both types...
         //  Probably doesn't handle split cards either?
         typeLineDistribution: (() => {
-            const types = {};
+            const types: Record<string, number> = {};
             // This would just be the front side of any DFCs.
             cards.forEach(card => {
                 // Look only at the front face? This is probably naive and needs to handle MDFCs.
-                for (const type of card.effectiveTypes) {
-                    // Maybe keep the basics to be able to identify those?
-                    if (type === 'Legendary' || type === 'Basic' || type === 'Snow' || type === 'World') {
-                        continue;
+                if (card.effectiveTypes) {
+                    for (const type of card.effectiveTypes) {
+                        // Maybe keep the basics to be able to identify those?
+                        if (type === 'Legendary' || type === 'Basic' || type === 'Snow' || type === 'World') {
+                            continue;
+                        }
+                        if (!types[type]) {
+                            types[type] = 0;
+                        }
+                        types[type]++;
                     }
-                    if (!types[type]) {
-                        types[type] = 0;
-                    }
-                    types[type]++;
                 }
             });
             return types;
         })(),
         minimumFormatLegalityDistribution: (() => {
             const formats = ['standard', 'pioneer', 'modern', 'legacy', 'vintage', 'cube'];
-            const legality = {};
+            const legality: Record<string, number> = {};
             cards.forEach(card => {
                 for (const format of formats) {
-                    if (card.legality[format] === true) {
+                    if (card.legality?.[format] === true) {
                         legality[format] = (legality[format] ?? 0) + 1;
                         return;
                     }
@@ -241,9 +261,9 @@ function analyzeCubeContents(cards) {
             return legality;
         })(),
         releaseYearDistribution: (() => {
-            const distribution = {};
+            const distribution: Record<number, number> = {};
             cards.forEach(card => {
-                if (!card.releaseYear || card.effectiveTypes.includes('Basic')) {
+                if (!card.releaseYear || card.effectiveTypes?.includes('Basic')) {
                     return;
                 }
                 if (!distribution[card.releaseYear]) {
@@ -253,17 +273,17 @@ function analyzeCubeContents(cards) {
             });
             return distribution;
         })(),
-        setCodeDistribution: cards.reduce((sets, c) => {
+        setCodeDistribution: cards.reduce((sets: Record<string, number>, c) => {
             const setCode = c.setCode ?? 'unknown';
             sets[setCode] = (sets[setCode] ?? 0) + 1;
             return sets;
         }, {}),
-        rarityDistribution: cards.reduce((rarities, c) => {
+        rarityDistribution: cards.reduce((rarities: Record<string, number>, c) => {
             const rarity = c.rarity ?? 'unknown';
             rarities[rarity] = (rarities[rarity] ?? 0) + 1;
             return rarities;
         }, {}),
-        minRarityDistribution: cards.reduce((rarities, c) => {
+        minRarityDistribution: cards.reduce((rarities: Record<string, number>, c) => {
             const rarity = c.minRarity ?? 'unknown';
             rarities[rarity] = (rarities[rarity] ?? 0) + 1;
             return rarities;
@@ -276,11 +296,11 @@ function analyzeCubeContents(cards) {
                 : 0;
         })(),
         averageReleaseYear: (() => {
-            const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes.includes('Basic'));
+            const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'));
             return validCards.length > 0 ? validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length : 2000;
         })(),
         // This is a map of keyword -> count
-        keywords: cards.reduce((keywords, c) => {
+        keywords: cards.reduce((keywords: Record<string, number>, c) => {
             c.keywords?.forEach(kw => {
                 keywords[kw] = (keywords[kw] ?? 0) + 1;
             });
@@ -288,20 +308,20 @@ function analyzeCubeContents(cards) {
         }, {}),
         totalMinPriceUsd: cards.reduce((sum, c) => sum + (c.minPriceUsd ?? 0), 0),
         totalMinPriceTix: cards.reduce((sum, c) => sum + (c.minPriceTix ?? 0), 0),
-        arenaPlayable: cards.every(c => c.games.includes('arena')),
-        mtgoPlayable: cards.every(c => c.games.includes('mtgo')),
-        paperPlayable: cards.every(c => c.games.includes('paper')),
-        graveyardOrderMatters: cards.some(c => c.tags.includes('graveyard-order-matters')),
+        arenaPlayable: cards.every(c => c.games?.includes('arena')),
+        mtgoPlayable: cards.every(c => c.games?.includes('mtgo')),
+        paperPlayable: cards.every(c => c.games?.includes('paper')),
+        graveyardOrderMatters: cards.some(c => c.tags?.includes('graveyard-order-matters')),
         assumedCategories: assumedCategories(cards),
     }
 
-    const secondOrderStats = {
+    const secondOrderStats: CubeStats = {
         ...firstOrderStats,
         uniqueKeywords: Object.keys(firstOrderStats.keywords).length,
         uniqueNonEvergreenKeywords: Object.keys(firstOrderStats.keywords).filter(kw => !isEvergreenKeyword(kw)).length,
         cardCounts: {
             // FIXME: Move the rest of the counts into this prop, then do percentages in a consistent way.
-            removal: cards.filter(c => c.tags.includes('removal')).length,
+            removal: cards.filter(c => c.tags?.includes('removal')).length,
             makesTokens: cards.filter(c => c.makesTokens).length,
             universesBeyond: cards.filter(c => c.isUniversesBeyond).length,
             supplementalProduct: cards.filter(c => c.isSupplementalProduct).length,
@@ -316,12 +336,12 @@ function analyzeCubeContents(cards) {
     return secondOrderStats;
 }
 
-function assumedCategories(cards) {
+function assumedCategories(cards: CubeCard[]): string[] {
     const totalCards = cards.length;
-    const categories = new Set(); // Not really necessary here since we should be only appending unique entries.
+    const categories = new Set<string>(); // Not really necessary here since we should be only appending unique entries.
 
-    const mappedRarities = cards.reduce((catCounts, c) => {
-        const isLand = c.effectiveTypes.includes('Land') ? 'land' : 'nonLand';
+    const mappedRarities = cards.reduce((catCounts: Record<string, Record<string, number>>, c) => {
+        const isLand = c.effectiveTypes?.includes('Land') ? 'land' : 'nonLand';
         const minRarity = c.minRarity ?? 'common';
 
         catCounts['all'] = catCounts['all'] || {};
@@ -393,7 +413,7 @@ function assumedCategories(cards) {
     return Array.from(categories);
 }
 
-function similarityScoreKey(keyA, keyB) {
+function similarityScoreKey(keyA: string, keyB: string): string {
     if (keyA < keyB) {
         return `${keyA}|${keyB}`;
     } else {
@@ -408,16 +428,19 @@ function similarityScoreKey(keyA, keyB) {
  *  using those versions of the list even if you add the current ones.
  */
 export const determineCosineSimilarityScore = useMemoize(
-    (cubeA, cubeB) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
+    (cubeA: Cube, cubeB: Cube) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
     {
-        getKey: (cubeA, cubeB) => similarityScoreKey(cubeA.id, cubeB.id),
+        getKey: (cubeA: Cube, cubeB: Cube) => similarityScoreKey(cubeA.id, cubeB.id),
     },
 );
 
-function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
+/**
+ * Internal implementation of cosine similarity calculation
+ */
+function determineCosineSimilarityScoreInternal(cubeA: Cube, cubeB: Cube): SimilarityScore {
     // Use pre-suffixed lists to prevent re-running that function an excessive number of times.
-    const cardsA = cubeA.suffixedCardIds;
-    const cardsB = cubeB.suffixedCardIds;
+    const cardsA = cubeA.suffixedCardIds || [];
+    const cardsB = cubeB.suffixedCardIds || [];
 
     return {
         cosineSimilarity: cosineSimilarity(cardsA, cardsB),
@@ -425,8 +448,11 @@ function determineCosineSimilarityScoreInternal(cubeA, cubeB) {
     };
 }
 
-export const computeSimilarityMatrix = (cubes) => {
-    const result = {};
+/**
+ * Compute a full similarity matrix for a collection of cubes
+ */
+export const computeSimilarityMatrix = (cubes: Record<string, Cube>): SimilarityMatrix => {
+    const result: SimilarityMatrix = {};
     let calcs = 0;
 
     console.time('Similarity Matrix');
@@ -457,7 +483,7 @@ export const computeSimilarityMatrix = (cubes) => {
     return result;
 };
 
-export const preloadSimiliarityMatrix = (matrix) => {
+export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix): void => {
     Object.entries(matrix).forEach(([id, scores]) => {
         Object.entries(scores).forEach(([otherId, score]) => {
             determineCosineSimilarityScore.cache.set(similarityScoreKey(id, otherId), score);

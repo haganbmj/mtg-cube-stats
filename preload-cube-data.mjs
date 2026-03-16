@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions.mjs';
-import { getCubeData } from './src/util/CubeCobra.mjs';
+import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions.js';
+import { getCubeData } from './src/util/CubeCobra.js';
 
 const runNumber = process.env.RUN_NUMBER || 'unset';
 const refresh = process.env.REFRESH_PRELOADS || 'false';

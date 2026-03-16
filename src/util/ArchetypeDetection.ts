@@ -1,4 +1,36 @@
-const ARCHETYPE_DEFINITIONS = {
+import type { CubeCard } from '../types';
+
+interface ArchetypeDetection {
+    tags?: string[];
+    keywords?: string[];
+}
+
+interface ArchetypeDefinition {
+    description: string;
+    color: string;
+    detectBy: ArchetypeDetection;
+    threshold: number;
+}
+
+interface ArchetypeSupport extends ArchetypeDefinition {
+    count: number;
+    cards: string[];
+    supported: boolean;
+    supportLevel: string;
+    percentage: string;
+}
+
+export interface ArchetypeResult {
+    name: string;
+    description: string;
+    color: string;
+    threshold: number;
+    count: number;
+    cards: string[];
+    percentage: string;
+}
+
+const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
     'Artifacts Matter': {
         description: 'Effects that care about artifacts or artifact synergies',
         color: '#8C7853',
@@ -200,11 +232,9 @@ const ARCHETYPE_DEFINITIONS = {
 
 /**
  * Detects which archetypes a single card supports
- * @param {Object} card - Card object with tags and keywords
- * @returns {Array} Array of archetype names that this card supports
  */
-export function detectCardArchetypes(card) {
-    const supportedArchetypes = [];
+export function detectCardArchetypes(card: CubeCard): string[] {
+    const supportedArchetypes: string[] = [];
 
     Object.entries(ARCHETYPE_DEFINITIONS).forEach(([archetypeName, archetype]) => {
         let supportsArchetype = false;
@@ -243,17 +273,18 @@ export function detectCardArchetypes(card) {
 
 /**
  * Aggregates pre-computed archetype data from cards (new approach)
- * @param {Array} cards - Array of cube card objects with pre-computed archetypes
- * @returns {Array} Array of aggregated archetype objects with support counts
  */
-export function detectCubeArchetypes(cards) {
-    const archetypeSupport = {};
+export function detectCubeArchetypes(cards: CubeCard[]): ArchetypeResult[] {
+    const archetypeSupport: Record<string, ArchetypeSupport> = {};
 
     // Initialize archetype counters
     Object.keys(ARCHETYPE_DEFINITIONS).forEach(archetype => {
         archetypeSupport[archetype] = {
             count: 0,
             cards: [],
+            supported: false,
+            supportLevel: '',
+            percentage: '0.0',
             ...ARCHETYPE_DEFINITIONS[archetype]
         };
     });
@@ -264,7 +295,9 @@ export function detectCubeArchetypes(cards) {
             card.archetypes.forEach(archetypeName => {
                 if (archetypeSupport[archetypeName]) {
                     archetypeSupport[archetypeName].count++;
-                    archetypeSupport[archetypeName].cards.push(card.name);
+                    if (card.name) {
+                        archetypeSupport[archetypeName].cards.push(card.name);
+                    }
                 }
             });
         }
@@ -274,7 +307,11 @@ export function detectCubeArchetypes(cards) {
     const supportedArchetypes = Object.entries(archetypeSupport)
         .map(([name, data]) => ({
             name,
-            ...data,
+            description: data.description,
+            color: data.color,
+            threshold: data.threshold,
+            count: data.count,
+            cards: data.cards,
             supported: data.count >= data.threshold,
             supportLevel: getSupportLevel(data.count, data.threshold),
             percentage: ((data.count / cards.length) * 100).toFixed(1)
@@ -287,30 +324,11 @@ export function detectCubeArchetypes(cards) {
 
 /**
  * Determines the support level for an archetype
- * @param {number} count - Number of supporting cards
- * @param {number} threshold - Minimum threshold for support
- * @returns {string} Support level description
  */
-function getSupportLevel(count, threshold) {
+function getSupportLevel(count: number, threshold: number): string {
     if (count < threshold * 0.5) return 'Minimal';
     if (count < threshold) return 'Light';
     if (count < threshold * 1.5) return 'Moderate';
     if (count < threshold * 2.5) return 'Strong';
     return 'Extensive';
-}
-
-/**
- * Gets color coding for support levels
- * @param {string} supportLevel - Support level string
- * @returns {string} CSS color class
- */
-export function getSupportLevelColor(supportLevel) {
-    switch (supportLevel) {
-        case 'Minimal': return '#E0E0E0';
-        case 'Light': return '#FFB74D';
-        case 'Moderate': return '#81C784';
-        case 'Strong': return '#4FC3F7';
-        case 'Extensive': return '#9575CD';
-        default: return '#E0E0E0';
-    }
 }

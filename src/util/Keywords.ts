@@ -2,7 +2,7 @@
  * Manually compiled this list, so might need to triple check it.
  * Goad is technically a "multiplayer" keyword?
  */
-const evergreenKeywords = [
+const evergreenKeywords: string[] = [
     'Goad',
     'Scry',
     'Mill',
@@ -27,6 +27,6 @@ const evergreenKeywords = [
     'Ward',
 ];
 
-export function isEvergreenKeyword(word) {
-  return evergreenKeywords.includes(word);
+export function isEvergreenKeyword(word: string): boolean {
+    return evergreenKeywords.includes(word);
 }

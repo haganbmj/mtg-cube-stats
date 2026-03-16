@@ -219,7 +219,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { CaretTop, CaretBottom } from '@element-plus/icons-vue';
-import { detectCubeArchetypes } from '../util/ArchetypeDetection.mjs';
+import { detectCubeArchetypes } from '../util/ArchetypeDetection';
 
 const props = defineProps({
     loadedCubes: {

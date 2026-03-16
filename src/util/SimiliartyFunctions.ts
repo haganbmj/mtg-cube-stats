@@ -2,7 +2,7 @@
  * Unclear if Jaccard Index might be a better fit for Cube since they're usually singleton?
  * It's probably noticeably faster to calculate.
  */
-export function jaccardSimilarity(listA, listB) {
+export function jaccardSimilarity(listA: string[], listB: string[]): number {
     const intersection = new Set([...listA].filter(x => listB.includes(x)));
     const union = new Set([...listA, ...listB]);
     return intersection.size / union.size;
@@ -11,7 +11,7 @@ export function jaccardSimilarity(listA, listB) {
 /**
  * Doing it with loops seems to be quicker than using multiple Array.reduce calls because I only iterate once.
  */
-function vectorCosineSimilarity(vecA, vecB) {
+function vectorCosineSimilarity(vecA: number[], vecB: number[]): number {
     let dotProduct = 0;
     let magnitudeA = 0;
     let magnitudeB = 0;
@@ -32,7 +32,7 @@ function vectorCosineSimilarity(vecA, vecB) {
     return dotProduct / (magnitudeA * magnitudeB);
 }
 
-export function suffixedDuplicates(list) {
+export function suffixedDuplicates(list: string[]): string[] {
     if (list.length === 0) return [];
 
     const dupes = list.sort().filter((item, index, arr) => item === arr[index + 1]);
@@ -41,10 +41,10 @@ export function suffixedDuplicates(list) {
 }
 
 // Assume that the lists are already suffixed.
-export function cosineSimilarity(listA, listB) {
+export function cosineSimilarity(listA: string[], listB: string[]): number {
     const allElements = new Set([...listA, ...listB]);
-    const vecA = [];
-    const vecB = [];
+    const vecA: number[] = [];
+    const vecB: number[] = [];
 
     allElements.forEach(element => {
         vecA.push(listA.includes(element) ? 1 : 0);
@@ -55,6 +55,6 @@ export function cosineSimilarity(listA, listB) {
 }
 
 // Assume that the lists are already suffixed.
-export function intersectionSizeOf(listA, listB) {
+export function intersectionSizeOf(listA: string[], listB: string[]): number {
     return new Set([...listA].filter(x => listB.includes(x))).size;
 }
