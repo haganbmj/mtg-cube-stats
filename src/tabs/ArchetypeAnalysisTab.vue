@@ -84,7 +84,7 @@
                     <el-table-column :label="`Highlighted Cards`" width="120" align="center">
                         <template #default="{ row }">
                             <div class="highlighted-cell">
-                                <span :class="getComparisonClass(row.name, 'cards')">
+                                <span>
                                     {{ getHighlightedCubeSupport(row.name) }}
                                 </span>
                             </div>
@@ -93,8 +93,14 @@
 
                     <el-table-column :label="`Highlighted %`" width="120" align="center">
                         <template #default="{ row }">
-                            <div class="highlighted-cell">
-                                <span :class="getComparisonClass(row.name, 'percentage')">
+                            <div class="highlighted-cell" :class="getComparisonClass(row.name, 'percentage')">
+                                <span>
+                                    <el-icon v-if="getComparisonArrow(row.name) === 'up'" class="comparison-arrow">
+                                        <CaretTop />
+                                    </el-icon>
+                                    <el-icon v-else-if="getComparisonArrow(row.name) === 'down'" class="comparison-arrow">
+                                        <CaretBottom />
+                                    </el-icon>
                                     {{ getHighlightedCubePercentage(row.name) }}%
                                 </span>
                             </div>
@@ -212,6 +218,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { CaretTop, CaretBottom } from '@element-plus/icons-vue';
 import { detectCubeArchetypes } from '../util/ArchetypeDetection.mjs';
 
 const props = defineProps({
@@ -432,6 +439,21 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
     if (ratio < 0.8) return 'comparison-below';
     return 'comparison-normal';
 };
+
+const getComparisonArrow = (archetypeName: string) => {
+    if (!highlightedCubeId.value) return '';
+
+    const archetype = aggregateArchetypes.value.find(a => a.name === archetypeName);
+    if (!archetype) return '';
+
+    const highlightedValue = parseFloat(getHighlightedCubePercentage(archetypeName));
+    const avgValue = archetype.avgPercentage;
+    const ratio = highlightedValue / avgValue;
+
+    if (ratio > 1.2) return 'up';
+    if (ratio < 0.8) return 'down';
+    return '';
+};
 </script>
 
 <style scoped>
@@ -519,18 +541,18 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
     font-weight: 600;
 }
 
+.comparison-arrow {
+    margin-left: 4px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
 .comparison-high {
     color: #006400;
-    background-color: rgba(0, 100, 0, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
 }
 
 .comparison-above {
     color: #90EE90;
-    background-color: rgba(0, 100, 0, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
 }
 
 .comparison-normal {
@@ -539,16 +561,10 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
 
 .comparison-below {
     color: #FFB6C1;
-    background-color: rgba(139, 0, 0, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
 }
 
 .comparison-low {
     color: #8B0000;
-    background-color: rgba(139, 0, 0, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
 }
 
 .card-tooltip-content {
