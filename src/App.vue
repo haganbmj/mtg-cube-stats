@@ -648,13 +648,8 @@
                             </div>
                         </el-tab-pane>
 
-                        <el-tab-pane label="Archetypes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <div style="width: 100%;">
-                                <div v-for="(cube, cubeId) in loadedCubes" :key="cubeId">
-                                    <el-text class="cube-section-title" size="large" type="primary">{{ cube.name }}</el-text>
-                                    <ArchetypeAnalysis :cubeCards="cube.cards" />
-                                </div>
-                            </div>
+                        <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
+                            <ArchetypeAnalysisTab :loadedCubes="loadedCubes" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
@@ -700,6 +695,7 @@ import LegalityDistributionChart from './components/charts/distributions/Legalit
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
 import ArchetypeAnalysis from './components/ArchetypeAnalysis.vue';
+import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import SimilarCubesTable from './components/SimilarCubesTable.vue';

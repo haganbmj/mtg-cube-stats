@@ -180,10 +180,10 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 4
     },
     'Sneak': {
-        description: 'Putting creatures into play from hand without paying costs',
+        description: 'Putting stuff into play without paying costs',
         color: '#D84315',
         detectBy: {
-            tags: ['sneak', 'sneak-*']
+            tags: ['sneak']
         },
         threshold: 3
     },
