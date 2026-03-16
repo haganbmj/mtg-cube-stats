@@ -65,7 +65,7 @@
                     </template>
                 </el-table-column>
 
-                <el-table-column prop="totalCards" label="Total Cards" width="110" align="center" sortable />
+                <el-table-column prop="uniqueCards" label="Unique Cards" width="110" align="center" sortable />
 
                 <el-table-column prop="avgSupport" label="Avg Cards" width="100" align="center" sortable>
                     <template #default="{ row }">
@@ -130,14 +130,27 @@
                                             </template>
                                         </el-table-column>
                                         <el-table-column prop="size" label="Size" width="80" align="center" sortable />
+                                        <el-table-column label="Actions" width="100" align="center">
+                                            <template #default="{ row: cubeRow }">
+                                                <el-button
+                                                    v-if="cubeRow.id"
+                                                    size="small"
+                                                    :type="cubeRow.name === highlightedCubeName ? 'primary' : 'default'"
+                                                    @click="highlightedCubeId = cubeRow.id"
+                                                >
+                                                    {{ cubeRow.name === highlightedCubeName ? 'Highlighted' : 'Highlight' }}
+                                                </el-button>
+                                            </template>
+                                        </el-table-column>
                                     </el-table>
                                 </el-col>
-                                <el-col :span="12" v-if="highlightedCubeId && highlightedCubeData">
-                                    <h4>{{ highlightedCubeName }} Supporting Cards ({{ getHighlightedArchetypeCards(row.name).length }}):</h4>
-                                    <div v-if="getHighlightedArchetypeCards(row.name).length > 0" class="supporting-cards">
+                                <el-col :span="12">
+                                    <h4 v-if="highlightedCubeId && highlightedCubeData">{{ highlightedCubeName }} Supporting Cards ({{ getHighlightedArchetypeCards(row.name).length }}):</h4>
+                                    <h4 v-else>Most Common Supporting Cards ({{ getMostCommonArchetypeCards(row.name).length }}):</h4>
+                                    <div v-if="(highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length > 0" class="supporting-cards">
                                         <el-tooltip
-                                            v-for="cardName in getHighlightedArchetypeCards(row.name).slice(0, showAllCards[row.name] ? getHighlightedArchetypeCards(row.name).length : 8)"
-                                            :key="cardName"
+                                            v-for="cardInfo in (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).slice(0, showAllCards[row.name] ? (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length : 8)"
+                                            :key="highlightedCubeId ? cardInfo : cardInfo.name"
                                             effect="dark"
                                             placement="top"
                                             popper-class="card-image-tooltip"
@@ -146,32 +159,35 @@
                                             <template #content>
                                                 <div class="card-tooltip-content">
                                                     <el-image
-                                                        :src="getCardImageUrl(cardName)"
+                                                        :src="highlightedCubeId ? getCardImageUrl(cardInfo) : getCommonCardImageUrl(cardInfo.name)"
                                                         fit="contain"
-                                                        :alt="cardName"
-                                                        :class="'card-tooltip-image ' + (getCardByName(cardName)?.setCode?.toLowerCase() || '')"
+                                                        :alt="highlightedCubeId ? cardInfo : cardInfo.name"
+                                                        :class="'card-tooltip-image ' + (highlightedCubeId ? (getCardByName(cardInfo)?.setCode?.toLowerCase() || '') : (getCommonCardByName(cardInfo.name)?.setCode?.toLowerCase() || ''))"
                                                         @error="handleImageError"
                                                     />
                                                 </div>
                                             </template>
-                                            <div class="card-thumbnail-container">
+                                            <div class="card-thumbnail-container" :class="{ 'common-card': !highlightedCubeId }">
                                                 <el-image
-                                                    :src="getCardImageUrl(cardName)"
+                                                    :src="highlightedCubeId ? getCardImageUrl(cardInfo) : getCommonCardImageUrl(cardInfo.name)"
                                                     fit="cover"
-                                                    :alt="cardName"
-                                                    :class="'card-thumbnail ' + (getCardByName(cardName)?.setCode?.toLowerCase() || '')"
+                                                    :alt="highlightedCubeId ? cardInfo : cardInfo.name"
+                                                    :class="'card-thumbnail ' + (highlightedCubeId ? (getCardByName(cardInfo)?.setCode?.toLowerCase() || '') : (getCommonCardByName(cardInfo.name)?.setCode?.toLowerCase() || ''))"
                                                     @error="handleThumbnailError"
                                                 />
+                                                <div v-if="!highlightedCubeId" class="card-frequency">
+                                                    {{ cardInfo.frequency }}
+                                                </div>
                                             </div>
                                         </el-tooltip>
                                         <el-button
-                                            v-if="getHighlightedArchetypeCards(row.name).length > 8 && !showAllCards[row.name]"
+                                            v-if="(highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length > 8 && !showAllCards[row.name]"
                                             link
                                             type="primary"
                                             size="small"
                                             @click="showAllCards[row.name] = true"
                                         >
-                                            Show {{ getHighlightedArchetypeCards(row.name).length - 8 }} more...
+                                            Show {{ (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length - 8 }} more...
                                         </el-button>
                                         <el-button
                                             v-if="showAllCards[row.name]"
@@ -262,6 +278,45 @@ const getCardImageUrl = (cardName: string) => {
     return card?.urlFront || '';
 };
 
+// Function to get common card by name across all cubes
+const getCommonCardByName = (cardName: string) => {
+    for (const cube of Object.values(props.loadedCubes)) {
+        const card = cube.cards.find(c => c.name === cardName);
+        if (card) return card;
+    }
+    return null;
+};
+
+// Function to get common card image URL
+const getCommonCardImageUrl = (cardName: string) => {
+    const card = getCommonCardByName(cardName);
+    return card?.urlFront || '';
+};
+
+// Function to get most common supporting cards for an archetype
+const getMostCommonArchetypeCards = (archetypeName: string) => {
+    const archetype = aggregateArchetypes.value.find(a => a.name === archetypeName);
+    if (!archetype) return [];
+
+    const cardFrequency = {};
+
+    // Count frequency of each card across all supporting cubes
+    Object.values(archetype.cubeData).forEach(cubeData => {
+        cubeData.cards.forEach(cardName => {
+            if (!cardFrequency[cardName]) {
+                cardFrequency[cardName] = 0;
+            }
+            cardFrequency[cardName]++;
+        });
+    });
+
+    // Sort by frequency and return top cards
+    return Object.entries(cardFrequency)
+        .map(([name, frequency]) => ({ name, frequency }))
+        .sort((a, b) => b.frequency - a.frequency)
+        .slice(0, 20); // Show max 20 most common cards
+};
+
 // Function to get supporting cube details for table
 const getSupportingCubeDetails = (cubeNames: string[]) => {
     return cubeNames.map(cubeName => {
@@ -293,6 +348,7 @@ const aggregateArchetypes = computed(() => {
                     threshold: archetype.threshold,
                     cubesSupporting: 0,
                     totalCards: 0,
+                    uniqueOracleIds: new Set(),
                     supportingCubes: [],
                     cubeData: {}
                 };
@@ -306,6 +362,14 @@ const aggregateArchetypes = computed(() => {
                 cards: archetype.cards,
                 percentage: archetype.percentage
             };
+
+            // Track unique oracle IDs for this archetype
+            archetype.cards.forEach(cardName => {
+                const card = cube.cards.find(c => c.name === cardName);
+                if (card && card.oracleId) {
+                    archetypeMap[archetype.name].uniqueOracleIds.add(card.oracleId);
+                }
+            });
         });
     });
 
@@ -313,6 +377,7 @@ const aggregateArchetypes = computed(() => {
     return Object.values(archetypeMap)
         .map(archetype => ({
             ...archetype,
+            uniqueCards: archetype.uniqueOracleIds.size,
             avgSupport: archetype.totalCards / archetype.cubesSupporting,
             avgPercentage: archetype.cubesSupporting > 0
                 ? Object.values(archetype.cubeData).reduce((sum, data) => sum + parseFloat(data.percentage), 0) / archetype.cubesSupporting
@@ -527,5 +592,23 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
     .card-tooltip-content {
         max-width: 200px;
     }
+}
+
+.card-thumbnail-container.common-card {
+    position: relative;
+}
+
+.card-frequency {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+    min-width: 16px;
+    text-align: center;
 }
 </style>
