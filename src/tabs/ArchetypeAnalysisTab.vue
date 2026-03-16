@@ -67,13 +67,13 @@
 
                 <el-table-column prop="uniqueCards" label="Unique Cards" width="110" align="center" sortable />
 
-                <el-table-column prop="avgSupport" label="Avg Cards" width="100" align="center" sortable>
+                <el-table-column prop="avgSupport" label="Avg Cards" width="120" align="center" sortable>
                     <template #default="{ row }">
                         {{ row.avgSupport.toFixed(1) }}
                     </template>
                 </el-table-column>
 
-                <el-table-column prop="avgPercentage" label="Avg %" width="80" align="center" sortable>
+                <el-table-column prop="avgPercentage" label="Avg %" width="100" align="center" sortable>
                     <template #default="{ row }">
                         {{ row.avgPercentage.toFixed(1) }}%
                     </template>
@@ -81,7 +81,7 @@
 
                 <!-- Highlighted cube columns -->
                 <template v-if="highlightedCubeId && highlightedCubeData">
-                    <el-table-column :label="`${highlightedCubeName} Cards`" width="120" align="center">
+                    <el-table-column :label="`Highlighted Cards`" width="120" align="center">
                         <template #default="{ row }">
                             <div class="highlighted-cell">
                                 <span :class="getComparisonClass(row.name, 'cards')">
@@ -91,7 +91,7 @@
                         </template>
                     </el-table-column>
 
-                    <el-table-column :label="`${highlightedCubeName} %`" width="100" align="center">
+                    <el-table-column :label="`Highlighted %`" width="120" align="center">
                         <template #default="{ row }">
                             <div class="highlighted-cell">
                                 <span :class="getComparisonClass(row.name, 'percentage')">
@@ -136,7 +136,7 @@
                                                     v-if="cubeRow.id"
                                                     size="small"
                                                     :type="cubeRow.name === highlightedCubeName ? 'primary' : 'default'"
-                                                    @click="highlightedCubeId = cubeRow.id"
+                                                    @click="highlightedCubeId = cubeRow.name === highlightedCubeName ? '' : cubeRow.id"
                                                 >
                                                     {{ cubeRow.name === highlightedCubeName ? 'Highlighted' : 'Highlight' }}
                                                 </el-button>
@@ -149,7 +149,7 @@
                                     <h4 v-else>Most Common Supporting Cards ({{ getMostCommonArchetypeCards(row.name).length }}):</h4>
                                     <div v-if="(highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length > 0" class="supporting-cards">
                                         <el-tooltip
-                                            v-for="cardInfo in (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).slice(0, showAllCards[row.name] ? (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length : 8)"
+                                            v-for="cardInfo in (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).slice(0, Math.min((showAllCards[row.name] || 8), (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length))"
                                             :key="highlightedCubeId ? cardInfo : cardInfo.name"
                                             effect="dark"
                                             placement="top"
@@ -181,20 +181,20 @@
                                             </div>
                                         </el-tooltip>
                                         <el-button
-                                            v-if="(highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length > 8 && !showAllCards[row.name]"
+                                            v-if="(highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length > (showAllCards[row.name] || 8)"
                                             link
                                             type="primary"
                                             size="small"
-                                            @click="showAllCards[row.name] = true"
+                                            @click="showAllCards[row.name] = (showAllCards[row.name] || 8) + 8"
                                         >
-                                            Show {{ (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length - 8 }} more...
+                                            Show {{ Math.min(8, (highlightedCubeId ? getHighlightedArchetypeCards(row.name) : getMostCommonArchetypeCards(row.name)).length - (showAllCards[row.name] || 8)) }} more...
                                         </el-button>
                                         <el-button
-                                            v-if="showAllCards[row.name]"
+                                            v-if="(showAllCards[row.name] || 8) > 8"
                                             link
                                             type="primary"
                                             size="small"
-                                            @click="showAllCards[row.name] = false"
+                                            @click="showAllCards[row.name] = 8"
                                         >
                                             Show less
                                         </el-button>
@@ -211,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { detectCubeArchetypes } from '../util/ArchetypeDetection.mjs';
 
 const props = defineProps({
@@ -264,6 +264,11 @@ const highlightedCubeData = computed(() => {
 
 const highlightedCubeName = computed(() => {
     return highlightedCubeData.value?.name || '';
+});
+
+// Reset displayed cards count when highlighted cube changes
+watch(highlightedCubeId, () => {
+    showAllCards.value = {};
 });
 
 // Function to get card object by name from highlighted cube cards
@@ -515,15 +520,15 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
 }
 
 .comparison-high {
-    color: #67c23a;
-    background-color: rgba(103, 194, 58, 0.1);
+    color: #006400;
+    background-color: rgba(0, 100, 0, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
 }
 
 .comparison-above {
-    color: #409eff;
-    background-color: rgba(64, 158, 255, 0.1);
+    color: #90EE90;
+    background-color: rgba(0, 100, 0, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
 }
@@ -533,15 +538,15 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
 }
 
 .comparison-below {
-    color: #e6a23c;
-    background-color: rgba(230, 162, 60, 0.1);
+    color: #FFB6C1;
+    background-color: rgba(139, 0, 0, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
 }
 
 .comparison-low {
-    color: #f56c6c;
-    background-color: rgba(245, 108, 108, 0.1);
+    color: #8B0000;
+    background-color: rgba(139, 0, 0, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
 }
@@ -604,7 +609,7 @@ const getComparisonClass = (archetypeName: string, type: 'cards' | 'percentage')
     right: 4px;
     background: rgba(0, 0, 0, 0.7);
     color: white;
-    font-size: 10px;
+    font-size: 16px;
     font-weight: bold;
     padding: 2px 4px;
     border-radius: 3px;
