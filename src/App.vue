@@ -651,6 +651,7 @@
                         <el-tab-pane label="Archetypes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <div style="width: 100%;">
                                 <div v-for="(cube, cubeId) in loadedCubes" :key="cubeId">
+                                    <el-text class="cube-section-title" size="large" type="primary">{{ cube.name }}</el-text>
                                     <ArchetypeAnalysis :cubeCards="cube.cards" />
                                 </div>
                             </div>

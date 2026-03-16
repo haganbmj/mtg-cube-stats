@@ -1,12 +1,6 @@
-/**
- * Archetype detection logic for MTG cubes
- * Analyzes cards to identify supported themes and strategies
- */
-
-// Define archetype patterns and their detection criteria
 const ARCHETYPE_DEFINITIONS = {
     'Artifacts Matter': {
-        description: 'Cards that care about artifacts or artifact synergies',
+        description: 'Effects that care about artifacts or artifact synergies',
         color: '#8C7853',
         detectBy: {
             tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'synergy-artifact-*', 'tutor-artifact'],
@@ -15,7 +9,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 8
     },
     'Enchantments Matter': {
-        description: 'Strategies focusing on enchantments',
+        description: 'Effects focusing on enchantments',
         color: '#9C27B0',
         detectBy: {
             tags: ['enchantmentfall', 'enchantmentize', 'synergy-enchantment', 'synergy-enchantment-*', 'tutor-enchantment', 'enchantment-engine'],
@@ -24,7 +18,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 5
     },
     'Graveyard Value': {
-        description: 'Strategies that utilize the graveyard as a resource',
+        description: 'Effects that utilize the graveyard as a resource',
         color: '#4A4A4A',
         detectBy: {
             tags: ['graveyard-fuel', 'graveyard-fuel-*'],
@@ -33,16 +27,16 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 6
     },
     'Token Generators': {
-        description: 'Creating and benefiting from token creatures',
+        description: 'Effects that repeatedly create tokens, or create additional tokens',
         color: '#F4D03F',
         detectBy: {
-            tags: ['repeatable-token-generator', 'repeatable-creature-tokens', 'synergy-token', 'synergy-token-*'],
-            keywords: ['populate', 'convoke']
+            tags: ['repeatable-token-generator', 'repeatable-creature-tokens'],
+            keywords: ['populate']
         },
         threshold: 8
     },
     'Spells Matter': {
-        description: 'Cards that reward casting spells',
+        description: 'Effects that reward casting spells',
         color: '#3498DB',
         detectBy: {
             tags: ['synergy-noncreature', 'synergy-instant', 'synergy-sorcery'],
@@ -51,7 +45,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 6
     },
     'Sacrifice/Aristocrats': {
-        description: 'Strategies built around sacrificing permanents',
+        description: 'Effects built around sacrificing permanents',
         color: '#8E44AD',
         detectBy: {
             tags: ['sacrifice-outlet', 'blood-artist-ability', 'synergy-sacrifice', 'death-trigger', 'leaves-body-behind'],
@@ -60,7 +54,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 6
     },
     'Lifegain': {
-        description: 'Cards that gain life or benefit from lifegain',
+        description: 'Effects that gain life or benefit from lifegain',
         color: '#F8F9FA',
         detectBy: {
             tags: ['lifegain', 'lifegain-matters', 'lifegain-increaser'],
@@ -69,7 +63,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 5
     },
     'Counters Matter': {
-        description: 'Strategies involving +1/+1 counters or other counters',
+        description: 'Effects involving +1/+1 counters or other counters',
         color: '#27AE60',
         detectBy: {
             tags: ['counter-fuel', 'counters-matter', 'remove-counters', 'gives-pp-counters'],
@@ -78,23 +72,31 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 6
     },
     'Ramp': {
-        description: 'Accelerating mana development',
+        description: 'Various types of mana acceleration',
         color: '#229954',
         detectBy: {
             tags: ['ramp', 'lands-matter', 'landfall'],
         },
         threshold: 8
     },
-    'Card Draw': {
-        description: 'Card draw/advantage',
+    // 'Card Draw': {
+    //     description: 'Card draw/advantage',
+    //     color: '#3F51B5',
+    //     detectBy: {
+    //         tags: ['draw', 'card-advantage']
+    //     },
+    //     threshold: 10
+    // },
+    'Draw Matters': {
+        description: 'Effects that care about drawing cards',
         color: '#3F51B5',
         detectBy: {
-            tags: ['draw', 'card-advantage']
+            tags: ['draw-matters', 'second-draw-matters']
         },
-        threshold: 10
+        threshold: 5
     },
     'Tribal Synergies': {
-        description: 'Creature type synergies',
+        description: 'Effects that care about creature types',
         color: '#FF7043',
         detectBy: {
             tags: ['tribal', 'creature-type-matters']
@@ -102,7 +104,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 4
     },
     'Mill/Self-Mill': {
-        description: 'Milling cards from libraries as a strategy',
+        description: 'Effects that mill cards from libraries as a strategy',
         color: '#607D8B',
         detectBy: {
             tags: ['mill', 'graveyard-fuel-self', 'mill-self', 'mill-target']
@@ -119,7 +121,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 6
     },
     'Energy': {
-        description: 'Strategies utilizing energy counters',
+        description: 'Effects utilizing energy counters',
         color: '#FBC02D',
         detectBy: {
             tags: ['energy-generator', 'counter-fuel-energy']
@@ -127,7 +129,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 4
     },
     'Equipment': {
-        description: 'Strategies focused on equipment',
+        description: 'Effects focused on equipment',
         color: '#757575',
         detectBy: {
             tags: ['synergy-equipment', 'quick-equip'],
@@ -136,7 +138,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 5
     },
     'Flicker': {
-        description: 'Strategies that flicker for value',
+        description: 'Effects that flicker for value',
         color: '#00BCD4',
         detectBy: {
             tags: ['flicker']
@@ -152,7 +154,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 4
     },
     'Auras': {
-        description: 'Enchant creature strategies and aura synergies',
+        description: 'Enchant/Bestow and things that care about auras',
         color: '#9575CD',
         detectBy: {
             tags: ['synergy-aura', 'tutor-enchantment-aura'],
@@ -161,7 +163,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 4
     },
     'Storm': {
-        description: 'The actual Storm mechanic',
+        description: 'Cards with the literal Storm mechanic',
         color: '#1976D2',
         detectBy: {
             keywords: ['storm']
@@ -169,7 +171,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 3
     },
     'Madness/Self-Discard': {
-        description: 'Strategies that benefit from discarding cards',
+        description: 'Effects that discard or care about discarding cards',
         color: '#7B1FA2',
         detectBy: {
             tags: ['madness', 'discard-outlet', 'self-discard-matters', 'synergy-discard-self'],
@@ -181,7 +183,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Putting creatures into play from hand without paying costs',
         color: '#D84315',
         detectBy: {
-            tags: ['sneak', 'sneak-creature', 'sneak-self']
+            tags: ['sneak', 'sneak-*']
         },
         threshold: 3
     },
@@ -189,8 +191,8 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Cards that interact with face-down creatures or morph',
         color: '#616161',
         detectBy: {
-            tags: ['face-up-face-down-effects', 'face-down-face-up-effects', 'turn-face-down'],
-            keywords: ['morph', 'manifest', 'manifest dread']
+            tags: ['face-up-face-down-effects', 'face-down-face-up-effects', 'turn-face-*'],
+            keywords: ['morph', 'manifest', 'manifest dread', 'cloak', 'megamorph']
         },
         threshold: 4
     }

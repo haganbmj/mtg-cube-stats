@@ -2,10 +2,10 @@
     <el-card class="archetype-analysis-card">
         <template #header>
             <div class="card-header">
-                <h3>Supported Archetypes</h3>
-                <el-text tag="small" type="info">
+                <h3>Supported Themes/Archetypes</h3>
+                <!-- <el-text tag="small" type="info">
                     Detected themes and strategies based on {{ totalCards }} cards
-                </el-text>
+                </el-text> -->
             </div>
         </template>
 
@@ -19,10 +19,10 @@
 
         <div v-else>
             <!-- Summary stats -->
-            <el-row :gutter="16" class="archetype-summary">
+            <!-- <el-row :gutter="16" class="archetype-summary">
                 <el-col :span="6" :xs="12">
                     <el-statistic
-                        title="Supported Archetypes"
+                        title="Supported Themes"
                         :value="supportedArchetypes.length"
                         suffix="themes"
                     />
@@ -51,7 +51,7 @@
                 </el-col>
             </el-row>
 
-            <el-divider />
+            <el-divider /> -->
 
             <!-- Archetype table -->
             <el-table
@@ -60,7 +60,7 @@
                 :default-sort="{ prop: 'count', order: 'descending' }"
                 stripe
             >
-                <el-table-column prop="name" label="Archetype" min-width="140">
+                <el-table-column prop="name" label="Theme" min-width="140">
                     <template #default="{ row }">
                         <div class="archetype-name">
                             <div
@@ -137,11 +137,11 @@
             </el-table>
 
             <!-- View options -->
-            <div class="view-options" style="margin-top: 16px;">
+            <!-- <div class="view-options" style="margin-top: 16px;">
                 <el-checkbox v-model="showOnlySupported">
                     Show only viable archetypes ({{ supportedArchetypes.length }})
                 </el-checkbox>
-            </div>
+            </div> -->
         </div>
     </el-card>
 </template>
