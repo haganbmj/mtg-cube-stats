@@ -241,7 +241,7 @@
             <template #default="{ row }">
                 <div class="tag-list flex gap-2">
                     <el-tag
-                        v-for="tag in row.tags"
+                        v-for="tag in filteredTags(row.tags)"
                         :key="tag"
                         size="small"
                         type="info"
@@ -386,6 +386,10 @@ const games = [
     { text: 'mtgo', value: 'mtgo', color: 'rgba(70, 130, 180, 0.3)' },
     { text: 'arena', value: 'arena', color: 'rgba(218, 112, 214, 0.3)' },
 ];
+
+const filteredTags = (cardTags: string[]) => {
+    return cardTags.filter(tag => tags.some(t => t.value.toLowerCase() === tag.toLowerCase()));
+};
 
 const getTagColor = (tag: string) => {
     return tags.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
