@@ -1,6 +1,7 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
+import { detectCardArchetypes } from './src/util/ArchetypeDetection.mjs';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
 
@@ -116,17 +117,14 @@ const excludedLayouts = [
 
 const taggerOracleIds = {};
 
+// Include ALL tags from tagger data to enhance archetype detection
 taggerData.data.forEach(tag => {
-    // 'removal' is pretty broad, but probably the least likely to be extra confusing?
-    // 'tutor' includes fetch lands, so that's annoying.
-    if (['removal', 'tutor', 'ramp', 'draw', 'flicker', 'counterspell', 'graveyard-order-matters'].includes(tag.label)) {
-        tag.oracle_ids.forEach(oracle => {
-            if (taggerOracleIds[oracle] === undefined) {
-                taggerOracleIds[oracle] = new Set();
-            }
-            taggerOracleIds[oracle].add(tag.label);
-        });
-    }
+    tag.oracle_ids.forEach(oracle => {
+        if (taggerOracleIds[oracle] === undefined) {
+            taggerOracleIds[oracle] = new Set();
+        }
+        taggerOracleIds[oracle].add(tag.label);
+    });
 });
 
 // Slap on another tag entry for every card that relates to a token.
@@ -273,6 +271,7 @@ const minimized = stripped.sort((a, b) => {
             games: card.games,
             // FIXME: Exnted this with any future tags I think I care about.
             tags: taggerOracleIds[card.oracleId] !== undefined ? Array.from(taggerOracleIds[card.oracleId]) : [],
+            archetypes: [], // Will be filled after tags are set
             rarity: card.rarity,
             setType: card.setType,
             fromBooster: card.fromBooster,
@@ -339,6 +338,9 @@ const best = Object.keys(minimized.cards).reduce((store, key) => {
 
     const allGames = Array.from(new Set(card.flatMap(c => c.games)));
     store[key].games = allGames;
+
+    // Detect archetypes for this card now that we have all the data
+    store[key].archetypes = detectCardArchetypes(store[key]);
 
     return store;
 }, {});

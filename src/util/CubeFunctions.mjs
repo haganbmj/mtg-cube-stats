@@ -1,6 +1,7 @@
 import { useMemoize } from '@vueuse/core';
 import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions.mjs';
 import { isEvergreenKeyword } from './Keywords.mjs';
+import { detectCubeArchetypes } from './ArchetypeDetection.mjs';
 
 const scryfallLoad = () => import('../../data/cards-minimized.json');
 var scryfall = null;
@@ -119,6 +120,7 @@ function enrichCubeContents(cards) {
             keywords: scryfallCard?.keywords ?? [],
             games: scryfallCard?.games ?? [], // custom cards won't have a game listed.
             tags: scryfallCard?.tags ?? [],
+            archetypes: scryfallCard?.archetypes ?? [],
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
@@ -308,6 +310,7 @@ function analyzeCubeContents(cards) {
             // There are others too; Become the Monarch, Becomes Day/Night, etc.
             initiative: cards.filter(c => c.oracleText?.toLowerCase().includes('take the initiative')).length,
         },
+        archetypes: detectCubeArchetypes(cards),
     }
 
     return secondOrderStats;
