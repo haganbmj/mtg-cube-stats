@@ -86,7 +86,7 @@
                                     <h4>Supporting Cards ({{ row.cards.length }}):</h4>
                                     <div class="supporting-cards">
                                         <el-tooltip
-                                            v-for="cardName in row.cards.slice(0, showAllCards[row.name] ? row.cards.length : 10)"
+                                            v-for="cardName in row.cards.slice(0, showAllCards[row.name] ? row.cards.length : 12)"
                                             :key="cardName"
                                             effect="dark"
                                             placement="top"
@@ -95,29 +95,33 @@
                                         >
                                             <template #content>
                                                 <div class="card-tooltip-content">
-                                                    <img
+                                                    <el-image
                                                         :src="getCardImageUrl(cardName)"
+                                                        fit="contain"
                                                         :alt="cardName"
-                                                        class="card-tooltip-image"
+                                                        :class="'card-image ' + (getCardByName(cardName)?.setCode?.toLowerCase() || '')"
                                                         @error="handleImageError"
                                                     />
                                                 </div>
                                             </template>
-                                            <el-tag
-                                                size="small"
-                                                class="card-tag"
-                                            >
-                                                {{ cardName }}
-                                            </el-tag>
+                                            <div class="card-thumbnail-container">
+                                                <el-image
+                                                    :src="getCardImageUrl(cardName)"
+                                                    fit="cover"
+                                                    :alt="cardName"
+                                                    :class="'card-thumbnail ' + (getCardByName(cardName)?.setCode?.toLowerCase() || '')"
+                                                    @error="handleThumbnailError"
+                                                />
+                                            </div>
                                         </el-tooltip>
                                         <el-button
-                                            v-if="row.cards.length > 10 && !showAllCards[row.name]"
+                                            v-if="row.cards.length > 12 && !showAllCards[row.name]"
                                             link
                                             type="primary"
                                             size="small"
                                             @click="showAllCards[row.name] = true"
                                         >
-                                            Show {{ row.cards.length - 10 }} more...
+                                            Show {{ row.cards.length - 12 }} more...
                                         </el-button>
                                         <el-button
                                             v-if="showAllCards[row.name]"
@@ -150,12 +154,15 @@
 import { computed, ref } from 'vue';
 import { detectCubeArchetypes } from '../util/ArchetypeDetection.mjs';
 
-// Simple function to generate Scryfall image URL from card name
+// Function to get card object by name from cube cards
+const getCardByName = (cardName: string) => {
+    return props.cubeCards.find(card => card.name === cardName);
+};
+
+// Function to get card image URL from card model
 const getCardImageUrl = (cardName: string) => {
-    // This is a simplified approach - ideally you'd have oracle IDs
-    // For now, use Scryfall's named API endpoint
-    const encodedName = encodeURIComponent(cardName);
-    return `https://api.scryfall.com/cards/named?exact=${encodedName}&format=image&version=normal`;
+    const card = getCardByName(cardName);
+    return card?.urlFront || '';
 };
 
 const handleImageError = (event: Event) => {
@@ -164,6 +171,15 @@ const handleImageError = (event: Event) => {
     const parent = img.parentElement;
     if (parent) {
         parent.innerHTML = '<div class="card-name-fallback">Image not available</div>';
+    }
+};
+
+const handleThumbnailError = (event: Event) => {
+    const img = event.target as HTMLImageElement;
+    const container = img.parentElement;
+    if (container) {
+        img.style.display = 'none';
+        container.classList.add('image-failed');
     }
 };
 
@@ -263,18 +279,48 @@ const archetypeDensity = computed(() => {
 .supporting-cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
 }
 
-.card-tag {
-    margin: 0;
-    color: white !important;
+.card-thumbnail-container {
+    position: relative;
+    width: 120px;
+    height: 168px;
+    border-radius: 8px;
+    overflow: hidden;
     cursor: help;
+    transition: transform 0.2s ease;
+    border: 2px solid transparent;
 }
 
-.card-tag:hover {
-    opacity: 0.8;
+.card-thumbnail-container:hover {
+    transform: scale(1.05);
+    border-color: var(--el-color-primary);
+}
+
+.card-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 4.75% / 3.5%;
+}
+
+.card-thumbnail.lea {
+    border-radius: 7% / 5.5%;
+}
+
+.image-failed {
+    background-color: var(--el-fill-color-light);
+    border: 1px dashed var(--el-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+    text-align: center;
+    padding: 8px;
 }
 
 .view-options {
@@ -311,6 +357,12 @@ const archetypeDensity = computed(() => {
 
     .supporting-cards {
         justify-content: flex-start;
+        gap: 6px;
+    }
+
+    .card-thumbnail-container {
+        width: 90px;
+        height: 126px;
     }
 
     .card-tooltip-content {

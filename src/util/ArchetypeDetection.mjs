@@ -30,7 +30,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Effects that repeatedly create tokens, or create additional tokens',
         color: '#F4D03F',
         detectBy: {
-            tags: ['repeatable-token-generator', 'repeatable-creature-tokens'],
+            tags: ['repeatable-token-generator', 'repeatable-*-tokens'],
             keywords: ['populate']
         },
         threshold: 8
@@ -75,7 +75,7 @@ const ARCHETYPE_DEFINITIONS = {
         description: 'Various types of mana acceleration',
         color: '#229954',
         detectBy: {
-            tags: ['ramp', 'lands-matter', 'landfall'],
+            tags: ['ramp'],
         },
         threshold: 8
     },
@@ -121,7 +121,7 @@ const ARCHETYPE_DEFINITIONS = {
         threshold: 6
     },
     'Energy': {
-        description: 'Effects utilizing energy counters',
+        description: 'Effects utilizing energy',
         color: '#FBC02D',
         detectBy: {
             tags: ['energy-generator', 'counter-fuel-energy']
