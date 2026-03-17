@@ -93,8 +93,7 @@
                                         <el-row direction="horizontal">
                                             <el-col :span="16">
                                                 <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                    <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(cube.id)"><DataAnalysis /></el-icon>
-                                                    <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                                    <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
                                                 </el-tooltip>
                                             </el-col>
                                             <el-col :span="8">
@@ -111,8 +110,7 @@
                                         <el-row direction="horizontal">
                                             <el-col :span="16">
                                                 <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                    <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(cube.id)"><DataAnalysis /></el-icon>
-                                                    <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                                    <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
                                                 </el-tooltip>
                                             </el-col>
                                             <el-col :span="8">
@@ -743,17 +741,6 @@ const visibleRows = computed(() => {
 </script>
 
 <style lang="scss">
-.cube-detail-icon {
-    cursor: pointer;
-    margin-right: 0.4rem;
-    color: var(--el-text-color-secondary);
-    vertical-align: middle;
-
-    &:hover {
-        color: var(--el-color-primary);
-    }
-}
-
 .filtered-count {
     text-align: right;
     line-height: 2em;

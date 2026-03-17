@@ -126,8 +126,7 @@
                                 <el-table-column type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
                                 <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveName" v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
-                                        <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(row.id)"><DataAnalysis /></el-icon>
-                                        <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                                        <el-link @click="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
                                         <template v-if="row.stats.graveyardOrderMatters">
                                             <el-tooltip
                                                 content="This cube contains cards that care about Graveyard Order."
@@ -982,17 +981,6 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 
 .text-center,[text~=center] {
     text-align: center
-}
-
-.cube-detail-icon {
-    cursor: pointer;
-    margin-right: 0.4rem;
-    color: var(--el-text-color-secondary);
-    vertical-align: middle;
-
-    &:hover {
-        color: var(--el-color-primary);
-    }
 }
 
 .cell-secondary {

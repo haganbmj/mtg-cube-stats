@@ -123,16 +123,13 @@
                                         <el-table-column prop="name" label="Cube Name" min-width="120">
                                             <template #default="{ row: cubeRow }">
                                                 <el-tooltip :content="`Owner: ${cubeRow.owner}`" placement="top" :hide-after="50">
-                                                    <template v-if="cubeRow.id">
-                                                        <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(cubeRow.id)"><DataAnalysis /></el-icon>
-                                                        <el-link
-                                                            :href="`https://cubecobra.com/cube/list/${cubeRow.id}`"
-                                                            target="_blank"
-                                                            :type="cubeRow.name === highlightedCubeName ? 'primary' : 'default'"
-                                                        >
-                                                            {{ cubeRow.name }}
-                                                        </el-link>
-                                                    </template>
+                                                    <el-link
+                                                        v-if="cubeRow.id"
+                                                        @click="openCubeDetailDialog(cubeRow.id)"
+                                                        :type="cubeRow.name === highlightedCubeName ? 'primary' : 'default'"
+                                                    >
+                                                        {{ cubeRow.name }}
+                                                    </el-link>
                                                     <span v-else>{{ cubeRow.name }}</span>
                                                 </el-tooltip>
                                             </template>
@@ -493,17 +490,6 @@ const getComparisonArrow = (archetypeName: string) => {
 </script>
 
 <style scoped>
-.cube-detail-icon {
-    cursor: pointer;
-    margin-right: 0.4rem;
-    color: var(--el-text-color-secondary);
-    vertical-align: middle;
-
-    &:hover {
-        color: var(--el-color-primary);
-    }
-}
-
 .archetype-analysis-card {
     margin: 16px 0;
 }

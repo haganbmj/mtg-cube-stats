@@ -2,16 +2,27 @@
     <el-dialog
         :model-value="visible"
         @update:model-value="$emit('update:visible', $event)"
-        :title="cubeRow?.name || 'Cube Details'"
         width="90%"
         top="5vh"
         align-center
         destroy-on-close
     >
+        <template #header>
+            <div v-if="cubeRow" class="cube-dialog-header">
+                <el-link :href="`https://cubecobra.com/cube/list/${cubeRow.id}`" target="_blank" type="primary" :underline="false">
+                    <span class="cube-dialog-name">{{ cubeRow.name }}</span>
+                </el-link>
+                <span class="cube-dialog-separator"> &mdash; </span>
+                <el-link :href="`https://cubecobra.com/user/view/${cubeRow.ownerId}`" target="_blank" :underline="false">
+                    <span class="cube-dialog-owner">{{ cubeRow.owner }}</span>
+                </el-link>
+            </div>
+        </template>
+
         <template v-if="cubeRow">
-            <el-row :gutter="10">
-                <el-col :span="24">
-                    <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
+            <el-tabs tab-position="top">
+                <el-tab-pane label="Charts">
+                    <el-row justify="space-between" class="chart-row" :gutter="20">
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
                             <div style="height: 300px;">
                                 <ManaValueChart class="chart" :cmcDistribution="cubeRow.stats?.cmcDistribution || {}" />
@@ -43,26 +54,24 @@
                             </div>
                         </el-col>
                     </el-row>
-                </el-col>
-                <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                    <h3>Keywords ({{ cubeRow.stats.uniqueKeywords }})</h3>
+                </el-tab-pane>
+
+                <el-tab-pane :label="`Keywords (${cubeRow.stats.uniqueKeywords})`">
                     <KeywordTable :keywords="cubeRow.stats?.keywords || {}" :totalCards="cubeRow.stats?.totalCards || 1" />
-                </el-col>
-                <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                    <h3>Sets ({{ Object.keys(cubeRow.stats?.setCodeDistribution || {}).length }})</h3>
+                </el-tab-pane>
+
+                <el-tab-pane :label="`Sets (${Object.keys(cubeRow.stats?.setCodeDistribution || {}).length})`">
                     <SetNameTable :setCodeDistribution="cubeRow.stats?.setCodeDistribution || {}" :totalCards="cubeRow.stats?.totalCards || 1" />
-                </el-col>
-                <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                    <h3>Similar Cubes</h3>
+                </el-tab-pane>
+
+                <el-tab-pane label="Similar Cubes">
                     <SimilarCubesTable :similarityMatrix="similarityMatrix" :loadedCubes="overviewTableData" :cubeId="cubeRow.id" />
-                </el-col>
-            </el-row>
-            <el-row :gutter="10" style="margin-top: 20px;">
-                <el-col :span="24">
-                    <h3>Supported Archetypes</h3>
+                </el-tab-pane>
+
+                <el-tab-pane label="Archetypes" :lazy="true">
                     <ArchetypeAnalysis :cubeCards="cubeCards" />
-                </el-col>
-            </el-row>
+                </el-tab-pane>
+            </el-tabs>
         </template>
 
         <template #footer>
@@ -110,6 +119,27 @@ defineEmits(['update:visible']);
 </script>
 
 <style scoped>
+.cube-dialog-header {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.cube-dialog-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.cube-dialog-separator {
+    color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-owner {
+    font-size: 1rem;
+    color: var(--el-text-color-secondary);
+}
+
 .chart-row {
     :deep(.chart) {
         width: unset;
