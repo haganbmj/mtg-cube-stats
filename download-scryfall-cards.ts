@@ -1,7 +1,8 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import { detectCardArchetypes } from './src/util/ArchetypeDetection.mjs';
+import { detectCardArchetypes } from './src/util/ArchetypeDetection';
+import type { CubeCard } from './src/types';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
 
@@ -68,9 +69,9 @@ if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" |
     console.log('Using existing tagger data.');
 }
 
-const cards = JSON.parse(fs.readFileSync('./data/default-cards.json'));
-const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json'));
-const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json'));
+const cards = JSON.parse(fs.readFileSync('./data/default-cards.json', 'utf8'));
+const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json', 'utf8'));
+const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8'));
 
 const customPromoSetTypes = [
     'from_the_vault',
@@ -115,11 +116,11 @@ const excludedLayouts = [
     'art_series',
 ];
 
-const taggerOracleIds = {};
+const taggerOracleIds: Record<string, Set<string>> = {};
 
 // Include ALL tags from tagger data to enhance archetype detection
-taggerData.data.forEach(tag => {
-    tag.oracle_ids.forEach(oracle => {
+taggerData.data.forEach((tag: any) => {
+    tag.oracle_ids.forEach((oracle: string) => {
         if (taggerOracleIds[oracle] === undefined) {
             taggerOracleIds[oracle] = new Set();
         }
@@ -128,8 +129,8 @@ taggerData.data.forEach(tag => {
 });
 
 // Slap on another tag entry for every card that relates to a token.
-cards.forEach(card => {
-    if (card.all_parts?.some(part => part.component === 'token')) {
+cards.forEach((card: any) => {
+    if (card.all_parts?.some((part: any) => part.component === 'token')) {
         if (taggerOracleIds[card.oracle_id] === undefined) {
             taggerOracleIds[card.oracle_id] = new Set();
         }
@@ -137,18 +138,18 @@ cards.forEach(card => {
     }
 });
 
-const flatMapTypes = (typeLine) => {
+const flatMapTypes = (typeLine: string): string[] => {
     // Some of the Spiderman cards are using the wrong dash character.
     return typeLine.replace('—', '-').split('//')[0].split('-')[0].trim().split(' ');
 }
 
-const effectiveTypes = (card) => {
+const effectiveTypes = (card: any): string[] => {
     if (card.layout === 'adventure') {
         // Consider only the primary type of Adventures.
         // Could probably do this better, but it gets around the FIN Adventure Lands...
         return flatMapTypes(card.card_faces[0].type_line);
     } else if (card.layout === 'modal_dfc' || card.layout === 'split') {
-        return card.card_faces.flatMap(face => flatMapTypes(face.type_line));
+        return card.card_faces.flatMap((face: any) => flatMapTypes(face.type_line));
     } else {
         return flatMapTypes(card.type_line);
     }
@@ -156,14 +157,14 @@ const effectiveTypes = (card) => {
 
 const minRarityOrder = ['common', 'uncommon', 'rare', 'mythic', 'special', 'bonus'];
 
-const stripped = cards.filter(card => {
+const stripped = cards.filter((card: any) => {
     // Process the exclusions.
     return includedSets.includes(card.set) ||
         ((!card.oversized || card.layout === 'planar')
         && !excludedSetTypes.includes(card.set_type)
         && !excludedLayouts.includes(card.layout)
         && !excludedSets.includes(card.set));
-}).flatMap(card => {
+}).flatMap((card: any) => {
     // Do some handling for the stupid Reversible Card bullshit.
     // FIXME: Skipping these for the moment, they get screwy with the TDM Adventure Dragons and I don't need them.
     //  I think I'm missing 1 card by doing this so need to figure that out.
@@ -176,16 +177,16 @@ const stripped = cards.filter(card => {
     }
 
     return [ card ];
-}).map(card => {
+}).map((card: any) => {
     // Then set the high level data necessary to organize the remaining cards.
-    var cardBackUri = undefined;
+    var cardBackUri: string | undefined = undefined;
     if (card.card_faces?.[1]?.image_uris) {
         cardBackUri = `https://api.scryfall.com/cards/${card.set}/${card.collector_number}?format=image&face=back`;
     } else if (card.layout == 'meld') {
         cardBackUri = `https://backs.scryfall.io/large/${card.card_back_id.charAt(0)}/${card.card_back_id.charAt(1)}/${card.card_back_id}.jpg`;
     }
 
-    const applicablePromoTypes = (card.promo_types || []).filter(pt => !notPromoTypes.includes(pt));
+    const applicablePromoTypes = (card.promo_types || []).filter((pt: string) => !notPromoTypes.includes(pt));
 
     return {
         id: card.id,
@@ -201,7 +202,7 @@ const stripped = cards.filter(card => {
         colorIdentity: card.color_identity || [],
         typeLine: card.type_line,
         effectiveTypes: effectiveTypes(card),
-        oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text !== undefined ? card.card_faces.map(face => face.oracle_text).join('\n\n') : ''),
+        oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text !== undefined ? card.card_faces.map((face: any) => face.oracle_text).join('\n\n') : ''),
         keywords: card.keywords || [],
         games: card.games || [],
         allParts: card.all_parts || [],
@@ -226,7 +227,7 @@ const stripped = cards.filter(card => {
 
 // fs.writeFileSync('./out.json', JSON.stringify(stripped, null, 2));
 
-const minimized = stripped.sort((a, b) => {
+const minimized = stripped.sort((a: any, b: any) => {
     // From there organize everything by release date in reverse chronological order.
     // In the event of multiple printings from the same set (basics) sort by set number.
     // Collector Numbers aren't actually numeric, becuase we can have A/B/C variants.
@@ -245,7 +246,7 @@ const minimized = stripped.sort((a, b) => {
     }
 
     return Date.parse(a.releaseDate) < Date.parse(b.releaseDate) ? -1 : 1;
-}).reduce((store, card) => {
+}).reduce((store: any, card: any) => {
     try {
         // And take that and tighten it down as much as possible.
         // FIXME: Trim this model even more. Should strip everything I'm not using to reduce the bundle size.
@@ -264,10 +265,10 @@ const minimized = stripped.sort((a, b) => {
             typeLine: card.typeLine,
             effectiveTypes: card.effectiveTypes,
             oracleText: card.oracleText,
-            oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).filter(v => v != '').length,
-            oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter(v => v != '').length,
+            oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).filter((v: string) => v != '').length,
+            oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter((v: string) => v != '').length,
             // This needs sanitization to use, it seems to including flavor abilities.
-            keywords: card.keywords.filter(kw => !flavorWords.data.includes(kw)),
+            keywords: card.keywords.filter((kw: string) => !flavorWords.data.includes(kw)),
             games: card.games,
             // FIXME: Exnted this with any future tags I think I care about.
             tags: taggerOracleIds[card.oracleId] !== undefined ? Array.from(taggerOracleIds[card.oracleId]) : [],
@@ -285,7 +286,7 @@ const minimized = stripped.sort((a, b) => {
             isSupplementalProduct: ['core', 'expansion'].includes(card.setType) ? undefined : true,
             // Apparently planeswalkers are "normal" layout?
             isNormalLayout: card.layout === 'normal' ? true : undefined,
-            makesTokens: card.allParts.some(part => part.component === 'token') ? true : undefined,
+            makesTokens: card.allParts.some((part: any) => part.component === 'token') ? true : undefined,
 
             legality: {
                 standard: card.legalities?.standard === 'legal' ? true : undefined,
@@ -311,36 +312,36 @@ const minimized = stripped.sort((a, b) => {
 }, { cards: {}, sets: {} });
 
 // Remap that to just the "original" printing of each card.
-const best = Object.keys(minimized.cards).reduce((store, key) => {
+const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
     const card = minimized.cards[key];
-    store[key] = card.filter(printing => {
+    store[key] = card.filter((printing: any) => {
         return !printing.isDigital && !printing.isPromo && !printing.isToken;
     })?.[0] ?? card[0];
 
     // FIXME: Should this store off which printing is the cheapest?
-    const minPriceUsd = Math.min(...card.map(c => c.priceUsd ?? Number.MAX_SAFE_INTEGER));
+    const minPriceUsd = Math.min(...card.map((c: any) => c.priceUsd ?? Number.MAX_SAFE_INTEGER));
     if (minPriceUsd != Number.MAX_SAFE_INTEGER) {
         store[key].minPriceUsd = minPriceUsd;
     }
 
-    const minPriceTix = Math.min(...card.map(c => c.priceTix ?? Number.MAX_SAFE_INTEGER));
+    const minPriceTix = Math.min(...card.map((c: any) => c.priceTix ?? Number.MAX_SAFE_INTEGER));
     if (minPriceTix != Number.MAX_SAFE_INTEGER) {
         store[key].minPriceTix = minPriceTix;
     }
 
-    const allRarities = Array.from(new Set(card.map(c => c.rarity)));
+    const allRarities = Array.from(new Set(card.map((c: any) => c.rarity)));
     store[key].rarities = allRarities;
 
-    const minRarity = allRarities.sort((a, b) => {
+    const minRarity = allRarities.sort((a: string, b: string) => {
         return minRarityOrder.indexOf(a) - minRarityOrder.indexOf(b);
     })[0];
     store[key].minRarity = minRarity;
 
-    const allGames = Array.from(new Set(card.flatMap(c => c.games)));
+    const allGames = Array.from(new Set(card.flatMap((c: any) => c.games)));
     store[key].games = allGames;
 
     // Detect archetypes for this card now that we have all the data
-    store[key].archetypes = detectCardArchetypes(store[key]);
+    store[key].archetypes = detectCardArchetypes(store[key] as CubeCard);
 
     return store;
 }, {});

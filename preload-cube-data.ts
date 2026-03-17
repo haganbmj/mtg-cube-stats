@@ -1,12 +1,20 @@
 import fs from 'fs';
-import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions.mjs';
-import { getCubeData } from './src/util/CubeCobra.mjs';
+import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions';
+import { getCubeData } from './src/util/CubeCobra';
+import type { Cube } from './src/types';
 
 const runNumber = process.env.RUN_NUMBER || 'unset';
 const refresh = process.env.REFRESH_PRELOADS || 'false';
 
+interface Batch {
+    name: string;
+    staleThreshold: number | undefined;
+    shardCount: number | undefined;
+    cubes: string[];
+}
+
 // Prefer using Cube IDs here rather than the user-defined short IDs that can change.
-const batches = [
+const batches: Batch[] = [
     // {
     //     name: 'haganbmj',
     //     staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
@@ -412,7 +420,7 @@ const batches = [
             'aeef677f-1990-4fd5-a300-f442a318e933', // Ravnica/Time Spiral Standard Cube
             '42e16b6b-3c37-484d-a50c-cf21087d97fd', // The Red Terror
             '322fffb9-9702-48dc-9113-9c44e9dd3ab1', // Regular Games, Commander Cards
-            '5f57d887a382126d07eaddc3', // Sam’s Shiny Single Sided Cube
+            '5f57d887a382126d07eaddc3', // Sam's Shiny Single Sided Cube
             '5d3ee03747586d63776ad1eb', // Sammich's Pauper Cube
             'sammich_peasant', // Sammich's Peasant Cube
             'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's (Paper-Legal) Arena Cube
@@ -456,7 +464,7 @@ for (const batch of batches) {
     }
     console.group(`Processing batch: ${batch.name}`);
 
-    const batchResult = {};
+    const batchResult: Record<string, Cube> = {};
     for (const [index, cubeId] of batch.cubes.entries()) {
         if (fs.existsSync(`./preloads/cubes/${cubeId}.json`)) {
             let skip = false;
@@ -480,7 +488,7 @@ for (const batch of batches) {
 
             const stats = fs.statSync(`./preloads/cubes/${cubeId}.json`);
 
-            if (stats.size === 0 || (!skip && stats.mtimeMs <= batch.staleThreshold)) {
+            if (stats.size === 0 || (!skip && batch.staleThreshold && stats.mtimeMs <= batch.staleThreshold)) {
                 console.log(`[${cubeId}] Local copy is stale or empty, fetching...`);
             } else {
                 console.log(`[${cubeId}] Local copy is fresh, using cached version.`);
@@ -494,7 +502,7 @@ for (const batch of batches) {
             const cube = await getCubeData(cubeId);
             fs.writeFileSync(`./preloads/cubes/${cubeId}.json`, JSON.stringify(cube, null, 2));
             batchResult[cubeId] = remapCube(cube, false);
-        } catch (e) {
+        } catch (e: any) {
             console.error(`[${cubeId}] Failed to fetch cube: ${e.message}`);
             // FIXME: Should this fault here, or can we proceed then just error out at the end?
         }

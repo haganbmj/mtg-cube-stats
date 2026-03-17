@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { isEvergreenKeyword } from '../util/Keywords.mjs';
-import { castInensitiveSort } from '../util/HelperFunctions.mjs';
+import { isEvergreenKeyword } from '../util/Keywords';
+import { castInensitiveSort } from '../util/HelperFunctions';
 
 const props = defineProps({
     keywords: {

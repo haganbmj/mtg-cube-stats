@@ -152,7 +152,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { detectCubeArchetypes } from '../util/ArchetypeDetection.mjs';
+import { detectCubeArchetypes } from '../util/ArchetypeDetection';
 
 // Function to get card object by name from cube cards
 const getCardByName = (cardName: string) => {

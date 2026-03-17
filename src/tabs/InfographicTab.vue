@@ -382,8 +382,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getSetName } from '../util/CubeFunctions.mjs';
-import { isEvergreenKeyword } from '../util/Keywords.mjs';
+import { getSetName } from '../util/CubeFunctions';
+import { isEvergreenKeyword } from '../util/Keywords';
 
 const props = defineProps({
     loadedCubes: {

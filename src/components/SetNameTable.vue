@@ -36,8 +36,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { castInensitiveSort } from '../util/HelperFunctions.mjs';
-import { getSetName } from '../util/CubeFunctions.mjs';
+import { castInensitiveSort } from '../util/HelperFunctions';
+import { getSetName } from '../util/CubeFunctions';
 
 const props = defineProps({
     setCodeDistribution: {

@@ -347,7 +347,7 @@ import { TableInstance } from 'element-plus';
 import type { SortBy } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
-import { capitalizeFirstLetter } from '../util/HelperFunctions.mjs';
+import { capitalizeFirstLetter } from '../util/HelperFunctions';
 
 const props = defineProps({
     loadedCubes: {
