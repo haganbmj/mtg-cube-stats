@@ -127,11 +127,13 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         },
         threshold: 5
     },
-    'Tribal Synergies': {
+    'Typal Synergies': {
         description: 'Effects that care about creature types',
         color: '#FF7043',
         detectBy: {
-            tags: ['tribal', 'creature-type-matters']
+            // FIMXE: This doesn't catch card type Kindred.
+            tags: ['typal', 'typal-*', 'creature-type-matters'],
+            keywords: ['changeling']
         },
         threshold: 4
     },
