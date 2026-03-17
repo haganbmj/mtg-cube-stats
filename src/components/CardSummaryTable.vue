@@ -347,6 +347,7 @@
         :cubeCards="cubeDetailDialogCards"
         :similarityMatrix="similarityMatrix"
         :overviewTableData="overviewTableData"
+        :loadedCubes="loadedCubes"
     />
 </template>
 

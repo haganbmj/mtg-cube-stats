@@ -14,7 +14,8 @@
         >
             <template #default="{ row }">
                 <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
-                    <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                    <el-link v-if="cubeClick" @click="$emit('cube-click', row.id)">{{ row.name }}</el-link>
+                    <el-link v-else :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
                 </el-tooltip>
             </template>
         </el-table-column>
@@ -56,7 +57,13 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    cubeClick: {
+        type: Boolean,
+        default: false,
+    },
 });
+
+defineEmits(['cube-click']);
 
 const tableData = computed(() => {
     return mostSimilarCubes(props.cubeId);

@@ -106,6 +106,7 @@
                                 :cubeCards="cubeDetailDialogCards"
                                 :similarityMatrix="similarityMatrix"
                                 :overviewTableData="overviewTableData"
+                                :loadedCubes="loadedCubes"
                             />
 
                             <el-table
