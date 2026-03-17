@@ -93,6 +93,7 @@
                                         <el-row direction="horizontal">
                                             <el-col :span="16">
                                                 <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
+                                                    <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(cube.id)"><DataAnalysis /></el-icon>
                                                     <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
                                                 </el-tooltip>
                                             </el-col>
@@ -110,6 +111,7 @@
                                         <el-row direction="horizontal">
                                             <el-col :span="16">
                                                 <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
+                                                    <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(cube.id)"><DataAnalysis /></el-icon>
                                                     <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
                                                 </el-tooltip>
                                             </el-col>
@@ -340,6 +342,14 @@
         :layout="paginationLayout"
         :total="searchedRows.length"
     />
+
+    <CubeDetailDialog
+        v-model:visible="cubeDetailDialogVisible"
+        :cubeRow="cubeDetailDialogRow"
+        :cubeCards="cubeDetailDialogCards"
+        :similarityMatrix="similarityMatrix"
+        :overviewTableData="overviewTableData"
+    />
 </template>
 
 <script setup lang="ts">
@@ -348,13 +358,39 @@ import type { SortBy } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
+import CubeDetailDialog from './CubeDetailDialog.vue';
 
 const props = defineProps({
     loadedCubes: {
         type: Object,
         required: true,
     },
+    similarityMatrix: {
+        type: Object,
+        required: true,
+    },
+    overviewTableData: {
+        type: Array,
+        required: true,
+    },
 });
+
+const cubeDetailDialogId = ref(null);
+const cubeDetailDialogVisible = computed({
+    get: () => cubeDetailDialogId.value !== null,
+    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
+});
+const cubeDetailDialogRow = computed(() => {
+    if (!cubeDetailDialogId.value) return null;
+    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
+});
+const cubeDetailDialogCards = computed(() => {
+    if (!cubeDetailDialogId.value) return [];
+    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
+});
+const openCubeDetailDialog = (cubeId) => {
+    cubeDetailDialogId.value = cubeId;
+};
 
 const cardSummaryTableRef = ref<TableInstance>();
 const currentPage = ref(1);
@@ -707,6 +743,17 @@ const visibleRows = computed(() => {
 </script>
 
 <style lang="scss">
+.cube-detail-icon {
+    cursor: pointer;
+    margin-right: 0.4rem;
+    color: var(--el-text-color-secondary);
+    vertical-align: middle;
+
+    &:hover {
+        color: var(--el-color-primary);
+    }
+}
+
 .filtered-count {
     text-align: right;
     line-height: 2em;

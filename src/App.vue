@@ -100,118 +100,21 @@
                                 </el-col>
                             </el-row>
 
+                            <CubeDetailDialog
+                                v-model:visible="cubeDetailDialogVisible"
+                                :cubeRow="cubeDetailDialogRow"
+                                :cubeCards="cubeDetailDialogCards"
+                                :similarityMatrix="similarityMatrix"
+                                :overviewTableData="overviewTableData"
+                            />
+
                             <el-table
                                 :data="overviewTableData"
                                 :default-sort="{ prop: 'name', order: 'ascending' }"
-                                :preserve-expanded-content="false"
                                 style="width: 100%"
                                 table-layout="auto"
                                 stripe
                             >
-                                <el-table-column :fixed="!isMobile" width="25" type="expand">
-                                    <template #default="props">
-                                        <el-row :gutter="20" justify="center" class="expanded-statistics" v-if="false">
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Total Cards" :value="props.row.stats.totalCards" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="New Cards (<1 yr)" :value="props.row.stats.newCards" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Land Cards" :value="props.row.stats.landCards" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Avg. Non-Land MV" :value="props.row.stats.averageNonLandCmc" :precision="2" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Avg. Card Elo" :value="props.row.stats.averageElo"/>
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Avg. Popularity" :value="props.row.stats.averagePopularity" :precision="2" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Universes Beyond" :value="props.row.stats.cardCounts.universesBeyond" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Supplmenetal Product" :value="props.row.stats.cardCounts.supplementalProduct" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Removal" :value="props.row.stats.cardCounts.removal / props.row.stats.totalCards * 100" :precision="2" suffix="%" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Avg. Word Count Excl. Reminder" :value="props.row.stats.averageWordCountMinusParen" :precision="2" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-statistic title="Non-Evergreen Keywords" :value="props.row.stats.uniqueNonEvergreenKeywords" />
-                                            </el-col>
-                                            <el-col :span="3" :xs="6" :md="4" :lg="2" class="text-center">
-                                                <el-tag :type="props.row.stats.arenaPlayable ? 'success' : 'danger'">
-                                                    Arena Playable: {{ props.row.stats.arenaPlayable ? 'Yes' : 'No' }}
-                                                </el-tag>
-                                                <el-tag :type="props.row.stats.mtgoPlayable ? 'success' : 'danger'">
-                                                    MTGO Playable: {{ props.row.stats.mtgoPlayable ? 'Yes' : 'No' }}
-                                                </el-tag>
-                                                <el-tag :type="props.row.stats.paperPlayable ? 'success' : 'danger'">
-                                                    Paper Playable: {{ props.row.stats.paperPlayable ? 'Yes' : 'No' }}
-                                                </el-tag>
-                                            </el-col>
-                                        </el-row>
-                                        <el-row :gutter="10">
-                                            <el-col :span="24">
-                                                <el-row justify="space-between" class="chart-row" :gutter="20" style="margin-top: 1em;">
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
-                                                        <div style="height: 300px;">
-                                                            <ManaValueChart class="chart" :cmcDistribution="props.row.stats?.cmcDistribution || {}" />
-                                                        </div>
-                                                    </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
-                                                        <div style="height: 300px;">
-                                                            <ReleaseYearChart class="chart" :releaseYearDistribution="props.row.stats?.releaseYearDistribution || {}" />
-                                                        </div>
-                                                    </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
-                                                        <div style="height: 300px;">
-                                                            <ColorIdentityDistributionChart class="chart" :colorDistribution="props.row.stats?.colorDistribution || {}" />
-                                                        </div>
-                                                    </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
-                                                        <div style="height: 300px;">
-                                                            <TypeLineDistributionChart class="chart" :typeLineDistribution="props.row.stats?.typeLineDistribution || {}" />
-                                                        </div>
-                                                    </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
-                                                        <div style="height: 300px;">
-                                                            <RarityDistributionChart class="chart" :rarityDistribution="props.row.stats?.rarityDistribution || {}" :minimumRarityDistribution="props.row.stats?.minRarityDistribution" />
-                                                        </div>
-                                                    </el-col>
-                                                    <el-col :span="12" :xs="24" :md="12" :xl="8">
-                                                        <div style="height: 300px;">
-                                                            <LegalityDistributionChart class="chart" :legalityDistribution="props.row.stats?.minimumFormatLegalityDistribution || {}" />
-                                                        </div>
-                                                    </el-col>
-                                                </el-row>
-                                            </el-col>
-                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                                                <h3>Keywords ({{ props.row.stats.uniqueKeywords }})</h3>
-                                                <KeywordTable :keywords="props.row.stats?.keywords || {}" :totalCards="props.row.stats?.totalCards || 1" />
-                                            </el-col>
-                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                                                <h3>Sets ({{ Object.keys(props.row.stats?.setCodeDistribution || {}).length }})</h3>
-                                                <SetNameTable :setCodeDistribution="props.row.stats?.setCodeDistribution || {}" :totalCards="props.row.stats?.totalCards || 1" />
-                                            </el-col>
-                                            <el-col :span="12" :xs="24" :sm="12" :md="12" :xl="8">
-                                                <h3>Similar Cubes</h3>
-                                                <SimilarCubesTable :similarityMatrix="similarityMatrix" :loadedCubes="overviewTableData" :cubeId="props.row.id" />
-                                            </el-col>
-                                        </el-row>
-                                        <el-row :gutter="10" style="margin-top: 20px;">
-                                            <el-col :span="24">
-                                                <h3>Supported Archetypes</h3>
-                                                <ArchetypeAnalysis :cubeCards="loadedCubes[props.row.id]?.cards || []" />
-                                            </el-col>
-                                        </el-row>
-                                    </template>
-                                </el-table-column>
                                 <el-table-column fixed prop="thumbnail" label="" width="75">
                                     <template #default="{ row }">
                                         <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
@@ -223,6 +126,7 @@
                                 <el-table-column type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
                                 <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveName" v-if="config.visibleColumns.includes('name')" >
                                     <template #default="{ row }">
+                                        <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(row.id)"><DataAnalysis /></el-icon>
                                         <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
                                         <template v-if="row.stats.graveyardOrderMatters">
                                             <el-tooltip
@@ -639,7 +543,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Infographic" name="infographic" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" />
+                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Statistics" name="statistics" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
@@ -649,12 +553,12 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <ArchetypeAnalysisTab :loadedCubes="loadedCubes" />
+                            <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <div style="width: 100%;">
-                                <CardSummaryTable :loadedCubes="loadedCubes" />
+                                <CardSummaryTable :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                             </div>
                         </el-tab-pane>
 
@@ -681,24 +585,14 @@ import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
 import { bindStorage } from './util/VueLocalStorage';
-import ManaValueChart from './components/charts/basic/ManaValueChart.vue';
-import ColorIdentityDistributionChart from './components/charts/distributions/ColorIdentityDistributionChart.vue';
-import TypeLineDistributionChart from './components/charts/distributions/TypeLineDistributionChart.vue';
-import KeywordTable from './components/KeywordTable.vue';
-import SetNameTable from './components/SetNameTable.vue';
-import RarityDistributionChart from './components/charts/distributions/RarityDistributionChart.vue';
-import ReleaseYearChart from './components/charts/basic/ReleaseYearChart.vue';
-
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
-import LegalityDistributionChart from './components/charts/distributions/LegalityDistributionChart.vue';
 import CardSummaryTable from './components/CardSummaryTable.vue';
 import About from './components/About.vue';
-import ArchetypeAnalysis from './components/ArchetypeAnalysis.vue';
 import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
-import SimilarCubesTable from './components/SimilarCubesTable.vue';
+import CubeDetailDialog from './components/CubeDetailDialog.vue';
 import { useDateFormat } from '@vueuse/core';
 
 registerTheme('darkbmj', darkbmjTheme);
@@ -759,6 +653,23 @@ const config = bindStorage('cube-app-config', (v) => {
 });
 
 const columnCustomizationVisible = ref(false);
+const cubeDetailDialogId = ref(null);
+const cubeDetailDialogVisible = computed({
+    get: () => cubeDetailDialogId.value !== null,
+    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
+});
+const cubeDetailDialogRow = computed(() => {
+    if (!cubeDetailDialogId.value) return null;
+    return overviewTableData.value.find(c => c.id === cubeDetailDialogId.value) || null;
+});
+const cubeDetailDialogCards = computed(() => {
+    if (!cubeDetailDialogId.value) return [];
+    return loadedCubes.value[cubeDetailDialogId.value]?.cards || [];
+});
+
+const openCubeDetailDialog = (cubeId) => {
+    cubeDetailDialogId.value = cubeId;
+};
 
 const addCubeForm = reactive({
     loading: false,
@@ -1073,8 +984,15 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
     text-align: center
 }
 
-.expanded-statistics > .el-col {
-    margin-top: 1.5em;
+.cube-detail-icon {
+    cursor: pointer;
+    margin-right: 0.4rem;
+    color: var(--el-text-color-secondary);
+    vertical-align: middle;
+
+    &:hover {
+        color: var(--el-color-primary);
+    }
 }
 
 .cell-secondary {

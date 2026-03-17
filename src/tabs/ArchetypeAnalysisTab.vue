@@ -123,14 +123,16 @@
                                         <el-table-column prop="name" label="Cube Name" min-width="120">
                                             <template #default="{ row: cubeRow }">
                                                 <el-tooltip :content="`Owner: ${cubeRow.owner}`" placement="top" :hide-after="50">
-                                                    <el-link
-                                                        v-if="cubeRow.id"
-                                                        :href="`https://cubecobra.com/cube/list/${cubeRow.id}`"
-                                                        target="_blank"
-                                                        :type="cubeRow.name === highlightedCubeName ? 'primary' : 'default'"
-                                                    >
-                                                        {{ cubeRow.name }}
-                                                    </el-link>
+                                                    <template v-if="cubeRow.id">
+                                                        <el-icon class="cube-detail-icon" @click="openCubeDetailDialog(cubeRow.id)"><DataAnalysis /></el-icon>
+                                                        <el-link
+                                                            :href="`https://cubecobra.com/cube/list/${cubeRow.id}`"
+                                                            target="_blank"
+                                                            :type="cubeRow.name === highlightedCubeName ? 'primary' : 'default'"
+                                                        >
+                                                            {{ cubeRow.name }}
+                                                        </el-link>
+                                                    </template>
                                                     <span v-else>{{ cubeRow.name }}</span>
                                                 </el-tooltip>
                                             </template>
@@ -214,16 +216,33 @@
             </el-table>
         </div>
     </el-card>
+
+    <CubeDetailDialog
+        v-model:visible="cubeDetailDialogVisible"
+        :cubeRow="cubeDetailDialogRow"
+        :cubeCards="cubeDetailDialogCards"
+        :similarityMatrix="similarityMatrix"
+        :overviewTableData="overviewTableData"
+    />
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { CaretTop, CaretBottom } from '@element-plus/icons-vue';
 import { detectCubeArchetypes } from '../util/ArchetypeDetection';
+import CubeDetailDialog from '../components/CubeDetailDialog.vue';
 
 const props = defineProps({
     loadedCubes: {
         type: Object,
+        required: true,
+    },
+    similarityMatrix: {
+        type: Object,
+        required: true,
+    },
+    overviewTableData: {
+        type: Array,
         required: true,
     },
 });
@@ -231,6 +250,23 @@ const props = defineProps({
 const highlightedCubeId = ref<string>('');
 const showAllCubes = ref({});
 const showAllCards = ref({});
+
+const cubeDetailDialogId = ref(null);
+const cubeDetailDialogVisible = computed({
+    get: () => cubeDetailDialogId.value !== null,
+    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
+});
+const cubeDetailDialogRow = computed(() => {
+    if (!cubeDetailDialogId.value) return null;
+    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
+});
+const cubeDetailDialogCards = computed(() => {
+    if (!cubeDetailDialogId.value) return [];
+    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
+});
+const openCubeDetailDialog = (cubeId) => {
+    cubeDetailDialogId.value = cubeId;
+};
 
 // Error handling functions for card images
 const handleImageError = (event: Event) => {
@@ -457,6 +493,17 @@ const getComparisonArrow = (archetypeName: string) => {
 </script>
 
 <style scoped>
+.cube-detail-icon {
+    cursor: pointer;
+    margin-right: 0.4rem;
+    color: var(--el-text-color-secondary);
+    vertical-align: middle;
+
+    &:hover {
+        color: var(--el-color-primary);
+    }
+}
+
 .archetype-analysis-card {
     margin: 16px 0;
 }
