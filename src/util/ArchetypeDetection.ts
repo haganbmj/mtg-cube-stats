@@ -132,7 +132,7 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         color: '#FF7043',
         detectBy: {
             // FIMXE: This doesn't catch card type Kindred.
-            tags: ['typal', 'typal-*', 'creature-type-matters'],
+            tags: ['typal', 'typal-*'],
             keywords: ['changeling']
         },
         threshold: 4
