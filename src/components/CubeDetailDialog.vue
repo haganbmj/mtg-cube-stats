@@ -86,7 +86,11 @@
                                 :src="samplePackUrl"
                                 fit="contain"
                                 class="sample-pack-image"
-                            />
+                            >
+                                <template #placeholder>
+                                    <el-icon class="is-loading sample-pack-loading"><Loading /></el-icon>
+                                </template>
+                            </el-image>
                         </div>
                     </div>
                 </el-tab-pane>
@@ -218,5 +222,11 @@ const generateNewPack = () => {
 .sample-pack-image {
     max-width: 1200px;
     width: 100%;
+}
+
+.sample-pack-loading {
+    font-size: 2rem;
+    color: var(--el-text-color-secondary);
+    padding: 4rem;
 }
 </style>
