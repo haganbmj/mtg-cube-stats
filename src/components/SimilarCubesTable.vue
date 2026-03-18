@@ -2,7 +2,7 @@
     <el-table
         :data="tableData"
         style="width: 100%;"
-        max-height="425"
+        :max-height="maxHeight"
         :default-sort = "{prop: 'score', order: 'descending'}"
     >
         <el-table-column fixed type="index" label="#" width="50" />
@@ -60,6 +60,10 @@ const props = defineProps({
     cubeClick: {
         type: Boolean,
         default: false,
+    },
+    maxHeight: {
+        type: Number,
+        default: 425,
     },
 });
 

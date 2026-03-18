@@ -59,11 +59,11 @@
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`">
-                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" />
+                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Sets (${Object.keys(activeCube.stats?.setCodeDistribution || {}).length})`">
-                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" />
+                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
                 </el-tab-pane>
 
                 <el-tab-pane label="Similar Cubes">
@@ -72,6 +72,7 @@
                         :loadedCubes="overviewTableData"
                         :cubeId="activeCube.id"
                         :cubeClick="true"
+                        :maxHeight="600"
                         @cube-click="switchCube"
                     />
                 </el-tab-pane>
@@ -226,6 +227,10 @@ const generateNewPack = () => {
     :deep(p) {
         margin: 0;
     }
+}
+
+:deep(.el-tabs__content) {
+    min-height: 60vh;
 }
 
 .chart-row {

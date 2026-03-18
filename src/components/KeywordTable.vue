@@ -2,7 +2,7 @@
     <el-table
         :data="keywords"
         style="width: 100%;"
-        max-height="425"
+        :max-height="maxHeight"
         :default-sort = "{prop: 'count', order: 'descending'}"
     >
         <el-table-column fixed type="index" label="#" width="50" />
@@ -51,6 +51,10 @@ const props = defineProps({
     totalCards: {
         type: Number,
         required: true,
+    },
+    maxHeight: {
+        type: Number,
+        default: 425,
     },
 });
 
