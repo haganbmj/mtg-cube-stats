@@ -18,6 +18,7 @@
                     <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
                 </el-link>
             </div>
+            <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
         </template>
 
         <template v-if="activeCube">
@@ -109,6 +110,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { Loading } from '@element-plus/icons-vue';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';
 import ReleaseYearChart from './charts/basic/ReleaseYearChart.vue';
@@ -173,6 +176,12 @@ const switchCube = (cubeId: string) => {
     samplePackSeed.value = Date.now();
 };
 
+const renderedBrief = computed(() => {
+    const brief = activeCube.value?.brief;
+    if (!brief) return '';
+    return DOMPurify.sanitize(marked.parse(brief, { async: false }) as string);
+});
+
 // Sample Pack
 const samplePackSeed = ref(Date.now());
 
@@ -206,6 +215,17 @@ const generateNewPack = () => {
 .cube-dialog-owner {
     font-size: 1rem;
     color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-brief {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--el-text-color-secondary);
+    line-height: 1.4;
+
+    :deep(p) {
+        margin: 0;
+    }
 }
 
 .chart-row {

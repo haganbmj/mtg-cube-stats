@@ -106,6 +106,7 @@ export interface Cube {
   categoryPrefixes?: string[];
   lastModified?: string;
   followerCount?: number;
+  brief?: string;
 
   // Card data and computed properties
   cards: CubeCard[];
