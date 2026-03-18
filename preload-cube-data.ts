@@ -3,8 +3,11 @@ import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions';
 import { getCubeData } from './src/util/CubeCobra';
 import type { Cube } from './src/types';
 
-const runNumber = process.env.RUN_NUMBER || 'unset';
+const isCI = process.env.CI === 'true';
 const refresh = process.env.REFRESH_PRELOADS || 'false';
+// Days since Unix epoch — rotates shards predictably once per day,
+// independent of workflow run count.
+const shardIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
 
 interface Batch {
     name: string;
@@ -472,15 +475,15 @@ for (const batch of batches) {
             if (
                 // If we're running in a CI Context, evaluate whether this is an execution that should evaluate Refreshes.
                 refresh.toLowerCase() !== 'true'
-                && runNumber !== 'unset'
+                && isCI
             ) {
                 console.log(`[${cubeId}] Skipping due to refresh policy...`);
                 skip = true;
             } else if (
-                // If we're in a refresh run, then determine if sharding would eliminate this cube from the current refresh.
-                runNumber !== 'unset'
+                // If we're in a refresh run, use date-based sharding to spread fetches across days.
+                isCI
                 && batch.shardCount !== undefined
-                && index % batch.shardCount !== parseInt(runNumber) % batch.shardCount
+                && index % batch.shardCount !== shardIndex % batch.shardCount
             ) {
                 console.log(`[${cubeId}] Skipping due to sharding policy...`);
                 skip = true;
