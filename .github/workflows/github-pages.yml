@@ -14,7 +14,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUN_NUMBER: ${{ github.run_number }}
   REFRESH_SCRYFALL: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1') || github.event_name == 'workflow_dispatch' }}
   REFRESH_PRELOADS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 13 * * *') || github.event_name == 'workflow_dispatch' }}
 
