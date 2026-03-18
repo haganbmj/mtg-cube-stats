@@ -1,6 +1,6 @@
 ---
 description: "Use when working with data processing utilities, API integrations, mathematical computations, performance optimization, or handling Scryfall/CubeCobra data transformations."
-applyTo: "src/util/**/*.mjs"
+applyTo: "src/util/**/*.ts"
 ---
 
 # Data Processing Guidelines
@@ -8,24 +8,24 @@ applyTo: "src/util/**/*.mjs"
 ## Performance Patterns
 
 **Memoization**: Use `useMemoize` for expensive computations:
-```javascript
+```typescript
 import { useMemoize } from '@vueuse/core';
-const expensiveComputation = useMemoize((data) => {
+const expensiveComputation = useMemoize((data: CardData[]) => {
     // Heavy processing here
 });
 ```
 
 **Profiling**: Always profile data-heavy operations:
-```javascript
+```typescript
 console.time('Loading Scryfall card data');
 scryfall = (await scryfallLoad());
 console.timeEnd('Loading Scryfall card data');
 ```
 
 **Manual Optimization**: Prefer single loops over multiple array methods for performance:
-```javascript
+```typescript
 // Preferred - single iteration
-function vectorCosineSimilarity(vecA, vecB) {
+function vectorCosineSimilarity(vecA: number[], vecB: number[]): number {
     let dotProduct = 0, magnitudeA = 0, magnitudeB = 0;
     for (let i = 0; i < vecA.length; i++) {
         dotProduct += vecA[i] * vecB[i];
@@ -39,7 +39,7 @@ function vectorCosineSimilarity(vecA, vecB) {
 ## Data Validation & Resilience
 
 **Defensive Programming**: Use optional chaining and nullish coalescing for external data:
-```javascript
+```typescript
 const enrichedCard = {
     name: scryfallCard?.name ?? 'Unknown Card',
     cmc: scryfallCard?.cmc ?? 0,
@@ -49,14 +49,14 @@ const enrichedCard = {
 ```
 
 **Missing Data Warnings**: Log missing enrichment data for debugging:
-```javascript
+```typescript
 if (!scryfallCard) {
     console.warn(`Missing Scryfall data for card: ${card.oracleId}`);
 }
 ```
 
 **Array Safety**: Always handle potentially empty arrays:
-```javascript
+```typescript
 categoryPrefixes: (cube.categoryPrefixes ?? []).sort(),
 followerCount: cube.following?.length ?? 0
 ```
@@ -69,8 +69,8 @@ Follow the **Remap → Enrich → Analyze** pattern:
 2. **Enrich**: Add computed fields and merge data sources  
 3. **Analyze**: Generate statistics and derived metrics
 
-```javascript
-export function remapCube(cube, enrich = true) {
+```typescript
+export function remapCube(cube: CubeCobraResponse, enrich = true): Cube {
     const remappedCube = {
         // Extract and normalize API response
         id: cube.id,
@@ -87,12 +87,13 @@ export function remapCube(cube, enrich = true) {
 ## API Error Handling
 
 **Consistent Error Patterns**: Log and re-throw with context:
-```javascript
-export async function getCubeData(cubeId) {
+```typescript
+export async function getCubeData(cubeId: string): Promise<CubeCobraResponse> {
     try {
         return (await axios.get(`/api/cube/${cubeId}`)).data;
-    } catch (e) {
-        console.error(`Failed to fetch cube: ${cubeId}, status: ${e.status}, message: ${e.message}`);
+    } catch (e: unknown) {
+        const error = e as AxiosError;
+        console.error(`Failed to fetch cube: ${cubeId}, status: ${error.status}, message: ${error.message}`);
         throw e; // Re-throw for caller handling
     }
 }

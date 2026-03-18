@@ -10,11 +10,11 @@
         <template #header>
             <div v-if="activeCube" class="cube-dialog-header">
                 <el-image :src="activeCube.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="primary" :underline="false">
+                <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="primary" underline="never">
                     <span class="cube-dialog-name">{{ activeCube.name }}</span>
                 </el-link>
                 <span class="cube-dialog-separator"> &mdash; </span>
-                <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" :underline="false">
+                <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
                     <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
                 </el-link>
             </div>
@@ -46,7 +46,7 @@
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
                             <div style="height: 300px;">
-                                <RarityDistributionChart class="chart" :rarityDistribution="activeCube.stats?.rarityDistribution || {}" :minimumRarityDistribution="activeCube.stats?.minRarityDistribution" />
+                                <RarityDistributionChart class="chart" :rarityDistribution="activeCube.stats?.rarityDistribution || {}" :minimumRarityDistribution="activeCube.stats?.minRarityDistribution || {}" />
                             </div>
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
@@ -57,7 +57,7 @@
                     </el-row>
                 </el-tab-pane>
 
-                <el-tab-pane :label="`Keywords (${activeCube.stats.uniqueKeywords})`">
+                <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`">
                     <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" />
                 </el-tab-pane>
 
@@ -108,6 +108,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { Loading } from '@element-plus/icons-vue';
+import type { Cube, CubeCard, SimilarityMatrix } from '../types';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';
 import ReleaseYearChart from './charts/basic/ReleaseYearChart.vue';
 import ColorIdentityDistributionChart from './charts/distributions/ColorIdentityDistributionChart.vue';
@@ -125,30 +127,30 @@ const props = defineProps({
         required: true,
     },
     cubeRow: {
-        type: Object,
+        type: Object as () => Cube | null,
         default: null,
     },
     cubeCards: {
-        type: Array,
+        type: Array as () => CubeCard[],
         default: () => [],
     },
     similarityMatrix: {
-        type: Object,
+        type: Object as () => SimilarityMatrix,
         required: true,
     },
     overviewTableData: {
-        type: Array,
+        type: Array as () => Cube[],
         required: true,
     },
     loadedCubes: {
-        type: Object,
+        type: Object as () => Record<string, Cube>,
         default: () => ({}),
     },
 });
 
 defineEmits(['update:visible']);
 
-const activeCubeId = ref(null);
+const activeCubeId = ref<string | null>(null);
 
 // Reset activeCubeId whenever the dialog opens with a new cube
 watch(() => props.cubeRow, (newRow) => {
@@ -166,7 +168,7 @@ const activeCubeCards = computed(() => {
     return props.loadedCubes[activeCubeId.value]?.cards || props.cubeCards;
 });
 
-const switchCube = (cubeId) => {
+const switchCube = (cubeId: string) => {
     activeCubeId.value = cubeId;
     samplePackSeed.value = Date.now();
 };

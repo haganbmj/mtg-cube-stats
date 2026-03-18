@@ -8,7 +8,7 @@ import { ref, watch, type Ref } from 'vue';
  */
 export function bindStorage<T>(key: string, initFunc: (value: any) => T): Ref<T> {
     const initialValue = initFunc(safeJsonParse(localStorage.getItem(key)));
-    const r = ref<T>(initialValue);
+    const r = ref(initialValue) as Ref<T>;
 
     watch(r, (newValue) => {
         localStorage.setItem(key, JSON.stringify(newValue));

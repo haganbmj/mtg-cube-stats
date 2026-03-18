@@ -25,7 +25,8 @@ npm run dev        # Start development server
 
 **Key Directories**:
 - `src/components/` - Vue components (tables, charts, statistics)
-- `src/util/` - Core logic modules (CubeFunctions.mjs, similarity algorithms)
+- `src/util/` - Core logic modules (CubeFunctions.ts, similarity algorithms)
+- `src/types/` - Shared TypeScript type definitions (cube, scryfall)
 - `data/` - Generated JSON files (cards, flavor words, tagger data)  
 - `preloads/` - Downloaded cube data cached locally
 
@@ -33,9 +34,10 @@ npm run dev        # Start development server
 
 ## Code Conventions
 
-- **Vue**: Composition API with `<script setup>`, heavy use of `ref()`, `computed()`, `provide()`
+- **Vue**: Composition API with `<script setup lang="ts">`, heavy use of `ref()`, `computed()`, `provide()`
 - **State**: No Vuex/Pinia - App.vue holds all state, uses custom `bindStorage()` for localStorage
-- **Files**: `.mjs` for Node-runnable utilities, `.vue` for components, `.ts` for TypeScript
+- **Files**: `.ts` for all utilities and scripts (run via `tsx`), `.vue` for components with TypeScript
+- **Types**: Shared type definitions in `src/types/` (cube, scryfall), strict mode enabled
 - **ESLint**: Trailing commas required (multiline), Vue strongly-recommended preset
 
 ## Development Notes

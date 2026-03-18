@@ -34,7 +34,7 @@ const props = defineProps({
 
 Use TypeScript-style prop definitions with proper validation:
 
-```javascript
+```typescript
 const props = defineProps({
     loadedCubes: {
         type: Object,
@@ -54,14 +54,14 @@ const props = defineProps({
 ## Reactive State Patterns
 
 **Refs for primitive values**:
-```javascript
+```typescript
 const currentPage = ref(1);
 const searchInput = ref('');
 const activeFilters = ref({});
 ```
 
 **Computed for derived values**:
-```javascript
+```typescript
 const filterableManaValues = computed(() => {
     const cmcs = new Set<number>();
     Object.values(props.loadedCubes).forEach((cube: any) => {
@@ -78,14 +78,14 @@ const filterableManaValues = computed(() => {
 ## Element Plus Integration
 
 **Import components explicitly**:
-```javascript
+```typescript
 import { TableInstance } from 'element-plus';
 import type { SortBy } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
 ```
 
 **Template refs for Element Plus components**:
-```javascript
+```typescript
 const cardSummaryTableRef = ref<TableInstance>();
 ```
 

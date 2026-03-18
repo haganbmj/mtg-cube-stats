@@ -1,6 +1,7 @@
 // TypeScript definitions for the minimized Scryfall card data structure
 
 export interface ScryfallLegality {
+  [key: string]: boolean | undefined;
   standard?: boolean;
   pioneer?: boolean;
   modern?: boolean;
