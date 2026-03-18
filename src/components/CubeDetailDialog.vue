@@ -9,6 +9,7 @@
     >
         <template #header>
             <div v-if="activeCube" class="cube-dialog-header">
+                <el-image :src="activeCube.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
                 <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="primary" :underline="false">
                     <span class="cube-dialog-name">{{ activeCube.name }}</span>
                 </el-link>
@@ -82,15 +83,17 @@
                     <div class="sample-pack">
                         <el-button @click="generateNewPack" style="margin-bottom: 1em;">Generate New Pack</el-button>
                         <div class="sample-pack-image-container">
-                            <el-image
-                                :src="samplePackUrl"
-                                fit="contain"
-                                class="sample-pack-image"
-                            >
-                                <template #placeholder>
-                                    <el-icon class="is-loading sample-pack-loading"><Loading /></el-icon>
-                                </template>
-                            </el-image>
+                            <div class="sample-pack-aspect-box">
+                                <el-image
+                                    :src="samplePackUrl"
+                                    fit="contain"
+                                    class="sample-pack-image"
+                                >
+                                    <template #placeholder>
+                                        <el-icon class="is-loading sample-pack-loading"><Loading /></el-icon>
+                                    </template>
+                                </el-image>
+                            </div>
                         </div>
                     </div>
                 </el-tab-pane>
@@ -184,9 +187,9 @@ const generateNewPack = () => {
 <style scoped>
 .cube-dialog-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: 0.5rem;
 }
 
 .cube-dialog-name {
@@ -219,8 +222,19 @@ const generateNewPack = () => {
     justify-content: center;
 }
 
-.sample-pack-image {
+.sample-pack-aspect-box {
     max-width: 1200px;
+    width: 100%;
+    aspect-ratio: 2440 / 2040;
+    background: var(--el-fill-color-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sample-pack-image {
+    min-height: 25%;
     width: 100%;
 }
 
