@@ -80,6 +80,7 @@ export function remapCube(cube: any, enrich: boolean = true): Cube {
         categoryPrefixes: (cube.categoryPrefixes ?? []).sort(), // This is an array, so unclear how to get the best use out of it.
         lastModified: cube.date ?? undefined,
         followerCount: cube.following?.length ?? 0,
+        brief: cube.brief ?? '',
 
         cards: cards,
         suffixedCardIds: suffixedDuplicates(cards.map(c => c.oracleId)),

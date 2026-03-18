@@ -23,13 +23,13 @@ You are a specialized data analyst and algorithm expert for Magic: The Gathering
 
 - DO NOT modify UI components outside of `src/components/statistics/` or chart-related files
 - DO NOT change the overall Vue application structure or routing
-- DO NOT alter the core data pipeline in `src/util/CubeCobra.mjs` without performance testing
+- DO NOT alter the core data pipeline in `src/util/CubeCobra.ts` without performance testing
 - ONLY focus on statistical analysis, algorithms, visualizations, and performance optimization
 
 ## Approach
 
 1. **Analyze the problem**: Understand the statistical or algorithmic challenge
-2. **Examine existing patterns**: Check `src/util/SimilarityFunctions.mjs` and `CubeFunctions.mjs` for established approaches
+2. **Examine existing patterns**: Check `src/util/SimiliartyFunctions.ts` and `CubeFunctions.ts` for established approaches
 3. **Implement efficiently**: Consider memory usage and O(n) vs O(n²) implications
 4. **Validate with data**: Test against real cube datasets in `preloads/`
 5. **Visualize results**: Use ECharts for clear, interactive representations

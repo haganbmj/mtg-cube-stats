@@ -1,4 +1,4 @@
-import { createApp, provide } from 'vue';
+import { createApp } from 'vue';
 import ElementPlus from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 

@@ -93,7 +93,7 @@
                                         <el-row direction="horizontal">
                                             <el-col :span="16">
                                                 <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                    <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                                    <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
                                                 </el-tooltip>
                                             </el-col>
                                             <el-col :span="8">
@@ -110,7 +110,7 @@
                                         <el-row direction="horizontal">
                                             <el-col :span="16">
                                                 <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                    <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank">{{ cube.name }}</el-link>
+                                                    <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
                                                 </el-tooltip>
                                             </el-col>
                                             <el-col :span="8">
@@ -340,6 +340,15 @@
         :layout="paginationLayout"
         :total="searchedRows.length"
     />
+
+    <CubeDetailDialog
+        v-model:visible="cubeDetailDialogVisible"
+        :cubeRow="cubeDetailDialogRow"
+        :cubeCards="cubeDetailDialogCards"
+        :similarityMatrix="similarityMatrix"
+        :overviewTableData="overviewTableData"
+        :loadedCubes="loadedCubes"
+    />
 </template>
 
 <script setup lang="ts">
@@ -348,13 +357,39 @@ import type { SortBy } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
+import CubeDetailDialog from './CubeDetailDialog.vue';
 
 const props = defineProps({
     loadedCubes: {
         type: Object,
         required: true,
     },
+    similarityMatrix: {
+        type: Object,
+        required: true,
+    },
+    overviewTableData: {
+        type: Array,
+        required: true,
+    },
 });
+
+const cubeDetailDialogId = ref(null);
+const cubeDetailDialogVisible = computed({
+    get: () => cubeDetailDialogId.value !== null,
+    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
+});
+const cubeDetailDialogRow = computed(() => {
+    if (!cubeDetailDialogId.value) return null;
+    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
+});
+const cubeDetailDialogCards = computed(() => {
+    if (!cubeDetailDialogId.value) return [];
+    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
+});
+const openCubeDetailDialog = (cubeId) => {
+    cubeDetailDialogId.value = cubeId;
+};
 
 const cardSummaryTableRef = ref<TableInstance>();
 const currentPage = ref(1);

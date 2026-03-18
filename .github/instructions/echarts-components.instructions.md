@@ -58,7 +58,7 @@ const chartOptions = computed(() => {
 - **Computed reactivity**: Use `computed()` for chart options to ensure reactivity
 - **Data transformation**: Transform props into ECharts-expected format within computed
 
-```javascript
+```typescript
 const chartOptions = computed(() => {
     const totalCards = Object.values(props.distribution).reduce((a, b) => a + b, 0);
     const data = Object.entries(props.distribution).map(([key, value]) => ({
@@ -74,7 +74,7 @@ const chartOptions = computed(() => {
 
 Use custom formatters for MTG-specific data:
 
-```javascript
+```typescript
 tooltip: {
     trigger: 'item',
     formatter: (args) => `<b>${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`
@@ -85,7 +85,7 @@ tooltip: {
 
 For comparison charts, implement highlighting with conditional styling:
 
-```javascript
+```typescript
 itemStyle: {
     color: highlighted.includes(cube.id) ? '#ffffff' : '#5470c6',
     opacity: highlighted.includes(cube.id) ? 1.0 : 0.6,

@@ -1,6 +1,6 @@
 // TypeScript definitions for cube data structures used throughout the application
 
-import type { ScryfallCard } from './scryfall';
+import type { ScryfallLegality } from './scryfall';
 
 export interface ArchetypeResult {
   name: string;
@@ -28,7 +28,7 @@ export interface CubeCard {
   oracleText?: string;
   oracleTextWordCount?: number;
   oracleTextWordCountMinusParen?: number;
-  legality?: Record<string, boolean>;
+  legality?: ScryfallLegality;
   isUniversesBeyond?: boolean;
   rarity?: string;
   minRarity?: string;
@@ -106,6 +106,7 @@ export interface Cube {
   categoryPrefixes?: string[];
   lastModified?: string;
   followerCount?: number;
+  brief?: string;
 
   // Card data and computed properties
   cards: CubeCard[];
