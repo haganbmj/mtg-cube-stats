@@ -1,29 +1,22 @@
 <template>
-    <el-row
-        direction="horizontal"
-        :gutter="20"
-    >
+    <el-row direction="horizontal" :gutter="20">
         <el-col :span="12" :xs="24">
             <el-space>
-                <el-input
-                    v-model="searchInput"
-                    @change="onSearchChange"
-                    class="responsive-input"
-                    placeholder="Search cards..."
-                >
-                    <template #prefix>
-                        <el-icon class="el-input__icon"><search /></el-icon>
-                    </template>
-                </el-input>
-
-                <el-button @click="resetFilters">Reset Filters</el-button>
+                <el-button @click="resetAllFilters">Reset Filters</el-button>
+                <el-button @click="columnCustomizationVisible = true">Columns</el-button>
                 <el-button @click="exportToCsv" type="primary">Export CSV</el-button>
             </el-space>
         </el-col>
         <el-col :span="12" :xs="24" class="filtered-count">
-            <el-text tag="i">Filtered to {{ searchedRows.length }} / {{ sortedRows.length }} Cards</el-text>
+            <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
         </el-col>
     </el-row>
+
+    <CardTableFilters
+        ref="cardTableFiltersRef"
+        :loadedCubes="loadedCubes"
+        @update:filters="onFiltersUpdated"
+    />
 
     <el-pagination
         v-model:current-page="currentPage"
@@ -31,7 +24,7 @@
         :page-sizes="[25, 50, 100, 250]"
         :pager-count="5"
         :layout="paginationLayout"
-        :total="searchedRows.length"
+        :total="filteredRows.length"
     />
 
     <el-table
@@ -39,7 +32,6 @@
         :data="visibleRows"
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
         :preserve-expanded-content="false"
-        @filter-change="onFilterChange"
         @sort-change="onSortChange"
         style="width: 100%"
         table-layout="auto"
@@ -127,20 +119,17 @@
         </el-table-column>
 
         <el-table-column :fixed="!isMobile" prop="index" label="#" width="50" />
+
         <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable="custom">
             <template #default="{ row }">
-                <el-tooltip
-                    placement="right"
-                    effect="light"
-                    popper-class="card-tooltip"
-                >
+                <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
                     <template #content>
                         <el-image
-                                :src="`${row.urlFront}`"
-                                fit="contain"
-                                :alt="row.name"
-                                :class="'card-image ' + row.setCode?.toLowerCase()"
-                            />
+                            :src="`${row.urlFront}`"
+                            fit="contain"
+                            :alt="row.name"
+                            :class="'card-image ' + row.setCode?.toLowerCase()"
+                        />
                     </template>
                     <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
                 </el-tooltip>
@@ -148,35 +137,22 @@
         </el-table-column>
 
         <el-table-column
+            v-if="config.visibleColumns.includes('cubeCount')"
             prop="cubeCount"
-            column-key="cubes"
             label="Cubes"
             min-width="75"
             max-width="100"
             :align="'center'"
-            :filters="filterableCubes"
             sortable="custom"
-            filterable
         />
-        <!-- <el-table-column prop="count" label="Total Count" min-width="75" max-width="100" sortable /> -->
 
-        <!-- <el-table-column prop="colorIdentity" label="Color Identity" min-width="100" max-width="150" show-overflow-tooltip /> -->
         <el-table-column
+            v-if="config.visibleColumns.includes('effectiveColors')"
             prop="effectiveColors"
-            column-key="effectiveColors"
             label="Colors"
             min-width="75"
             max-width="100"
             :align="'center'"
-            :filters="[
-                { text: 'White', value: 'w', },
-                { text: 'Blue', value: 'u', },
-                { text: 'Black', value: 'b', },
-                { text: 'Red', value: 'r', },
-                { text: 'Green', value: 'g', },
-                { text: 'Colorless', value: 'c', }
-            ]"
-            filterable
         >
             <template #default="{ row }">
                 <i
@@ -187,56 +163,33 @@
                 ></i>
             </template>
         </el-table-column>
+
         <el-table-column
+            v-if="config.visibleColumns.includes('cmc')"
             prop="cmc"
-            column-key="cmc"
             label="MV"
             min-width="75"
             max-width="100"
-            :filters="filterableManaValues"
             :align="'center'"
             sortable="custom"
-            filterable
         />
+
         <el-table-column
+            v-if="config.visibleColumns.includes('typeLine')"
             prop="typeLine"
-            column-key="typeLine"
             label="Type Line"
             min-width="175"
             max-width="350"
-            :filters="[
-                { text: 'Land', value: 'Land' },
-                { text: 'Creature', value: 'Creature' },
-                { text: 'Instant', value: 'Instant' },
-                { text: 'Sorcery', value: 'Sorcery' },
-                { text: 'Artifact', value: 'Artifact' },
-                { text: 'Enchantment', value: 'Enchantment' },
-                { text: 'Planeswalker', value: 'Planeswalker' },
-                { text: 'Battle', value: 'Battle' },
-
-                { text: 'Legendary', value: 'Legendary' },
-                { text: 'Aura', value: 'Aura' },
-                { text: 'Equipment', value: 'Equipment' },
-                { text: 'Vehicle', value: 'Vehicle' },
-                { text: 'Lesson', value: 'Lesson' },
-                { text: 'Kindred', value: 'Kindred' },
-                { text: 'Conspiracy', value: 'Conspiracy' },
-            ]"
-            :filter-multiple="true"
             show-overflow-tooltip
             sortable="custom"
-            filterable
         />
 
-        <!-- FIXME: I really really really need tri-state checkboxes in filters... -->
         <el-table-column
+            v-if="config.visibleColumns.includes('tags')"
             prop="tags"
-            column-key="tags"
             label="Tags"
             min-width="75"
             max-width="250"
-            :filters="tags"
-            filterable
         >
             <template #default="{ row }">
                 <div class="tag-list flex gap-2">
@@ -254,16 +207,137 @@
             </template>
         </el-table-column>
 
-        <!-- I don't like the look of this, I think I would need a way to condense it if anything. -->
-        <!-- Entirely possible that this is just better suited inside the expanded content, and then the filters are external to the table. -->
-        <el-table-column v-if="false"
+        <el-table-column
+            v-if="config.visibleColumns.includes('minRarity')"
+            prop="minRarity"
+            label="Min Rarity"
+            min-width="75"
+            max-width="100"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('setCode')"
+            prop="setCode"
+            label="Set"
+            min-width="75"
+            max-width="100"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('setType')"
+            prop="setType"
+            label="Set Type"
+            min-width="100"
+            max-width="150"
+            show-overflow-tooltip
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('layout')"
+            prop="layout"
+            label="Layout"
+            min-width="75"
+            max-width="100"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('releaseDate')"
+            prop="releaseDate"
+            label="Release Date"
+            min-width="100"
+            max-width="150"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('minPriceUsd')"
+            prop="minPriceUsd"
+            label="Min Price (USD)"
+            min-width="75"
+            max-width="100"
+            :formatter="(row) => row.minPriceUsd != null ? `$${row.minPriceUsd.toFixed(2)}` : 'N/A'"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('minPriceTix')"
+            prop="minPriceTix"
+            label="Min Price (Tix)"
+            min-width="75"
+            max-width="100"
+            :formatter="(row) => row.minPriceTix != null ? row.minPriceTix.toFixed(2) : 'N/A'"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('oracleTextWordCount')"
+            prop="oracleTextWordCount"
+            label="Word Count"
+            min-width="75"
+            max-width="100"
+            :align="'center'"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('oracleTextWordCountMinusParen')"
+            prop="oracleTextWordCountMinusParen"
+            label="Words (No Reminder)"
+            min-width="75"
+            max-width="100"
+            :align="'center'"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('isUniversesBeyond')"
+            prop="isUniversesBeyond"
+            label="UB"
+            min-width="50"
+            max-width="75"
+            :align="'center'"
+        >
+            <template #default="{ row }">
+                <el-tag v-if="row.isUniversesBeyond" type="warning" size="small">Yes</el-tag>
+            </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('isSupplementalProduct')"
+            prop="isSupplementalProduct"
+            label="Supplemental"
+            min-width="50"
+            max-width="100"
+            :align="'center'"
+        >
+            <template #default="{ row }">
+                <el-tag v-if="row.isSupplementalProduct" type="info" size="small">Yes</el-tag>
+            </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('makesTokens')"
+            prop="makesTokens"
+            label="Tokens"
+            min-width="50"
+            max-width="75"
+            :align="'center'"
+        >
+            <template #default="{ row }">
+                <el-tag v-if="row.makesTokens" type="success" size="small">Yes</el-tag>
+            </template>
+        </el-table-column>
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('games')"
             prop="games"
-            column-key="games"
             label="Games"
             min-width="75"
             max-width="150"
-            :filters="games"
-            filterable
         >
             <template #default="{ row }">
                 <div class="tag-list flex gap-2">
@@ -280,56 +354,6 @@
                 </div>
             </template>
         </el-table-column>
-
-        <el-table-column
-            prop="minRarity"
-            column-key="minRarity"
-            label="Min Rarity"
-            min-width="75"
-            max-width="100"
-            :filters="[
-                { text: 'Common', value: 'common' },
-                { text: 'Uncommon', value: 'uncommon' },
-                { text: 'Rare', value: 'rare' },
-                { text: 'Mythic', value: 'mythic' },
-            ]"
-            sortable="custom"
-            filterable
-        />
-
-        <el-table-column
-            prop="setCode"
-            column-key="setCode"
-            label="Set"
-            min-width="75"
-            max-width="100"
-            :filters="filterableSets.map(set => ({ text: set, value: set }))"
-            filter-class-name="set-filter"
-            sortable="custom"
-            filterable
-        />
-        <el-table-column
-            prop="releaseDate"
-            column-key="releaseDate"
-            label="Release Date"
-            min-width="100"
-            max-width="150"
-            :filters="filterableYears"
-            sortable="custom"
-            filterable
-        />
-        <el-table-column
-            prop="minPriceUsd"
-            label="Min Price (USD)"
-            min-width="75" max-width="100"
-            :formatter="(row) => row.minPriceUsd ? `$${row.minPriceUsd.toFixed(2)}` : 'N/A'"
-            sortable="custom"
-        />
-
-        <!-- <el-table-column prop="rarity" label="Rarity" min-width="75" max-width="100" sortable /> -->
-        <!-- <el-table-column prop="oracleTextWordCount" label="Word Count" min-width="75" max-width="100" sortable /> -->
-        <!-- <el-table-column prop="isUniversesBeyond" label="Universes Beyond" min-width="50" max-width="75" sortable /> -->
-        <!-- <el-table-column prop="isSupplementalProduct" label="Supplemental Product" min-width="50" max-width="75" sortable /> -->
     </el-table>
 
     <el-pagination
@@ -338,17 +362,36 @@
         :page-sizes="[25, 50, 100, 250]"
         :pager-count="5"
         :layout="paginationLayout"
-        :total="searchedRows.length"
+        :total="filteredRows.length"
     />
 
+    <!-- Column Customization Dialog -->
+    <el-dialog
+        v-model="columnCustomizationVisible"
+        title="Customize Columns"
+        width="600"
+        align-center
+    >
+        <div v-for="group in columnOptions" :key="group.label">
+            <h4>{{ group.label }}</h4>
+            <el-checkbox-group v-model="config.visibleColumns">
+                <el-col v-for="item in group.options" :key="item.value">
+                    <el-checkbox :label="item.value">
+                        {{ item.label }}
+                    </el-checkbox>
+                </el-col>
+            </el-checkbox-group>
+        </div>
+    </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { TableInstance } from 'element-plus';
 import type { SortBy } from 'element-plus';
-import { Search } from '@element-plus/icons-vue';
 import { ref, computed, inject } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
+import { bindStorage } from '../util/VueLocalStorage';
+import CardTableFilters from './filters/CardTableFilters.vue';
 
 const props = defineProps({
     loadedCubes: {
@@ -368,118 +411,178 @@ const props = defineProps({
 const openCubeDetailDialog = inject('openCubeDetailDialog');
 
 const cardSummaryTableRef = ref<TableInstance>();
+const cardTableFiltersRef = ref<InstanceType<typeof CardTableFilters>>();
 const currentPage = ref(1);
 const pageSize = ref(50);
-const searchInput = ref('');
-const activeFilters = ref({});
 const activeSort = ref<SortBy | null>({ prop: 'cubeCount', order: 'descending' });
+const activeFilterState = ref<Record<string, any>>({});
+const columnCustomizationVisible = ref(false);
 
 const isMobile = computed(() => {
-  return screen.width <= 760;
+    return screen.width <= 760;
 });
 
 const paginationLayout = computed(() => {
     return isMobile.value ? 'prev, pager, next' : '->, prev, pager, next, sizes';
 });
 
-const tags = [
-    { text: 'counterspell', value: 'counterspell', color: 'rgba(20, 155, 226, 0.3)' },
-    { text: 'draw', value: 'draw', color: 'rgba(30, 144, 255, 0.3)' },
-    { text: 'flicker', value: 'flicker', color: 'rgba(255, 140, 0, 0.3)' },
-    { text: 'ramp', value: 'ramp', color: 'rgba(60, 179, 113, 0.3)' },
-    { text: 'removal', value: 'removal', color: 'rgba(255, 99, 71, 0.3)' },
-    { text: 'token', value: 'token', color: 'rgba(255, 215, 0, 0.3)' },
-    { text: 'tutor', value: 'tutor', color: 'rgba(153, 102, 255, 0.3)' },
+// --- Column visibility config ---
+const defaultVisibleColumns = [
+    'cubeCount', 'effectiveColors', 'cmc', 'typeLine', 'tags',
+    'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
-const games = [
-    { text: 'paper', value: 'paper', color: 'rgba(34, 139, 34, 0.3)' },
-    { text: 'mtgo', value: 'mtgo', color: 'rgba(70, 130, 180, 0.3)' },
-    { text: 'arena', value: 'arena', color: 'rgba(218, 112, 214, 0.3)' },
+const defaultConfig = {
+    visibleColumns: [...defaultVisibleColumns],
+};
+
+const config = bindStorage('card-summary-table-config', (v) => {
+    if (v == undefined || v === null) {
+        return { ...defaultConfig };
+    }
+    return {
+        visibleColumns: Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns],
+    };
+});
+
+const columnOptions = ref([
+    {
+        label: 'Core',
+        options: [
+            { value: 'cubeCount', label: 'Cubes' },
+            { value: 'effectiveColors', label: 'Colors' },
+            { value: 'cmc', label: 'Mana Value' },
+            { value: 'typeLine', label: 'Type Line' },
+            { value: 'tags', label: 'Tags' },
+            { value: 'minRarity', label: 'Min Rarity' },
+        ],
+    },
+    {
+        label: 'Set & Release',
+        options: [
+            { value: 'setCode', label: 'Set' },
+            { value: 'setType', label: 'Set Type' },
+            { value: 'layout', label: 'Layout' },
+            { value: 'releaseDate', label: 'Release Date' },
+        ],
+    },
+    {
+        label: 'Pricing',
+        options: [
+            { value: 'minPriceUsd', label: 'Min Price (USD)' },
+            { value: 'minPriceTix', label: 'Min Price (Tix)' },
+        ],
+    },
+    {
+        label: 'Characteristics',
+        options: [
+            { value: 'oracleTextWordCount', label: 'Word Count' },
+            { value: 'oracleTextWordCountMinusParen', label: 'Words (No Reminder)' },
+            { value: 'isUniversesBeyond', label: 'Universes Beyond' },
+            { value: 'isSupplementalProduct', label: 'Supplemental Product' },
+            { value: 'makesTokens', label: 'Makes Tokens' },
+            { value: 'games', label: 'Games' },
+        ],
+    },
+]);
+
+// --- Tag / game display helpers ---
+const tagsMeta = [
+    { value: 'counterspell', color: 'rgba(20, 155, 226, 0.3)' },
+    { value: 'draw', color: 'rgba(30, 144, 255, 0.3)' },
+    { value: 'flicker', color: 'rgba(255, 140, 0, 0.3)' },
+    { value: 'ramp', color: 'rgba(60, 179, 113, 0.3)' },
+    { value: 'removal', color: 'rgba(255, 99, 71, 0.3)' },
+    { value: 'token', color: 'rgba(255, 215, 0, 0.3)' },
+    { value: 'tutor', color: 'rgba(153, 102, 255, 0.3)' },
+];
+
+const gamesMeta = [
+    { value: 'paper', color: 'rgba(34, 139, 34, 0.3)' },
+    { value: 'mtgo', color: 'rgba(70, 130, 180, 0.3)' },
+    { value: 'arena', color: 'rgba(218, 112, 214, 0.3)' },
 ];
 
 const filteredTags = (cardTags: string[]) => {
-    return cardTags.filter(tag => tags.some(t => t.value.toLowerCase() === tag.toLowerCase()));
+    return cardTags.filter(tag => tagsMeta.some(t => t.value.toLowerCase() === tag.toLowerCase()));
 };
 
 const getTagColor = (tag: string) => {
-    return tags.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+    return tagsMeta.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
 };
 
 const getGameTagColor = (game: string) => {
-    return games.find(g => g.value.toLowerCase() === game.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
-}
-
-const expandedCubeList = (cubeKeys: string[]) => {
-    const resp = Object.entries(props.loadedCubes).map(([key, cube]) => {
-        return {
-            id: cube.id,
-            key: key,
-            name: cube.name,
-            owner: cube.owner,
-            size: cube.cards.length,
-            included: cubeKeys.includes(key),
-        }
-    });
-
-    return resp.sort((a, b) => {
-        if (a.name < b.name) return -1;
-        if (a.name > b.name) return 1;
-        return 0;
-    });
+    return gamesMeta.find(g => g.value.toLowerCase() === game.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
 };
 
-const filterableManaValues = computed(() => {
-    const cmcs = new Set<number>();
-    Object.values(props.loadedCubes).forEach((cube: any) => {
-        cube.cards.forEach((card: any) => {
-            if (card.cmc !== undefined && card.cmc !== null) {
-                cmcs.add(card.cmc);
+const expandedCubeList = (cubeKeys: string[]) => {
+    return Object.entries(props.loadedCubes).map(([key, cube]) => ({
+        id: cube.id,
+        key: key,
+        name: cube.name,
+        owner: cube.owner,
+        size: cube.cards.length,
+        included: cubeKeys.includes(key),
+    })).sort((a, b) => a.name.localeCompare(b.name));
+};
+
+// --- Rarity ordering for comparative filters ---
+const rarityOrder: Record<string, number> = {
+    common: 0,
+    uncommon: 1,
+    rare: 2,
+    mythic: 3,
+};
+
+// --- Comparative filter helper ---
+const compareValues = (actual: number | undefined | null, comparison: string, target: number): boolean => {
+    if (actual == null) return false;
+    switch (comparison) {
+        case 'eq': return actual === target;
+        case 'neq': return actual !== target;
+        case 'lt': return actual < target;
+        case 'lte': return actual <= target;
+        case 'gt': return actual > target;
+        case 'gte': return actual >= target;
+        default: return true;
+    }
+};
+
+// --- Tristate filter helper (include/exclude on array-like or set-like fields) ---
+const applyTristateFilter = (
+    map: Record<string, boolean | null>,
+    rowValues: string[],
+    matchAll: boolean = false,
+): boolean => {
+    const includes: string[] = [];
+    const excludes: string[] = [];
+    for (const [key, val] of Object.entries(map)) {
+        if (val === true) includes.push(key);
+        else if (val === false) excludes.push(key);
+    }
+    // Excludes: row must NOT contain any excluded value
+    for (const ex of excludes) {
+        if (rowValues.some(v => v.toLowerCase() === ex.toLowerCase())) return false;
+    }
+    // Includes
+    if (includes.length > 0) {
+        if (matchAll) {
+            // Row must contain ALL included values
+            for (const inc of includes) {
+                if (!rowValues.some(v => v.toLowerCase() === inc.toLowerCase())) return false;
             }
-        });
-    });
-    return Array.from(cmcs).sort((a, b) => a - b).map(cmc => { return { text: cmc.toString(), value: cmc.toString() }; });
-});
+        } else {
+            // Row must contain at least one included value
+            const hasAny = includes.some(inc => rowValues.some(v => v.toLowerCase() === inc.toLowerCase()));
+            if (!hasAny) return false;
+        }
+    }
+    return true;
+};
 
-const filterableSets = computed(() => {
-    const sets = new Set<string>();
-    Object.values(props.loadedCubes).forEach((cube: any) => {
-        cube.cards.forEach((card: any) => {
-            if (card.setCode) {
-                sets.add(card.setCode.toUpperCase());
-            }
-        });
-    });
-    return Array.from(sets).sort();
-});
-
-const filterableYears = computed(() => {
-    const years = new Set<number>();
-    Object.values(props.loadedCubes).forEach((cube: any) => {
-        cube.cards.forEach((card: any) => {
-            if (card.releaseYear) {
-                years.add(card.releaseYear);
-            }
-        });
-    });
-    return Array.from(years).sort((a, b) => b - a).map(year => { return { text: year.toString(), value: year.toString() }; });
-});
-
-const filterableCubes = computed(() => {
-    return Object.entries(props.loadedCubes).map(([key, v]) => {
-        return { text: v.name, value: key };
-    }).sort((a, b) => {
-        if (a.text < b.text) return -1;
-        if (a.text > b.text) return 1;
-        return 0;
-    });
-});
-
-const onFilterChange = (filters: Record<string, string[]>) => {
-    activeFilters.value = {
-        ...activeFilters.value,
-        ...filters,
-    };
+// --- Events ---
+const onFiltersUpdated = (filters: Record<string, any>) => {
+    activeFilterState.value = filters;
     currentPage.value = 1;
 };
 
@@ -488,50 +591,33 @@ const onSortChange = (sortInfo: SortBy) => {
     currentPage.value = 1;
 };
 
-const onSearchChange = (value: string) => {
-    // Set page to 1 to avoid displaying an invalid index.
+const resetAllFilters = () => {
+    activeFilterState.value = {};
     currentPage.value = 1;
+    cardTableFiltersRef.value?.resetFilters();
 };
 
-const resetFilters = () => {
-    activeFilters.value = {};
-    searchInput.value = '';
-    currentPage.value = 1;
-    cardSummaryTableRef.value?.clearFilter();
-};
-
+// --- CSV Export ---
 const exportToCsv = () => {
-    // Helper function to escape CSV values
-    const escapeCsvValue = (value) => {
+    const escapeCsvValue = (value: unknown) => {
         if (value === null || value === undefined) return '';
         const stringValue = String(value);
-        // Escape quotes by doubling them and wrap in quotes if contains comma, quote, or newline
         if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
             return `"${stringValue.replace(/"/g, '""')}"`;
         }
         return stringValue;
     };
 
-    // Define CSV headers
     const headers = [
-        'Index',
-        'Name',
-        'Cubes',
-        'Total Count',
-        'Colors',
-        'Mana Value',
-        'Elo',
-        'Popularity',
-        'Type Line',
-        'Tags',
-        'Min Rarity',
-        'Set Code',
-        'Release Date',
-        'Min Price (USD)'
+        'Index', 'Name', 'Cubes', 'Total Count', 'Colors', 'Mana Value',
+        'Elo', 'Popularity', 'Type Line', 'Tags', 'Min Rarity',
+        'Set Code', 'Set Type', 'Layout', 'Release Date',
+        'Min Price (USD)', 'Min Price (Tix)',
+        'Word Count', 'Word Count (No Reminder)',
+        'Universes Beyond', 'Supplemental', 'Makes Tokens', 'Games',
     ].map(escapeCsvValue).join(',');
 
-    // Convert data to CSV rows
-    const csvRows = searchedRows.value.map(row => [
+    const csvRows = filteredRows.value.map(row => [
         row.index,
         row.name,
         row.cubeCount,
@@ -544,14 +630,20 @@ const exportToCsv = () => {
         row.tags.join(', '),
         row.minRarity ?? '',
         row.setCode ?? '',
+        row.setType ?? '',
+        row.layout ?? '',
         row.releaseDate ?? '',
-        row.minPriceUsd ? `$${row.minPriceUsd.toFixed(2)}` : ''
+        row.minPriceUsd != null ? `$${row.minPriceUsd.toFixed(2)}` : '',
+        row.minPriceTix != null ? row.minPriceTix.toFixed(2) : '',
+        row.oracleTextWordCount ?? '',
+        row.oracleTextWordCountMinusParen ?? '',
+        row.isUniversesBeyond ? 'Yes' : 'No',
+        row.isSupplementalProduct ? 'Yes' : 'No',
+        row.makesTokens ? 'Yes' : 'No',
+        (row.games ?? []).join(', '),
     ].map(escapeCsvValue).join(','));
 
-    // Combine headers and rows
     const csvContent = [headers, ...csvRows].join('\n');
-
-    // Create and trigger download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -563,19 +655,18 @@ const exportToCsv = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
-    // Clean up the URL object
     URL.revokeObjectURL(url);
 };
 
+// --- Data pipeline ---
 const tableData = computed(() => {
     if (Object.keys(props.loadedCubes).length === 0) {
         return [];
     }
-    const allCards = Object.keys(props.loadedCubes).reduce((allCards, key) => {
+    const allCards = Object.keys(props.loadedCubes).reduce((acc, key) => {
         props.loadedCubes[key].cards.forEach(card => {
-            if (allCards[card.oracleId] === undefined) {
-                allCards[card.oracleId] = {
+            if (acc[card.oracleId] === undefined) {
+                acc[card.oracleId] = {
                     ...card,
                     isRemoval: card.tags.includes('removal'),
                     effectiveColors: card.colorIdentity.length === 0 ? ['C'] : card.colorIdentity,
@@ -584,17 +675,13 @@ const tableData = computed(() => {
                     cubeCount: 0,
                 };
             }
-
-            allCards[card.oracleId].count += 1;
-            if (!allCards[card.oracleId].cubes.includes(key)) {
-                // TODO: What's the best way to represent this?
-                //  I think it'd be nice to be able to expand and see which cubes (with links, owners, icons, size, etc) contain the card.
-                allCards[card.oracleId].cubes.push(key);
-                allCards[card.oracleId].cubeCount += 1;
+            acc[card.oracleId].count += 1;
+            if (!acc[card.oracleId].cubes.includes(key)) {
+                acc[card.oracleId].cubes.push(key);
+                acc[card.oracleId].cubeCount += 1;
             }
         });
-
-        return allCards;
+        return acc;
     }, {});
 
     return Object.values(allCards);
@@ -611,109 +698,180 @@ const sortedRows = computed(() => {
         return alphaSorted;
     }
 
-    // TODO: Manually sort color in WUBRG order.
-    // TODO: Manually sort rarity in CUMR order.
     return alphaSorted.slice(0).sort((a, b) => {
         const sortKey = activeSort.value.prop;
+        const dir = activeSort.value.order === 'ascending' ? 1 : -1;
 
-        // FIXME: Add a default secondary sort to alphabetize by name.
-        if (activeSort.value.order === 'ascending') {
-            if (a[sortKey] < b[sortKey]) return -1;
-            if (a[sortKey] > b[sortKey]) return 1;
-            return 0;
-        } else {
-            if (a[sortKey] > b[sortKey]) return -1;
-            if (a[sortKey] < b[sortKey]) return 1;
-            return 0;
+        // Rarity sorting with defined ordering
+        if (sortKey === 'minRarity') {
+            const aVal = rarityOrder[a.minRarity] ?? -1;
+            const bVal = rarityOrder[b.minRarity] ?? -1;
+            if (aVal !== bVal) return (aVal - bVal) * dir;
+            return a.name.localeCompare(b.name);
         }
+
+        if (a[sortKey] < b[sortKey]) return -1 * dir;
+        if (a[sortKey] > b[sortKey]) return 1 * dir;
+        // Secondary sort by name
+        return a.name.localeCompare(b.name);
     });
 });
 
 const filteredRows = computed(() => {
-    if (Object.keys(activeFilters.value).length === 0) {
-        return sortedRows.value;
-    } else {
-        return sortedRows.value.filter(row => {
-            for (const [key, values] of Object.entries(activeFilters.value)) {
-                if (values.length === 0) {
-                    continue;
+    const f = activeFilterState.value;
+    const hasAnyFilter = Object.keys(f).length > 0;
+
+    let rows = sortedRows.value;
+
+    if (hasAnyFilter) {
+        rows = rows.filter(row => {
+            // Name search
+            if (f.name && !row.name.toLowerCase().includes(f.name.toLowerCase())) return false;
+
+            // Oracle text search
+            if (f.oracleText && !(row.oracleText ?? '').toLowerCase().includes(f.oracleText.toLowerCase())) return false;
+
+            // Cubes (tristate: include at least one / exclude any)
+            if (f.cubes && Object.keys(f.cubes).length > 0) {
+                if (!applyTristateFilter(f.cubes, row.cubes)) return false;
+            }
+
+            // Colors (tristate, with exact-match option)
+            if (f.colors && Object.keys(f.colors).length > 0) {
+                const includes: string[] = [];
+                const excludes: string[] = [];
+                for (const [key, val] of Object.entries(f.colors)) {
+                    if (val === true) includes.push(key);
+                    else if (val === false) excludes.push(key);
                 }
-                if (key === 'effectiveColors') {
-                    const rowColors = row.effectiveColors.map((c: string) => c.toLowerCase());
-                    const matches = values.every((color: string) => rowColors.includes(color)) && values.length === rowColors.length;
-                    // const matches = values.some(value => rowColors.includes(value.toLowerCase()));
-                    if (!matches) {
-                        return false;
-                    }
-                } else if (key === 'cmc') {
-                    const cmcString = row.cmc !== undefined && row.cmc !== null ? row.cmc.toString() : '';
-                    if (!values.includes(cmcString)) {
-                        return false;
-                    }
-                } else if (key === 'typeLine') {
-                    const matches = values.every(value => row.typeLine.includes(value));
-                    if (!matches) {
-                        return false;
-                    }
-                } else if (key === 'setCode') {
-                    if (!values.includes(row.setCode?.toUpperCase())) {
-                        return false;
-                    }
-                } else if (key === 'cubes') {
-                    const cubeKeys = row.cubes;
-                    const matches = values.some(value => cubeKeys.includes(value));
-                    if (!matches) {
-                        return false;
-                    }
-                } else if (key === 'releaseDate') {
-                    const releaseYear = row.releaseYear ? row.releaseYear.toString() : '';
-                    if (!values.includes(releaseYear)) {
-                        return false;
-                    }
-                } else if (key === 'tags') {
-                    const rowTags = row.tags.map((t: string) => t.toLowerCase());
-                    const matches = values.every((tag: string) => rowTags.includes(tag.toLowerCase()));
-                    if (!matches) {
-                        return false;
-                    }
-                } else if (key === 'games') {
-                    const rowGames = row.games.map((g: string) => g.toLowerCase());
-                    const matches = values.every((game: string) => rowGames.includes(game.toLowerCase()));
-                    if (!matches) {
-                        return false;
-                    }
-                } else {
-                    if (!values.includes(row[key])) {
-                        return false;
+                const rowColors = row.effectiveColors.map((c: string) => c.toUpperCase());
+
+                for (const ex of excludes) {
+                    if (rowColors.includes(ex.toUpperCase())) return false;
+                }
+
+                if (includes.length > 0) {
+                    if (f.colorsExactMatch) {
+                        // Exact match: row must have exactly the included colors
+                        const includesSet = new Set(includes.map(c => c.toUpperCase()));
+                        const rowSet = new Set(rowColors);
+                        if (includesSet.size !== rowSet.size) return false;
+                        for (const c of includesSet) {
+                            if (!rowSet.has(c)) return false;
+                        }
+                    } else {
+                        // At least one included color must be present
+                        const hasAny = includes.some(inc => rowColors.includes(inc.toUpperCase()));
+                        if (!hasAny) return false;
                     }
                 }
             }
+
+            // Mana Value (comparative)
+            if (f.cmcComparison) {
+                if (!compareValues(row.cmc, f.cmcComparison, f.cmcValue)) return false;
+            }
+
+            // Type Line (tristate on type strings, checking if typeLine includes)
+            if (f.types && Object.keys(f.types).length > 0) {
+                for (const [type, val] of Object.entries(f.types)) {
+                    const contains = row.typeLine.includes(type);
+                    if (val === true && !contains) return false;
+                    if (val === false && contains) return false;
+                }
+            }
+
+            // Min Rarity (comparative with ordering)
+            if (f.rarityComparison) {
+                const rowRarityVal = rarityOrder[row.minRarity] ?? -1;
+                const targetRarityVal = rarityOrder[f.rarityValue] ?? -1;
+                if (!compareValues(rowRarityVal, f.rarityComparison, targetRarityVal)) return false;
+            }
+
+            // Tags (tristate)
+            if (f.tags && Object.keys(f.tags).length > 0) {
+                if (!applyTristateFilter(f.tags, row.tags, true)) return false;
+            }
+
+            // Set codes (multi-select, any match)
+            if (f.setCodes && f.setCodes.length > 0) {
+                if (!f.setCodes.includes(row.setCode?.toUpperCase())) return false;
+            }
+
+            // Set types (multi-select, any match)
+            if (f.setTypes && f.setTypes.length > 0) {
+                if (!f.setTypes.includes(row.setType)) return false;
+            }
+
+            // Release year (comparative)
+            if (f.releaseYearComparison) {
+                if (!compareValues(row.releaseYear, f.releaseYearComparison, f.releaseYearValue)) return false;
+            }
+
+            // Price USD (comparative)
+            if (f.priceUsdComparison) {
+                if (!compareValues(row.minPriceUsd, f.priceUsdComparison, f.priceUsdValue)) return false;
+            }
+
+            // Price Tix (comparative)
+            if (f.priceTixComparison) {
+                if (!compareValues(row.minPriceTix, f.priceTixComparison, f.priceTixValue)) return false;
+            }
+
+            // Layouts (multi-select, any match)
+            if (f.layouts && f.layouts.length > 0) {
+                if (!f.layouts.includes(row.layout)) return false;
+            }
+
+            // Legality (single format, must be 'legal')
+            if (f.legality) {
+                const legalities = row.legality ?? {};
+                if (legalities[f.legality] !== 'legal') return false;
+            }
+
+            // Universes Beyond (tristate boolean)
+            if (f.isUniversesBeyond === true && !row.isUniversesBeyond) return false;
+            if (f.isUniversesBeyond === false && row.isUniversesBeyond) return false;
+
+            // Supplemental Product (tristate boolean)
+            if (f.isSupplementalProduct === true && !row.isSupplementalProduct) return false;
+            if (f.isSupplementalProduct === false && row.isSupplementalProduct) return false;
+
+            // Makes Tokens (tristate boolean)
+            if (f.makesTokens === true && !row.makesTokens) return false;
+            if (f.makesTokens === false && row.makesTokens) return false;
+
+            // Word count (comparative)
+            if (f.wordCountComparison) {
+                if (!compareValues(row.oracleTextWordCount, f.wordCountComparison, f.wordCountValue)) return false;
+            }
+
+            // Games (tristate)
+            if (f.games && Object.keys(f.games).length > 0) {
+                if (!applyTristateFilter(f.games, row.games ?? [], true)) return false;
+            }
+
+            // Keywords (multi-select, row must have all selected keywords)
+            if (f.keywords && f.keywords.length > 0) {
+                const rowKeywords = (row.keywords ?? []).map((k: string) => k.toLowerCase());
+                for (const kw of f.keywords) {
+                    if (!rowKeywords.includes(kw.toLowerCase())) return false;
+                }
+            }
+
             return true;
         });
     }
-});
 
-const numberedRows = computed(() => {
-    return filteredRows.value.map((row, index) => {
-        return {
-            ...row,
-            index: index + 1,
-        };
-    });
-});
-
-const searchedRows = computed(() => {
-    if (searchInput.value.trim() === '') {
-        return numberedRows.value;
-    }
-    const searchTerm = searchInput.value.toLowerCase();
-    return numberedRows.value.filter(row => {
-        return row.name.toLowerCase().includes(searchTerm);
-    });
+    // Number rows after filtering
+    return rows.map((row, index) => ({
+        ...row,
+        index: index + 1,
+    }));
 });
 
 const visibleRows = computed(() => {
-    return searchedRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+    return filteredRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 </script>
 

@@ -42,6 +42,8 @@ export interface CubeCard {
   games?: string[];
   tags?: string[];
   archetypes?: string[];
+  setType?: string;
+  layout?: string;
   isNormalLayout?: boolean;
   makesTokens?: boolean;
   minPriceUsd?: number | null;
