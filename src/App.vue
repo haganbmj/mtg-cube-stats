@@ -266,6 +266,16 @@
                                 />
 
                                 <el-table-column
+                                    v-if="config.visibleColumns.includes('stats.medianReleaseYear')"
+                                    prop="stats.medianReleaseYear"
+                                    label="Median Release Year"
+                                    min-width="75"
+                                    max-width="100"
+                                    sortable
+                                    :formatter="columnFormatters.roundedInteger"
+                                />
+
+                                <el-table-column
                                     v-if="config.visibleColumns.includes('stats.totalCards')"
                                     prop="stats.totalCards"
                                     label="Total Cards"
@@ -723,6 +733,7 @@ const columnOptions = ref([
             { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalMinPriceTix', label: "Min Price (Tix)", tooltip: "Total Minimum Price of the Cube in MTGO Tix" },
             { value: 'stats.averageReleaseYear', label: 'Avg. Release Year', tooltip: "Average Release Year of Cards in the Cube" },
+            { value: 'stats.medianReleaseYear', label: 'Median Release Year', tooltip: "Median Release Year of Cards in the Cube" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
             { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
