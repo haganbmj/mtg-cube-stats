@@ -2,7 +2,7 @@
   <el-collapse v-model="expandedSections" class="card-table-filters">
     <el-collapse-item title="Filters" name="filters">
       <el-row :gutter="20">
-        <!-- Column 1: Text Search, Cubes, Colors -->
+        <!-- Column 1: Text Search, Cubes, Colors, Mana Value, Rarity -->
         <el-col :span="8" :xs="24" :sm="12" :md="8">
           <div class="filter-section">
             <h4 class="filter-section-title">Text Search</h4>
@@ -40,7 +40,7 @@
 
           <div class="filter-section">
             <h4 class="filter-section-title">Colors</h4>
-            <div class="filter-checkboxes">
+            <div class="filter-checkboxes-grid">
               <TristateCheckbox
                 v-for="color in colorOptions"
                 :key="color.value"
@@ -53,57 +53,7 @@
             </div>
             <el-checkbox v-model="filters.colorsExactMatch" @change="emitFilters" style="margin-top: 4px;">Exact match</el-checkbox>
           </div>
-        </el-col>
 
-        <!-- Column 2: Type Line, Tags, Games, Keywords -->
-        <el-col :span="8" :xs="24" :sm="12" :md="8">
-          <div class="filter-section">
-            <h4 class="filter-section-title">Type Line</h4>
-            <TristateSelect
-              :modelValue="filters.types"
-              @update:modelValue="filters.types = $event; emitFilters()"
-              :options="typeOptions"
-              placeholder="Filter by type..."
-            />
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Tags</h4>
-            <TristateSelect
-              :modelValue="filters.tags"
-              @update:modelValue="filters.tags = $event; emitFilters()"
-              :options="tagOptions"
-              placeholder="Filter by tag..."
-            />
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Games</h4>
-            <div class="filter-checkboxes">
-              <TristateCheckbox
-                v-for="game in gameOptions"
-                :key="game.value"
-                :modelValue="getTristateValue(filters.games, game.value)"
-                @update:modelValue="setTristateValue(filters.games, game.value, $event)"
-              >
-                {{ game.label }}
-              </TristateCheckbox>
-            </div>
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Keywords</h4>
-            <TristateSelect
-              :modelValue="filters.keywords"
-              @update:modelValue="filters.keywords = $event; emitFilters()"
-              :options="availableKeywords"
-              placeholder="Filter by keyword..."
-            />
-          </div>
-        </el-col>
-
-        <!-- Column 3: Mana Value, Rarity, Set/Release, Price, Characteristics -->
-        <el-col :span="8" :xs="24" :sm="24" :md="8">
           <div class="filter-section">
             <h4 class="filter-section-title">Mana Value</h4>
             <el-row :gutter="8">
@@ -148,40 +98,52 @@
               </el-col>
             </el-row>
           </div>
+        </el-col>
+
+        <!-- Column 2: Type Line, Tags, Keywords, Games, Price -->
+        <el-col :span="8" :xs="24" :sm="12" :md="8">
+          <div class="filter-section">
+            <h4 class="filter-section-title">Type Line</h4>
+            <TristateSelect
+              :modelValue="filters.types"
+              @update:modelValue="filters.types = $event; emitFilters()"
+              :options="typeOptions"
+              placeholder="Filter by type..."
+            />
+          </div>
 
           <div class="filter-section">
-            <h4 class="filter-section-title">Set / Release</h4>
-            <label class="filter-label">Set Code</label>
+            <h4 class="filter-section-title">Tags</h4>
             <TristateSelect
-              :modelValue="filters.setCodes"
-              @update:modelValue="filters.setCodes = $event; emitFilters()"
-              :options="availableSets"
-              placeholder="Filter by set..."
+              :modelValue="filters.tags"
+              @update:modelValue="filters.tags = $event; emitFilters()"
+              :options="tagOptions"
+              placeholder="Filter by tag..."
             />
-            <label class="filter-label">Set Type</label>
+          </div>
+
+          <div class="filter-section">
+            <h4 class="filter-section-title">Keywords</h4>
             <TristateSelect
-              :modelValue="filters.setTypes"
-              @update:modelValue="filters.setTypes = $event; emitFilters()"
-              :options="availableSetTypes"
-              placeholder="Filter by set type..."
+              :modelValue="filters.keywords"
+              @update:modelValue="filters.keywords = $event; emitFilters()"
+              :options="availableKeywords"
+              placeholder="Filter by keyword..."
             />
-            <label class="filter-label">Release Year</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.releaseYearComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.releaseYearValue" :min="1993" :max="2030" :step="1" :disabled="!filters.releaseYearComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
+          </div>
+
+          <div class="filter-section">
+            <h4 class="filter-section-title">Games</h4>
+            <div class="filter-checkboxes">
+              <TristateCheckbox
+                v-for="game in gameOptions"
+                :key="game.value"
+                :modelValue="getTristateValue(filters.games, game.value)"
+                @update:modelValue="setTristateValue(filters.games, game.value, $event)"
+              >
+                {{ game.label }}
+              </TristateCheckbox>
+            </div>
           </div>
 
           <div class="filter-section">
@@ -214,6 +176,44 @@
               </el-col>
               <el-col :span="12">
                 <el-input-number v-model="filters.priceTixValue" :min="0" :precision="2" :step="0.5" :disabled="!filters.priceTixComparison" @change="emitFilters" style="width: 100%;" />
+              </el-col>
+            </el-row>
+          </div>
+        </el-col>
+
+        <!-- Column 3: Set/Release, Characteristics -->
+        <el-col :span="8" :xs="24" :sm="24" :md="8">
+          <div class="filter-section">
+            <h4 class="filter-section-title">Set / Release</h4>
+            <label class="filter-label">Set Code</label>
+            <TristateSelect
+              :modelValue="filters.setCodes"
+              @update:modelValue="filters.setCodes = $event; emitFilters()"
+              :options="availableSets"
+              placeholder="Filter by set..."
+            />
+            <label class="filter-label">Set Type</label>
+            <TristateSelect
+              :modelValue="filters.setTypes"
+              @update:modelValue="filters.setTypes = $event; emitFilters()"
+              :options="availableSetTypes"
+              placeholder="Filter by set type..."
+            />
+            <label class="filter-label">Release Year</label>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-select v-model="filters.releaseYearComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                  <el-option label="Any" value="" />
+                  <el-option label="=" value="eq" />
+                  <el-option label="≠" value="neq" />
+                  <el-option label="<" value="lt" />
+                  <el-option label="≤" value="lte" />
+                  <el-option label=">" value="gt" />
+                  <el-option label="≥" value="gte" />
+                </el-select>
+              </el-col>
+              <el-col :span="12">
+                <el-input-number v-model="filters.releaseYearValue" :min="1993" :max="2030" :step="1" :disabled="!filters.releaseYearComparison" @change="emitFilters" style="width: 100%;" />
               </el-col>
             </el-row>
           </div>
@@ -535,6 +535,12 @@ defineExpose({ resetFilters });
   display: flex;
   flex-wrap: wrap;
   gap: 4px 0;
+}
+
+.filter-checkboxes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 4px;
 }
 
 .filter-subsection {
