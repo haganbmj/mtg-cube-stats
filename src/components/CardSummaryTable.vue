@@ -341,23 +341,14 @@
         :total="searchedRows.length"
     />
 
-    <CubeDetailDialog
-        v-model:visible="cubeDetailDialogVisible"
-        :cubeRow="cubeDetailDialogRow"
-        :cubeCards="cubeDetailDialogCards"
-        :similarityMatrix="similarityMatrix"
-        :overviewTableData="overviewTableData"
-        :loadedCubes="loadedCubes"
-    />
 </template>
 
 <script setup lang="ts">
 import { TableInstance } from 'element-plus';
 import type { SortBy } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
-import CubeDetailDialog from './CubeDetailDialog.vue';
 
 const props = defineProps({
     loadedCubes: {
@@ -374,22 +365,7 @@ const props = defineProps({
     },
 });
 
-const cubeDetailDialogId = ref(null);
-const cubeDetailDialogVisible = computed({
-    get: () => cubeDetailDialogId.value !== null,
-    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
-});
-const cubeDetailDialogRow = computed(() => {
-    if (!cubeDetailDialogId.value) return null;
-    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
-});
-const cubeDetailDialogCards = computed(() => {
-    if (!cubeDetailDialogId.value) return [];
-    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
-});
-const openCubeDetailDialog = (cubeId) => {
-    cubeDetailDialogId.value = cubeId;
-};
+const openCubeDetailDialog = inject('openCubeDetailDialog');
 
 const cardSummaryTableRef = ref<TableInstance>();
 const currentPage = ref(1);
