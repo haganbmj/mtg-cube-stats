@@ -93,24 +93,12 @@
 
           <div class="filter-section">
             <h4 class="filter-section-title">Keywords</h4>
-            <el-select
-              v-model="filters.keywords"
-              multiple
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
-              clearable
+            <TristateSelect
+              :modelValue="filters.keywords"
+              @update:modelValue="filters.keywords = $event; emitFilters()"
+              :options="availableKeywords"
               placeholder="Filter by keyword..."
-              @change="emitFilters"
-              style="width: 100%;"
-            >
-              <el-option
-                v-for="kw in availableKeywords"
-                :key="kw"
-                :label="kw"
-                :value="kw"
-              />
-            </el-select>
+            />
           </div>
         </el-col>
 
@@ -164,13 +152,19 @@
           <div class="filter-section">
             <h4 class="filter-section-title">Set / Release</h4>
             <label class="filter-label">Set Code</label>
-            <el-select v-model="filters.setCodes" multiple filterable collapse-tags collapse-tags-tooltip clearable placeholder="Filter by set..." @change="emitFilters" style="width: 100%;">
-              <el-option v-for="set in availableSets" :key="set" :label="set" :value="set" />
-            </el-select>
+            <TristateSelect
+              :modelValue="filters.setCodes"
+              @update:modelValue="filters.setCodes = $event; emitFilters()"
+              :options="availableSets"
+              placeholder="Filter by set..."
+            />
             <label class="filter-label">Set Type</label>
-            <el-select v-model="filters.setTypes" multiple filterable collapse-tags collapse-tags-tooltip clearable placeholder="Filter by set type..." @change="emitFilters" style="width: 100%;">
-              <el-option v-for="st in availableSetTypes" :key="st" :label="st" :value="st" />
-            </el-select>
+            <TristateSelect
+              :modelValue="filters.setTypes"
+              @update:modelValue="filters.setTypes = $event; emitFilters()"
+              :options="availableSetTypes"
+              placeholder="Filter by set type..."
+            />
             <label class="filter-label">Release Year</label>
             <el-row :gutter="8">
               <el-col :span="12">
@@ -227,9 +221,12 @@
           <div class="filter-section">
             <h4 class="filter-section-title">Characteristics</h4>
             <label class="filter-label">Layout</label>
-            <el-select v-model="filters.layouts" multiple filterable collapse-tags collapse-tags-tooltip clearable placeholder="Filter by layout..." @change="emitFilters" style="width: 100%;">
-              <el-option v-for="l in availableLayouts" :key="l" :label="l" :value="l" />
-            </el-select>
+            <TristateSelect
+              :modelValue="filters.layouts"
+              @update:modelValue="filters.layouts = $event; emitFilters()"
+              :options="availableLayouts"
+              placeholder="Filter by layout..."
+            />
             <label class="filter-label">Legality</label>
             <el-select v-model="filters.legality" clearable placeholder="Legal in..." @change="emitFilters" style="width: 100%;">
               <el-option label="Standard" value="standard" />
@@ -296,15 +293,15 @@ const filters = reactive({
     rarityComparison: '',
     rarityValue: 'common',
     tags: {} as Record<string, boolean | null>,
-    setCodes: [] as string[],
-    setTypes: [] as string[],
+    setCodes: {} as Record<string, boolean | null>,
+    setTypes: {} as Record<string, boolean | null>,
     releaseYearComparison: '',
     releaseYearValue: 2025,
     priceUsdComparison: '',
     priceUsdValue: 0,
     priceTixComparison: '',
     priceTixValue: 0,
-    layouts: [] as string[],
+    layouts: {} as Record<string, boolean | null>,
     legality: '',
     isUniversesBeyond: null as boolean | null,
     isSupplementalProduct: null as boolean | null,
@@ -312,7 +309,7 @@ const filters = reactive({
     wordCountComparison: '',
     wordCountValue: 0,
     games: {} as Record<string, boolean | null>,
-    keywords: [] as string[],
+    keywords: {} as Record<string, boolean | null>,
 });
 
 const colorOptions = [
@@ -377,7 +374,7 @@ const availableSets = computed(() => {
     allCards.value.forEach((card: any) => {
         if (card.setCode) sets.add(card.setCode.toUpperCase());
     });
-    return Array.from(sets).sort();
+    return Array.from(sets).sort().map(s => ({ label: s, value: s }));
 });
 
 const availableSetTypes = computed(() => {
@@ -385,7 +382,7 @@ const availableSetTypes = computed(() => {
     allCards.value.forEach((card: any) => {
         if (card.setType) types.add(card.setType);
     });
-    return Array.from(types).sort();
+    return Array.from(types).sort().map(t => ({ label: t, value: t }));
 });
 
 const availableLayouts = computed(() => {
@@ -393,7 +390,7 @@ const availableLayouts = computed(() => {
     allCards.value.forEach((card: any) => {
         if (card.layout) layouts.add(card.layout);
     });
-    return Array.from(layouts).sort();
+    return Array.from(layouts).sort().map(l => ({ label: l, value: l }));
 });
 
 const availableKeywords = computed(() => {
@@ -401,7 +398,7 @@ const availableKeywords = computed(() => {
     allCards.value.forEach((card: any) => {
         (card.keywords ?? []).forEach((kw: string) => keywords.add(kw));
     });
-    return Array.from(keywords).sort();
+    return Array.from(keywords).sort().map(kw => ({ label: kw, value: kw }));
 });
 
 // Tristate helpers: null = unset, true = include, false = exclude
@@ -438,16 +435,28 @@ watch(() => props.loadedCubes, () => {
     }
 
     // Prune set codes
-    filters.setCodes = filters.setCodes.filter(s => validSets.includes(s));
+    const validSetValues = new Set(validSets.map(s => s.value));
+    for (const key of Object.keys(filters.setCodes)) {
+        if (!validSetValues.has(key)) delete filters.setCodes[key];
+    }
 
     // Prune set types
-    filters.setTypes = filters.setTypes.filter(s => validSetTypes.includes(s));
+    const validSetTypeValues = new Set(validSetTypes.map(s => s.value));
+    for (const key of Object.keys(filters.setTypes)) {
+        if (!validSetTypeValues.has(key)) delete filters.setTypes[key];
+    }
 
     // Prune layouts
-    filters.layouts = filters.layouts.filter(l => validLayouts.includes(l));
+    const validLayoutValues = new Set(validLayouts.map(l => l.value));
+    for (const key of Object.keys(filters.layouts)) {
+        if (!validLayoutValues.has(key)) delete filters.layouts[key];
+    }
 
     // Prune keywords
-    filters.keywords = filters.keywords.filter(k => validKeywords.includes(k));
+    const validKeywordValues = new Set(validKeywords.map(k => k.value));
+    for (const key of Object.keys(filters.keywords)) {
+        if (!validKeywordValues.has(key)) delete filters.keywords[key];
+    }
 
     emitFilters();
 }, { deep: true });
@@ -464,15 +473,15 @@ const resetFilters = () => {
     filters.rarityComparison = '';
     filters.rarityValue = 'common';
     filters.tags = {};
-    filters.setCodes = [];
-    filters.setTypes = [];
+    filters.setCodes = {};
+    filters.setTypes = {};
     filters.releaseYearComparison = '';
     filters.releaseYearValue = 2025;
     filters.priceUsdComparison = '';
     filters.priceUsdValue = 0;
     filters.priceTixComparison = '';
     filters.priceTixValue = 0;
-    filters.layouts = [];
+    filters.layouts = {};
     filters.legality = '';
     filters.isUniversesBeyond = null;
     filters.isSupplementalProduct = null;
@@ -480,7 +489,7 @@ const resetFilters = () => {
     filters.wordCountComparison = '';
     filters.wordCountValue = 0;
     filters.games = {};
-    filters.keywords = [];
+    filters.keywords = {};
     emitFilters();
 };
 

@@ -799,14 +799,14 @@ const filteredRows = computed(() => {
                 if (!applyTristateFilter(f.tags, row.tags, true)) return false;
             }
 
-            // Set codes (multi-select, any match)
-            if (f.setCodes && f.setCodes.length > 0) {
-                if (!f.setCodes.includes(row.setCode?.toUpperCase())) return false;
+            // Set codes (tristate)
+            if (f.setCodes && Object.keys(f.setCodes).length > 0) {
+                if (!applyTristateFilter(f.setCodes, [row.setCode?.toUpperCase() ?? ''])) return false;
             }
 
-            // Set types (multi-select, any match)
-            if (f.setTypes && f.setTypes.length > 0) {
-                if (!f.setTypes.includes(row.setType)) return false;
+            // Set types (tristate)
+            if (f.setTypes && Object.keys(f.setTypes).length > 0) {
+                if (!applyTristateFilter(f.setTypes, [row.setType ?? ''])) return false;
             }
 
             // Release year (comparative)
@@ -824,9 +824,9 @@ const filteredRows = computed(() => {
                 if (!compareValues(row.minPriceTix, f.priceTixComparison, f.priceTixValue)) return false;
             }
 
-            // Layouts (multi-select, any match)
-            if (f.layouts && f.layouts.length > 0) {
-                if (!f.layouts.includes(row.layout)) return false;
+            // Layouts (tristate)
+            if (f.layouts && Object.keys(f.layouts).length > 0) {
+                if (!applyTristateFilter(f.layouts, [row.layout ?? ''])) return false;
             }
 
             // Legality (single format, must be 'legal')
@@ -857,12 +857,9 @@ const filteredRows = computed(() => {
                 if (!applyTristateFilter(f.games, row.games ?? [], true)) return false;
             }
 
-            // Keywords (multi-select, row must have all selected keywords)
-            if (f.keywords && f.keywords.length > 0) {
-                const rowKeywords = (row.keywords ?? []).map((k: string) => k.toLowerCase());
-                for (const kw of f.keywords) {
-                    if (!rowKeywords.includes(kw.toLowerCase())) return false;
-                }
+            // Keywords (tristate)
+            if (f.keywords && Object.keys(f.keywords).length > 0) {
+                if (!applyTristateFilter(f.keywords, (row.keywords ?? []).map((k: string) => k), true)) return false;
             }
 
             return true;
