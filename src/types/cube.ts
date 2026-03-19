@@ -71,7 +71,7 @@ export interface CubeStats {
   rarityDistribution: Record<string, number>;
   minRarityDistribution: Record<string, number>;
   averageWordCount: number;
-  averageWordCountMinusParen: number;
+  averageWordCountUnique: number;
   averageReleaseYear: number;
   medianReleaseYear: number;
   keywords: Record<string, number>;

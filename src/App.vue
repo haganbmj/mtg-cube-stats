@@ -433,9 +433,9 @@
                                 />
 
                                 <el-table-column
-                                    v-if="config.visibleColumns.includes('stats.averageWordCountMinusParen')"
-                                    prop="stats.averageWordCountMinusParen"
-                                    label="Avg. Word Count Excl. Reminder"
+                                    v-if="config.visibleColumns.includes('stats.averageWordCountUnique')"
+                                    prop="stats.averageWordCountUnique"
+                                    label="Avg. Word Count (Unique)"
                                     min-width="75"
                                     max-width="100"
                                     sortable
@@ -641,7 +641,7 @@ const defaultConfig = {
         'stats.newCards',
         'avgSimilarityScore',
         'stats.averageNonLandCmc',
-        'stats.averageWordCountMinusParen',
+        'stats.averageWordCountUnique',
         'stats.cardCounts.removal',
         'stats.uniqueNonEvergreenKeywords',
     ],
@@ -754,8 +754,8 @@ const columnOptions = ref([
     {
         label: 'Characteristics',
         options: [
-            { value: 'stats.averageWordCount', label: 'Avg. Word Count', tooltip: "Average Oracle Text Word Count" },
-            { value: 'stats.averageWordCountMinusParen', label: 'Avg. Word Count Excl. Reminder', tooltip: "Average Oracle Text Word Count, excluding anything in Parentheses" },
+            { value: 'stats.averageWordCount', label: 'Avg. Word Count', tooltip: "Average Oracle Text Word Count, excluding Reminder Text" },
+            { value: 'stats.averageWordCountUnique', label: 'Avg. Word Count (Unique)', tooltip: "Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" },
             { value: 'stats.uniqueKeywords', label: "Keywords", tooltip: "Number of Unique Keywords" },
             { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords", tooltip: "Number of Unique Non-Evergreen Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout", tooltip: "Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" },

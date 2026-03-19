@@ -34,7 +34,7 @@ const chartOptions = computed(() => {
     const series = Object.values(props.loadedCubes).map(cube => {
         return {
             name: cube.name,
-            data: [[cube.stats.averagePopularity, cube.stats.averageWordCountMinusParen]],
+            data: [[cube.stats.averagePopularity, cube.stats.averageWordCountUnique]],
             type: 'scatter',
             symbolSize: 10,
             itemStyle: {

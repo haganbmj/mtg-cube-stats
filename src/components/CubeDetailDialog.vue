@@ -159,12 +159,12 @@
                         <el-col :span="12" :xs="24">
                             <el-descriptions title="Characteristics" :column="1" :label-width="240" :border="true" size="default">
                                 <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Oracle Text Word Count" placement="top" :hide-after="50"><span>Avg. Word Count <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
+                                    <template #label><el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
                                 </el-descriptions-item>
                                 <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Oracle Text Word Count, excluding anything in Parentheses" placement="top" :hide-after="50"><span>Avg. Word Count Excl. Reminder <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averageWordCountMinusParen ?? 0).toFixed(2) }}
+                                    <template #label><el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count (Unique) <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
+                                    {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Number of Unique Keywords" placement="top" :hide-after="50"><span>Keywords <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
