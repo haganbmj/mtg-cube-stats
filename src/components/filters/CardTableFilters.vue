@@ -1,5 +1,5 @@
 <template>
-  <el-collapse v-model="expandedSections" class="card-table-filters">
+  <el-collapse v-model="expandedSections" class="card-table-filters" expand-icon-position="left">
     <el-collapse-item title="Filters" name="filters">
       <el-row :gutter="20">
         <!-- Column 1: Text Search, Cubes, Colors, Mana Value, Rarity -->
@@ -25,7 +25,11 @@
               clearable
               @clear="emitFilters"
               @change="emitFilters"
-            />
+            >
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+            </el-input>
           </div>
 
           <div class="filter-section">
@@ -75,7 +79,7 @@
           </div>
 
           <div class="filter-section">
-            <h4 class="filter-section-title">Min Rarity</h4>
+            <h4 class="filter-section-title">Minimum Rarity</h4>
             <el-row :gutter="8">
               <el-col :span="12">
                 <el-select v-model="filters.rarityComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
@@ -100,10 +104,10 @@
           </div>
         </el-col>
 
-        <!-- Column 2: Type Line, Tags, Keywords, Games, Price -->
+        <!-- Column 2: Types, Tags, Keywords, Games, Price -->
         <el-col :span="8" :xs="24" :sm="12" :md="8">
           <div class="filter-section">
-            <h4 class="filter-section-title">Type Line</h4>
+            <h4 class="filter-section-title">Types</h4>
             <TristateSelect
               :modelValue="filters.types"
               @update:modelValue="filters.types = $event; emitFilters()"
@@ -134,7 +138,7 @@
 
           <div class="filter-section">
             <h4 class="filter-section-title">Games</h4>
-            <div class="filter-checkboxes">
+            <div class="filter-checkboxes-grid">
               <TristateCheckbox
                 v-for="game in gameOptions"
                 :key="game.value"
@@ -147,7 +151,7 @@
           </div>
 
           <div class="filter-section">
-            <h4 class="filter-section-title">Price</h4>
+            <h4 class="filter-section-title">Minimum Price</h4>
             <label class="filter-label">USD</label>
             <el-row :gutter="8">
               <el-col :span="12">
@@ -184,7 +188,7 @@
         <!-- Column 3: Set/Release, Characteristics -->
         <el-col :span="8" :xs="24" :sm="24" :md="8">
           <div class="filter-section">
-            <h4 class="filter-section-title">Set / Release</h4>
+            <h4 class="filter-section-title">Original Set / Release</h4>
             <label class="filter-label">Set Code</label>
             <TristateSelect
               :modelValue="filters.setCodes"
@@ -228,18 +232,13 @@
               placeholder="Filter by layout..."
             />
             <label class="filter-label">Legality</label>
-            <el-select v-model="filters.legality" clearable placeholder="Legal in..." @change="emitFilters" style="width: 100%;">
-              <el-option label="Standard" value="standard" />
-              <el-option label="Pioneer" value="pioneer" />
-              <el-option label="Modern" value="modern" />
-              <el-option label="Legacy" value="legacy" />
-              <el-option label="Vintage" value="vintage" />
-            </el-select>
-            <div class="filter-checkboxes" style="margin-top: 6px;">
-              <TristateCheckbox v-model="filters.isUniversesBeyond" @update:modelValue="emitFilters">UB</TristateCheckbox>
-              <TristateCheckbox v-model="filters.isSupplementalProduct" @update:modelValue="emitFilters">Supplemental</TristateCheckbox>
-              <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Tokens</TristateCheckbox>
-            </div>
+            <TristateSelect
+              :modelValue="filters.legality"
+              @update:modelValue="filters.legality = $event; emitFilters()"
+              :options="legalityOptions"
+              placeholder="Filter by legality..."
+              :filterable="false"
+            />
             <label class="filter-label">Word Count</label>
             <el-row :gutter="8">
               <el-col :span="12">
@@ -256,6 +255,11 @@
                 <el-input-number v-model="filters.wordCountValue" :min="0" :step="1" :disabled="!filters.wordCountComparison" @change="emitFilters" style="width: 100%;" />
               </el-col>
             </el-row>
+            <div class="filter-checkboxes-grid" style="margin-top: 6px;">
+              <TristateCheckbox v-model="filters.isUniversesBeyond" @update:modelValue="emitFilters">Universes Beyond</TristateCheckbox>
+              <TristateCheckbox v-model="filters.isSupplementalProduct" @update:modelValue="emitFilters">Supplemental Product</TristateCheckbox>
+              <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Makes Tokens</TristateCheckbox>
+            </div>
           </div>
         </el-col>
       </el-row>
@@ -302,7 +306,7 @@ const filters = reactive({
     priceTixComparison: '',
     priceTixValue: 0,
     layouts: {} as Record<string, boolean | null>,
-    legality: '',
+    legality: {} as Record<string, boolean | null>,
     isUniversesBeyond: null as boolean | null,
     isSupplementalProduct: null as boolean | null,
     makesTokens: null as boolean | null,
@@ -351,6 +355,14 @@ const gameOptions = [
     { label: 'Paper', value: 'paper' },
     { label: 'MTGO', value: 'mtgo' },
     { label: 'Arena', value: 'arena' },
+];
+
+const legalityOptions = [
+    { label: 'Standard', value: 'standard' },
+    { label: 'Pioneer', value: 'pioneer' },
+    { label: 'Modern', value: 'modern' },
+    { label: 'Legacy', value: 'legacy' },
+    { label: 'Vintage', value: 'vintage' },
 ];
 
 // Dynamically computed available filter options based on loaded cubes
@@ -482,7 +494,7 @@ const resetFilters = () => {
     filters.priceTixComparison = '';
     filters.priceTixValue = 0;
     filters.layouts = {};
-    filters.legality = '';
+    filters.legality = {};
     filters.isUniversesBeyond = null;
     filters.isSupplementalProduct = null;
     filters.makesTokens = null;
@@ -539,7 +551,7 @@ defineExpose({ resetFilters });
 
 .filter-checkboxes-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 6px 4px;
 }
 

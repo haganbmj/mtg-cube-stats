@@ -3,7 +3,7 @@
         <el-col :span="12" :xs="24">
             <el-space>
                 <el-button @click="resetAllFilters">Reset Filters</el-button>
-                <el-button @click="columnCustomizationVisible = true">Columns</el-button>
+                <el-button @click="columnCustomizationVisible = true">Customize Columns</el-button>
                 <el-button @click="exportToCsv" type="primary">Export CSV</el-button>
             </el-space>
         </el-col>
@@ -11,6 +11,8 @@
             <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
         </el-col>
     </el-row>
+
+    <el-divider />
 
     <CardTableFilters
         ref="cardTableFiltersRef"
@@ -829,10 +831,13 @@ const filteredRows = computed(() => {
                 if (!applyTristateFilter(f.layouts, [row.layout ?? ''])) return false;
             }
 
-            // Legality (single format, must be 'legal')
-            if (f.legality) {
+            // Legality (tristate per format)
+            if (f.legality && Object.keys(f.legality).length > 0) {
                 const legalities = row.legality ?? {};
-                if (legalities[f.legality] !== 'legal') return false;
+                for (const [format, state] of Object.entries(f.legality)) {
+                    if (state === true && !legalities[format]) return false;
+                    if (state === false && legalities[format]) return false;
+                }
             }
 
             // Universes Beyond (tristate boolean)

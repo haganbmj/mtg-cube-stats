@@ -46,6 +46,7 @@ const cycle = () => {
   line-height: 1;
   margin-right: 16px;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .tristate-checkbox__input {
@@ -53,6 +54,12 @@ const cycle = () => {
   position: relative;
   white-space: nowrap;
   outline: none;
+  flex-shrink: 0;
+}
+
+.tristate-checkbox__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tristate-checkbox__inner {
