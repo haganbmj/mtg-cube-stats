@@ -30,16 +30,12 @@
 
           <div class="filter-section">
             <h4 class="filter-section-title">Cubes</h4>
-            <div class="filter-checkboxes">
-              <TristateCheckbox
-                v-for="cube in availableCubes"
-                :key="cube.value"
-                :modelValue="getTristateValue(filters.cubes, cube.value)"
-                @update:modelValue="setTristateValue(filters.cubes, cube.value, $event)"
-              >
-                {{ cube.label }}
-              </TristateCheckbox>
-            </div>
+            <TristateSelect
+              :modelValue="filters.cubes"
+              @update:modelValue="filters.cubes = $event; emitFilters()"
+              :options="availableCubes"
+              placeholder="Filter by cube..."
+            />
           </div>
 
           <div class="filter-section">
@@ -63,30 +59,22 @@
         <el-col :span="8" :xs="24" :sm="12" :md="8">
           <div class="filter-section">
             <h4 class="filter-section-title">Type Line</h4>
-            <div class="filter-checkboxes">
-              <TristateCheckbox
-                v-for="type in typeOptions"
-                :key="type.value"
-                :modelValue="getTristateValue(filters.types, type.value)"
-                @update:modelValue="setTristateValue(filters.types, type.value, $event)"
-              >
-                {{ type.label }}
-              </TristateCheckbox>
-            </div>
+            <TristateSelect
+              :modelValue="filters.types"
+              @update:modelValue="filters.types = $event; emitFilters()"
+              :options="typeOptions"
+              placeholder="Filter by type..."
+            />
           </div>
 
           <div class="filter-section">
             <h4 class="filter-section-title">Tags</h4>
-            <div class="filter-checkboxes">
-              <TristateCheckbox
-                v-for="tag in tagOptions"
-                :key="tag.value"
-                :modelValue="getTristateValue(filters.tags, tag.value)"
-                @update:modelValue="setTristateValue(filters.tags, tag.value, $event)"
-              >
-                {{ tag.label }}
-              </TristateCheckbox>
-            </div>
+            <TristateSelect
+              :modelValue="filters.tags"
+              @update:modelValue="filters.tags = $event; emitFilters()"
+              :options="tagOptions"
+              placeholder="Filter by tag..."
+            />
           </div>
 
           <div class="filter-section">
@@ -282,6 +270,7 @@
 import { ref, reactive, computed, watch } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import TristateCheckbox from './TristateCheckbox.vue';
+import TristateSelect from './TristateSelect.vue';
 
 const props = defineProps({
     loadedCubes: {
