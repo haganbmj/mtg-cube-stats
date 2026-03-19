@@ -23,6 +23,111 @@
 
         <template v-if="activeCube">
             <el-tabs tab-position="top">
+                <el-tab-pane label="Details">
+                    <el-row class="details-tab">
+                        <el-col :span="12" :xs="24">
+                            <el-descriptions title="Core" :column="1" :label-width="240" :border="true" size="default">
+                                <el-descriptions-item label="Total Cards">{{ activeCube.stats?.totalCards ?? 0 }}</el-descriptions-item>
+                                <el-descriptions-item label="Last Modified">{{ formattedLastModified }}</el-descriptions-item>
+                                <el-descriptions-item label="Followers">{{ activeCube.followerCount ?? 0 }}</el-descriptions-item>
+                                <el-descriptions-item label="Categories">
+                                    <el-tag
+                                        v-for="category in (activeCube.stats?.assumedCategories || [])"
+                                        :key="category"
+                                        size="default"
+                                        type="info"
+                                        style="margin-right: 0.25rem;"
+                                        disable-transitions
+                                    >
+                                        {{ category }}
+                                    </el-tag>
+                                    <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Arena Playable">
+                                    <el-tag :type="activeCube.stats?.arenaPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.arenaPlayable ? 'Yes' : 'No' }}</el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="MTGO Playable">
+                                    <el-tag :type="activeCube.stats?.mtgoPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.mtgoPlayable ? 'Yes' : 'No' }}</el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Paper Playable">
+                                    <el-tag :type="activeCube.stats?.paperPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.paperPlayable ? 'Yes' : 'No' }}</el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Graveyard Order Matters">
+                                    <el-tag :type="activeCube.stats?.graveyardOrderMatters ? 'warning' : 'info'" size="default">{{ activeCube.stats?.graveyardOrderMatters ? 'Yes' : 'No' }}</el-tag>
+                                </el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+
+                        <el-col :span="12" :xs="24">
+                            <el-descriptions title="Card Counts" :column="1" :label-width="240" :border="true" size="default">
+                                <el-descriptions-item label="New Cards">
+                                    {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.newCards ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Singleton">
+                                    {{ formatPercentage(activeCube.stats?.singletonCards, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.singletonCards ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Lands">
+                                    {{ formatPercentage(activeCube.stats?.landCards, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.landCards ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Creatures">
+                                    {{ formatPercentage(activeCube.stats?.creatureCards, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.creatureCards ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Removal">
+                                    {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.removal ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Makes Tokens">
+                                    {{ formatPercentage(activeCube.stats?.cardCounts?.makesTokens, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.makesTokens ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Abnormal Layout">
+                                    {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.abnormalLayout ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Universes Beyond">
+                                    {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.universesBeyond ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Supplemental Product">
+                                    {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.supplementalProduct ?? 0 }})</span>
+                                </el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+
+                        <el-col :span="12" :xs="24">
+                            <el-descriptions title="Summary Stats" :column="1" :label-width="240" :border="true" size="default">
+                                <el-descriptions-item label="Avg. Similarity">{{ formatPercentage(avgSimilarityScore, 1) }}</el-descriptions-item>
+                                <el-descriptions-item label="Avg. Mana Value">{{ (activeCube.stats?.averageNonLandCmc ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Avg. Card Elo">{{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Avg. Card Popularity">{{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Rarity Score">{{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Avg. Release Year">{{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }}</el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+
+                        <el-col :span="12" :xs="24">
+                            <el-descriptions title="Characteristics" :column="1" :label-width="240" :border="true" size="default">
+                                <el-descriptions-item label="Avg. Word Count">{{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Avg. Word Count Excl. Reminder">{{ (activeCube.stats?.averageWordCountMinusParen ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Keywords">{{ activeCube.stats?.uniqueKeywords ?? 0 }}</el-descriptions-item>
+                                <el-descriptions-item label="Non-Evergreen Keywords">{{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}</el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+
+                        <el-col :span="12" :xs="24">
+                            <el-descriptions title="Pricing" :column="1" :label-width="240" :border="true" size="default">
+                                <el-descriptions-item label="Min Price (USD)">${{ (activeCube.stats?.totalMinPriceUsd ?? 0).toFixed(2) }}</el-descriptions-item>
+                                <el-descriptions-item label="Min Price (Tix)">{{ (activeCube.stats?.totalMinPriceTix ?? 0).toFixed(2) }}</el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+                    </el-row>
+                </el-tab-pane>
+
                 <el-tab-pane label="Charts">
                     <el-row justify="space-between" class="chart-row" :gutter="20">
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
@@ -110,6 +215,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useDateFormat } from '@vueuse/core';
 import { Loading } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -175,6 +281,27 @@ const activeCubeCards = computed(() => {
 const switchCube = (cubeId: string) => {
     activeCubeId.value = cubeId;
     samplePackSeed.value = Date.now();
+};
+
+const avgSimilarityScore = computed(() => {
+    if (!activeCube.value) return 0;
+    const scores = props.similarityMatrix[activeCube.value.id] || {};
+    const totalCubes = Object.keys(props.loadedCubes).length - 1;
+    if (totalCubes === 0) return 0;
+    const totalScore = Object.values(scores).reduce((acc: number, c: any) => acc + c.cosineSimilarity, 0);
+    return totalScore / totalCubes;
+});
+
+const formattedLastModified = computed(() => {
+    const ts = activeCube.value?.lastModified;
+    if (!ts) return 'N/A';
+    return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+});
+
+const formatPercentage = (value: number | undefined, total: number | undefined) => {
+    const v = value ?? 0;
+    const t = total ?? 1;
+    return ((v / t) * 100).toFixed(2) + '%';
 };
 
 const renderedBrief = computed(() => {
@@ -269,5 +396,9 @@ const generateNewPack = () => {
     font-size: 2rem;
     color: var(--el-text-color-secondary);
     padding: 4rem;
+}
+
+.details-tab.el-row .el-col {
+    padding: 10px;
 }
 </style>
