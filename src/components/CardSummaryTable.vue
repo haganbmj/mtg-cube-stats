@@ -12,12 +12,11 @@
         </el-col>
     </el-row>
 
-    <el-divider />
-
     <CardTableFilters
         ref="cardTableFiltersRef"
         :loadedCubes="loadedCubes"
         @update:filters="onFiltersUpdated"
+        style="margin-top: 15px;"
     />
 
     <el-pagination
@@ -149,6 +148,16 @@
         />
 
         <el-table-column
+            v-if="config.visibleColumns.includes('count')"
+            prop="count"
+            label="Total Count"
+            min-width="75"
+            max-width="100"
+            :align="'center'"
+            sortable="custom"
+        />
+
+        <el-table-column
             v-if="config.visibleColumns.includes('effectiveColors')"
             prop="effectiveColors"
             label="Colors"
@@ -183,6 +192,28 @@
             min-width="175"
             max-width="350"
             show-overflow-tooltip
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('elo')"
+            prop="elo"
+            label="Elo"
+            min-width="75"
+            max-width="100"
+            :align="'center'"
+            :formatter="(row) => row.elo != null ? row.elo.toFixed(0) : 'N/A'"
+            sortable="custom"
+        />
+
+        <el-table-column
+            v-if="config.visibleColumns.includes('popularity')"
+            prop="popularity"
+            label="Popularity"
+            min-width="75"
+            max-width="100"
+            :align="'center'"
+            :formatter="(row) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A'"
             sortable="custom"
         />
 
@@ -278,7 +309,7 @@
         <el-table-column
             v-if="config.visibleColumns.includes('oracleTextWordCount')"
             prop="oracleTextWordCount"
-            label="Word Count"
+            label="Word Count (incl. Reminder Text)"
             min-width="75"
             max-width="100"
             :align="'center'"
@@ -288,7 +319,7 @@
         <el-table-column
             v-if="config.visibleColumns.includes('oracleTextWordCountMinusParen')"
             prop="oracleTextWordCountMinusParen"
-            label="Words (No Reminder)"
+            label="Word Count"
             min-width="75"
             max-width="100"
             :align="'center'"
@@ -298,13 +329,14 @@
         <el-table-column
             v-if="config.visibleColumns.includes('isUniversesBeyond')"
             prop="isUniversesBeyond"
-            label="UB"
+            label="Universes Beyond"
             min-width="50"
             max-width="75"
             :align="'center'"
         >
             <template #default="{ row }">
-                <el-tag v-if="row.isUniversesBeyond" type="warning" size="small">Yes</el-tag>
+                <el-tag v-if="row.isUniversesBeyond" type="success" size="small">Yes</el-tag>
+                <el-tag v-else type="info" size="small">No</el-tag>
             </template>
         </el-table-column>
 
@@ -317,7 +349,8 @@
             :align="'center'"
         >
             <template #default="{ row }">
-                <el-tag v-if="row.isSupplementalProduct" type="info" size="small">Yes</el-tag>
+                <el-tag v-if="row.isSupplementalProduct" type="success" size="small">Yes</el-tag>
+                <el-tag v-else type="info" size="small">No</el-tag>
             </template>
         </el-table-column>
 
@@ -331,6 +364,7 @@
         >
             <template #default="{ row }">
                 <el-tag v-if="row.makesTokens" type="success" size="small">Yes</el-tag>
+                <el-tag v-else type="info" size="small">No</el-tag>
             </template>
         </el-table-column>
 
@@ -458,9 +492,12 @@ const columnOptions = ref([
         label: 'Core',
         options: [
             { value: 'cubeCount', label: 'Cubes' },
+            { value: 'count', label: 'Total Count' },
             { value: 'effectiveColors', label: 'Colors' },
             { value: 'cmc', label: 'Mana Value' },
             { value: 'typeLine', label: 'Type Line' },
+            { value: 'elo', label: 'Elo' },
+            { value: 'popularity', label: 'Popularity' },
             { value: 'tags', label: 'Tags' },
             { value: 'minRarity', label: 'Min Rarity' },
         ],
@@ -484,8 +521,8 @@ const columnOptions = ref([
     {
         label: 'Characteristics',
         options: [
-            { value: 'oracleTextWordCount', label: 'Word Count' },
-            { value: 'oracleTextWordCountMinusParen', label: 'Words (No Reminder)' },
+            { value: 'oracleTextWordCount', label: 'Word Count (incl. Reminder Text)' },
+            { value: 'oracleTextWordCountMinusParen', label: 'Word Count' },
             { value: 'isUniversesBeyond', label: 'Universes Beyond' },
             { value: 'isSupplementalProduct', label: 'Supplemental Product' },
             { value: 'makesTokens', label: 'Makes Tokens' },
@@ -855,6 +892,21 @@ const filteredRows = computed(() => {
             // Word count (comparative)
             if (f.wordCountComparison) {
                 if (!compareValues(row.oracleTextWordCount, f.wordCountComparison, f.wordCountValue)) return false;
+            }
+
+            // Total count (comparative)
+            if (f.countComparison) {
+                if (!compareValues(row.count, f.countComparison, f.countValue)) return false;
+            }
+
+            // Elo (comparative)
+            if (f.eloComparison) {
+                if (!compareValues(row.elo, f.eloComparison, f.eloValue)) return false;
+            }
+
+            // Popularity (comparative)
+            if (f.popularityComparison) {
+                if (!compareValues(row.popularity, f.popularityComparison, f.popularityValue)) return false;
             }
 
             // Games (tristate)

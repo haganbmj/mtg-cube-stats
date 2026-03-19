@@ -150,8 +150,8 @@
                                     {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }}
                                 </el-descriptions-item>
                                 <el-descriptions-item>
-                                    <template #label><el-tooltip content="Median Release Year of Cards in the Cube" placement="top" :hide-after="50"><span>Median Release Year <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }}
+                                    <template #label><el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50"><span>Median Release Year <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
+                                    {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} (±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
                                 </el-descriptions-item>
                             </el-descriptions>
                         </el-col>

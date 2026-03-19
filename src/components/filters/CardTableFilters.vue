@@ -40,6 +40,23 @@
               :options="availableCubes"
               placeholder="Filter by cube..."
             />
+            <label class="filter-label">Total Count</label>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-select v-model="filters.countComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                  <el-option label="Any" value="" />
+                  <el-option label="=" value="eq" />
+                  <el-option label="≠" value="neq" />
+                  <el-option label="<" value="lt" />
+                  <el-option label="≤" value="lte" />
+                  <el-option label=">" value="gt" />
+                  <el-option label="≥" value="gte" />
+                </el-select>
+              </el-col>
+              <el-col :span="12">
+                <el-input-number v-model="filters.countValue" :min="0" :step="1" :disabled="!filters.countComparison" @change="emitFilters" style="width: 100%;" />
+              </el-col>
+            </el-row>
           </div>
 
           <div class="filter-section">
@@ -189,6 +206,10 @@
         <el-col :span="8" :xs="24" :sm="24" :md="8">
           <div class="filter-section">
             <h4 class="filter-section-title">Original Set / Release</h4>
+            <div class="filter-checkboxes" style="margin-top: 6px;">
+              <TristateCheckbox v-model="filters.isUniversesBeyond" @update:modelValue="emitFilters">Universes Beyond</TristateCheckbox>
+              <TristateCheckbox v-model="filters.isSupplementalProduct" @update:modelValue="emitFilters">Supplemental Product</TristateCheckbox>
+            </div>
             <label class="filter-label">Set Code</label>
             <TristateSelect
               :modelValue="filters.setCodes"
@@ -224,6 +245,9 @@
 
           <div class="filter-section">
             <h4 class="filter-section-title">Characteristics</h4>
+            <div class="filter-checkboxes-grid" style="margin-top: 6px;">
+              <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Makes Tokens</TristateCheckbox>
+            </div>
             <label class="filter-label">Layout</label>
             <TristateSelect
               :modelValue="filters.layouts"
@@ -255,11 +279,40 @@
                 <el-input-number v-model="filters.wordCountValue" :min="0" :step="1" :disabled="!filters.wordCountComparison" @change="emitFilters" style="width: 100%;" />
               </el-col>
             </el-row>
-            <div class="filter-checkboxes-grid" style="margin-top: 6px;">
-              <TristateCheckbox v-model="filters.isUniversesBeyond" @update:modelValue="emitFilters">Universes Beyond</TristateCheckbox>
-              <TristateCheckbox v-model="filters.isSupplementalProduct" @update:modelValue="emitFilters">Supplemental Product</TristateCheckbox>
-              <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Makes Tokens</TristateCheckbox>
-            </div>
+            <label class="filter-label">Elo</label>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-select v-model="filters.eloComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                  <el-option label="Any" value="" />
+                  <el-option label="=" value="eq" />
+                  <el-option label="≠" value="neq" />
+                  <el-option label="<" value="lt" />
+                  <el-option label="≤" value="lte" />
+                  <el-option label=">" value="gt" />
+                  <el-option label="≥" value="gte" />
+                </el-select>
+              </el-col>
+              <el-col :span="12">
+                <el-input-number v-model="filters.eloValue" :min="0" :step="50" :disabled="!filters.eloComparison" @change="emitFilters" style="width: 100%;" />
+              </el-col>
+            </el-row>
+            <label class="filter-label">Popularity</label>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-select v-model="filters.popularityComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                  <el-option label="Any" value="" />
+                  <el-option label="=" value="eq" />
+                  <el-option label="≠" value="neq" />
+                  <el-option label="<" value="lt" />
+                  <el-option label="≤" value="lte" />
+                  <el-option label=">" value="gt" />
+                  <el-option label="≥" value="gte" />
+                </el-select>
+              </el-col>
+              <el-col :span="12">
+                <el-input-number v-model="filters.popularityValue" :min="0" :step="50" :disabled="!filters.popularityComparison" @change="emitFilters" style="width: 100%;" />
+              </el-col>
+            </el-row>
           </div>
         </el-col>
       </el-row>
@@ -312,6 +365,12 @@ const filters = reactive({
     makesTokens: null as boolean | null,
     wordCountComparison: '',
     wordCountValue: 0,
+    countComparison: '',
+    countValue: 0,
+    eloComparison: '',
+    eloValue: 1200,
+    popularityComparison: '',
+    popularityValue: 1200,
     games: {} as Record<string, boolean | null>,
     keywords: {} as Record<string, boolean | null>,
 });
@@ -500,6 +559,12 @@ const resetFilters = () => {
     filters.makesTokens = null;
     filters.wordCountComparison = '';
     filters.wordCountValue = 0;
+    filters.countComparison = '';
+    filters.countValue = 0;
+    filters.eloComparison = '';
+    filters.eloValue = 1200;
+    filters.popularityComparison = '';
+    filters.popularityValue = 1200;
     filters.games = {};
     filters.keywords = {};
     emitFilters();

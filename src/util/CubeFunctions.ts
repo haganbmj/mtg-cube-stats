@@ -310,6 +310,18 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             const mid = Math.floor(years.length / 2);
             return years.length % 2 !== 0 ? years[mid] : (years[mid - 1] + years[mid]) / 2;
         })(),
+        medianReleaseYearMAD: (() => {
+            const years = cards
+                .filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'))
+                .map(c => c.releaseYear!)
+                .sort((a, b) => a - b);
+            if (years.length === 0) return 0;
+            const mid = Math.floor(years.length / 2);
+            const median = years.length % 2 !== 0 ? years[mid] : (years[mid - 1] + years[mid]) / 2;
+            const deviations = years.map(y => Math.abs(y - median)).sort((a, b) => a - b);
+            const devMid = Math.floor(deviations.length / 2);
+            return deviations.length % 2 !== 0 ? deviations[devMid] : (deviations[devMid - 1] + deviations[devMid]) / 2;
+        })(),
         // This is a map of keyword -> count
         keywords: cards.reduce((keywords: Record<string, number>, c) => {
             c.keywords?.forEach(kw => {
