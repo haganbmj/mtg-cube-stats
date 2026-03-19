@@ -378,22 +378,13 @@
             </el-col>
         </el-row>
 
-        <CubeDetailDialog
-            v-model:visible="cubeDetailDialogVisible"
-            :cubeRow="cubeDetailDialogRow"
-            :cubeCards="cubeDetailDialogCards"
-            :similarityMatrix="similarityMatrix"
-            :overviewTableData="overviewTableData"
-            :loadedCubes="loadedCubes"
-        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, inject } from 'vue';
 import { getSetName } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
-import CubeDetailDialog from '../components/CubeDetailDialog.vue';
 
 const props = defineProps({
     loadedCubes: {
@@ -410,22 +401,7 @@ const props = defineProps({
     },
 });
 
-const cubeDetailDialogId = ref(null);
-const cubeDetailDialogVisible = computed({
-    get: () => cubeDetailDialogId.value !== null,
-    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
-});
-const cubeDetailDialogRow = computed(() => {
-    if (!cubeDetailDialogId.value) return null;
-    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
-});
-const cubeDetailDialogCards = computed(() => {
-    if (!cubeDetailDialogId.value) return [];
-    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
-});
-const openCubeDetailDialog = (cubeId) => {
-    cubeDetailDialogId.value = cubeId;
-};
+const openCubeDetailDialog = inject('openCubeDetailDialog');
 
 const totalCubes = computed(() => Object.keys(props.loadedCubes).length);
 

@@ -214,21 +214,12 @@
         </div>
     </el-card>
 
-    <CubeDetailDialog
-        v-model:visible="cubeDetailDialogVisible"
-        :cubeRow="cubeDetailDialogRow"
-        :cubeCards="cubeDetailDialogCards"
-        :similarityMatrix="similarityMatrix"
-        :overviewTableData="overviewTableData"
-        :loadedCubes="loadedCubes"
-    />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, inject } from 'vue';
 import { CaretTop, CaretBottom } from '@element-plus/icons-vue';
 import { detectCubeArchetypes } from '../util/ArchetypeDetection';
-import CubeDetailDialog from '../components/CubeDetailDialog.vue';
 
 const props = defineProps({
     loadedCubes: {
@@ -249,22 +240,7 @@ const highlightedCubeId = ref<string>('');
 const showAllCubes = ref({});
 const showAllCards = ref({});
 
-const cubeDetailDialogId = ref(null);
-const cubeDetailDialogVisible = computed({
-    get: () => cubeDetailDialogId.value !== null,
-    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
-});
-const cubeDetailDialogRow = computed(() => {
-    if (!cubeDetailDialogId.value) return null;
-    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
-});
-const cubeDetailDialogCards = computed(() => {
-    if (!cubeDetailDialogId.value) return [];
-    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
-});
-const openCubeDetailDialog = (cubeId) => {
-    cubeDetailDialogId.value = cubeId;
-};
+const openCubeDetailDialog = inject('openCubeDetailDialog');
 
 // Error handling functions for card images
 const handleImageError = (event: Event) => {

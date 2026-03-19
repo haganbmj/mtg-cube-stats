@@ -55,6 +55,15 @@
                             <About />
                         </el-tab-pane>
                     </el-tabs>
+
+                    <CubeDetailDialog
+                        v-model:visible="cubeDetailDialogVisible"
+                        :cubeRow="cubeDetailDialogRow"
+                        :cubeCards="cubeDetailDialogCards"
+                        :similarityMatrix="similarityMatrix"
+                        :overviewTableData="overviewTableData"
+                        :loadedCubes="loadedCubes"
+                    />
                 </div>
             </el-main>
             <el-footer>
@@ -75,6 +84,7 @@ import { getCubeData } from './util/CubeCobra';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
 import About from './components/About.vue';
+import CubeDetailDialog from './components/CubeDetailDialog.vue';
 import OverviewTab from './tabs/OverviewTab.vue';
 import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
@@ -111,6 +121,24 @@ const presetComparisons = {
 const loadedCubes = ref({});
 
 const activeTab = ref('overview');
+
+const cubeDetailDialogId = ref(null);
+const cubeDetailDialogVisible = computed({
+    get: () => cubeDetailDialogId.value !== null,
+    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
+});
+const cubeDetailDialogRow = computed(() => {
+    if (!cubeDetailDialogId.value) return null;
+    return overviewTableData.value.find(c => c.id === cubeDetailDialogId.value) || null;
+});
+const cubeDetailDialogCards = computed(() => {
+    if (!cubeDetailDialogId.value) return [];
+    return loadedCubes.value[cubeDetailDialogId.value]?.cards || [];
+});
+const openCubeDetailDialog = (cubeId) => {
+    cubeDetailDialogId.value = cubeId;
+};
+provide('openCubeDetailDialog', openCubeDetailDialog);
 
 const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
 

@@ -75,15 +75,6 @@
         </el-col>
     </el-row>
 
-    <CubeDetailDialog
-        v-model:visible="cubeDetailDialogVisible"
-        :cubeRow="cubeDetailDialogRow"
-        :cubeCards="cubeDetailDialogCards"
-        :similarityMatrix="similarityMatrix"
-        :overviewTableData="overviewTableData"
-        :loadedCubes="loadedCubes"
-    />
-
     <el-table
         :data="overviewTableData"
         :default-sort="{ prop: 'name', order: 'ascending' }"
@@ -528,10 +519,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, inject } from 'vue';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
-import CubeDetailDialog from '../components/CubeDetailDialog.vue';
 import { useDateFormat } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled } from '@element-plus/icons-vue';
 
@@ -599,23 +589,7 @@ const addCubeForm = reactive({
     presetComparisonsSelection: '',
 });
 
-const cubeDetailDialogId = ref(null);
-const cubeDetailDialogVisible = computed({
-    get: () => cubeDetailDialogId.value !== null,
-    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
-});
-const cubeDetailDialogRow = computed(() => {
-    if (!cubeDetailDialogId.value) return null;
-    return props.overviewTableData.find(c => c.id === cubeDetailDialogId.value) || null;
-});
-const cubeDetailDialogCards = computed(() => {
-    if (!cubeDetailDialogId.value) return [];
-    return props.loadedCubes[cubeDetailDialogId.value]?.cards || [];
-});
-
-const openCubeDetailDialog = (cubeId) => {
-    cubeDetailDialogId.value = cubeId;
-};
+const openCubeDetailDialog = inject('openCubeDetailDialog');
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
