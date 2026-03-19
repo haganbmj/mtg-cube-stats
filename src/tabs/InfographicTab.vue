@@ -273,7 +273,7 @@
                             <div class="cube-details-compact">
                                 <h4><a href="#" @click.prevent="openCubeDetailDialog(mostWordyCube.id)">{{ mostWordyCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${mostWordyCube.owner}`" target="_blank" rel="noopener">{{ mostWordyCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ mostWordyCube.stats.averageWordCountMinusParen.toFixed(1) }} avg words</div>
+                                <div class="stat-highlight">{{ mostWordyCube.stats.averageWordCountUnique.toFixed(1) }} avg words</div>
                             </div>
                         </div>
                     </div>
@@ -292,7 +292,7 @@
                             <div class="cube-details-compact">
                                 <h4><a href="#" @click.prevent="openCubeDetailDialog(leastWordyCube.id)">{{ leastWordyCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${leastWordyCube.owner}`" target="_blank" rel="noopener">{{ leastWordyCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ leastWordyCube.stats.averageWordCountMinusParen.toFixed(1) }} avg words</div>
+                                <div class="stat-highlight">{{ leastWordyCube.stats.averageWordCountUnique.toFixed(1) }} avg words</div>
                             </div>
                         </div>
                     </div>
@@ -589,7 +589,7 @@ const leastWordyCube = computed(() => {
     if (totalCubes.value === 0) return null;
 
     return Object.values(props.loadedCubes).reduce((least: any, cube: any) => {
-        if (!least || cube.stats.averageWordCountMinusParen < least.stats.averageWordCountMinusParen) {
+        if (!least || cube.stats.averageWordCountUnique < least.stats.averageWordCountUnique) {
             return cube;
         }
         return least;
@@ -635,7 +635,7 @@ const mostWordyCube = computed(() => {
     if (totalCubes.value === 0) return null;
 
     return Object.values(props.loadedCubes).reduce((wordiest: any, cube: any) => {
-        if (!wordiest || cube.stats.averageWordCountMinusParen > wordiest.stats.averageWordCountMinusParen) {
+        if (!wordiest || cube.stats.averageWordCountUnique > wordiest.stats.averageWordCountUnique) {
             return cube;
         }
         return wordiest;

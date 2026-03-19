@@ -289,9 +289,8 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             rarities[rarity] = (rarities[rarity] ?? 0) + 1;
             return rarities;
         }, {}),
-        averageWordCount: cards.reduce((sum, c) => sum + (c.oracleTextWordCount ?? 0), 0) / cards.length,
-        // averageWordCountMinusParen: cards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / cards.length,
-        averageWordCountMinusParen: (() => {
+        averageWordCount: cards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / cards.length,
+        averageWordCountUnique: (() => {
             return uniqueCards.length > 0
                 ? uniqueCards.reduce((sum, c) => sum + (c.oracleTextWordCountMinusParen ?? 0), 0) / uniqueCards.length
                 : 0;
