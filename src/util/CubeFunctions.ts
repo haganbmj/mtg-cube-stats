@@ -300,6 +300,15 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'));
             return validCards.length > 0 ? validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length : 2000;
         })(),
+        medianReleaseYear: (() => {
+            const years = cards
+                .filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'))
+                .map(c => c.releaseYear!)
+                .sort((a, b) => a - b);
+            if (years.length === 0) return 2000;
+            const mid = Math.floor(years.length / 2);
+            return years.length % 2 !== 0 ? years[mid] : (years[mid - 1] + years[mid]) / 2;
+        })(),
         // This is a map of keyword -> count
         keywords: cards.reduce((keywords: Record<string, number>, c) => {
             c.keywords?.forEach(kw => {
