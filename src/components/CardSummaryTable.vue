@@ -372,16 +372,22 @@
         width="600"
         align-center
     >
-        <div v-for="group in columnOptions" :key="group.label">
+        <div v-for="group in columnOptions" :key="group.label" style="margin-bottom: 1em;">
             <h4>{{ group.label }}</h4>
-            <el-checkbox-group v-model="config.visibleColumns">
-                <el-col v-for="item in group.options" :key="item.value">
-                    <el-checkbox :label="item.value">
-                        {{ item.label }}
-                    </el-checkbox>
-                </el-col>
+            <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
+                <el-row :gutter="10">
+                    <el-col :span="12" :xs="24" v-for="item in group.options" :key="item.value">
+                        <el-checkbox :label="item.value">
+                            {{ item.label }}
+                        </el-checkbox>
+                    </el-col>
+                </el-row>
             </el-checkbox-group>
         </div>
+
+        <template #footer>
+            <el-button @click="columnCustomizationVisible = false">Close</el-button>
+        </template>
     </el-dialog>
 </template>
 
