@@ -1,6 +1,6 @@
 ---
 description: "Use when creating or modifying Vue components, implementing Element Plus integration, handling reactive state, or working with component composition patterns."
-applyTo: "src/components/**/*.vue"
+applyTo: "src/**/*.vue"
 ---
 
 # Vue Component Guidelines
