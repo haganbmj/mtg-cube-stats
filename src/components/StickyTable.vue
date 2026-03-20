@@ -16,7 +16,7 @@
                     :style="columnStyle(col)"
                     @click="col.sortable && toggleSort(col)"
                 >
-                    <div class="sticky-table__header-cell">
+                    <div class="sticky-table__header-cell" :style="cellContentStyle(col)">
                         <slot :name="`header-${col.key}`" :column="col">
                             <el-tooltip
                                 v-if="col.tooltip"
@@ -72,10 +72,12 @@
                             'is-center': col.align === 'center',
                             'is-right': col.align === 'right',
                         }"
+                        :style="columnStyle(col)"
                     >
                         <div
                             class="sticky-table__cell"
                             :class="{ 'sticky-table__cell--overflow': col.showOverflowTooltip }"
+                            :style="cellContentStyle(col)"
                             :title="col.showOverflowTooltip ? String(formatCell(row, col)) : undefined"
                         >
                             <slot :name="`cell-${col.key}`" :row="row" :column="col" :rowIndex="rowIndex">
@@ -203,6 +205,15 @@ const columnStyle = (col: StickyTableColumn): Record<string, string> => {
     const style: Record<string, string> = {};
     if (col.width) style.width = col.width;
     if (col.minWidth) style.minWidth = col.minWidth;
+    if (col.maxWidth) style.maxWidth = col.maxWidth;
+    return style;
+};
+
+// max-width has no effect on <th>/<td> in table-layout:auto, so it is
+// applied to the inner content div instead via this helper.
+const cellContentStyle = (col: StickyTableColumn): Record<string, string> => {
+    const style: Record<string, string> = {};
+    if (col.maxWidth) style.maxWidth = col.maxWidth;
     return style;
 };
 
