@@ -36,7 +36,7 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         color: '#8C7853',
         detectBy: {
             tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'synergy-artifact-*', 'tutor-artifact'],
-            keywords: ['affinity-for-artifacts', 'improvise', 'fabricate']
+            keywords: ['affinity-for-artifacts', 'improvise', 'fabricate', 'waterbend']
         },
         threshold: 8
     },
@@ -45,7 +45,7 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         color: '#9C27B0',
         detectBy: {
             tags: ['enchantmentfall', 'enchantmentize', 'synergy-enchantment', 'synergy-enchantment-*', 'tutor-enchantment', 'enchantment-engine'],
-            keywords: ['constellation', 'waterbend']
+            keywords: ['constellation', 'bestow', 'aura swap']
         },
         threshold: 5
     },
@@ -229,6 +229,15 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
             keywords: ['morph', 'manifest', 'manifest dread', 'cloak', 'megamorph']
         },
         threshold: 4
+    },
+    'Ninjas': {
+        description: 'Cards with Ninjutsu or Sneak',
+        color: '#263238',
+        detectBy: {
+            tags: ['ninjutsu'],
+            keywords: ['ninjutsu', 'sneak']
+        },
+        threshold: 3
     }
 };
 
