@@ -151,7 +151,7 @@
                 <el-card class="content-card" v-if="newestAvgYearCube">
                     <template #header>
                         <h3>Zoomer Friendly</h3>
-                        <p class="subtitle">Cube with newest average release year</p>
+                        <p class="subtitle">Cube with newest median release year</p>
                     </template>
                     <div class="cube-stat">
                         <div class="cube-info-compact">
@@ -159,7 +159,7 @@
                             <div class="cube-details-compact">
                                 <h4><a href="#" @click.prevent="openCubeDetailDialog(newestAvgYearCube.id)">{{ newestAvgYearCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${newestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ newestAvgYearCube.owner }}</a></p>
-                                <div class="stat-highlight">Avg Year: {{ newestAvgYearCube.stats.averageReleaseYear?.toFixed(1) || 'N/A' }}</div>
+                                <div class="stat-highlight">Median Year: {{ Math.round(newestAvgYearCube.stats.medianReleaseYear) }} (±{{ newestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
                             </div>
                         </div>
                     </div>
@@ -170,7 +170,7 @@
                 <el-card class="content-card" v-if="oldestAvgYearCube">
                     <template #header>
                         <h3>Boomer Magic</h3>
-                        <p class="subtitle">Cube with oldest average release year</p>
+                        <p class="subtitle">Cube with oldest median release year</p>
                     </template>
                     <div class="cube-stat">
                         <div class="cube-info-compact">
@@ -178,7 +178,7 @@
                             <div class="cube-details-compact">
                                 <h4><a href="#" @click.prevent="openCubeDetailDialog(oldestAvgYearCube.id)">{{ oldestAvgYearCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${oldestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ oldestAvgYearCube.owner }}</a></p>
-                                <div class="stat-highlight">Avg Year: {{ oldestAvgYearCube.stats.averageReleaseYear?.toFixed(1) || 'N/A' }}</div>
+                                <div class="stat-highlight">Median Year: {{ Math.round(oldestAvgYearCube.stats.medianReleaseYear) }} (±{{ oldestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
                             </div>
                         </div>
                     </div>
@@ -541,8 +541,8 @@ const newestAvgYearCube = computed(() => {
     if (totalCubes.value === 0) return null;
 
     return Object.values(props.loadedCubes).reduce((newest: any, cube: any) => {
-        if (!cube.stats.averageReleaseYear) return newest;
-        if (!newest || cube.stats.averageReleaseYear > newest.stats.averageReleaseYear) {
+        if (!cube.stats.medianReleaseYear) return newest;
+        if (!newest || cube.stats.medianReleaseYear > newest.stats.medianReleaseYear) {
             return cube;
         }
         return newest;
@@ -553,8 +553,8 @@ const oldestAvgYearCube = computed(() => {
     if (totalCubes.value === 0) return null;
 
     return Object.values(props.loadedCubes).reduce((oldest: any, cube: any) => {
-        if (!cube.stats.averageReleaseYear) return oldest;
-        if (!oldest || cube.stats.averageReleaseYear < oldest.stats.averageReleaseYear) {
+        if (!cube.stats.medianReleaseYear) return oldest;
+        if (!oldest || cube.stats.medianReleaseYear < oldest.stats.medianReleaseYear) {
             return cube;
         }
         return oldest;

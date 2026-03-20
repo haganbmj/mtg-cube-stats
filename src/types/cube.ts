@@ -42,6 +42,8 @@ export interface CubeCard {
   games?: string[];
   tags?: string[];
   archetypes?: string[];
+  setType?: string;
+  layout?: string;
   isNormalLayout?: boolean;
   makesTokens?: boolean;
   minPriceUsd?: number | null;
@@ -74,6 +76,7 @@ export interface CubeStats {
   averageWordCountUnique: number;
   averageReleaseYear: number;
   medianReleaseYear: number;
+  medianReleaseYearMAD: number;
   keywords: Record<string, number>;
   totalMinPriceUsd: number;
   totalMinPriceTix: number;

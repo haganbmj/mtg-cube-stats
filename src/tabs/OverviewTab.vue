@@ -235,11 +235,14 @@
             v-if="config.visibleColumns.includes('stats.medianReleaseYear')"
             prop="stats.medianReleaseYear"
             label="Median Release Year"
-            min-width="75"
-            max-width="100"
+            min-width="100"
+            max-width="150"
             sortable
-            :formatter="columnFormatters.roundedInteger"
-        />
+        >
+            <template #default="{ row }">
+                {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
+            </template>
+        </el-table-column>
 
         <el-table-column
             v-if="config.visibleColumns.includes('stats.totalCards')"
@@ -369,7 +372,7 @@
             min-width="75"
             max-width="100"
             sortable
-            :formatter="columnFormatters.toFixed2"
+            :formatter="columnFormatters.toPopularity"
         />
 
         <el-table-column
@@ -625,7 +628,7 @@ const columnOptions = ref([
             { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
             { value: 'stats.totalMinPriceTix', label: "Min Price (Tix)", tooltip: "Total Minimum Price of the Cube in MTGO Tix" },
             { value: 'stats.averageReleaseYear', label: 'Avg. Release Year', tooltip: "Average Release Year of Cards in the Cube" },
-            { value: 'stats.medianReleaseYear', label: 'Median Release Year', tooltip: "Median Release Year of Cards in the Cube" },
+            { value: 'stats.medianReleaseYear', label: 'Median Release Year', tooltip: "Median Release Year of Cards in the Cube (± Median Absolute Deviation)" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
             { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
@@ -706,6 +709,9 @@ const columnFormatters = {
     },
     toFixed2: (row, column) => {
         return (getNestedProp(row, column.property) ?? 0).toFixed(2);
+    },
+    toPopularity: (row, column) => {
+        return (getNestedProp(row, column.property) ?? 0).toFixed(2) + ' %';
     },
     toPriceUsd: (row, column) => {
         return '$' + (getNestedProp(row, column.property) ?? 0).toFixed(2);
