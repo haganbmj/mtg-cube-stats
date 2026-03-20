@@ -29,20 +29,17 @@
                 <el-col :span="8" :xs="24" :sm="10" :md="8">
                     <div style="text-align: center;">
                         <el-image
-                            :src="activeCard.urlFront"
+                            :src="showFront ? activeCard.urlFront : activeCard.urlBack"
                             fit="contain"
-                            :alt="activeCard.name"
+                            :alt="showFront ? activeCard.name : (activeCard.name ?? '') + ' (back)'"
                             :class="'card-image ' + activeCard.setCode?.toLowerCase()"
                             style="max-width: 300px; width: 100%;"
                         />
-                        <el-image
-                            v-if="activeCard.urlBack"
-                            :src="activeCard.urlBack"
-                            fit="contain"
-                            :alt="(activeCard.name ?? '') + ' (back)'"
-                            :class="'card-image ' + activeCard.setCode?.toLowerCase()"
-                            style="max-width: 300px; width: 100%; margin-top: 8px;"
-                        />
+                        <div v-if="activeCard.urlBack" style="margin-top: 8px;">
+                            <el-button size="small" @click="showFront = !showFront">
+                                {{ showFront ? 'Show Back' : 'Show Front' }}
+                            </el-button>
+                        </div>
                     </div>
 
                     <div v-if="(activeCard.games ?? []).length > 0" style="margin-top: 12px; text-align: center;">
@@ -201,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, inject, ref, watch } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
 import type { Cube } from '../types';
 
@@ -227,6 +224,8 @@ const props = defineProps({
 defineEmits(['update:visible']);
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog', () => {});
+
+const showFront = ref(true);
 
 const activeCard = computed(() => {
     if (!props.oracleId) return null;
@@ -256,6 +255,10 @@ const activeCard = computed(() => {
         cubeCount: cubeKeys.length,
         count: totalCount,
     };
+});
+
+watch(activeCard, () => {
+    showFront.value = true;
 });
 
 const expandedCubeList = computed(() => {
