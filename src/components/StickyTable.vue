@@ -1,6 +1,7 @@
 <template>
+    <div ref="wrapperRef" class="sticky-table-wrapper">
     <table class="sticky-table" :class="{ 'sticky-table--striped': stripe }">
-        <thead v-if="visibleColumns.length > 0" class="sticky-table__header">
+        <thead ref="theadRef" v-if="visibleColumns.length > 0" class="sticky-table__header" :style="theadStyle">
             <tr>
                 <th v-if="expandable" class="sticky-table__th sticky-table__th--expand"></th>
                 <th
@@ -98,10 +99,11 @@
             </tr>
         </tbody>
     </table>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { InfoFilled } from '@element-plus/icons-vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 
@@ -143,6 +145,45 @@ const sortState = ref<{ prop: string; order: 'ascending' | 'descending' | null }
 
 const expandedRows = ref(new Set<number>());
 const hoverRowIndex = ref(-1);
+
+// --- Sticky header via JS transform (CSS sticky doesn't work with overflow-x: auto) ---
+const wrapperRef = ref<HTMLElement>();
+const theadRef = ref<HTMLElement>();
+const stickyOffset = ref(0);
+
+const theadStyle = computed(() => {
+    if (stickyOffset.value > 0) {
+        return {
+            transform: `translateY(${stickyOffset.value}px)`,
+            willChange: 'transform',
+        };
+    }
+    return {};
+});
+
+const updateStickyHeader = () => {
+    if (!wrapperRef.value || !theadRef.value || window.innerWidth <= 760) {
+        stickyOffset.value = 0;
+        return;
+    }
+    const rect = wrapperRef.value.getBoundingClientRect();
+    const headerHeight = theadRef.value.offsetHeight;
+    if (rect.top < 0 && rect.bottom > headerHeight) {
+        stickyOffset.value = Math.round(-rect.top);
+    } else {
+        stickyOffset.value = 0;
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('scroll', updateStickyHeader, { passive: true });
+    window.addEventListener('resize', updateStickyHeader, { passive: true });
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', updateStickyHeader);
+    window.removeEventListener('resize', updateStickyHeader);
+});
 
 const visibleColumns = computed(() => {
     return props.columns.filter(col => col.visible !== false);
@@ -198,6 +239,11 @@ const toggleExpand = (rowIndex: number) => {
 </script>
 
 <style lang="scss">
+.sticky-table-wrapper {
+    overflow-x: auto;
+    overflow-y: clip;
+}
+
 .sticky-table {
     width: 100%;
     table-layout: auto;
@@ -208,13 +254,7 @@ const toggleExpand = (rowIndex: number) => {
 }
 
 .sticky-table__header {
-    position: sticky;
-    top: 0;
     z-index: 10;
-
-    @media (max-width: 760px) {
-        position: static;
-    }
 }
 
 .sticky-table__th {
