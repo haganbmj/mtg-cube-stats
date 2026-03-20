@@ -33,88 +33,8 @@
         :columns="tableColumns"
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
         @sort-change="onSortChange"
-        :expandable="true"
         stripe
     >
-        <template #expand="{ row }">
-            <el-row class="expanded-content" :gutter="20" justify="space-around">
-                <el-col :span="8" :xs="24" :sm="24" :md="8" :xl="8">
-                    <div style="text-align:center">
-                        <el-image
-                            :src="`${row.urlFront}`"
-                            fit="contain"
-                            :alt="row.name"
-                            :class="'card-image ' + row.setCode?.toLowerCase()"
-                        />
-                    </div>
-
-                    <el-row justify="center" :gutter="10" class="row-games" style="margin-top: 10px; text-align: center;">
-                        <el-col :span="24">
-                            <div class="tag-list flex gap-2 justify-center">
-                                <el-tag
-                                    v-for="game in row.games"
-                                    :key="game"
-                                    size="small"
-                                    type="info"
-                                    :color="getGameTagColor(game)"
-                                    disable-transitions
-                                >
-                                    {{ game }}
-                                </el-tag>
-                            </div>
-                        </el-col>
-                    </el-row>
-
-                    <el-row justify="center" :gutter="10" class="row-rarities" style="margin-top: 10px; text-align: center;">
-                        <el-col :span="24">
-                            <el-text>Original Rarity: {{ capitalizeFirstLetter(row.rarity) }}</el-text>
-                        </el-col>
-                        <el-col :span="24">
-                            <el-text>Minimum Rarity: {{ capitalizeFirstLetter(row.minRarity) }}</el-text>
-                        </el-col>
-                    </el-row>
-                </el-col>
-                <el-col :span="16" :xs="24" :sm="24" :md="16" :xl="16">
-                    <el-row direction="horizontal">
-                        <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
-                            <h3>Included In ({{ row.cubeCount }}):</h3>
-                            <template v-for="cube in expandedCubeList(row.cubes)" :key="cube.key">
-                                <div v-if="cube.included">
-                                    <el-row direction="horizontal">
-                                        <el-col :span="16">
-                                            <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
-                                            </el-tooltip>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-text tag="i">({{ cube.size }} Cards)</el-text>
-                                        </el-col>
-                                    </el-row>
-                                </div>
-                            </template>
-                        </el-col>
-                        <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
-                            <h3>Not Included In ({{ expandedCubeList(row.cubes).length - row.cubeCount }}):</h3>
-                            <template v-for="cube in expandedCubeList(row.cubes)" :key="cube.key">
-                                <div v-if="!cube.included">
-                                    <el-row direction="horizontal">
-                                        <el-col :span="16">
-                                            <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
-                                            </el-tooltip>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-text tag="i">({{ cube.size }} Cards)</el-text>
-                                        </el-col>
-                                    </el-row>
-                                </div>
-                            </template>
-                        </el-col>
-                    </el-row>
-                </el-col>
-            </el-row>
-        </template>
-
         <template #cell-name="{ row }">
             <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
                 <template #content>
@@ -125,7 +45,7 @@
                         :class="'card-image ' + row.setCode?.toLowerCase()"
                     />
                 </template>
-                <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
+                <el-link @click="openCardDetailDialog(row.oracleId)">{{ row.name }}</el-link>
             </el-tooltip>
         </template>
 
@@ -221,7 +141,6 @@
 
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
-import { capitalizeFirstLetter } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
@@ -242,7 +161,7 @@ const props = defineProps({
     },
 });
 
-const openCubeDetailDialog = inject('openCubeDetailDialog');
+const openCardDetailDialog = inject('openCardDetailDialog');
 
 const cardTableFiltersRef = ref<InstanceType<typeof CardTableFilters>>();
 const currentPage = ref(1);
@@ -376,17 +295,6 @@ const getTagColor = (tag: string) => {
 
 const getGameTagColor = (game: string) => {
     return gamesMeta.find(g => g.value.toLowerCase() === game.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
-};
-
-const expandedCubeList = (cubeKeys: string[]) => {
-    return Object.entries(props.loadedCubes).map(([key, cube]) => ({
-        id: cube.id,
-        key: key,
-        name: cube.name,
-        owner: cube.owner,
-        size: cube.cards.length,
-        included: cubeKeys.includes(key),
-    })).sort((a, b) => a.name.localeCompare(b.name));
 };
 
 // --- Rarity ordering for comparative filters ---
