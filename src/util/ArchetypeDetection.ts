@@ -229,6 +229,15 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
             keywords: ['morph', 'manifest', 'manifest dread', 'cloak', 'megamorph']
         },
         threshold: 4
+    },
+    'Ninjas': {
+        description: 'Cards with Ninjutsu or Sneak',
+        color: '#263238',
+        detectBy: {
+            tags: ['ninjutsu'],
+            keywords: ['ninjutsu', 'sneak']
+        },
+        threshold: 3
     }
 };
 
