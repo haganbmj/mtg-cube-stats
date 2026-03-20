@@ -18,16 +18,6 @@ interface Batch {
 
 // Prefer using Cube IDs here rather than the user-defined short IDs that can change.
 const batches: Batch[] = [
-    // {
-    //     name: 'haganbmj',
-    //     staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
-    //     shardCount: 3,
-    //     cubes: [
-    //         '5d5f69612af66a30f9bb9b10', // Peasant
-    //         '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // Kuleshov
-    //         '4618ca9d-e359-4e85-b2fb-9e97720eb64c', // Twobert by Four
-    //     ],
-    // },
     {
         name: 'wotc',
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
@@ -47,8 +37,8 @@ const batches: Batch[] = [
             '5d2cb3f44153591614458e5d', // dekkerglen - MTGO Vintage Cube
             '5d617ac6c2a85f3b75fe95a4', // thepaupercube - The Pauper Cube
             '5fab13510efe0d1071b87fae', // gannoncd - Caleb Gannon's Powered Synergy Cube
-            '5d3f7245d1bbf667dd9d4286', // MatEffect - The Peasant Cube 2025
             '5d39ce4b8472c42aab0b61c2', // andymangold - Bun Magic Cube
+            '5d3f7245d1bbf667dd9d4286', // MatEffect - The Peasant Cube 2026
             '5d61aa23b8ec593ca4b76ca6', // wtwlf123 - wtwlf123's Cube
             'aa4ef3f9-0b4f-4bf0-9fbc-5cc3d3ec5e37', // andymangold - 100 Ornithopters
             '786d3a10-43bd-438e-acf4-bb150b881254', // LSVCube - PowerLSV
@@ -57,92 +47,92 @@ const batches: Batch[] = [
             '5ee1ac60516bcd40db036790', // DankTrainTom - Tom's Commander Cube
             'b4bd2b0e-1f9a-4b71-8a45-db39770b13a1', // AlphaFrog - AlphaFrog Vintage Cube
             '5d707d8cfcb84a5be6ced09f', // DrRuler - The Starter Cube
-            '5d83674db656d33b0d4bcc29', // dekkerglen - Dekkaru Cube [Retired]
             '5f7365c9dc7295103b93a28b', // RyanOverdrive - The Original Recipe Twobert
+            '5d83674db656d33b0d4bcc29', // dekkerglen - Dekkaru Cube [Retired]
             '5eac352663be2427d677d971', // andymangold - Degenerate Micro-Cube
-            '5d8cdc9ddabc762f670c1d2a', // TheJesguy - The Innistrad Remastered Cube
+            '5d8cdc9ddabc762f670c1d2a', // TheJesguy - The Innistrad Anthology Cube
             '5d6c2b61de02de10673665f7', // JaneMcKinney - The Tabletop Cube
-            '608a4a0131e4aa105f3292c7', // NitpickingNerds - Nitpicking Nerds Commander Cube
-            '6377de78946dbd0f6a6e8fff', // Emmmzyne - Peasant Cube (2025)
             '60f5fab79e954b050e0ae497', // anthonymattox - Battle Box
+            '608a4a0131e4aa105f3292c7', // NitpickingNerds - Nitpicking Nerds Commander Cube
+            '6377de78946dbd0f6a6e8fff', // Emmmzyne - Peasant Cube (2026)
             '5d5ef816726e4277c7bbc6be', // CavsFangelo - The Cube of Cthulhu
             '613d81be1de8d5027f16ba32', // l0gr1thm1k - Data Generated Vintage Cube
             '61454789685c83106293be3c', // Deinonychus - Bodleian Cube
-            '60886f462e6452103fa39792', // grenrut - The Tempo Cube
+            '61d3ccc9c7d013102be68f4f', // Gallently - Bar Cube
             '5e8c9f60a0c28578ee03de2d', // JankDiverGaming - Jank Diver Peasant Cube
+            '60886f462e6452103fa39792', // grenrut - The Tempo Cube
             '617b36e887d268103f4acd02', // Myagic - May's Fae Cube
             '5d757b268f152803feb030f8', // SteveMan - The Steve Cube (High Octane Unpowered)
+            '3c8379e4-dcf7-45da-9cd3-ad3e12592304', // andymangold - Sacred Geometry
+            '5b73c9bb-4928-4d6a-9580-30d5a718d925', // TheProfessor - Foundations Student Cube
             '5d2cdf200442c316b0ef86c7', // DrRuler - DrRuler's 630 Card Unpowered Cube
-            '5ebdf42e7a821f0d637307f2', // xonnex - Hypercube
             '605df8591361d3104a896904', // andymangold - Neoclassical Cube
             '60c7b3023b7623103ca84a22', // RyanOverdrive - Tempo Twobert
-            '61d3ccc9c7d013102be68f4f', // Gallently - Bar Cube
+            '5c340ee4-8896-4311-8ccb-ca811e347261', // RhysticStudies - Kitchen Table All-Stars (Budget Synergy Cube)
             '5f5d768ced6023105164a65f', // anthonymattox - Turbo Cube
-            '5b73c9bb-4928-4d6a-9580-30d5a718d925', // TheProfessor - Foundations Student Cube
+            '5ebdf42e7a821f0d637307f2', // xonnex - Hypercube
             '5d70f0322d52e15c2537f057', // Spootyone - The Spooty Peasant Cube - 2026 Edition
-            '5d4c6fcd97ca265764f29fa4', // CulticCube - Eleusis
             '61d31f05be8c31103b575e0a', // TheOinkinator - Bolt Cube
-            '5e87870a40eaf0158ee1292f', // Zangetsukage - Chromatic Cube Draft on MTG Arena, July 2025
-            '3c8379e4-dcf7-45da-9cd3-ad3e12592304', // andymangold - Sacred Geometry
             '5f175e2240729e103f75cc0f', // ManaDrainThis - High Stakes Challenge (HSC) Vintage Cube
+            '5d4c6fcd97ca265764f29fa4', // CulticCube - Eleusis
+            '5eb2416d33973f103cfd0a66', // DukeOfBeans - Classic Modern Cube
+            '5e87870a40eaf0158ee1292f', // Zangetsukage - Chromatic Cube Draft on MTG Arena, July 2025
             '5ed29a43d44a3c102e14500a', // AmazIsCool - Amaz's Peasant+ Cube
-            '5d3f1c6cd1bbf667dd9cdd1b', // DirkJammer - Commander Cube
             '615afb91b9880d102e064867', // Mengu09 - Vintage MenguCube
             '3dc1e7ac-338c-4bec-939d-3c2217b5ae18', // RyanSaxe - Magic: the Battling
-            '5eb2416d33973f103cfd0a66', // DukeOfBeans - Classic Modern Cube
-            '5e2e27a4fa6b9a16035bfc78', // RyanSaxe - Ryan Saxe's Classic Cube
+            '5d3f1c6cd1bbf667dd9cdd1b', // DirkJammer - Commander Cube
             '5ea0960912bf071086e7c06a', // LuckyLooter - The Amonkar Desert
+            '6282adea6c523e100d69a4b4', // RyanOverdrive - Pauper Twobert
             '60eb90e47bdeb510201cb11e', // RyanOverdrive - Peasant Twobert
-            '5d2cdf280442c316b0ef86c8', // DrRuler - The Miser's Cube
+            '5ee3e963a97e3610390bda42', // shaneswalker - Golden Gate Artifact Cube
+            '616f6b81302701102974518b', // zacthecrafter - Standard Cube - Peasant Edition
+            '5e2e27a4fa6b9a16035bfc78', // RyanSaxe - Ryan Saxe's Classic Cube
+            'e1a51d49-9a07-48b1-b2ba-c78b6e65d03b', // zarocks - Lord of the Rings (LotR) standalone 360
             '5d3f18dcd1bbf667dd9cd271', // Shamim - Shamim's Cube
             '62d6302ece709a0f770e76a4', // SamBlack - Commander Cube
-            '616f6b81302701102974518b', // zacthecrafter - Standard Cube - Peasant Edition
-            '5e5e7c8ea0b97a386ec63124', // CulticCube - Cultic Cube
-            'e1a51d49-9a07-48b1-b2ba-c78b6e65d03b', // zarocks - Lord of the Rings (LotR) standalone 360
+            '5d2cdf280442c316b0ef86c8', // DrRuler - The Miser's Cube
             '620a9f770810a7592dac3843', // MJGrenier - A Study in Harmony
+            '5e5e7c8ea0b97a386ec63124', // CulticCube - Cultic Cube
             '60b65de720a67b104d4f8393', // Mengu09 - Pauper MenguCube
-            '6282adea6c523e100d69a4b4', // RyanOverdrive - Pauper Twobert
-            '5c340ee4-8896-4311-8ccb-ca811e347261', // RhysticStudies - Kitchen Table All-Stars (Budget Synergy Cube)
-            '63924837bceae738e0db06cb', // TheOinkinator - Triangularity
-            '623f76ea9604ed1015559ba3', // livethedream - The Live the Dream Cube
-            '6273d2faf4c99810052d7a31', // Ashachor - Wizard's Cube - Two Player Duel Cube
-            '5dc9a64553f3101ce8e1d08c', // Isticle - The Devoid Cube
-            '638032857504190f6ada9d67', // RyanSaxe - The Buildaround Cube
+            '4d7736b4-3394-4868-9ad1-92f91a3f75c6', // lrg123 - Arena Powered Cube 3.0
             '63322a647545331a605f8df1', // Rinth - Spicy Ramen Cube
-            '5ee3e963a97e3610390bda42', // shaneswalker - Golden Gate Artifact Cube
-            '5d72c6cad13edd6540aff5f3', // cr4cksh07 - Mad Peasant
-            '5d5edb04726e4277c7bb31be', // simpleman - Simple_Man's 450 Powered List
-            '5d3ed83247586d63776acbf6', // sammich - Sammich's Peasant Cube
-            '5d5dc31d41c0006b8a332345', // SirFunchalot - Unpowered Fair Stuff
-            '5d498d7797ca265764f113bf', // DammitJoel - Peasant Synergy Cube
-            '5fbdb0735132cb1052e2a6a9', // MtGCube - MtG Cube
-            '5dbb7cd2c67d7070936b6428', // japahn - The Elegant Cube (v5.2.20)
-            '5ec82086510bc4414742ec52', // UberBear - Uber Bear's Artifact Cube
-            '5d8ce3b8dabc762f670ed5c8', // RolyMac - CLASSIC CUBE
-            '6122a60ae66c4a105041808a', // Jeff1060 - Old Border Foil Cube
-            '63bb8d35c7347d0f69799899', // Slaadi - The All-Star Chaff Battle Box
-            '5db72d91d4a35c1294819945', // dsbcubes - Ancient Times
+            '63924837bceae738e0db06cb', // TheOinkinator - Triangularity
+            '5dc9a64553f3101ce8e1d08c', // Isticle - The Devoid Cube
+            '623f76ea9604ed1015559ba3', // livethedream - The Live the Dream Cube
+            '6253f2e117d248100301077c', // hartwjg - Premodern Cube
+            '6273d2faf4c99810052d7a31', // Ashachor - Wizard's Cube - Two Player Duel Cube
             '636e940b282cc10f6a181e75', // Kapernaumov - The Penrose Cube
-            '5deef8c7782ed239f581700c', // loxeylol - Pauper Pimp Cube
-            '70720b6f-b0f8-4ef4-8bfc-c620384f08ba', // pwndnoob - Reddit Daily Cube
-            '5e53d7ce66a3546e863abc67', // matignon - Matignon's Cube, 360 unpowered
+            '638032857504190f6ada9d67', // RyanSaxe - The Buildaround Cube
+            '5d3ed83247586d63776acbf6', // sammich - Sammich's Peasant Cube
+            '5d5edb04726e4277c7bb31be', // simpleman - Simple_Man's 450 Powered List
+            '5dbb7cd2c67d7070936b6428', // japahn - The Elegant Cube (v5.2.20)
+            '63bb8d35c7347d0f69799899', // Slaadi - The All-Star Chaff Battle Box
+            '5ec82086510bc4414742ec52', // UberBear - Uber Bear's Artifact Cube
+            '5d72c6cad13edd6540aff5f3', // cr4cksh07 - Mad Peasant
+            '5d5dc31d41c0006b8a332345', // SirFunchalot - Unpowered Fair Stuff
+            '5d8ce3b8dabc762f670ed5c8', // RolyMac - CLASSIC CUBE
+            '5d498d7797ca265764f113bf', // DammitJoel - Peasant Synergy Cube
+            'b67c9d5e-5cf5-46f6-bb3d-58a014df6a1a', // dinrovahorror - Companion Cube
+            '5fbdb0735132cb1052e2a6a9', // MtGCube - MtG Cube
+            '5fd9198667f5213e0da09af8', // SwitchCase - The No Nonsense Bar Cube
+            'a71be443-3aef-424a-bc37-64af56b6c1e7', // LuckyLooter - Museum of Modern
+            '6122a60ae66c4a105041808a', // Jeff1060 - Old Border Foil Cube
+            '3a14b3a0-28f3-4a99-9403-05bb930c7846', // PrestonL - Nomad Micro
             'bbf6cec1-d955-4f75-82dd-40d4ff45b343', // LSVCube - LSV's Retro Cube
+            '5db72d91d4a35c1294819945', // dsbcubes - Ancient Times
+            '61e090395cd6410ff6d18b5a', // Longnaps - 1v1 Jumpstart EDH
             'c1e7f5ff-7bc5-4268-b8b3-c6e2735e346a', // vertigo451 - LOTR Cube
+            'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Zennith - The Arena Powered Cube
             '5e99affb319c431018010d56', // ScenicStump - The Horror Of Innistrad
             '60520b18b187bd105a2323a3', // CatParty - Ye Old Vintage Cube
-            '5fc9e578bada5f7f15feb582', // aquaone - aquaone powered
-            '5dc9a40346d0bd7d478b6c3c', // Isticle - Evergreen Cube
-            '61e090395cd6410ff6d18b5a', // Longnaps - 1v1 Jumpstart EDH
-            'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Zennith - The Arena Powered Cube
-            '638f36c1ba43583a92f67677', // ChillMTG - Dragons of Winter's Night / Vorthos Desert Cube
-            '60da621e1b77df105ccbc853', // Grotski - Totally Uncommon Cube
-            '18d5a6c5-97e1-48a9-a4e1-6d1513cbae84', // LSVCube - LSV Cube - Winston Version
-            '6253f2e117d248100301077c', // hartwjg - Premodern Cube
             '5e52c7c887d68470ced0c4cd', // mahjerion - Easy-To-Understand Commander Cube (480 + 90 Commanders)
-            '5f3e8c827440640ffe679a5e', // JankDiverGaming - The Jank Diver Gaming Cube
-            '3a14b3a0-28f3-4a99-9403-05bb930c7846', // PrestonL - Nomad Micro
-            'a71be443-3aef-424a-bc37-64af56b6c1e7', // LuckyLooter - Museum of Modern
-            '5e1f3d1da8534542e4eb0749', // benthetruth - Ben Eli's 360 Vintage (Power) Cube
+            '5deef8c7782ed239f581700c', // loxeylol - Pauper Pimp Cube
+            '5fc9e578bada5f7f15feb582', // aquaone - aquaone powered
+            'b6ce3845-d40c-4b34-9352-d003dde0e670', // MachineSchooling - Alpha Reimagined
+            '5e53d7ce66a3546e863abc67', // matignon - Matignon's Cube, 360 unpowered
+            '638f36c1ba43583a92f67677', // ChillMTG - Dragons of Winter's Night / Vorthos Desert Cube
+            '70720b6f-b0f8-4ef4-8bfc-c620384f08ba', // pwndnoob - Reddit Daily Cube
+            '5f7861a84f9e051049918d2e', // zoydraft - Pink Sleeves
         ],
     },
     {
@@ -155,9 +145,8 @@ const batches: Batch[] = [
             '61f51c3df1d9250f21664d1a', // AlfonsoGallegoF - 450 Peasant+
             '5d838062b656d33b0d553226', // ArBoR4817 - Peasant Cube
             '5ef783a507ee7f4bdce2bd3d', // CSabor9 - Peasant Cube
-            // '578d0a76-59b4-4414-a121-25676a2baf86', // villeneuve - Peasant Cube v1 [404?]
             '63aa6dd3331aeb270eda1573', // daneelius - Daneelius's Peasant All Stars
-            '1ecdc12c-d99e-465a-9bf0-1d68dfb8238e', // djsterlingsilva - Arena Peasant Twobert (@AA3)
+            '1ecdc12c-d99e-465a-9bf0-1d68dfb8238e', // djsterlingsilva - Arena Peasant Twobert (@TLA)
             '6003518eeaf0061046b4c9ae', // AirborneMoxen - The Peasant+ Cube
             '617af2103fb907102744a871', // Genericname1 - Pleasant Peasant's Cube
             '93a89c12-0dbe-41d6-8f68-63218099217d', // Gian519 - Gian's Peasant+ Cube
@@ -170,18 +159,18 @@ const batches: Batch[] = [
             '640958a55280aa75845268ad', // rossscott - ross_scott peasant cube
             '61f0a7465924cc05a44ad71c', // Salado - Peasant Cube
             '8ac56c6f-9d25-4548-83f6-e04336db2eec', // shylax - Limited All-Stars (Peasant Cube)
-            '5fa71a9957aea647df2480e8', // Squirrely - The Peasant Travel Cube
+            '5fa71a9957aea647df2480e8', // Squirrely - The Nuts Peasant
             '613bee1f5af537103e15d895', // Thetrufflehunter - Profoundly Peasant Cube
             'efd54fa5-39aa-4fe0-94b1-7d4d6e219a1f', // Trizeam - Trizeam's Peasant Cube
             '5e15392c09f9671fcb1dc6e0', // watertheweeds - 450 Peasant Cube
-            '09eb35c7-3c13-4fa4-8035-6edc4cd295aa', // windston - Greenless peasant
+            '09eb35c7-3c13-4fa4-8035-6edc4cd295aa', // windston - Greenless Peasant+
             '742939f0-39da-4fe7-88f6-2f6d1cdc1775', // MoxYargle - We are all peasants now!
             '5e878d986f01105bb05f9df9', // Kattvalp - C/Ube
             '5d3ed83247586d63776acbf6', // sammich - Sammich's Peasant Cube
             '5e501a1b0304345db201ee2a', // mountainmage - Mountainmage's 100% Artist-Signed Peasant Cube
             '608fd59e0938891048b2490e', // BrownDog5117 - Peasantville !!!
-            '6377de78946dbd0f6a6e8fff', // Emmmzyne - Peasant Cube (2025)
-            '5d3f7245d1bbf667dd9d4286', // MatEffect - The Peasant Cube 2025
+            '6377de78946dbd0f6a6e8fff', // Emmmzyne - Peasant Cube (2026)
+            '5d3f7245d1bbf667dd9d4286', // MatEffect - The Peasant Cube 2026
             '5d70f0322d52e15c2537f057', // Spootyone - The Spooty Peasant Cube - 2026 Edition
             '5e8c9f60a0c28578ee03de2d', // JankDiverGaming - Jank Diver Peasant Cube
             '5da9ff1872d31f3e1c1377ff', // CorakTM - Corak's Peasant Cube
@@ -193,17 +182,17 @@ const batches: Batch[] = [
             '5f76cacbdebf310362b90289', // ZeldaExplorer - ZeldaExplorer's Peasant Cube
             '5e4fec00b2fc055a2a149986', // WasherDryer - Peasant Cube
             'f0a3ee59-d86b-4449-a8af-a90ed977089a', // Shrimp72 - Shrimp Cube (Peasant)
-            '5f02e8171a314e101892d630', // resporius (Herr Lich) - Peasant
-            '899cecd6-78cd-4c8f-a3df-ae08244e8de7', // r2d551/SHRIKE - Peasant+ 2025
+            '5f02e8171a314e101892d630', // resporius - Resporius's Peasant Cube
+            '899cecd6-78cd-4c8f-a3df-ae08244e8de7', // SHRIKE - Peasant+ 2025
             '768c2165-e9d7-4485-9a4e-d7ce0754303b', // eklug - C/Ube
             '5dc5a6af83065f5e62dd3e35', // RosencrantzDies - The Elysian Cube
-            '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube
-            '480e729f-55bd-423d-8c38-7ed8fbead377', // Illuminous - Illuminous Peasant 360 Plus
+            '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube (old)
+            '480e729f-55bd-423d-8c38-7ed8fbead377', // Illuminous - Illuminous Peasant 360 UB nonsense
             '5d9fd6df1f2af308d72ddf35', // UlkaMTGN - Ulka's Peasant Cube
             '90d860e8-ab6c-4163-b1fb-19722ac000b5', // UlkaMTGN - Peasant's Past
             '620e7a29eeb8c87a13d0e8ca', // UlkaMTGN - Turbo Peasant Cube
             '5f6f2e34dc7295103b6290ff', // Shadowkillerx7 - Peasant all Foils
-            '5d95438ad09b6308ae8e8d43', // cVantez - vVantez Peasant
+            '5d95438ad09b6308ae8e8d43', // cVantez - cVantez Peasant
             '758acb73-3cf5-4789-b29e-f9b0e4a11aa1', // Alakokain - Peasant Cube (2025)
             '617acd9065d6d310149192fc', // ilovebaskets - Pretentious Wind Socks
             'c952401b-1cea-4a4d-837f-b335e28e078e', // pastinflames - Middle-Class Peasant
@@ -222,23 +211,24 @@ const batches: Batch[] = [
             '5f3aac1135fe7a0fb6c68f58', // michael921 - The Collection Cube
             '5d8c01586800702babd1a76d', // Silverblood - The Noob Cube
             '5f232572d869941039352417', // digitalSloth - The Polished Peasant
-            '5ecd72cf4022a8067a2bd959', // ReleaseTheAllicin - Rally the Peasants
+            '5ecd72cf4022a8067a2bd959', // ReleaseTheAllicin - Rally The Peasants
             '5fe77e9126f9a30fd142788b', // gbrell - GBrell's Peasant+
             '629004baa478db0ff2c963ff', // dnolan08 - The G.O.A.T. Peasant Cube
-            'b3436656-0dfa-40d8-a11d-698c7791e9b6', // livethedream - The Peasant+ Combat Cube
+            'b3436656-0dfa-40d8-a11d-698c7791e9b6', // livethedream - The Peasant + Combat Cube
             '5e26d17463c7ef63a8986401', // Purtagio - To Synergy and Beyond
             '60345f7e98852d10440afc4b', // cubedraft - Dominaria Peasant Cube
-            '604fd7038858261043aff963', // ArborAxis - PeasantCube
+            '604fd7038858261043aff963', // ArborAxis - Peasant Cube
             '5e78e0ef40eaf0158e593517', // FiniteMTG - Limited as Garfield Intended
             '5ecae527f3c65270129f5a28', // Tiray - Synergy Peasant Cube
             '60994bd609fbf3107a183e62', // mythighs - Budget Peasant Cube
             '5ee1b71164abb70f9b426faf', // Jagomu - Super Peasant Arena Cube
             '5e8ef1cfa0c28578ee18a51c', // VariSami - VariSami's Peasant Cube
             '60432223f5b25f105ab4a1cc', // Char7 - Peasant Arena Cube (The Noob Cube)
-            '630ac3e02107c1434437113f', // PangasKhan - The Basement Peasant Cube
+            '630ac3e02107c1434437113f', // PengasKhan - The Basement Peasant Cube
             '5d8ff216f1db0749f1396834', // n00b1n8R - n00b's Peasant Cube
             '608565bb3d2514106efdf765', // razorlead - Power for the People
             '5e6014d7f9730a46084c1e96', // FunkyDragon - FunkyDragon's Peasant Cube
+            '5d753dd88f152803feae83a1', // Squirrely - Squirrely's Old Frame Peasant (+rare lands)
         ],
     },
     {
@@ -273,15 +263,15 @@ const batches: Batch[] = [
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         shardCount: 2,
         cubes: [
-            'Twee-Violen-en-een-Trommel-en-een-Fluit',
-            'Straight2TheThop',
-            '2eb1b1e5-0389-4799-9054-9207d724e899',
-            'DAF-IPA',
-            'meansofproduction',
-            'improbable-alliances',
-            'Prismatic-Desert-Magiccon',
-            '360.cube',
-            '962ec01b-c119-484e-a1c0-e4e0eeebe7d1',
+            '3c292cd9-e35c-474b-8bb1-dc926d0d43a3', // boomtak13 - Two Violins, a Drum and a Flute
+            '88a6d45d-6c62-4600-aa84-e812aff37d49', // tentakelmonster - Some amount of Ornithopters
+            '2eb1b1e5-0389-4799-9054-9207d724e899', // boomtak13 - Clone of The best of times, the worst of times
+            'a9971dee-ebce-4f3f-9af3-ebfb61942c65', // dafuzetti - IPA-block cube
+            '63d81aa162da200f69b5b90e', // rhythmicstudy - Means of Production
+            '0210e511-c0b3-47a2-8502-9610a047d4a7', // rhythmicstudy - Improbable Alliances
+            '049fa9c3-08c1-4560-a4d5-2d0e97aa307d', // boomtak13 - Prismatic Desert as featured at Magiccon Amsterdam!
+            '2c025ad0-2d49-4eed-a6a0-32c0a4006c36', // D3nn4 - No Nonsense Cube
+            '962ec01b-c119-484e-a1c0-e4e0eeebe7d1', // D3nn4 - Ghost of pioneer's past
         ],
     },
     {
