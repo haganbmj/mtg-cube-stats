@@ -61,7 +61,7 @@
                                 <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
                             </el-tooltip>
                             <div class="card-info">
-                                <div class="card-name">{{ card.name }}</div>
+                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name }}</a>
                                 <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
                             </div>
                         </div>
@@ -97,7 +97,7 @@
                                 <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
                             </el-tooltip>
                             <div class="card-info">
-                                <div class="card-name">{{ card.name }}</div>
+                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name }}</a>
                                 <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
                             </div>
                         </div>
@@ -402,6 +402,7 @@ const props = defineProps({
 });
 
 const openCubeDetailDialog = inject('openCubeDetailDialog');
+const openCardDetailDialog = inject('openCardDetailDialog');
 
 const totalCubes = computed(() => Object.keys(props.loadedCubes).length);
 
@@ -804,6 +805,16 @@ const lowestRarityScoreCube = computed(() => {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+
+                &[href] {
+                    color: var(--el-color-primary);
+                    text-decoration: none;
+                    cursor: pointer;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
             }
 
             .card-stats {

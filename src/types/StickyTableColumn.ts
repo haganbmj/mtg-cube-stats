@@ -9,6 +9,7 @@ export interface StickyTableColumn {
     align?: 'left' | 'center' | 'right';
     width?: string;
     minWidth?: string;
+    maxWidth?: string;
     tooltip?: string;
     formatter?: (row: any) => string;
     showOverflowTooltip?: boolean;

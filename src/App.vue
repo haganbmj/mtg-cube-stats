@@ -64,6 +64,13 @@
                         :overviewTableData="overviewTableData"
                         :loadedCubes="loadedCubes"
                     />
+
+                    <CardDetailDialog
+                        v-model:visible="cardDetailDialogVisible"
+                        :oracleId="cardDetailDialogOracleId"
+                        :loadedCubes="loadedCubes"
+                        :overviewTableData="overviewTableData"
+                    />
                 </div>
             </el-main>
             <el-footer>
@@ -85,6 +92,7 @@ import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme.mjs';
 import About from './components/About.vue';
 import CubeDetailDialog from './components/CubeDetailDialog.vue';
+import CardDetailDialog from './components/CardDetailDialog.vue';
 import OverviewTab from './tabs/OverviewTab.vue';
 import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
@@ -139,6 +147,16 @@ const openCubeDetailDialog = (cubeId) => {
     cubeDetailDialogId.value = cubeId;
 };
 provide('openCubeDetailDialog', openCubeDetailDialog);
+
+const cardDetailDialogOracleId = ref(null);
+const cardDetailDialogVisible = computed({
+    get: () => cardDetailDialogOracleId.value !== null,
+    set: (val) => { if (!val) cardDetailDialogOracleId.value = null; },
+});
+const openCardDetailDialog = (oracleId) => {
+    cardDetailDialogOracleId.value = oracleId;
+};
+provide('openCardDetailDialog', openCardDetailDialog);
 
 const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
 
