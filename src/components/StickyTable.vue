@@ -247,21 +247,23 @@ const toggleExpand = (rowIndex: number) => {
 .sticky-table {
     width: 100%;
     table-layout: auto;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: var(--el-font-size-base);
-    color: var(--el-table-text-color, var(--el-text-color-regular));
-    background-color: var(--el-table-bg-color, var(--el-fill-color-blank));
+    color: var(--el-text-color-regular);
+    background-color: var(--el-bg-color);
 }
 
 .sticky-table__header {
+    position: relative;
     z-index: 10;
 }
 
 .sticky-table__th {
-    background-color: var(--el-table-header-bg-color, var(--el-fill-color-blank));
-    color: var(--el-table-header-text-color, var(--el-text-color-secondary));
+    background-color: var(--el-table-header-bg-color, #141414);
+    color: var(--el-text-color-secondary);
     font-weight: 600;
-    border-bottom: 1px solid var(--el-table-border-color, var(--el-border-color-lighter));
+    border-bottom: 1px solid var(--el-border-color-lighter);
     padding: 8px 0;
     text-align: left;
     white-space: nowrap;
@@ -329,7 +331,7 @@ const toggleExpand = (rowIndex: number) => {
 }
 
 .sticky-table__row {
-    background-color: var(--el-table-tr-bg-color, var(--el-fill-color-blank));
+    background-color: var(--el-bg-color);
     transition: background-color 0.25s;
 
     &--striped {
@@ -337,12 +339,12 @@ const toggleExpand = (rowIndex: number) => {
     }
 
     &--hover {
-        background-color: var(--el-table-row-hover-bg-color, var(--el-fill-color-light));
+        background-color: var(--el-fill-color-light);
     }
 }
 
 .sticky-table__td {
-    border-bottom: 1px solid var(--el-table-border-color, var(--el-border-color-lighter));
+    border-bottom: 1px solid var(--el-border-color-lighter);
     padding: 8px 0;
 
     &.is-center {
@@ -361,6 +363,7 @@ const toggleExpand = (rowIndex: number) => {
 }
 
 .sticky-table__cell {
+    position: relative;
     padding: 0 12px;
     line-height: 23px;
     overflow-wrap: break-word;
@@ -394,7 +397,7 @@ const toggleExpand = (rowIndex: number) => {
 }
 
 .sticky-table__expand-row td {
-    background-color: var(--el-table-expanded-cell-bg-color, var(--el-fill-color-blank));
+    background-color: var(--el-bg-color);
     padding: 20px 50px;
 }
 
