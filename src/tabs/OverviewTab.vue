@@ -75,450 +75,129 @@
         </el-col>
     </el-row>
 
-    <el-table
-        :data="overviewTableData"
+    <StickyTable
+        :data="sortedData"
+        :columns="tableColumns"
         :default-sort="{ prop: 'name', order: 'ascending' }"
-        style="width: 100%"
-        table-layout="auto"
+        @sort-change="onSortChange"
         stripe
     >
-        <el-table-column fixed prop="thumbnail" label="" width="75">
-            <template #default="{ row }">
-                <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
-                    <el-icon><Delete /></el-icon>
-                </el-button>
+        <template #cell-thumbnail="{ row }">
+            <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
+            <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
+                <el-icon><Delete /></el-icon>
+            </el-button>
+        </template>
+
+        <template #cell-rowNumber="{ rowIndex }">
+            {{ rowIndex + 1 }}
+        </template>
+
+        <template #cell-name="{ row }">
+            <el-link @click="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
+            <template v-if="row.stats.graveyardOrderMatters">
+                <el-tooltip
+                    content="This cube contains cards that care about Graveyard Order."
+                    placement="top"
+                    :hide-after="50"
+                >
+                    <el-icon color="yellow" style="margin-left: 0.25rem;"><WarnTriangleFilled /></el-icon>
+                </el-tooltip>
             </template>
-        </el-table-column>
-        <el-table-column type="index" label="#" width="50" v-if="config.visibleColumns.includes('rowNumber')" />
-        <el-table-column prop="name" label="Name" min-width="150" max-width="300" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveName" v-if="config.visibleColumns.includes('name')" >
-            <template #default="{ row }">
-                <el-link @click="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
-                <template v-if="row.stats.graveyardOrderMatters">
-                    <el-tooltip
-                        content="This cube contains cards that care about Graveyard Order."
-                        placement="top"
-                        :hide-after="50"
+        </template>
+
+        <template #cell-owner="{ row }">
+            <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
+        </template>
+
+        <template #cell-arenaPlayable="{ row }">
+            <el-tag :type="row.stats.arenaPlayable ? 'success' : 'danger'">
+                {{ row.stats.arenaPlayable ? 'Yes' : 'No' }}
+            </el-tag>
+        </template>
+
+        <template #cell-mtgoPlayable="{ row }">
+            <el-tag :type="row.stats.mtgoPlayable ? 'success' : 'danger'">
+                {{ row.stats.mtgoPlayable ? 'Yes' : 'No' }}
+            </el-tag>
+        </template>
+
+        <template #cell-paperPlayable="{ row }">
+            <el-tag :type="row.stats.paperPlayable ? 'success' : 'danger'">
+                {{ row.stats.paperPlayable ? 'Yes' : 'No' }}
+            </el-tag>
+        </template>
+
+        <template #cell-assumedCategories="{ row }">
+            <div class="tag-list flex gap-2">
+                <el-tooltip
+                    v-for="category in row.stats.assumedCategories"
+                    :key="category"
+                    :content="getCategoryTooltip(category)"
+                    placement="top"
+                    :hide-after="50"
+                >
+                    <el-tag
+                        size="small"
+                        type="info"
+                        :color="getCategoryTagColor(category)"
+                        disable-transitions
                     >
-                        <el-icon color="yellow" style="margin-left: 0.25rem;"><WarnTriangleFilled /></el-icon>
-                    </el-tooltip>
-                </template>
-            </template>
-        </el-table-column>
-        <el-table-column prop="owner" label="Owner" min-width="100" max-width="150" show-overflow-tooltip sortable :sort-method="sortMethods.caseInsensitiveOwner"  v-if="config.visibleColumns.includes('owner')" >
-            <template #default="{ row }">
-                <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('lastModified')"
-            prop="lastModified"
-            label="Last Modified"
-            min-width="100"
-            max-width="125"
-            sortable
-            :formatter="columnFormatters.toDate"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('followerCount')"
-            prop="followerCount"
-            label="Followers"
-            min-width="100"
-            max-width="125"
-            sortable
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.arenaPlayable')"
-            prop="stats.arenaPlayable"
-            label="Arena Playable"
-            min-width="75"
-            max-width="75"
-        >
-            <template #default="{ row }">
-                <el-tag :type="row.stats.arenaPlayable ? 'success' : 'danger'">
-                    {{ row.stats.arenaPlayable ? 'Yes' : 'No' }}
-                </el-tag>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.mtgoPlayable')"
-            prop="stats.mtgoPlayable"
-            label="MTGO Playable"
-            min-width="75"
-            max-width="75"
-        >
-            <template #default="{ row }">
-                <el-tag :type="row.stats.mtgoPlayable ? 'success' : 'danger'">
-                    {{ row.stats.mtgoPlayable ? 'Yes' : 'No' }}
-                </el-tag>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.paperPlayable')"
-            prop="stats.paperPlayable"
-            label="Paper Playable"
-            min-width="75"
-            max-width="75"
-        >
-            <template #default="{ row }">
-                <el-tag :type="row.stats.paperPlayable ? 'success' : 'danger'">
-                    {{ row.stats.paperPlayable ? 'Yes' : 'No' }}
-                </el-tag>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.assumedCategories')"
-            prop="stats.assumedCategories"
-            label="Categories"
-            min-width="75"
-            max-width="100"
-        >
-            <template #default="{ row }">
-                <div class="tag-list flex gap-2">
-                    <el-tooltip
-                        v-for="category in row.stats.assumedCategories"
-                        :key="category"
-                        :content="getCategoryTooltip(category)"
-                        placement="top"
-                        :hide-after="50"
-                    >
-                        <el-tag
-                            size="small"
-                            type="info"
-                            :color="getCategoryTagColor(category)"
-                            disable-transitions
-                        >
-                            {{ category }}
-                        </el-tag>
-                    </el-tooltip>
-                </div>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.totalMinPriceUsd')"
-            prop="stats.totalMinPriceUsd"
-            label="Min Price (USD)"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toPriceUsd"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.totalMinPriceTix')"
-            prop="stats.totalMinPriceTix"
-            label="Min Price (Tix)"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toFixed2"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.averageReleaseYear')"
-            prop="stats.averageReleaseYear"
-            label="Avg. Release Year"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.roundedInteger"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.medianReleaseYear')"
-            prop="stats.medianReleaseYear"
-            label="Median Release Year"
-            min-width="100"
-            max-width="150"
-            sortable
-        >
-            <template #default="{ row }">
-                {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.totalCards')"
-            prop="stats.totalCards"
-            label="Total Cards"
-            min-width="75"
-            max-width="100"
-            sortable
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.newCards')"
-            prop="stats.newCards"
-            :sort-method="(a, b) => (a.stats.newCards / a.stats.totalCards) - (b.stats.newCards / b.stats.totalCards)"
-            label="New Cards"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #header>
-                <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50">
-                    <span>New Cards <el-icon><InfoFilled /></el-icon></span>
+                        {{ category }}
+                    </el-tag>
                 </el-tooltip>
-            </template>
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
-            </template>
-        </el-table-column>
+            </div>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.singletonCards')"
-            prop="stats.singletonCards"
-            :sort-method="(a, b) => (a.stats.singletonCards / a.stats.totalCards) - (b.stats.singletonCards / b.stats.totalCards)"
-            label="Singleton"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #header>
-                <el-tooltip content="Cards with only one copy" placement="top" :hide-after="50">
-                    <span>Singleton <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.singletonCards / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.singletonCards }})</el-text>
-            </template>
-        </el-table-column>
+        <template #cell-medianReleaseYear="{ row }">
+            {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.landCards')"
-            prop="stats.landCards"
-            :sort-method="(a, b) => (a.stats.landCards / a.stats.totalCards) - (b.stats.landCards / b.stats.totalCards)"
-            label="Lands"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
-            </template>
-        </el-table-column>
+        <template #cell-newCards="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.creatureCards')"
-            prop="stats.creatureCards"
-            :sort-method="(a, b) => (a.stats.creatureCards / a.stats.totalCards) - (b.stats.creatureCards / b.stats.totalCards)"
-            label="Creatures"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.creatureCards / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.creatureCards }})</el-text>
-            </template>
-        </el-table-column>
+        <template #cell-singletonCards="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.singletonCards / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.singletonCards }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('avgSimilarityScore')"
-            prop="avgSimilarityScore"
-            label="Avg. Similarity"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.percentageFormatter"
-        >
-            <template #header>
-                <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50">
-                    <span>Avg. Similarity <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-        </el-table-column>
+        <template #cell-landCards="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.averageNonLandCmc')"
-            prop="stats.averageNonLandCmc"
-            label="Avg. Mana Value"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toFixed2"
-        >
-            <template #header>
-                <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50">
-                    <span>Avg. Mana Value <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-        </el-table-column>
+        <template #cell-creatureCards="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.creatureCards / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.creatureCards }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.averageElo')"
-            prop="stats.averageElo"
-            label="Avg. Elo"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toFixed2"
-        />
+        <template #cell-abnormalLayout="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.averagePopularity')"
-            prop="stats.averagePopularity"
-            label="Avg. Popularity"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toPopularity"
-        />
+        <template #cell-makesTokens="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.makesTokens / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.blendedRarityScore')"
-            prop="stats.blendedRarityScore"
-            label="Rarity Score"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toFixed2"
-        >
-            <template #header>
-                <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50">
-                    <span>Rarity Score <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-        </el-table-column>
+        <template #cell-removal="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.averageWordCount')"
-            prop="stats.averageWordCount"
-            label="Avg. Word Count"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toFixed2"
-        />
+        <template #cell-universesBeyond="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.averageWordCountUnique')"
-            prop="stats.averageWordCountUnique"
-            label="Avg. Word Count (Unique)"
-            min-width="75"
-            max-width="100"
-            sortable
-            :formatter="columnFormatters.toFixed2"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.uniqueKeywords')"
-            prop="stats.uniqueKeywords"
-            label="Keywords"
-            min-width="75"
-            max-width="100"
-            sortable
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.uniqueNonEvergreenKeywords')"
-            prop="stats.uniqueNonEvergreenKeywords"
-            label="Non-Evergreen Keywords"
-            min-width="75"
-            max-width="100"
-            sortable
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.cardCounts.abnormalLayout')"
-            prop="stats.cardCounts.abnormalLayout"
-            :sort-method="(a, b) => (a.stats.cardCounts.abnormalLayout / a.stats.totalCards) - (b.stats.cardCounts.abnormalLayout / b.stats.totalCards)"
-            label="Abnormal Layout"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #header>
-                <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50">
-                    <span>Abnormal Layout <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.cardCounts.makesTokens')"
-            prop="stats.cardCounts.makesTokens"
-            :sort-method="(a, b) => (a.stats.cardCounts.makesTokens / a.stats.totalCards) - (b.stats.cardCounts.makesTokens / b.stats.totalCards)"
-            label="Makes Tokens"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.makesTokens / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.cardCounts.removal')"
-            prop="stats.cardCounts.removal"
-            :sort-method="(a, b) => (a.stats.cardCounts.removal / a.stats.totalCards) - (b.stats.cardCounts.removal / b.stats.totalCards)"
-            label="Removal"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.cardCounts.universesBeyond')"
-            prop="stats.cardCounts.universesBeyond"
-            :sort-method="(a, b) => (a.stats.cardCounts.universesBeyond / a.stats.totalCards) - (b.stats.cardCounts.universesBeyond / b.stats.totalCards)"
-            label="Universes Beyond"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #header>
-                <el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50">
-                    <span>Universes Beyond <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('stats.cardCounts.supplementalProduct')"
-            prop="stats.cardCounts.supplementalProduct"
-            :sort-method="(a, b) => (a.stats.cardCounts.supplementalProduct / a.stats.totalCards) - (b.stats.cardCounts.supplementalProduct / b.stats.totalCards)"
-            label="Supplemental Product"
-            min-width="75"
-            max-width="100"
-            sortable
-        >
-            <template #header>
-                <el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50">
-                    <span>Supplemental Product <el-icon><InfoFilled /></el-icon></span>
-                </el-tooltip>
-            </template>
-            <template #default="{ row }">
-                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
-                <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
-            </template>
-        </el-table-column>
-    </el-table>
+        <template #cell-supplementalProduct="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
+        </template>
+    </StickyTable>
 </template>
 
 <script setup lang="ts">
@@ -527,6 +206,8 @@ import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled } from '@element-plus/icons-vue';
+import StickyTable from '../components/StickyTable.vue';
+import type { StickyTableColumn } from '../types/StickyTableColumn';
 
 const props = defineProps({
     loadedCubes: {
@@ -689,43 +370,99 @@ const getCategoryTooltip = (category: string) => {
 };
 
 const sortMethods = {
-    caseInsensitiveName: (a, b) => {
+    caseInsensitiveName: (a: any, b: any) => {
         return castInensitiveSort(a.name, b.name);
     },
-    caseInsensitiveOwner: (a, b) => {
+    caseInsensitiveOwner: (a: any, b: any) => {
         return castInensitiveSort(a.owner, b.owner);
     },
+    ratioSort: (propPath: string) => (a: any, b: any) => {
+        return (getNestedProp(a, propPath) / a.stats.totalCards) - (getNestedProp(b, propPath) / b.stats.totalCards);
+    },
 };
+
+// --- Sort state ---
+const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null }>({ prop: 'name', order: 'ascending' });
+
+const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
+    activeSort.value = sortInfo;
+};
+
+// --- Formatter helpers ---
+const fmtFixed2 = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2);
+const fmtPriceUsd = (prop: string) => (row: any) => '$' + (getNestedProp(row, prop) ?? 0).toFixed(2);
+const fmtPopularity = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2) + ' %';
+const fmtPercentage = (prop: string) => (row: any) => ((getNestedProp(row, prop) ?? 0) * 100).toFixed(2) + '%';
+const fmtRoundedInt = (prop: string) => (row: any) => String(Math.round(getNestedProp(row, prop) ?? 0));
+const fmtDate = (prop: string) => (row: any) => {
+    const ts = getNestedProp(row, prop);
+    if (!ts) return 'N/A';
+    return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+};
+
+// --- Table column definitions ---
+const tableColumns = computed<StickyTableColumn[]>(() => [
+    { key: 'thumbnail', label: '', width: '75px' },
+    { key: 'rowNumber', label: '#', width: '50px', visible: config.value.visibleColumns.includes('rowNumber') },
+    { key: 'name', prop: 'name', label: 'Name', minWidth: '150px', showOverflowTooltip: true, sortable: true, sortMethod: sortMethods.caseInsensitiveName, visible: config.value.visibleColumns.includes('name') },
+    { key: 'owner', prop: 'owner', label: 'Owner', minWidth: '100px', showOverflowTooltip: true, sortable: true, sortMethod: sortMethods.caseInsensitiveOwner, visible: config.value.visibleColumns.includes('owner') },
+    { key: 'lastModified', prop: 'lastModified', label: 'Last Modified', minWidth: '100px', sortable: true, formatter: fmtDate('lastModified'), visible: config.value.visibleColumns.includes('lastModified') },
+    { key: 'followerCount', prop: 'followerCount', label: 'Followers', minWidth: '100px', sortable: true, visible: config.value.visibleColumns.includes('followerCount') },
+    { key: 'arenaPlayable', prop: 'stats.arenaPlayable', label: 'Arena Playable', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.arenaPlayable') },
+    { key: 'mtgoPlayable', prop: 'stats.mtgoPlayable', label: 'MTGO Playable', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.mtgoPlayable') },
+    { key: 'paperPlayable', prop: 'stats.paperPlayable', label: 'Paper Playable', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.paperPlayable') },
+    { key: 'assumedCategories', prop: 'stats.assumedCategories', label: 'Categories', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.assumedCategories') },
+    { key: 'totalMinPriceUsd', prop: 'stats.totalMinPriceUsd', label: 'Min Price (USD)', minWidth: '75px', sortable: true, formatter: fmtPriceUsd('stats.totalMinPriceUsd'), visible: config.value.visibleColumns.includes('stats.totalMinPriceUsd') },
+    { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Min Price (Tix)', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.totalMinPriceTix'), visible: config.value.visibleColumns.includes('stats.totalMinPriceTix') },
+    { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Release Year', minWidth: '75px', sortable: true, formatter: fmtRoundedInt('stats.averageReleaseYear'), visible: config.value.visibleColumns.includes('stats.averageReleaseYear') },
+    { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Median Release Year', minWidth: '100px', sortable: true, visible: config.value.visibleColumns.includes('stats.medianReleaseYear') },
+    { key: 'totalCards', prop: 'stats.totalCards', label: 'Total Cards', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('stats.totalCards') },
+    { key: 'newCards', prop: 'stats.newCards', label: 'New Cards', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.newCards'), tooltip: 'Cards Released in the Last 12 Months', visible: config.value.visibleColumns.includes('stats.newCards') },
+    { key: 'singletonCards', prop: 'stats.singletonCards', label: 'Singleton', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.singletonCards'), tooltip: 'Cards with only one copy', visible: config.value.visibleColumns.includes('stats.singletonCards') },
+    { key: 'landCards', prop: 'stats.landCards', label: 'Lands', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.landCards'), visible: config.value.visibleColumns.includes('stats.landCards') },
+    { key: 'creatureCards', prop: 'stats.creatureCards', label: 'Creatures', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.creatureCards'), visible: config.value.visibleColumns.includes('stats.creatureCards') },
+    { key: 'avgSimilarityScore', prop: 'avgSimilarityScore', label: 'Avg. Similarity', minWidth: '75px', sortable: true, formatter: fmtPercentage('avgSimilarityScore'), tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes', visible: config.value.visibleColumns.includes('avgSimilarityScore') },
+    { key: 'averageNonLandCmc', prop: 'stats.averageNonLandCmc', label: 'Avg. Mana Value', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.averageNonLandCmc'), tooltip: 'Average Mana Value of Non-Land Cards', visible: config.value.visibleColumns.includes('stats.averageNonLandCmc') },
+    { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.averageElo'), visible: config.value.visibleColumns.includes('stats.averageElo') },
+    { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Popularity', minWidth: '75px', sortable: true, formatter: fmtPopularity('stats.averagePopularity'), visible: config.value.visibleColumns.includes('stats.averagePopularity') },
+    { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity Score', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.blendedRarityScore'), tooltip: 'Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200', visible: config.value.visibleColumns.includes('stats.blendedRarityScore') },
+    { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Word Count', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.averageWordCount'), visible: config.value.visibleColumns.includes('stats.averageWordCount') },
+    { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Word Count (Unique)', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.averageWordCountUnique'), visible: config.value.visibleColumns.includes('stats.averageWordCountUnique') },
+    { key: 'uniqueKeywords', prop: 'stats.uniqueKeywords', label: 'Keywords', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('stats.uniqueKeywords') },
+    { key: 'uniqueNonEvergreenKeywords', prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-Evergreen Keywords', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('stats.uniqueNonEvergreenKeywords') },
+    { key: 'abnormalLayout', prop: 'stats.cardCounts.abnormalLayout', label: 'Abnormal Layout', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.abnormalLayout'), tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)', visible: config.value.visibleColumns.includes('stats.cardCounts.abnormalLayout') },
+    { key: 'makesTokens', prop: 'stats.cardCounts.makesTokens', label: 'Makes Tokens', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.makesTokens'), visible: config.value.visibleColumns.includes('stats.cardCounts.makesTokens') },
+    { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.removal'), visible: config.value.visibleColumns.includes('stats.cardCounts.removal') },
+    { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'Universes Beyond', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.universesBeyond'), tooltip: 'Cards originally from Universes Beyond Products (includes Standard sets)', visible: config.value.visibleColumns.includes('stats.cardCounts.universesBeyond') },
+    { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supplemental Product', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.supplementalProduct'), tooltip: 'Cards originally from Supplemental Products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },
+]);
+
+// --- Sorted data ---
+const sortedData = computed(() => {
+    const data = [...(props.overviewTableData as any[])];
+    if (!activeSort.value || !activeSort.value.order) {
+        return data.sort((a, b) => castInensitiveSort(a.name, b.name));
+    }
+
+    const sortProp = activeSort.value.prop;
+    const dir = activeSort.value.order === 'ascending' ? 1 : -1;
+    const col = tableColumns.value.find(c => (c.sortKey ?? c.prop ?? c.key) === sortProp);
+
+    return data.sort((a, b) => {
+        if (col?.sortMethod) {
+            return col.sortMethod(a, b) * dir;
+        }
+        const aVal = getNestedProp(a, sortProp);
+        const bVal = getNestedProp(b, sortProp);
+        if (aVal < bVal) return -1 * dir;
+        if (aVal > bVal) return 1 * dir;
+        return 0;
+    });
+});
 
 const formatters = {
     percentageFormatter: (value: number) => {
         return (value * 100).toFixed(2) + '%';
-    },
-};
-
-const columnFormatters = {
-    roundedInteger: (row, column) => {
-        return Math.round(getNestedProp(row, column.property) ?? 0);
-    },
-    toFixed2: (row, column) => {
-        return (getNestedProp(row, column.property) ?? 0).toFixed(2);
-    },
-    toPopularity: (row, column) => {
-        return (getNestedProp(row, column.property) ?? 0).toFixed(2) + ' %';
-    },
-    toPriceUsd: (row, column) => {
-        return '$' + (getNestedProp(row, column.property) ?? 0).toFixed(2);
-    },
-    percentageFormatter: (row, column) => {
-        return ((getNestedProp(row, column.property) ?? 0) * 100).toFixed(2) + '%';
-    },
-    toDate: (row, column) => {
-        const unixTimestamp = getNestedProp(row, column.property);
-        if (unixTimestamp === undefined || unixTimestamp === null) {
-            return 'N/A';
-        }
-
-        return useDateFormat(new Date(unixTimestamp), 'YYYY-MM-DD').value;
     },
 };
 </script>

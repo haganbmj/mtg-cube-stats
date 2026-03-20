@@ -28,369 +28,161 @@
         :total="filteredRows.length"
     />
 
-    <el-table
-        ref="cardSummaryTableRef"
+    <StickyTable
         :data="visibleRows"
+        :columns="tableColumns"
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
-        :preserve-expanded-content="false"
         @sort-change="onSortChange"
-        style="width: 100%"
-        table-layout="auto"
+        :expandable="true"
         stripe
     >
-        <el-table-column :fixed="!isMobile" width="25" type="expand">
-            <template #default="props">
-                <el-row class="expanded-content" :gutter="20" justify="space-around">
-                    <el-col :span="8" :xs="24" :sm="24" :md="8" :xl="8">
-                        <div style="text-align:center">
-                            <el-image
-                                :src="`${props.row.urlFront}`"
-                                fit="contain"
-                                :alt="props.row.name"
-                                :class="'card-image ' + props.row.setCode?.toLowerCase()"
-                            />
-                        </div>
-
-                        <el-row justify="center" :gutter="10" class="row-games" style="margin-top: 10px; text-align: center;">
-                            <el-col :span="24">
-                                <div class="tag-list flex gap-2 justify-center">
-                                    <el-tag
-                                        v-for="game in props.row.games"
-                                        :key="game"
-                                        size="small"
-                                        type="info"
-                                        :color="getGameTagColor(game)"
-                                        disable-transitions
-                                    >
-                                        {{ game }}
-                                    </el-tag>
-                                </div>
-                            </el-col>
-                        </el-row>
-
-                        <el-row justify="center" :gutter="10" class="row-rarities" style="margin-top: 10px; text-align: center;">
-                            <el-col :span="24">
-                                <el-text>Original Rarity: {{ capitalizeFirstLetter(props.row.rarity) }}</el-text>
-                            </el-col>
-                            <el-col :span="24">
-                                <el-text>Minimum Rarity: {{ capitalizeFirstLetter(props.row.minRarity) }}</el-text>
-                            </el-col>
-                        </el-row>
-                    </el-col>
-                    <el-col :span="16" :xs="24" :sm="24" :md="16" :xl="16">
-                        <el-row direction="horizontal">
-                            <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
-                                <h3>Included In ({{ props.row.cubeCount }}):</h3>
-                                <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
-                                    <div v-if="cube.included">
-                                        <el-row direction="horizontal">
-                                            <el-col :span="16">
-                                                <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                    <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
-                                                </el-tooltip>
-                                            </el-col>
-                                            <el-col :span="8">
-                                                <el-text tag="i">({{ cube.size }} Cards)</el-text>
-                                            </el-col>
-                                        </el-row>
-                                    </div>
-                                </template>
-                            </el-col>
-                            <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
-                                <h3>Not Included In ({{ expandedCubeList(props.row.cubes).length - props.row.cubeCount }}):</h3>
-                                <template v-for="cube in expandedCubeList(props.row.cubes)" :key="cube.key">
-                                    <div v-if="!cube.included">
-                                        <el-row direction="horizontal">
-                                            <el-col :span="16">
-                                                <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
-                                                    <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
-                                                </el-tooltip>
-                                            </el-col>
-                                            <el-col :span="8">
-                                                <el-text tag="i">({{ cube.size }} Cards)</el-text>
-                                            </el-col>
-                                        </el-row>
-                                    </div>
-                                </template>
-                            </el-col>
-                        </el-row>
-                    </el-col>
-                </el-row>
-            </template>
-        </el-table-column>
-
-        <el-table-column :fixed="!isMobile" prop="index" label="#" width="50" />
-
-        <el-table-column prop="name" label="Name" min-width="150" max-width="300" sortable="custom">
-            <template #default="{ row }">
-                <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
-                    <template #content>
+        <template #expand="{ row }">
+            <el-row class="expanded-content" :gutter="20" justify="space-around">
+                <el-col :span="8" :xs="24" :sm="24" :md="8" :xl="8">
+                    <div style="text-align:center">
                         <el-image
                             :src="`${row.urlFront}`"
                             fit="contain"
                             :alt="row.name"
                             :class="'card-image ' + row.setCode?.toLowerCase()"
                         />
-                    </template>
-                    <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
-                </el-tooltip>
-            </template>
-        </el-table-column>
+                    </div>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('cubeCount')"
-            prop="cubeCount"
-            label="Cubes"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            sortable="custom"
-        />
+                    <el-row justify="center" :gutter="10" class="row-games" style="margin-top: 10px; text-align: center;">
+                        <el-col :span="24">
+                            <div class="tag-list flex gap-2 justify-center">
+                                <el-tag
+                                    v-for="game in row.games"
+                                    :key="game"
+                                    size="small"
+                                    type="info"
+                                    :color="getGameTagColor(game)"
+                                    disable-transitions
+                                >
+                                    {{ game }}
+                                </el-tag>
+                            </div>
+                        </el-col>
+                    </el-row>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('count')"
-            prop="count"
-            label="Total Count"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            sortable="custom"
-        />
+                    <el-row justify="center" :gutter="10" class="row-rarities" style="margin-top: 10px; text-align: center;">
+                        <el-col :span="24">
+                            <el-text>Original Rarity: {{ capitalizeFirstLetter(row.rarity) }}</el-text>
+                        </el-col>
+                        <el-col :span="24">
+                            <el-text>Minimum Rarity: {{ capitalizeFirstLetter(row.minRarity) }}</el-text>
+                        </el-col>
+                    </el-row>
+                </el-col>
+                <el-col :span="16" :xs="24" :sm="24" :md="16" :xl="16">
+                    <el-row direction="horizontal">
+                        <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
+                            <h3>Included In ({{ row.cubeCount }}):</h3>
+                            <template v-for="cube in expandedCubeList(row.cubes)" :key="cube.key">
+                                <div v-if="cube.included">
+                                    <el-row direction="horizontal">
+                                        <el-col :span="16">
+                                            <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
+                                                <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
+                                            </el-tooltip>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-text tag="i">({{ cube.size }} Cards)</el-text>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                            </template>
+                        </el-col>
+                        <el-col :span="12" :xs="24" :sm="24" :md="12" :xl="12">
+                            <h3>Not Included In ({{ expandedCubeList(row.cubes).length - row.cubeCount }}):</h3>
+                            <template v-for="cube in expandedCubeList(row.cubes)" :key="cube.key">
+                                <div v-if="!cube.included">
+                                    <el-row direction="horizontal">
+                                        <el-col :span="16">
+                                            <el-tooltip :content="`Owner: ${cube.owner}`" placement="top" :hide-after="50">
+                                                <el-link @click="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
+                                            </el-tooltip>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-text tag="i">({{ cube.size }} Cards)</el-text>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                            </template>
+                        </el-col>
+                    </el-row>
+                </el-col>
+            </el-row>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('effectiveColors')"
-            prop="effectiveColors"
-            label="Colors"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-        >
-            <template #default="{ row }">
-                <i
-                    v-for="color in row.effectiveColors"
-                    :key="color"
-                    :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
-                    style="margin-right: 4px;"
-                ></i>
-            </template>
-        </el-table-column>
+        <template #cell-name="{ row }">
+            <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
+                <template #content>
+                    <el-image
+                        :src="`${row.urlFront}`"
+                        fit="contain"
+                        :alt="row.name"
+                        :class="'card-image ' + row.setCode?.toLowerCase()"
+                    />
+                </template>
+                <el-link :href="`https://scryfall.com/card/${row.setCode?.toLowerCase()}/${row.collectorNumber}`" target="_blank">{{ row.name }}</el-link>
+            </el-tooltip>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('cmc')"
-            prop="cmc"
-            label="MV"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            sortable="custom"
-        />
+        <template #cell-effectiveColors="{ row }">
+            <i
+                v-for="color in row.effectiveColors"
+                :key="color"
+                :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
+                style="margin-right: 4px;"
+            ></i>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('typeLine')"
-            prop="typeLine"
-            label="Type Line"
-            min-width="175"
-            max-width="350"
-            show-overflow-tooltip
-            sortable="custom"
-        />
+        <template #cell-tags="{ row }">
+            <div class="tag-list flex gap-2">
+                <el-tag
+                    v-for="tag in filteredTags(row.tags)"
+                    :key="tag"
+                    size="small"
+                    type="info"
+                    :color="getTagColor(tag)"
+                    disable-transitions
+                >
+                    {{ tag }}
+                </el-tag>
+            </div>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('elo')"
-            prop="elo"
-            label="Elo"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            :formatter="(row) => row.elo != null ? row.elo.toFixed(0) : 'N/A'"
-            sortable="custom"
-        />
+        <template #cell-isUniversesBeyond="{ row }">
+            <el-tag v-if="row.isUniversesBeyond" type="success" size="small">Yes</el-tag>
+            <el-tag v-else type="info" size="small">No</el-tag>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('popularity')"
-            prop="popularity"
-            label="Popularity"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            :formatter="(row) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A'"
-            sortable="custom"
-        />
+        <template #cell-isSupplementalProduct="{ row }">
+            <el-tag v-if="row.isSupplementalProduct" type="success" size="small">Yes</el-tag>
+            <el-tag v-else type="info" size="small">No</el-tag>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('tags')"
-            prop="tags"
-            label="Tags"
-            min-width="75"
-            max-width="250"
-        >
-            <template #default="{ row }">
-                <div class="tag-list flex gap-2">
-                    <el-tag
-                        v-for="tag in filteredTags(row.tags)"
-                        :key="tag"
-                        size="small"
-                        type="info"
-                        :color="getTagColor(tag)"
-                        disable-transitions
-                    >
-                        {{ tag }}
-                    </el-tag>
-                </div>
-            </template>
-        </el-table-column>
+        <template #cell-makesTokens="{ row }">
+            <el-tag v-if="row.makesTokens" type="success" size="small">Yes</el-tag>
+            <el-tag v-else type="info" size="small">No</el-tag>
+        </template>
 
-        <el-table-column
-            v-if="config.visibleColumns.includes('minRarity')"
-            prop="minRarity"
-            label="Min Rarity"
-            min-width="75"
-            max-width="100"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('setCode')"
-            prop="setCode"
-            label="Set"
-            min-width="75"
-            max-width="100"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('setType')"
-            prop="setType"
-            label="Set Type"
-            min-width="100"
-            max-width="150"
-            show-overflow-tooltip
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('layout')"
-            prop="layout"
-            label="Layout"
-            min-width="75"
-            max-width="100"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('releaseDate')"
-            prop="releaseDate"
-            label="Release Date"
-            min-width="100"
-            max-width="150"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('minPriceUsd')"
-            prop="minPriceUsd"
-            label="Min Price (USD)"
-            min-width="75"
-            max-width="100"
-            :formatter="(row) => row.minPriceUsd != null ? `$${row.minPriceUsd.toFixed(2)}` : 'N/A'"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('minPriceTix')"
-            prop="minPriceTix"
-            label="Min Price (Tix)"
-            min-width="75"
-            max-width="100"
-            :formatter="(row) => row.minPriceTix != null ? row.minPriceTix.toFixed(2) : 'N/A'"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('oracleTextWordCount')"
-            prop="oracleTextWordCount"
-            label="Word Count (incl. Reminder Text)"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('oracleTextWordCountMinusParen')"
-            prop="oracleTextWordCountMinusParen"
-            label="Word Count"
-            min-width="75"
-            max-width="100"
-            :align="'center'"
-            sortable="custom"
-        />
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('isUniversesBeyond')"
-            prop="isUniversesBeyond"
-            label="Universes Beyond"
-            min-width="50"
-            max-width="75"
-            :align="'center'"
-        >
-            <template #default="{ row }">
-                <el-tag v-if="row.isUniversesBeyond" type="success" size="small">Yes</el-tag>
-                <el-tag v-else type="info" size="small">No</el-tag>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('isSupplementalProduct')"
-            prop="isSupplementalProduct"
-            label="Supplemental"
-            min-width="50"
-            max-width="100"
-            :align="'center'"
-        >
-            <template #default="{ row }">
-                <el-tag v-if="row.isSupplementalProduct" type="success" size="small">Yes</el-tag>
-                <el-tag v-else type="info" size="small">No</el-tag>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('makesTokens')"
-            prop="makesTokens"
-            label="Tokens"
-            min-width="50"
-            max-width="75"
-            :align="'center'"
-        >
-            <template #default="{ row }">
-                <el-tag v-if="row.makesTokens" type="success" size="small">Yes</el-tag>
-                <el-tag v-else type="info" size="small">No</el-tag>
-            </template>
-        </el-table-column>
-
-        <el-table-column
-            v-if="config.visibleColumns.includes('games')"
-            prop="games"
-            label="Games"
-            min-width="75"
-            max-width="150"
-        >
-            <template #default="{ row }">
-                <div class="tag-list flex gap-2">
-                    <el-tag
-                        v-for="game in row.games"
-                        :key="game"
-                        size="small"
-                        type="info"
-                        :color="getGameTagColor(game)"
-                        disable-transitions
-                    >
-                        {{ game }}
-                    </el-tag>
-                </div>
-            </template>
-        </el-table-column>
-    </el-table>
+        <template #cell-games="{ row }">
+            <div class="tag-list flex gap-2">
+                <el-tag
+                    v-for="game in row.games"
+                    :key="game"
+                    size="small"
+                    type="info"
+                    :color="getGameTagColor(game)"
+                    disable-transitions
+                >
+                    {{ game }}
+                </el-tag>
+            </div>
+        </template>
+    </StickyTable>
 
     <el-pagination
         v-model:current-page="currentPage"
@@ -428,11 +220,11 @@
 </template>
 
 <script setup lang="ts">
-import { TableInstance } from 'element-plus';
-import type { SortBy } from 'element-plus';
 import { ref, computed, inject } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
+import StickyTable from './StickyTable.vue';
+import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardTableFilters from './filters/CardTableFilters.vue';
 
 const props = defineProps({
@@ -452,11 +244,10 @@ const props = defineProps({
 
 const openCubeDetailDialog = inject('openCubeDetailDialog');
 
-const cardSummaryTableRef = ref<TableInstance>();
 const cardTableFiltersRef = ref<InstanceType<typeof CardTableFilters>>();
 const currentPage = ref(1);
 const pageSize = ref(50);
-const activeSort = ref<SortBy | null>({ prop: 'cubeCount', order: 'descending' });
+const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
 const activeFilterState = ref<Record<string, any>>({});
 const columnCustomizationVisible = ref(false);
 
@@ -529,6 +320,33 @@ const columnOptions = ref([
             { value: 'games', label: 'Games' },
         ],
     },
+]);
+
+// --- Table column definitions ---
+const tableColumns = computed<StickyTableColumn[]>(() => [
+    { key: 'index', prop: 'index', label: '#', width: '50px' },
+    { key: 'name', prop: 'name', label: 'Name', minWidth: '150px', sortable: true },
+    { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') },
+    { key: 'count', prop: 'count', label: 'Total Count', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('count') },
+    { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', visible: config.value.visibleColumns.includes('effectiveColors') },
+    { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cmc') },
+    { key: 'typeLine', prop: 'typeLine', label: 'Type Line', minWidth: '175px', showOverflowTooltip: true, sortable: true, visible: config.value.visibleColumns.includes('typeLine') },
+    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', visible: config.value.visibleColumns.includes('elo') },
+    { key: 'popularity', prop: 'popularity', label: 'Popularity', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', visible: config.value.visibleColumns.includes('popularity') },
+    { key: 'tags', prop: 'tags', label: 'Tags', minWidth: '75px', visible: config.value.visibleColumns.includes('tags') },
+    { key: 'minRarity', prop: 'minRarity', label: 'Min Rarity', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('minRarity') },
+    { key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('setCode') },
+    { key: 'setType', prop: 'setType', label: 'Set Type', minWidth: '100px', showOverflowTooltip: true, sortable: true, visible: config.value.visibleColumns.includes('setType') },
+    { key: 'layout', prop: 'layout', label: 'Layout', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('layout') },
+    { key: 'releaseDate', prop: 'releaseDate', label: 'Release Date', minWidth: '100px', sortable: true, visible: config.value.visibleColumns.includes('releaseDate') },
+    { key: 'minPriceUsd', prop: 'minPriceUsd', label: 'Min Price (USD)', minWidth: '75px', sortable: true, formatter: (row: any) => row.minPriceUsd != null ? `$${row.minPriceUsd.toFixed(2)}` : 'N/A', visible: config.value.visibleColumns.includes('minPriceUsd') },
+    { key: 'minPriceTix', prop: 'minPriceTix', label: 'Min Price (Tix)', minWidth: '75px', sortable: true, formatter: (row: any) => row.minPriceTix != null ? row.minPriceTix.toFixed(2) : 'N/A', visible: config.value.visibleColumns.includes('minPriceTix') },
+    { key: 'oracleTextWordCount', prop: 'oracleTextWordCount', label: 'Word Count (incl. Reminder Text)', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('oracleTextWordCount') },
+    { key: 'oracleTextWordCountMinusParen', prop: 'oracleTextWordCountMinusParen', label: 'Word Count', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('oracleTextWordCountMinusParen') },
+    { key: 'isUniversesBeyond', prop: 'isUniversesBeyond', label: 'Universes Beyond', minWidth: '50px', align: 'center', visible: config.value.visibleColumns.includes('isUniversesBeyond') },
+    { key: 'isSupplementalProduct', prop: 'isSupplementalProduct', label: 'Supplemental', minWidth: '50px', align: 'center', visible: config.value.visibleColumns.includes('isSupplementalProduct') },
+    { key: 'makesTokens', prop: 'makesTokens', label: 'Tokens', minWidth: '50px', align: 'center', visible: config.value.visibleColumns.includes('makesTokens') },
+    { key: 'games', prop: 'games', label: 'Games', minWidth: '75px', visible: config.value.visibleColumns.includes('games') },
 ]);
 
 // --- Tag / game display helpers ---
@@ -631,7 +449,7 @@ const onFiltersUpdated = (filters: Record<string, any>) => {
     currentPage.value = 1;
 };
 
-const onSortChange = (sortInfo: SortBy) => {
+const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
     activeSort.value = sortInfo;
     currentPage.value = 1;
 };
@@ -739,7 +557,7 @@ const sortedRows = computed(() => {
         return 0;
     });
 
-    if (!activeSort.value) {
+    if (!activeSort.value || !activeSort.value.order) {
         return alphaSorted;
     }
 
