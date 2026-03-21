@@ -59,10 +59,9 @@
 
                     <div
                         v-if="activeCard.oracleText"
-                        style="margin-top: 16px; font-size: 0.875rem; line-height: 1.6; white-space: pre-line; color: var(--el-text-color-primary);"
-                    >
-                        {{ activeCard.oracleText }}
-                    </div>
+                        class="oracle-text"
+                        v-html="renderManaSymbols(activeCard.oracleText)"
+                    />
                 </el-col>
 
                 <!-- Card Details Column -->
@@ -200,6 +199,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
+import { renderManaSymbols } from '../util/ManaSymbols';
 import type { Cube } from '../types';
 
 const props = defineProps({
@@ -317,5 +317,18 @@ const getGameTagColor = (game: string) => {
 
 .card-descriptions-grid .el-col {
     padding-bottom: 16px;
+}
+
+.oracle-text {
+    margin-top: 16px;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    white-space: pre-line;
+    color: var(--el-text-color-primary);
+}
+
+.oracle-text .ms {
+    font-size: 1em;
+    vertical-align: middle;
 }
 </style>
