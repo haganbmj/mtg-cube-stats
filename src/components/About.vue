@@ -92,8 +92,12 @@
                 All release year statistics <strong>exclude Basic lands</strong> to avoid distortion from frequently reprinted basics.
             </p>
 
-            <h4>Average Release Year</h4>
-            <p>Arithmetic mean of release years across all non-Basic cards.</p>
+            <h4>Average Release Year (±σ)</h4>
+            <p>Arithmetic mean of release years across all non-Basic cards, paired with the <a href="https://en.wikipedia.org/wiki/Standard_deviation" target="_blank">Standard Deviation</a> (σ) as a measure of spread:</p>
+            <p class="formula">
+                $$\sigma = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \bar{y})^2}$$
+            </p>
+            <p>where $\bar{y}$ is the mean release year. A cube displaying <code>2020 (±4.5)</code> has an average release year of 2020 with a standard deviation of 4.5 years.</p>
 
             <h4>Median Release Year (±MAD)</h4>
             <p>

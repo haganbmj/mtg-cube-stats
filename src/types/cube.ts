@@ -75,6 +75,7 @@ export interface CubeStats {
   averageWordCount: number;
   averageWordCountUnique: number;
   averageReleaseYear: number;
+  averageReleaseYearStdDev: number;
   medianReleaseYear: number;
   medianReleaseYearMAD: number;
   keywords: Record<string, number>;
