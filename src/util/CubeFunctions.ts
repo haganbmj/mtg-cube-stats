@@ -301,6 +301,13 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'));
             return validCards.length > 0 ? validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length : 2000;
         })(),
+        averageReleaseYearStdDev: (() => {
+            const validCards = cards.filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'));
+            if (validCards.length === 0) return 0;
+            const mean = validCards.reduce((sum, c) => sum + (c.releaseYear ?? 2026), 0) / validCards.length;
+            const variance = validCards.reduce((sum, c) => sum + Math.pow((c.releaseYear ?? 2026) - mean, 2), 0) / validCards.length;
+            return Math.sqrt(variance);
+        })(),
         medianReleaseYear: (() => {
             const years = cards
                 .filter(c => c.releaseYear && !c.effectiveTypes?.includes('Basic'))
