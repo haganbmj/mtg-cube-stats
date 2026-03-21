@@ -5,14 +5,14 @@
                 <el-button @click="columnCustomizationVisible = true">Customize Columns</el-button>
             </el-space>
         </el-col>
-        <el-col :span="12" :xs="24" class="filtered-count">
+        <el-col :span="12" :xs="24" class="filtered-count" style="display: flex; align-items: center; justify-content: flex-end;">
             <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
             <el-dropdown trigger="click" style="margin-left: 12px; vertical-align: middle;">
                 <el-button :icon="Menu" circle size="small" />
                 <template #dropdown>
                     <el-dropdown-menu>
                         <el-dropdown-item @click="visualDisplayVisible = true">Visual Display</el-dropdown-item>
-                        <el-dropdown-item @click="exportToCsv">Export CSV</el-dropdown-item>
+                        <el-dropdown-item @click="exportToCsv">Export as CSV</el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
             </el-dropdown>
