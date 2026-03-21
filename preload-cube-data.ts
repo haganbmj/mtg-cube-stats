@@ -229,6 +229,7 @@ const batches: Batch[] = [
             '608565bb3d2514106efdf765', // razorlead - Power for the People
             '5e6014d7f9730a46084c1e96', // FunkyDragon - FunkyDragon's Peasant Cube
             '5d753dd88f152803feae83a1', // Squirrely - Squirrely's Old Frame Peasant (+rare lands)
+            '614788f7076b331a38983787', // richardgc - New Frontier
         ],
     },
     {
