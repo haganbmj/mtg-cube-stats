@@ -3,11 +3,19 @@
         <el-col :span="12" :xs="24">
             <el-space>
                 <el-button @click="columnCustomizationVisible = true">Customize Columns</el-button>
-                <el-button @click="exportToCsv" type="primary">Export CSV</el-button>
             </el-space>
         </el-col>
         <el-col :span="12" :xs="24" class="filtered-count">
             <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
+            <el-dropdown trigger="click" style="margin-left: 12px; vertical-align: middle;">
+                <el-button :icon="Menu" circle size="small" />
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item @click="visualDisplayVisible = true">Visual Display</el-dropdown-item>
+                        <el-dropdown-item @click="exportToCsv">Export CSV</el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
         </el-col>
     </el-row>
 
@@ -111,6 +119,41 @@
         :total="filteredRows.length"
     />
 
+    <!-- Visual Card Display Dialog -->
+    <el-dialog
+        v-model="visualDisplayVisible"
+        title="Visual Card Display"
+        width="90%"
+        style="max-width: 1400px;"
+        top="5vh"
+        align-center
+        destroy-on-close
+    >
+        <div class="visual-card-grid">
+            <div
+                v-for="card in visibleRows"
+                :key="card.oracleId"
+                class="visual-card-item"
+                @click="openCardDetailDialog(card.oracleId); visualDisplayVisible = false"
+            >
+                <el-image
+                    :src="card.urlFront"
+                    fit="contain"
+                    :alt="card.name"
+                    :class="'card-image ' + card.setCode?.toLowerCase()"
+                    style="width: 100%;"
+                />
+                <div class="visual-card-label">
+                    <el-text size="small" truncated>{{ card.name }}</el-text>
+                    <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
+                </div>
+            </div>
+        </div>
+        <template #footer>
+            <el-button @click="visualDisplayVisible = false">Close</el-button>
+        </template>
+    </el-dialog>
+
     <!-- Column Customization Dialog -->
     <el-dialog
         v-model="columnCustomizationVisible"
@@ -139,6 +182,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
+import { Menu } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
@@ -166,6 +210,7 @@ const pageSize = ref(50);
 const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
 const activeFilterState = ref<Record<string, any>>({});
 const columnCustomizationVisible = ref(false);
+const visualDisplayVisible = ref(false);
 
 const isMobile = computed(() => {
     return screen.width <= 760;
@@ -654,13 +699,41 @@ const visibleRows = computed(() => {
 
 <style lang="scss">
 .filtered-count {
-    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     line-height: 2em;
 
     @media (max-width: 760px) {
-        text-align: left;
+        justify-content: flex-start;
         margin-top: 8px;
     }
+}
+
+.visual-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 300px));
+    gap: 12px;
+    justify-content: center;
+}
+
+.visual-card-item {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &:hover .card-image {
+        opacity: 0.85;
+    }
+}
+
+.visual-card-label {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 .el-pagination {
