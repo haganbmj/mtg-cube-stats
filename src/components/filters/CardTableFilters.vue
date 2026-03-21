@@ -1,6 +1,12 @@
 <template>
   <el-collapse v-model="expandedSections" class="card-table-filters" expand-icon-position="left">
-    <el-collapse-item title="Filters" name="filters">
+    <el-collapse-item name="filters">
+      <template #title>
+        <div style="display: flex; align-items: center; width: 100%;">
+          <span style="flex: 1;">Filters</span>
+          <el-button @click.stop="resetFilters">Reset Filters</el-button>
+        </div>
+      </template>
       <el-row :gutter="20">
         <!-- Column 1: Text Search, Cubes, Colors, Mana Value, Rarity -->
         <el-col :span="8" :xs="24" :sm="12" :md="8">

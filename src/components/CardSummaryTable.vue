@@ -2,7 +2,6 @@
     <el-row direction="horizontal" :gutter="20">
         <el-col :span="12" :xs="24">
             <el-space>
-                <el-button @click="resetAllFilters">Reset Filters</el-button>
                 <el-button @click="columnCustomizationVisible = true">Customize Columns</el-button>
                 <el-button @click="exportToCsv" type="primary">Export CSV</el-button>
             </el-space>
@@ -13,7 +12,6 @@
     </el-row>
 
     <CardTableFilters
-        ref="cardTableFiltersRef"
         :loadedCubes="loadedCubes"
         @update:filters="onFiltersUpdated"
         style="margin-top: 15px;"
@@ -163,7 +161,6 @@ const props = defineProps({
 
 const openCardDetailDialog = inject('openCardDetailDialog');
 
-const cardTableFiltersRef = ref<InstanceType<typeof CardTableFilters>>();
 const currentPage = ref(1);
 const pageSize = ref(50);
 const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
@@ -360,12 +357,6 @@ const onFiltersUpdated = (filters: Record<string, any>) => {
 const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
     activeSort.value = sortInfo;
     currentPage.value = 1;
-};
-
-const resetAllFilters = () => {
-    activeFilterState.value = {};
-    currentPage.value = 1;
-    cardTableFiltersRef.value?.resetFilters();
 };
 
 // --- CSV Export ---
