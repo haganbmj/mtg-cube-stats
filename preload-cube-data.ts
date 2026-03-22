@@ -230,6 +230,7 @@ const batches: Batch[] = [
             '5e6014d7f9730a46084c1e96', // FunkyDragon - FunkyDragon's Peasant Cube
             '5d753dd88f152803feae83a1', // Squirrely - Squirrely's Old Frame Peasant (+rare lands)
             '614788f7076b331a38983787', // richardgc - New Frontier
+            '5e646fe670240a58539a3fee', // Narvuntien - Cards I Own Cube
         ],
     },
     {
