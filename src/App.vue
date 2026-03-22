@@ -89,7 +89,7 @@ import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
 import { registerTheme } from 'echarts';
-import darkbmjTheme from './echarts/theme.mjs';
+import darkbmjTheme from './echarts/theme';
 import About from './components/About.vue';
 import CubeDetailDialog from './components/CubeDetailDialog.vue';
 import CardDetailDialog from './components/CardDetailDialog.vue';
