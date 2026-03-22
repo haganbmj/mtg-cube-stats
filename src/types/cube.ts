@@ -55,7 +55,6 @@ export interface CubeCard {
 export interface CubeStats {
   totalCards: number;
   totalUniqueCards: number;
-  singletonCards: number;
   landCards: number;
   creatureCards: number;
   newCards: number;
