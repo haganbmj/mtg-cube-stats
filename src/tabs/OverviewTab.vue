@@ -157,14 +157,14 @@
             {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
         </template>
 
+        <template #cell-totalUniqueCards="{ row }">
+            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.totalUniqueCards / row.stats.totalCards) }}</el-text>
+            <el-text class="cell-secondary">({{ row.stats.totalUniqueCards }})</el-text>
+        </template>
+
         <template #cell-newCards="{ row }">
             <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
             <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
-        </template>
-
-        <template #cell-singletonCards="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.singletonCards / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.singletonCards }})</el-text>
         </template>
 
         <template #cell-landCards="{ row }">
@@ -316,7 +316,7 @@ const columnOptions = ref([
             { value: 'stats.medianReleaseYear', label: 'Median Release Year', tooltip: "Median Release Year of Cards in the Cube (± Median Absolute Deviation)" },
             { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
             { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
-            { value: 'stats.singletonCards', label: "Singleton", tooltip: "Cards with only one copy" },
+            { value: 'stats.totalUniqueCards', label: "Unique Cards", tooltip: "Number of unique cards by oracle ID" },
             { value: 'stats.landCards', label: "Lands", tooltip: "Cards that are playable from hand as a Land, includes MDFCs" },
             { value: 'stats.creatureCards', label: "Creatures", tooltip: "Cards with 'Creature' in their Type Line" },
         ],
@@ -420,8 +420,8 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Year', minWidth: '85px', sortable: true, tooltip: 'Average release year of cards in the cube (± Standard Deviation)', visible: config.value.visibleColumns.includes('stats.averageReleaseYear') },
     { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Med. Year', minWidth: '85px', sortable: true, tooltip: 'Median release year of cards in the cube (± Median Absolute Deviation)', visible: config.value.visibleColumns.includes('stats.medianReleaseYear') },
     { key: 'totalCards', prop: 'stats.totalCards', label: 'Cards', minWidth: '65px', sortable: true, tooltip: 'Total number of cards', visible: config.value.visibleColumns.includes('stats.totalCards') },
+    { key: 'totalUniqueCards', prop: 'stats.totalUniqueCards', label: 'Unique', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.totalUniqueCards'), tooltip: 'Number of unique cards by oracle ID', visible: config.value.visibleColumns.includes('stats.totalUniqueCards') },
     { key: 'newCards', prop: 'stats.newCards', label: 'New', minWidth: '65px', sortable: true, sortMethod: sortMethods.ratioSort('stats.newCards'), tooltip: 'Cards Released in the Last 12 Months', visible: config.value.visibleColumns.includes('stats.newCards') },
-    { key: 'singletonCards', prop: 'stats.singletonCards', label: 'Singleton', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.singletonCards'), tooltip: 'Cards with only one copy', visible: config.value.visibleColumns.includes('stats.singletonCards') },
     { key: 'landCards', prop: 'stats.landCards', label: 'Lands', minWidth: '65px', sortable: true, sortMethod: sortMethods.ratioSort('stats.landCards'), visible: config.value.visibleColumns.includes('stats.landCards') },
     { key: 'creatureCards', prop: 'stats.creatureCards', label: 'Creatures', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.creatureCards'), visible: config.value.visibleColumns.includes('stats.creatureCards') },
     { key: 'avgSimilarityScore', prop: 'avgSimilarityScore', label: 'Similarity', minWidth: '75px', sortable: true, formatter: fmtPercentage('avgSimilarityScore'), tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes', visible: config.value.visibleColumns.includes('avgSimilarityScore') },

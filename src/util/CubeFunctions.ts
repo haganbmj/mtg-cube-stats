@@ -176,7 +176,6 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
     const firstOrderStats = {
         totalCards: cards.length,
         totalUniqueCards: new Set(cards.map(c => c.oracleId)).size,
-        singletonCards: cards.filter(c => c.oracleId && cards.filter(c2 => c2.oracleId === c.oracleId).length === 1).length,
         // FIXME: This is only handling the front of DFCs.
         // landCards: cards.filter(card => card.typeLine.split('//')[0].split('—')[0].trim().split(' ').includes('Land')).length,
         landCards: cards.filter(card => card.effectiveTypes?.includes('Land')).length,

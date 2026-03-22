@@ -87,14 +87,14 @@
                         <el-col :span="12" :xs="24">
                             <el-descriptions title="Card Counts" :column="1" :label-width="240" :border="true" size="default">
                                 <el-descriptions-item>
+                                    <template #label><el-tooltip content="Number of unique cards by oracle ID, as a percentage of the total" placement="top" :hide-after="50"><span>Unique Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
+                                    {{ formatPercentage(activeCube.stats?.totalUniqueCards, activeCube.stats?.totalCards) }}
+                                    <span class="cell-secondary">({{ activeCube.stats?.totalUniqueCards ?? 0 }})</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50"><span>New Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.newCards ?? 0 }})</span>
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards with only one copy" placement="top" :hide-after="50"><span>Singleton <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.singletonCards, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.singletonCards ?? 0 }})</span>
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50"><span>Lands <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
