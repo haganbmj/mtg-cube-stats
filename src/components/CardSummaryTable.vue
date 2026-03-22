@@ -7,11 +7,14 @@
         </el-col>
         <el-col :span="12" :xs="24" class="filtered-count" style="display: flex; align-items: center; justify-content: flex-end;">
             <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
-            <el-dropdown trigger="click" style="margin-left: 12px; vertical-align: middle;">
+            <el-button-group style="margin-left: 12px;">
+                <el-button :icon="Grid" size="small" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                <el-button :icon="List" size="small" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
+            </el-button-group>
+            <el-dropdown trigger="click" style="margin-left: 8px; vertical-align: middle;">
                 <el-button :icon="Menu" circle size="small" />
                 <template #dropdown>
                     <el-dropdown-menu>
-                        <el-dropdown-item @click="visualDisplayVisible = true">Visual Display</el-dropdown-item>
                         <el-dropdown-item @click="exportToCsv">Export as CSV</el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
@@ -34,7 +37,46 @@
         :total="filteredRows.length"
     />
 
+    <el-row v-if="visualDisplayVisible" class="visual-sort-bar" align="middle">
+        <el-space wrap>
+            <span class="sort-label">Sort by</span>
+            <el-select v-model="visualSortProp" size="small" style="width: 160px;">
+                <el-option
+                    v-for="opt in visualSortOptions"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                />
+            </el-select>
+            <el-button size="small" @click="toggleVisualSortOrder">
+                {{ visualSortOrder === 'ascending' ? '↑ Ascending' : '↓ Descending' }}
+            </el-button>
+        </el-space>
+    </el-row>
+
+    <div v-if="visualDisplayVisible" class="visual-card-grid">
+        <div
+            v-for="card in visibleRows"
+            :key="card.oracleId"
+            class="visual-card-item"
+            @click="openCardDetailDialog(card.oracleId)"
+        >
+            <el-image
+                :src="card.urlFront"
+                fit="contain"
+                :alt="card.name"
+                :class="'card-image ' + card.setCode?.toLowerCase()"
+                style="width: 100%;"
+            />
+            <div class="visual-card-label">
+                <el-text size="small" truncated>{{ card.name }}</el-text>
+                <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
+            </div>
+        </div>
+    </div>
+
     <StickyTable
+        v-else
         :data="visibleRows"
         :columns="tableColumns"
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
@@ -119,40 +161,7 @@
         :total="filteredRows.length"
     />
 
-    <!-- Visual Card Display Dialog -->
-    <el-dialog
-        v-model="visualDisplayVisible"
-        title="Visual Card Display"
-        width="90%"
-        style="max-width: 1400px;"
-        top="5vh"
-        align-center
-        destroy-on-close
-    >
-        <div class="visual-card-grid">
-            <div
-                v-for="card in visibleRows"
-                :key="card.oracleId"
-                class="visual-card-item"
-                @click="openCardDetailDialog(card.oracleId); visualDisplayVisible = false"
-            >
-                <el-image
-                    :src="card.urlFront"
-                    fit="contain"
-                    :alt="card.name"
-                    :class="'card-image ' + card.setCode?.toLowerCase()"
-                    style="width: 100%;"
-                />
-                <div class="visual-card-label">
-                    <el-text size="small" truncated>{{ card.name }}</el-text>
-                    <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
-                </div>
-            </div>
-        </div>
-        <template #footer>
-            <el-button @click="visualDisplayVisible = false">Close</el-button>
-        </template>
-    </el-dialog>
+
 
     <!-- Column Customization Dialog -->
     <el-dialog
@@ -181,8 +190,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
-import { Menu } from '@element-plus/icons-vue';
+import { ref, computed, inject, watch } from 'vue';
+import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
@@ -211,6 +220,26 @@ const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null 
 const activeFilterState = ref<Record<string, any>>({});
 const columnCustomizationVisible = ref(false);
 const visualDisplayVisible = ref(false);
+
+const visualSortProp = computed({
+    get: () => activeSort.value?.prop ?? 'cubeCount',
+    set: (val: string) => {
+        activeSort.value = { prop: val, order: activeSort.value?.order ?? 'descending' };
+        currentPage.value = 1;
+    },
+});
+
+const visualSortOrder = computed({
+    get: () => activeSort.value?.order ?? 'descending',
+    set: (val: 'ascending' | 'descending') => {
+        activeSort.value = { prop: activeSort.value?.prop ?? 'cubeCount', order: val };
+        currentPage.value = 1;
+    },
+});
+
+const toggleVisualSortOrder = () => {
+    visualSortOrder.value = visualSortOrder.value === 'ascending' ? 'descending' : 'ascending';
+};
 
 const isMobile = computed(() => {
     return screen.width <= 760;
@@ -309,6 +338,22 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'makesTokens', prop: 'makesTokens', label: 'Tokens', minWidth: '65px', align: 'center', tooltip: 'Makes one or more Tokens', visible: config.value.visibleColumns.includes('makesTokens') },
     { key: 'games', prop: 'games', label: 'Games', minWidth: '75px', visible: config.value.visibleColumns.includes('games') },
 ]);
+
+const visualSortOptions = computed(() => {
+    return tableColumns.value
+        .filter(col => col.sortable && col.visible !== false && col.prop != null)
+        .map(col => ({ label: col.label, value: col.prop as string }));
+});
+
+// Reset sort prop if the sorted column is hidden
+watch(visualSortOptions, (options) => {
+    if (!options.some(o => o.value === activeSort.value?.prop)) {
+        const first = options[0];
+        if (first) {
+            activeSort.value = { prop: first.value, order: activeSort.value?.order ?? 'descending' };
+        }
+    }
+});
 
 // --- Tag / game display helpers ---
 const tagsMeta = [
@@ -656,6 +701,11 @@ const filteredRows = computed(() => {
                 if (!compareValues(row.oracleTextWordCount, f.wordCountComparison, f.wordCountValue)) return false;
             }
 
+            // Cube count (comparative)
+            if (f.cubeCountComparison) {
+                if (!compareValues(row.cubeCount, f.cubeCountComparison, f.cubeCountValue)) return false;
+            }
+
             // Total count (comparative)
             if (f.countComparison) {
                 if (!compareValues(row.count, f.countComparison, f.countValue)) return false;
@@ -707,6 +757,15 @@ const visibleRows = computed(() => {
     @media (max-width: 760px) {
         justify-content: flex-start;
         margin-top: 8px;
+    }
+}
+
+.visual-sort-bar {
+    margin: 12px 0 8px;
+
+    .sort-label {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
     }
 }
 

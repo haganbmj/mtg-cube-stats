@@ -46,6 +46,23 @@
               :options="availableCubes"
               placeholder="Filter by cube..."
             />
+            <label class="filter-label">Cube Count</label>
+            <el-row :gutter="8">
+              <el-col :span="12">
+                <el-select v-model="filters.cubeCountComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                  <el-option label="Any" value="" />
+                  <el-option label="=" value="eq" />
+                  <el-option label="≠" value="neq" />
+                  <el-option label="<" value="lt" />
+                  <el-option label="≤" value="lte" />
+                  <el-option label=">" value="gt" />
+                  <el-option label="≥" value="gte" />
+                </el-select>
+              </el-col>
+              <el-col :span="12">
+                <el-input-number v-model="filters.cubeCountValue" :min="0" :step="1" :disabled="!filters.cubeCountComparison" @change="emitFilters" style="width: 100%;" />
+              </el-col>
+            </el-row>
             <label class="filter-label">Total Count</label>
             <el-row :gutter="8">
               <el-col :span="12">
@@ -371,6 +388,8 @@ const filters = reactive({
     makesTokens: null as boolean | null,
     wordCountComparison: '',
     wordCountValue: 0,
+    cubeCountComparison: '',
+    cubeCountValue: 1,
     countComparison: '',
     countValue: 0,
     eloComparison: '',
@@ -565,6 +584,8 @@ const resetFilters = () => {
     filters.makesTokens = null;
     filters.wordCountComparison = '';
     filters.wordCountValue = 0;
+    filters.cubeCountComparison = '';
+    filters.cubeCountValue = 1;
     filters.countComparison = '';
     filters.countValue = 0;
     filters.eloComparison = '';
