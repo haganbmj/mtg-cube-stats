@@ -7,10 +7,8 @@
           <el-button @click.stop="resetFilters">Reset Filters</el-button>
         </div>
       </template>
-      <el-row :gutter="20">
-        <!-- Column 1: Text Search, Cubes, Colors, Mana Value, Rarity -->
-        <el-col :span="8" :xs="24" :sm="12" :md="8">
-          <div class="filter-section">
+      <div class="filters-grid">
+        <div class="filter-section">
             <h4 class="filter-section-title">Text Search</h4>
             <label class="filter-label">Card Name</label>
             <el-input
@@ -96,9 +94,7 @@
               </TristateCheckbox>
             </div>
             <el-checkbox v-model="filters.colorsExactMatch" @change="emitFilters" style="margin-top: 4px;">Exact match</el-checkbox>
-          </div>
 
-          <div class="filter-section">
             <h4 class="filter-section-title">Mana Value</h4>
             <el-row :gutter="8">
               <el-col :span="12">
@@ -141,12 +137,7 @@
                 </el-select>
               </el-col>
             </el-row>
-          </div>
-        </el-col>
 
-        <!-- Column 2: Types, Tags, Keywords, Games, Price -->
-        <el-col :span="8" :xs="24" :sm="12" :md="8">
-          <div class="filter-section">
             <h4 class="filter-section-title">Types</h4>
             <TristateSelect
               :modelValue="filters.types"
@@ -164,9 +155,7 @@
               :options="tagOptions"
               placeholder="Filter by tag..."
             />
-          </div>
 
-          <div class="filter-section">
             <h4 class="filter-section-title">Keywords</h4>
             <TristateSelect
               :modelValue="filters.keywords"
@@ -174,9 +163,7 @@
               :options="availableKeywords"
               placeholder="Filter by keyword..."
             />
-          </div>
 
-          <div class="filter-section">
             <h4 class="filter-section-title">Games</h4>
             <div class="filter-checkboxes-grid">
               <TristateCheckbox
@@ -223,10 +210,7 @@
               </el-col>
             </el-row>
           </div>
-        </el-col>
 
-        <!-- Column 3: Set/Release, Characteristics -->
-        <el-col :span="8" :xs="24" :sm="24" :md="8">
           <div class="filter-section">
             <h4 class="filter-section-title">Original Set / Release</h4>
             <div class="filter-checkboxes" style="margin-top: 6px;">
@@ -268,7 +252,7 @@
 
           <div class="filter-section">
             <h4 class="filter-section-title">Characteristics</h4>
-            <div class="filter-checkboxes-grid" style="margin-top: 6px;">
+            <div class="filter-checkboxes" style="margin-top: 6px;">
               <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Makes Tokens</TristateCheckbox>
             </div>
             <label class="filter-label">Layout</label>
@@ -286,6 +270,10 @@
               placeholder="Filter by legality..."
               :filterable="false"
             />
+        </div>
+
+        <div class="filter-section">
+            <h4 class="filter-section-title">Other</h4>
             <label class="filter-label">Word Count</label>
             <el-row :gutter="8">
               <el-col :span="12">
@@ -337,8 +325,7 @@
               </el-col>
             </el-row>
           </div>
-        </el-col>
-      </el-row>
+      </div>
     </el-collapse-item>
   </el-collapse>
 </template>
@@ -649,5 +636,12 @@ defineExpose({ resetFilters });
 
 .filter-subsection {
   margin-bottom: 8px;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0 20px;
+  align-items: start;
 }
 </style>
