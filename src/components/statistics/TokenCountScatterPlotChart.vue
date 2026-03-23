@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { use } from 'echarts/core';
-import { ScatterChart } from 'echarts/charts';
+import { ScatterChart, LineChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
@@ -16,6 +16,7 @@ use([
     TooltipComponent,
     GridComponent,
     ScatterChart,
+    LineChart,
 ]);
 
 const props = defineProps({
@@ -30,9 +31,9 @@ const props = defineProps({
 });
 
 const chartOptions = computed(() => {
-    const series = Object.values(props.loadedCubes).map((cube: any) => ({
+    const series: any[] = Object.values(props.loadedCubes).map((cube: any) => ({
         name: cube.name,
-        data: [[cube.stats.cardCounts.makesTokens, cube.stats.uniqueTokenCount]],
+        data: [[cube.stats.uniqueTokenCount, cube.stats.cardCounts.makesTokens]],
         type: 'scatter',
         symbolSize: 10,
         itemStyle: {
@@ -45,34 +46,50 @@ const chartOptions = computed(() => {
         },
     }));
 
-    const xMin = Math.floor(Math.min(...series.map((s: any) => s.data[0][0])) * 0.9);
-    const yMin = Math.floor(Math.min(...series.map((s: any) => s.data[0][1])) * 0.9);
+    const xMax = Math.ceil(Math.max(...series.map((s: any) => s.data[0][0])) * 1.05);
+    const yMax = Math.ceil(Math.max(...series.map((s: any) => s.data[0][1])) * 1.05);
+    // const refMax = Math.max(xMax, yMax);
+
+    const referenceLine = {
+        name: 'y = x',
+        type: 'line',
+        data: [[0, 0], [xMax, xMax]],
+        showSymbol: false,
+        silent: true,
+        lineStyle: {
+            type: 'dashed',
+            color: 'rgba(255, 255, 255, 0.25)',
+            width: 1,
+        },
+    };
 
     return {
         title: {
-            text: 'Token Effects vs Unique Tokens',
+            text: 'Unique Tokens vs Token Effects',
             left: 'center',
         },
         tooltip: {
             trigger: 'item',
-            formatter: (params: any) =>
-                `<b>${params.seriesName}</b><br/>Token Effects: ${params.value[0]}<br/>Unique Tokens: ${params.value[1]}`,
+            formatter: (params: any) => {
+                if (params.seriesName === 'y = x') return '';
+                return `<b>${params.seriesName}</b><br/>Unique Tokens: ${params.value[0]}<br/>Token Effects: ${params.value[1]}`;
+            },
         },
         xAxis: {
-            name: 'Token Effects',
+            name: 'Unique Tokens',
             nameLocation: 'middle',
             nameGap: 30,
             type: 'value',
-            min: xMin,
+            min: 0,
         },
         yAxis: {
-            name: 'Unique Tokens',
+            name: 'Token Effects',
             nameLocation: 'middle',
             nameGap: 40,
             type: 'value',
-            min: yMin,
+            min: 0,
         },
-        series,
+        series: [...series, referenceLine],
     };
 });
 </script>
