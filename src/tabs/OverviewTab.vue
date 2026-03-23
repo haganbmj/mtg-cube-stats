@@ -187,6 +187,10 @@
             <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
         </template>
 
+        <template #cell-uniqueTokenCount="{ row }">
+            <el-text class="cell-primary">{{ row.stats.uniqueTokenCount }}</el-text>
+        </template>
+
         <template #cell-removal="{ row }">
             <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
             <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
@@ -340,6 +344,7 @@ const columnOptions = ref([
             { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords", tooltip: "Number of Unique Non-Evergreen Keywords" },
             { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout", tooltip: "Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" },
             { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens", tooltip: "Cards that Create one or more Tokens" },
+            { value: 'stats.uniqueTokenCount', label: "Unique Tokens", tooltip: "Number of unique tokens produced by cards in the cube" },
             { value: 'stats.cardCounts.removal', label: "Removal", tooltip: "Cards tagged as \"removal\" in Scryfall's Tagger" },
         ],
     },
@@ -435,6 +440,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'uniqueNonEvergreenKeywords', prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-EG KW', minWidth: '80px', sortable: true, tooltip: 'Number of unique non-evergreen keywords', visible: config.value.visibleColumns.includes('stats.uniqueNonEvergreenKeywords') },
     { key: 'abnormalLayout', prop: 'stats.cardCounts.abnormalLayout', label: 'Abn. Layout', minWidth: '80px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.abnormalLayout'), tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)', visible: config.value.visibleColumns.includes('stats.cardCounts.abnormalLayout') },
     { key: 'makesTokens', prop: 'stats.cardCounts.makesTokens', label: 'Tokens', minWidth: '65px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.makesTokens'), tooltip: 'Cards that create one or more tokens', visible: config.value.visibleColumns.includes('stats.cardCounts.makesTokens') },
+    { key: 'uniqueTokenCount', prop: 'stats.uniqueTokenCount', label: 'Uniq. Tokens', minWidth: '80px', sortable: true, tooltip: 'Number of unique tokens produced by cards in the cube', visible: config.value.visibleColumns.includes('stats.uniqueTokenCount') },
     { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '70px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.removal'), tooltip: "Cards tagged as 'removal' in Scryfall's Tagger", visible: config.value.visibleColumns.includes('stats.cardCounts.removal') },
     { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'UB', minWidth: '55px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.universesBeyond'), tooltip: 'Universes Beyond — cards originally from non-Magic IP products (includes Standard sets)', visible: config.value.visibleColumns.includes('stats.cardCounts.universesBeyond') },
     { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.supplementalProduct'), tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },

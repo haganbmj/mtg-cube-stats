@@ -46,6 +46,7 @@ export interface CubeCard {
   layout?: string;
   isNormalLayout?: boolean;
   makesTokens?: boolean;
+  tokenOracleIds?: string[];
   minPriceUsd?: number | null;
   minPriceTix?: number | null;
   urlFront?: string;
@@ -87,6 +88,7 @@ export interface CubeStats {
   assumedCategories: string[];
   uniqueKeywords: number;
   uniqueNonEvergreenKeywords: number;
+  uniqueTokenCount: number;
   cardCounts: {
     removal: number;
     makesTokens: number;
