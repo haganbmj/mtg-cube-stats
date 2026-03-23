@@ -23,7 +23,7 @@ const props = defineProps({
     typeLineDistribution: {
         type: Object,
         required: true,
-    }
+    },
 });
 
 const chartOptions = computed(() => {
@@ -48,7 +48,7 @@ const chartOptions = computed(() => {
                     color: 'rgba(255, 255, 255, 0.3)',
                     formatter: '{b} ({d}%)',
                 },
-            }
+            },
         ],
     };
 });

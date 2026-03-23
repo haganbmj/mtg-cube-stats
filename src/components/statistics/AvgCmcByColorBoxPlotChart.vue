@@ -76,7 +76,7 @@ const highlightedSeries = computed(() => {
                     cubeName: cube.name,
                     colorName: dim.name,
                     cardCount: cardCount,
-                    avgCmc: value
+                    avgCmc: value,
                 });
             }
         });
@@ -123,7 +123,7 @@ const chartOptions = computed(() => {
                 },
                 borderWidth: 2,
             },
-        }
+        },
     ];
 
     // Add highlighted points if any
@@ -138,7 +138,7 @@ const chartOptions = computed(() => {
                 borderColor: '#ff6b6b',
                 borderWidth: 2,
                 shadowBlur: 5,
-                shadowColor: 'rgba(255, 107, 107, 0.5)'
+                shadowColor: 'rgba(255, 107, 107, 0.5)',
             },
             z: 10,
         });
@@ -167,7 +167,7 @@ const chartOptions = computed(() => {
                     return `<b>${data.cubeName}</b><br/>${data.colorName}: ${data.avgCmc.toFixed(2)}<br/>Cards: ${data.cardCount}`;
                 }
                 return params.name;
-            }
+            },
         },
         yAxis: {
             name: 'Avg. Mana Value',
@@ -180,10 +180,10 @@ const chartOptions = computed(() => {
             nameLocation: 'middle',
             type: 'category',
             axisTick: {
-                alignWithLabel: true
+                alignWithLabel: true,
             },
             axisLabel: {
-                rotate: 30
+                rotate: 30,
             },
             data: xDimensions.map(dim => dim.name),
             nameGap: 25,

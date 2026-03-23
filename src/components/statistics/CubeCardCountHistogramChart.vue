@@ -57,7 +57,7 @@ const chartOptions = computed(() => {
         return {
             name: bucket.label,
             value: cubesInBucket.length,
-            cubes: cubesInBucket.map(c => c.name)
+            cubes: cubesInBucket.map(c => c.name),
         };
     });
 
@@ -91,8 +91,8 @@ const chartOptions = computed(() => {
             {
                 data: bucketCounts,
                 type: 'bar',
-            }
-        ]
+            },
+        ],
     };
 });
 </script>

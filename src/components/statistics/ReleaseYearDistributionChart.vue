@@ -52,7 +52,7 @@ const chartOptions = computed(() => {
         return {
             name: year,
             value: (100 * (combined[year] || 0) / totalCards).toFixed(2),
-            rawValue: combined[year] || 0
+            rawValue: combined[year] || 0,
         };
     });
 
@@ -81,15 +81,15 @@ const chartOptions = computed(() => {
             nameLocation: 'middle',
             nameGap: 40,
             axisLabel: {
-                formatter: '{value}%'
+                formatter: '{value}%',
             },
         },
         series: [
             {
                 data,
                 type: 'bar',
-            }
-        ]
+            },
+        ],
     };
 });
 </script>

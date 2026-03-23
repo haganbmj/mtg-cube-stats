@@ -24,7 +24,7 @@ const props = defineProps({
     legalityDistribution: {
         type: Object,
         required: true,
-    }
+    },
 });
 
 // TODO: Define a fixed set of options and assign each a consistent color.
@@ -52,7 +52,7 @@ const chartOptions = computed(() => {
                     color: 'rgba(255, 255, 255, 0.3)',
                     formatter: '{b} ({d}%)',
                 },
-            }
+            },
         ],
     };
 });

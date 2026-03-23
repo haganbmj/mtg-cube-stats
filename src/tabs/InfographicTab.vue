@@ -500,7 +500,7 @@ const topLowEloCards = computed(() => {
     return Array.from(cardCubeMap.values())
         .map(entry => ({
             ...entry.card,
-            containingCubes: entry.cubes
+            containingCubes: entry.cubes,
         }))
         .sort((a, b) => a.elo - b.elo)
         .slice(0, 10);
@@ -677,7 +677,7 @@ const topPopularSets = computed(() => {
         .map(([setCode, count]) => ({
             setCode,
             setName: getSetName(setCode),
-            cardCount: count
+            cardCount: count,
         }))
         .sort((a, b) => b.cardCount - a.cardCount)
         .slice(0, 10);

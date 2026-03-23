@@ -23,7 +23,7 @@ const props = defineProps({
     colorDistribution: {
         type: Object,
         required: true,
-    }
+    },
 });
 
 const dataLabels = {
@@ -58,7 +58,7 @@ const chartOptions = computed(() => {
                     formatter: '{b} ({d}%)',
                 },
                 color: ['#f8f4e3', '#d0e3f2', '#b8c2c6', '#f2b5a0', '#b4e2b0', '#cfcfcf'],
-            }
+            },
         ],
     };
 });

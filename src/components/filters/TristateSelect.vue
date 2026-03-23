@@ -1,71 +1,71 @@
 <template>
-  <el-popover
-    v-model:visible="popoverVisible"
-    placement="bottom-start"
-    :width="280"
-    trigger="click"
-    :teleported="true"
-  >
-    <template #reference>
-      <div class="tristate-select" :class="{ 'is-active': popoverVisible }">
-        <div class="tristate-select__tags" v-if="includedEntries.length || excludedEntries.length">
-          <el-tag
-            v-for="entry in includedEntries"
-            :key="'inc-' + entry.value"
-            size="small"
-            type="success"
-            closable
-            disable-transitions
-            @close="clearEntry(entry.value)"
-          >
-            {{ entry.label }}
-          </el-tag>
-          <el-tag
-            v-for="entry in excludedEntries"
-            :key="'exc-' + entry.value"
-            size="small"
-            type="danger"
-            closable
-            disable-transitions
-            @close="clearEntry(entry.value)"
-          >
-            {{ entry.label }}
-          </el-tag>
-        </div>
-        <span v-else class="tristate-select__placeholder">{{ placeholder }}</span>
-        <el-icon class="tristate-select__arrow"><ArrowDown /></el-icon>
-      </div>
-    </template>
-
-    <div class="tristate-select-popover">
-      <el-input
-        v-if="filterable"
-        v-model="searchQuery"
-        placeholder="Search..."
-        clearable
-        size="small"
-        class="tristate-select-popover__search"
-      >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
+    <el-popover
+        v-model:visible="popoverVisible"
+        placement="bottom-start"
+        :width="280"
+        trigger="click"
+        :teleported="true"
+    >
+        <template #reference>
+            <div class="tristate-select" :class="{ 'is-active': popoverVisible }">
+                <div class="tristate-select__tags" v-if="includedEntries.length || excludedEntries.length">
+                    <el-tag
+                        v-for="entry in includedEntries"
+                        :key="'inc-' + entry.value"
+                        size="small"
+                        type="success"
+                        closable
+                        disable-transitions
+                        @close="clearEntry(entry.value)"
+                    >
+                        {{ entry.label }}
+                    </el-tag>
+                    <el-tag
+                        v-for="entry in excludedEntries"
+                        :key="'exc-' + entry.value"
+                        size="small"
+                        type="danger"
+                        closable
+                        disable-transitions
+                        @close="clearEntry(entry.value)"
+                    >
+                        {{ entry.label }}
+                    </el-tag>
+                </div>
+                <span v-else class="tristate-select__placeholder">{{ placeholder }}</span>
+                <el-icon class="tristate-select__arrow"><ArrowDown /></el-icon>
+            </div>
         </template>
-      </el-input>
-      <div class="tristate-select-popover__list">
-        <TristateCheckbox
-          v-for="opt in filteredOptions"
-          :key="opt.value"
-          :modelValue="modelValue[opt.value] ?? null"
-          @update:modelValue="onUpdate(opt.value, $event)"
-          class="tristate-select-popover__item"
-        >
-          {{ opt.label }}
-        </TristateCheckbox>
-        <div v-if="filteredOptions.length === 0" class="tristate-select-popover__empty">
-          No matching options
+
+        <div class="tristate-select-popover">
+            <el-input
+                v-if="filterable"
+                v-model="searchQuery"
+                placeholder="Search..."
+                clearable
+                size="small"
+                class="tristate-select-popover__search"
+            >
+                <template #prefix>
+                    <el-icon><Search /></el-icon>
+                </template>
+            </el-input>
+            <div class="tristate-select-popover__list">
+                <TristateCheckbox
+                    v-for="opt in filteredOptions"
+                    :key="opt.value"
+                    :modelValue="modelValue[opt.value] ?? null"
+                    @update:modelValue="onUpdate(opt.value, $event)"
+                    class="tristate-select-popover__item"
+                >
+                    {{ opt.label }}
+                </TristateCheckbox>
+                <div v-if="filteredOptions.length === 0" class="tristate-select-popover__empty">
+                    No matching options
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </el-popover>
+    </el-popover>
 </template>
 
 <script setup lang="ts">
