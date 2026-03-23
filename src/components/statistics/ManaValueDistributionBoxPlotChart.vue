@@ -80,7 +80,7 @@ const chartOptions = computed(() => {
                             cubeName: cube.name,
                             manaValue: mv,
                             cardCount: count,
-                            percentage: percentage
+                            percentage: percentage,
                         });
                     }
                 });
@@ -93,7 +93,7 @@ const chartOptions = computed(() => {
             name: 'Distribution',
             type: 'boxplot',
             data: boxplotData.map((data, index) => [...data, index]),
-        }
+        },
     ];
 
     // Add highlighted points if any
@@ -108,7 +108,7 @@ const chartOptions = computed(() => {
                 borderColor: '#ff6b6b',
                 borderWidth: 2,
                 shadowBlur: 5,
-                shadowColor: 'rgba(255, 107, 107, 0.5)'
+                shadowColor: 'rgba(255, 107, 107, 0.5)',
             },
             z: 10,
         });
@@ -151,10 +151,10 @@ const chartOptions = computed(() => {
             nameLocation: 'middle',
             nameGap: 50,
             axisLabel: {
-                formatter: '{value}%'
-            }
+                formatter: '{value}%',
+            },
         },
-        series
+        series,
     };
 });
 </script>

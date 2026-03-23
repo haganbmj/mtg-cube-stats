@@ -179,7 +179,7 @@ const stripped = cards.filter((card: any) => {
     return [ card ];
 }).map((card: any) => {
     // Then set the high level data necessary to organize the remaining cards.
-    var cardBackUri: string | undefined = undefined;
+    let cardBackUri: string | undefined = undefined;
     if (card.card_faces?.[1]?.image_uris) {
         cardBackUri = `https://api.scryfall.com/cards/${card.set}/${card.collector_number}?format=image&face=back`;
     } else if (card.layout == 'meld') {
@@ -262,7 +262,7 @@ const minimized = stripped.sort((a: any, b: any) => {
             card.allParts
                 .filter((part: any) => part.component === 'token')
                 .map((part: any) => idToOracleId[part.id])
-                .filter(Boolean)
+                .filter(Boolean),
         )] as string[];
         store.cards[key] = store.cards[key] || [];
         store.cards[key].push({
@@ -375,7 +375,7 @@ cards.forEach((card: any) => {
 
 const bestTokens = Object.keys(tokensByOracleId).reduce((store: any, key: string) => {
     const earliest = tokensByOracleId[key].sort((a: any, b: any) =>
-        Date.parse(a.released_at) - Date.parse(b.released_at)
+        Date.parse(a.released_at) - Date.parse(b.released_at),
     )[0];
     store[key] = {
         name: earliest.name,

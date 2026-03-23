@@ -372,7 +372,7 @@ const aggregateArchetypes = computed(() => {
                     totalCards: 0,
                     uniqueOracleIds: new Set(),
                     supportingCubes: [],
-                    cubeData: {}
+                    cubeData: {},
                 };
             }
 
@@ -382,7 +382,7 @@ const aggregateArchetypes = computed(() => {
             archetypeMap[archetype.name].cubeData[cubeId] = {
                 count: archetype.count,
                 cards: archetype.cards,
-                percentage: archetype.percentage
+                percentage: archetype.percentage,
             };
 
             // Track unique oracle IDs for this archetype
@@ -404,7 +404,7 @@ const aggregateArchetypes = computed(() => {
             avgPercentage: archetype.cubesSupporting > 0
                 ? Object.values(archetype.cubeData).reduce((sum, data) => sum + parseFloat(data.percentage), 0) / archetype.cubesSupporting
                 : 0,
-            supportPercentage: (archetype.cubesSupporting / totalCubes.value) * 100
+            supportPercentage: (archetype.cubesSupporting / totalCubes.value) * 100,
         }))
         .sort((a, b) => b.avgSupport - a.avgSupport);
 });

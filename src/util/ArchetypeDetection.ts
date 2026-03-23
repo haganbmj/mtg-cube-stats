@@ -36,72 +36,72 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         color: '#8C7853',
         detectBy: {
             tags: ['artifactfall', 'artifactify', 'synergy-artifact', 'synergy-artifact-*', 'tutor-artifact'],
-            keywords: ['affinity-for-artifacts', 'improvise', 'fabricate', 'waterbend']
+            keywords: ['affinity-for-artifacts', 'improvise', 'fabricate', 'waterbend'],
         },
-        threshold: 8
+        threshold: 8,
     },
     'Enchantments Matter': {
         description: 'Effects focusing on enchantments',
         color: '#9C27B0',
         detectBy: {
             tags: ['enchantmentfall', 'enchantmentize', 'synergy-enchantment', 'synergy-enchantment-*', 'tutor-enchantment', 'enchantment-engine'],
-            keywords: ['constellation', 'bestow', 'aura swap']
+            keywords: ['constellation', 'bestow', 'aura swap'],
         },
-        threshold: 5
+        threshold: 5,
     },
     'Graveyard Value': {
         description: 'Effects that utilize the graveyard as a resource',
         color: '#4A4A4A',
         detectBy: {
             tags: ['graveyard-fuel', 'graveyard-fuel-*'],
-            keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth', 'delirium', 'threshold', 'jump-start']
+            keywords: ['flashback', 'dredge', 'delve', 'escape', 'disturb', 'unearth', 'delirium', 'threshold', 'jump-start'],
         },
-        threshold: 6
+        threshold: 6,
     },
     'Token Generators': {
         description: 'Effects that repeatedly create tokens, or create additional tokens',
         color: '#F4D03F',
         detectBy: {
             tags: ['repeatable-token-generator', 'repeatable-*-tokens'],
-            keywords: ['populate']
+            keywords: ['populate'],
         },
-        threshold: 8
+        threshold: 8,
     },
     'Spells Matter': {
         description: 'Effects that reward casting spells',
         color: '#3498DB',
         detectBy: {
             tags: ['synergy-noncreature', 'synergy-instant', 'synergy-sorcery'],
-            keywords: ['prowess', 'storm']
+            keywords: ['prowess', 'storm'],
         },
-        threshold: 6
+        threshold: 6,
     },
     'Sacrifice/Aristocrats': {
         description: 'Effects built around sacrificing permanents',
         color: '#8E44AD',
         detectBy: {
             tags: ['sacrifice-outlet', 'blood-artist-ability', 'synergy-sacrifice', 'death-trigger', 'leaves-body-behind'],
-            keywords: ['afterlife', 'undying', 'persist']
+            keywords: ['afterlife', 'undying', 'persist'],
         },
-        threshold: 6
+        threshold: 6,
     },
     'Lifegain': {
         description: 'Effects that gain life or benefit from lifegain',
         color: '#F8F9FA',
         detectBy: {
             tags: ['lifegain', 'lifegain-matters', 'lifegain-increaser'],
-            keywords: ['lifelink']
+            keywords: ['lifelink'],
         },
-        threshold: 5
+        threshold: 5,
     },
     'Counters Matter': {
         description: 'Effects involving +1/+1 counters or other counters',
         color: '#27AE60',
         detectBy: {
             tags: ['counter-fuel', 'counters-matter', 'remove-counters', 'gives-pp-counters'],
-            keywords: ['modular', 'graft', 'undying', 'persist', 'evolve', 'adapt', 'proliferate']
+            keywords: ['modular', 'graft', 'undying', 'persist', 'evolve', 'adapt', 'proliferate'],
         },
-        threshold: 6
+        threshold: 6,
     },
     'Ramp': {
         description: 'Various types of mana acceleration',
@@ -109,7 +109,7 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         detectBy: {
             tags: ['ramp'],
         },
-        threshold: 8
+        threshold: 8,
     },
     // 'Card Draw': {
     //     description: 'Card draw/advantage',
@@ -123,9 +123,9 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         description: 'Effects that care about drawing cards',
         color: '#3F51B5',
         detectBy: {
-            tags: ['draw-matters', 'second-draw-matters']
+            tags: ['draw-matters', 'second-draw-matters'],
         },
-        threshold: 5
+        threshold: 5,
     },
     'Typal Synergies': {
         description: 'Effects that care about creature types',
@@ -133,112 +133,112 @@ const ARCHETYPE_DEFINITIONS: Record<string, ArchetypeDefinition> = {
         detectBy: {
             // FIMXE: This doesn't catch card type Kindred.
             tags: ['typal', 'typal-*'],
-            keywords: ['changeling']
+            keywords: ['changeling'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Mill/Self-Mill': {
         description: 'Effects that mill cards from libraries as a strategy',
         color: '#607D8B',
         detectBy: {
-            tags: ['mill', 'graveyard-fuel-self', 'mill-self', 'mill-target']
+            tags: ['mill', 'graveyard-fuel-self', 'mill-self', 'mill-target'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Lands Matter': {
         description: 'Effects that care about lands',
         color: '#8D6E63',
         detectBy: {
             tags: ['lands-matter', 'landfall', 'land-animate', 'land-count-matters', 'land-etb'],
-            keywords: ['landfall', 'domain']
+            keywords: ['landfall', 'domain'],
         },
-        threshold: 6
+        threshold: 6,
     },
     'Energy': {
         description: 'Effects utilizing energy',
         color: '#FBC02D',
         detectBy: {
-            tags: ['energy-generator', 'counter-fuel-energy']
+            tags: ['energy-generator', 'counter-fuel-energy'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Equipment': {
         description: 'Effects focused on equipment',
         color: '#757575',
         detectBy: {
             tags: ['synergy-equipment', 'quick-equip'],
-            keywords: ['equip', 'living weapon']
+            keywords: ['equip', 'living weapon'],
         },
-        threshold: 5
+        threshold: 5,
     },
     'Flicker': {
         description: 'Effects that flicker for value',
         color: '#00BCD4',
         detectBy: {
-            tags: ['flicker']
+            tags: ['flicker'],
         },
-        threshold: 6
+        threshold: 6,
     },
     'Reanimation': {
         description: 'Bringing stuff back from the graveyard to play',
         color: '#2C1810',
         detectBy: {
-            tags: ['reanimate', 'creature-reanimation-automatic', 'temporary-reanimation', 'mass-reanimation']
+            tags: ['reanimate', 'creature-reanimation-automatic', 'temporary-reanimation', 'mass-reanimation'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Auras': {
         description: 'Enchant/Bestow and things that care about auras',
         color: '#9575CD',
         detectBy: {
             tags: ['synergy-aura', 'tutor-enchantment-aura'],
-            keywords: ['enchant', 'bestow']
+            keywords: ['enchant', 'bestow'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Storm': {
         description: 'Cards with the literal Storm mechanic',
         color: '#1976D2',
         detectBy: {
-            keywords: ['storm']
+            keywords: ['storm'],
         },
-        threshold: 3
+        threshold: 3,
     },
     'Madness/Self-Discard': {
         description: 'Effects that discard or care about discarding cards',
         color: '#7B1FA2',
         detectBy: {
             tags: ['madness', 'discard-outlet', 'self-discard-matters', 'synergy-discard-self'],
-            keywords: ['madness']
+            keywords: ['madness'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Sneak': {
         description: 'Putting stuff into play without paying costs',
         color: '#D84315',
         detectBy: {
-            tags: ['sneak']
+            tags: ['sneak'],
         },
-        threshold: 3
+        threshold: 3,
     },
     'Morph': {
         description: 'Cards that interact with face-down creatures or morph',
         color: '#616161',
         detectBy: {
             tags: ['face-up-face-down-effects', 'face-down-face-up-effects', 'turn-face-*'],
-            keywords: ['morph', 'manifest', 'manifest dread', 'cloak', 'megamorph']
+            keywords: ['morph', 'manifest', 'manifest dread', 'cloak', 'megamorph'],
         },
-        threshold: 4
+        threshold: 4,
     },
     'Ninjas': {
         description: 'Cards with Ninjutsu or Sneak',
         color: '#263238',
         detectBy: {
             tags: ['ninjutsu'],
-            keywords: ['ninjutsu', 'sneak']
+            keywords: ['ninjutsu', 'sneak'],
         },
-        threshold: 3
-    }
+        threshold: 3,
+    },
 };
 
 /**
@@ -270,7 +270,7 @@ export function detectCardArchetypes(card: CubeCard): string[] {
         if (archetype.detectBy.keywords) {
             supportsArchetype = supportsArchetype ||
                 archetype.detectBy.keywords.some(keyword =>
-                    card.keywords?.some(cardKeyword => cardKeyword.toLowerCase() === keyword.toLowerCase())
+                    card.keywords?.some(cardKeyword => cardKeyword.toLowerCase() === keyword.toLowerCase()),
                 );
         }
 
@@ -296,7 +296,7 @@ export function detectCubeArchetypes(cards: CubeCard[]): ArchetypeResult[] {
             supported: false,
             supportLevel: '',
             percentage: '0.0',
-            ...ARCHETYPE_DEFINITIONS[archetype]
+            ...ARCHETYPE_DEFINITIONS[archetype],
         };
     });
 
@@ -325,7 +325,7 @@ export function detectCubeArchetypes(cards: CubeCard[]): ArchetypeResult[] {
             cards: data.cards,
             supported: data.count >= data.threshold,
             supportLevel: getSupportLevel(data.count, data.threshold),
-            percentage: ((data.count / cards.length) * 100).toFixed(1)
+            percentage: ((data.count / cards.length) * 100).toFixed(1),
         }))
         .filter(archetype => archetype.count > 0)
         .sort((a, b) => b.count - a.count);

@@ -1,7 +1,7 @@
 <template>
-  <div style="width: 100%;">
-    <CardSummaryTable :loaded-cubes="loadedCubes" :similarity-matrix="similarityMatrix" :overview-table-data="overviewTableData" />
-  </div>
+    <div style="width: 100%;">
+        <CardSummaryTable :loaded-cubes="loadedCubes" :similarity-matrix="similarityMatrix" :overview-table-data="overviewTableData" />
+    </div>
 </template>
 
 <script setup lang="ts">

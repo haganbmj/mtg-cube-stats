@@ -1,21 +1,21 @@
 <template>
-  <label
-    class="tristate-checkbox"
-    :class="{
-      'is-include': modelValue === true,
-      'is-exclude': modelValue === false,
-      'is-neutral': modelValue === null,
-    }"
-    @click="cycle"
-  >
-    <span class="tristate-checkbox__input">
-      <span class="tristate-checkbox__inner">
-        <template v-if="modelValue === true">&#10003;</template>
-        <template v-else-if="modelValue === false">&#10005;</template>
-      </span>
-    </span>
-    <span class="tristate-checkbox__label"><slot /></span>
-  </label>
+    <label
+        class="tristate-checkbox"
+        :class="{
+            'is-include': modelValue === true,
+            'is-exclude': modelValue === false,
+            'is-neutral': modelValue === null,
+        }"
+        @click="cycle"
+    >
+        <span class="tristate-checkbox__input">
+            <span class="tristate-checkbox__inner">
+                <template v-if="modelValue === true">&#10003;</template>
+                <template v-else-if="modelValue === false">&#10005;</template>
+            </span>
+        </span>
+        <span class="tristate-checkbox__label"><slot /></span>
+    </label>
 </template>
 
 <script setup lang="ts">

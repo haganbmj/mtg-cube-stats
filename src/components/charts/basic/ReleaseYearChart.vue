@@ -23,7 +23,7 @@ const props = defineProps({
     releaseYearDistribution: {
         type: Object,
         required: true,
-    }
+    },
 });
 
 const releaseYears = [
@@ -62,15 +62,15 @@ const chartOptions = computed(() => {
             nameLocation: 'middle',
             nameGap: 40,
             axisLabel: {
-                formatter: '{value} %'
+                formatter: '{value} %',
             },
         },
         series: [
             {
                 data,
                 type: 'bar',
-            }
-        ]
+            },
+        ],
     };
 });
 </script>

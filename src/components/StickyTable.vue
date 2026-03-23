@@ -1,106 +1,106 @@
 <template>
     <div ref="wrapperRef" class="sticky-table-wrapper">
-    <table class="sticky-table" :class="{ 'sticky-table--striped': stripe }">
-        <thead ref="theadRef" v-if="visibleColumns.length > 0" class="sticky-table__header" :style="theadStyle">
-            <tr>
-                <th v-if="expandable" class="sticky-table__th sticky-table__th--expand"></th>
-                <th
-                    v-for="col in visibleColumns"
-                    :key="col.key"
-                    class="sticky-table__th"
-                    :class="{
-                        'is-sortable': col.sortable,
-                        'is-center': col.align === 'center',
-                        'is-right': col.align === 'right',
-                    }"
-                    :style="columnStyle(col)"
-                    @click="col.sortable && toggleSort(col)"
-                >
-                    <div class="sticky-table__header-cell" :style="cellContentStyle(col)">
-                        <slot :name="`header-${col.key}`" :column="col">
-                            <el-tooltip
-                                v-if="col.tooltip"
-                                :content="col.tooltip"
-                                placement="top"
-                                :hide-after="50"
-                            >
-                                <span>{{ col.label }} <el-icon><InfoFilled /></el-icon></span>
-                            </el-tooltip>
-                            <span v-else>{{ col.label }}</span>
-                        </slot>
-                        <span v-if="col.sortable" class="sticky-table__sort-wrapper">
-                            <i
-                                class="sticky-table__sort-caret sticky-table__sort-caret--asc"
-                                :class="{ 'is-active': isSortActive(col, 'ascending') }"
-                            ></i>
-                            <i
-                                class="sticky-table__sort-caret sticky-table__sort-caret--desc"
-                                :class="{ 'is-active': isSortActive(col, 'descending') }"
-                            ></i>
-                        </span>
-                    </div>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <template v-for="(row, rowIndex) in data" :key="rowKey ? resolveValue(row, rowKey) : rowIndex">
-                <tr
-                    class="sticky-table__row"
-                    :class="{
-                        'sticky-table__row--striped': stripe && rowIndex % 2 === 1,
-                        'sticky-table__row--hover': hoverRowIndex === rowIndex,
-                    }"
-                    @mouseenter="hoverRowIndex = rowIndex"
-                    @mouseleave="hoverRowIndex = -1"
-                >
-                    <td v-if="expandable" class="sticky-table__td sticky-table__td--expand">
-                        <button
-                            class="sticky-table__expand-btn"
-                            :class="{ 'is-expanded': expandedRows.has(rowIndex) }"
-                            @click.stop="toggleExpand(rowIndex)"
-                        >
-                            <svg viewBox="0 0 1024 1024" width="12" height="12">
-                                <path d="M384 192l384 320-384 320z" fill="currentColor" />
-                            </svg>
-                        </button>
-                    </td>
-                    <td
+        <table class="sticky-table" :class="{ 'sticky-table--striped': stripe }">
+            <thead ref="theadRef" v-if="visibleColumns.length > 0" class="sticky-table__header" :style="theadStyle">
+                <tr>
+                    <th v-if="expandable" class="sticky-table__th sticky-table__th--expand"></th>
+                    <th
                         v-for="col in visibleColumns"
                         :key="col.key"
-                        class="sticky-table__td"
+                        class="sticky-table__th"
                         :class="{
+                            'is-sortable': col.sortable,
                             'is-center': col.align === 'center',
                             'is-right': col.align === 'right',
                         }"
                         :style="columnStyle(col)"
+                        @click="col.sortable && toggleSort(col)"
                     >
-                        <div
-                            class="sticky-table__cell"
-                            :class="{ 'sticky-table__cell--overflow': col.showOverflowTooltip }"
-                            :style="cellContentStyle(col)"
-                            :title="col.showOverflowTooltip ? String(formatCell(row, col)) : undefined"
-                        >
-                            <slot :name="`cell-${col.key}`" :row="row" :column="col" :rowIndex="rowIndex">
-                                {{ formatCell(row, col) }}
+                        <div class="sticky-table__header-cell" :style="cellContentStyle(col)">
+                            <slot :name="`header-${col.key}`" :column="col">
+                                <el-tooltip
+                                    v-if="col.tooltip"
+                                    :content="col.tooltip"
+                                    placement="top"
+                                    :hide-after="50"
+                                >
+                                    <span>{{ col.label }} <el-icon><InfoFilled /></el-icon></span>
+                                </el-tooltip>
+                                <span v-else>{{ col.label }}</span>
                             </slot>
+                            <span v-if="col.sortable" class="sticky-table__sort-wrapper">
+                                <i
+                                    class="sticky-table__sort-caret sticky-table__sort-caret--asc"
+                                    :class="{ 'is-active': isSortActive(col, 'ascending') }"
+                                ></i>
+                                <i
+                                    class="sticky-table__sort-caret sticky-table__sort-caret--desc"
+                                    :class="{ 'is-active': isSortActive(col, 'descending') }"
+                                ></i>
+                            </span>
                         </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="(row, rowIndex) in data" :key="rowKey ? resolveValue(row, rowKey) : rowIndex">
+                    <tr
+                        class="sticky-table__row"
+                        :class="{
+                            'sticky-table__row--striped': stripe && rowIndex % 2 === 1,
+                            'sticky-table__row--hover': hoverRowIndex === rowIndex,
+                        }"
+                        @mouseenter="hoverRowIndex = rowIndex"
+                        @mouseleave="hoverRowIndex = -1"
+                    >
+                        <td v-if="expandable" class="sticky-table__td sticky-table__td--expand">
+                            <button
+                                class="sticky-table__expand-btn"
+                                :class="{ 'is-expanded': expandedRows.has(rowIndex) }"
+                                @click.stop="toggleExpand(rowIndex)"
+                            >
+                                <svg viewBox="0 0 1024 1024" width="12" height="12">
+                                    <path d="M384 192l384 320-384 320z" fill="currentColor" />
+                                </svg>
+                            </button>
+                        </td>
+                        <td
+                            v-for="col in visibleColumns"
+                            :key="col.key"
+                            class="sticky-table__td"
+                            :class="{
+                                'is-center': col.align === 'center',
+                                'is-right': col.align === 'right',
+                            }"
+                            :style="columnStyle(col)"
+                        >
+                            <div
+                                class="sticky-table__cell"
+                                :class="{ 'sticky-table__cell--overflow': col.showOverflowTooltip }"
+                                :style="cellContentStyle(col)"
+                                :title="col.showOverflowTooltip ? String(formatCell(row, col)) : undefined"
+                            >
+                                <slot :name="`cell-${col.key}`" :row="row" :column="col" :rowIndex="rowIndex">
+                                    {{ formatCell(row, col) }}
+                                </slot>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="expandable && expandedRows.has(rowIndex)" class="sticky-table__expand-row">
+                        <td :colspan="visibleColumns.length + 1">
+                            <div class="sticky-table__expand-content">
+                                <slot name="expand" :row="row" :rowIndex="rowIndex"></slot>
+                            </div>
+                        </td>
+                    </tr>
+                </template>
+                <tr v-if="!data || data.length === 0">
+                    <td :colspan="(expandable ? 1 : 0) + visibleColumns.length" class="sticky-table__empty">
+                        <slot name="empty">No data</slot>
                     </td>
                 </tr>
-                <tr v-if="expandable && expandedRows.has(rowIndex)" class="sticky-table__expand-row">
-                    <td :colspan="visibleColumns.length + 1">
-                        <div class="sticky-table__expand-content">
-                            <slot name="expand" :row="row" :rowIndex="rowIndex"></slot>
-                        </div>
-                    </td>
-                </tr>
-            </template>
-            <tr v-if="!data || data.length === 0">
-                <td :colspan="(expandable ? 1 : 0) + visibleColumns.length" class="sticky-table__empty">
-                    <slot name="empty">No data</slot>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
     </div>
 </template>
 

@@ -106,7 +106,7 @@ export function enrichCube(cube: Cube): Cube {
     return {
         ...cube,
         stats: analyzeCubeContents(enrichedCards),
-        cards: enrichedCards
+        cards: enrichedCards,
     };
 }
 
@@ -175,7 +175,7 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
                 map.set(card.oracleId, card);
             }
             return map;
-        }, new Map<string, CubeCard>()).values()
+        }, new Map<string, CubeCard>()).values(),
     );
     const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
 

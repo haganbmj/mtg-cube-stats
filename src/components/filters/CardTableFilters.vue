@@ -1,333 +1,333 @@
 <template>
-  <el-collapse v-model="expandedSections" class="card-table-filters" expand-icon-position="left">
-    <el-collapse-item name="filters">
-      <template #title>
-        <div style="display: flex; align-items: center; width: 100%;">
-          <span style="flex: 1;">Filters</span>
-          <el-button @click.stop="resetFilters">Reset Filters</el-button>
-        </div>
-      </template>
-      <div class="filters-grid">
-        <div class="filter-section">
-            <h4 class="filter-section-title">Text Search</h4>
-            <label class="filter-label">Card Name</label>
-            <el-input
-              v-model="filters.name"
-              placeholder="Search card names..."
-              clearable
-              @clear="emitFilters"
-              @change="emitFilters"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-            <label class="filter-label">Oracle Text</label>
-            <el-input
-              v-model="filters.oracleText"
-              placeholder="Search oracle text..."
-              clearable
-              @clear="emitFilters"
-              @change="emitFilters"
-            >
-                <template #prefix>
-                  <el-icon><Search /></el-icon>
-                </template>
-            </el-input>
-          </div>
+    <el-collapse v-model="expandedSections" class="card-table-filters" expand-icon-position="left">
+        <el-collapse-item name="filters">
+            <template #title>
+                <div style="display: flex; align-items: center; width: 100%;">
+                    <span style="flex: 1;">Filters</span>
+                    <el-button @click.stop="resetFilters">Reset Filters</el-button>
+                </div>
+            </template>
+            <div class="filters-grid">
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Text Search</h4>
+                    <label class="filter-label">Card Name</label>
+                    <el-input
+                        v-model="filters.name"
+                        placeholder="Search card names..."
+                        clearable
+                        @clear="emitFilters"
+                        @change="emitFilters"
+                    >
+                        <template #prefix>
+                            <el-icon><Search /></el-icon>
+                        </template>
+                    </el-input>
+                    <label class="filter-label">Oracle Text</label>
+                    <el-input
+                        v-model="filters.oracleText"
+                        placeholder="Search oracle text..."
+                        clearable
+                        @clear="emitFilters"
+                        @change="emitFilters"
+                    >
+                        <template #prefix>
+                            <el-icon><Search /></el-icon>
+                        </template>
+                    </el-input>
+                </div>
 
-          <div class="filter-section">
-            <h4 class="filter-section-title">Cubes</h4>
-            <TristateSelect
-              :modelValue="filters.cubes"
-              @update:modelValue="filters.cubes = $event; emitFilters()"
-              :options="availableCubes"
-              placeholder="Filter by cube..."
-            />
-            <label class="filter-label">Cube Count</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.cubeCountComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.cubeCountValue" :min="0" :step="1" :disabled="!filters.cubeCountComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-            <label class="filter-label">Total Count</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.countComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.countValue" :min="0" :step="1" :disabled="!filters.countComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-          </div>
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Cubes</h4>
+                    <TristateSelect
+                        :modelValue="filters.cubes"
+                        @update:modelValue="filters.cubes = $event; emitFilters()"
+                        :options="availableCubes"
+                        placeholder="Filter by cube..."
+                    />
+                    <label class="filter-label">Cube Count</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.cubeCountComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.cubeCountValue" :min="0" :step="1" :disabled="!filters.cubeCountComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                    <label class="filter-label">Total Count</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.countComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.countValue" :min="0" :step="1" :disabled="!filters.countComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                </div>
 
-          <div class="filter-section">
-            <h4 class="filter-section-title">Colors</h4>
-            <div class="filter-checkboxes-grid">
-              <TristateCheckbox
-                v-for="color in colorOptions"
-                :key="color.value"
-                :modelValue="getTristateValue(filters.colors, color.value)"
-                @update:modelValue="setTristateValue(filters.colors, color.value, $event)"
-              >
-                <i :class="'ms ms-' + color.value.toLowerCase() + ' ms-cost'" style="margin-right: 2px;"></i>
-                {{ color.label }}
-              </TristateCheckbox>
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Colors</h4>
+                    <div class="filter-checkboxes-grid">
+                        <TristateCheckbox
+                            v-for="color in colorOptions"
+                            :key="color.value"
+                            :modelValue="getTristateValue(filters.colors, color.value)"
+                            @update:modelValue="setTristateValue(filters.colors, color.value, $event)"
+                        >
+                            <i :class="'ms ms-' + color.value.toLowerCase() + ' ms-cost'" style="margin-right: 2px;"></i>
+                            {{ color.label }}
+                        </TristateCheckbox>
+                    </div>
+                    <el-checkbox v-model="filters.colorsExactMatch" @change="emitFilters" style="margin-top: 4px;">Exact match</el-checkbox>
+
+                    <h4 class="filter-section-title">Mana Value</h4>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.cmcComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.cmcValue" :min="0" :max="20" :step="1" :disabled="!filters.cmcComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                </div>
+
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Minimum Rarity</h4>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.rarityComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-select v-model="filters.rarityValue" :disabled="!filters.rarityComparison" @change="emitFilters" style="width: 100%;">
+                                <el-option label="Common" value="common" />
+                                <el-option label="Uncommon" value="uncommon" />
+                                <el-option label="Rare" value="rare" />
+                                <el-option label="Mythic" value="mythic" />
+                            </el-select>
+                        </el-col>
+                    </el-row>
+
+                    <h4 class="filter-section-title">Types</h4>
+                    <TristateSelect
+                        :modelValue="filters.types"
+                        @update:modelValue="filters.types = $event; emitFilters()"
+                        :options="typeOptions"
+                        placeholder="Filter by type..."
+                    />
+                </div>
+
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Tags</h4>
+                    <TristateSelect
+                        :modelValue="filters.tags"
+                        @update:modelValue="filters.tags = $event; emitFilters()"
+                        :options="tagOptions"
+                        placeholder="Filter by tag..."
+                    />
+
+                    <h4 class="filter-section-title">Keywords</h4>
+                    <TristateSelect
+                        :modelValue="filters.keywords"
+                        @update:modelValue="filters.keywords = $event; emitFilters()"
+                        :options="availableKeywords"
+                        placeholder="Filter by keyword..."
+                    />
+
+                    <h4 class="filter-section-title">Games</h4>
+                    <div class="filter-checkboxes-grid">
+                        <TristateCheckbox
+                            v-for="game in gameOptions"
+                            :key="game.value"
+                            :modelValue="getTristateValue(filters.games, game.value)"
+                            @update:modelValue="setTristateValue(filters.games, game.value, $event)"
+                        >
+                            {{ game.label }}
+                        </TristateCheckbox>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Minimum Price</h4>
+                    <label class="filter-label">USD</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.priceUsdComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.priceUsdValue" :min="0" :precision="2" :step="1" :disabled="!filters.priceUsdComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                    <label class="filter-label">Tix</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.priceTixComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.priceTixValue" :min="0" :precision="2" :step="0.5" :disabled="!filters.priceTixComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                </div>
+
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Original Set / Release</h4>
+                    <div class="filter-checkboxes" style="margin-top: 6px;">
+                        <TristateCheckbox v-model="filters.isUniversesBeyond" @update:modelValue="emitFilters">Universes Beyond</TristateCheckbox>
+                        <TristateCheckbox v-model="filters.isSupplementalProduct" @update:modelValue="emitFilters">Supplemental Product</TristateCheckbox>
+                    </div>
+                    <label class="filter-label">Set Code</label>
+                    <TristateSelect
+                        :modelValue="filters.setCodes"
+                        @update:modelValue="filters.setCodes = $event; emitFilters()"
+                        :options="availableSets"
+                        placeholder="Filter by set..."
+                    />
+                    <label class="filter-label">Set Type</label>
+                    <TristateSelect
+                        :modelValue="filters.setTypes"
+                        @update:modelValue="filters.setTypes = $event; emitFilters()"
+                        :options="availableSetTypes"
+                        placeholder="Filter by set type..."
+                    />
+                    <label class="filter-label">Release Year</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.releaseYearComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.releaseYearValue" :min="1993" :max="2030" :step="1" :disabled="!filters.releaseYearComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                </div>
+
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Characteristics</h4>
+                    <div class="filter-checkboxes" style="margin-top: 6px;">
+                        <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Makes Tokens</TristateCheckbox>
+                    </div>
+                    <label class="filter-label">Layout</label>
+                    <TristateSelect
+                        :modelValue="filters.layouts"
+                        @update:modelValue="filters.layouts = $event; emitFilters()"
+                        :options="availableLayouts"
+                        placeholder="Filter by layout..."
+                    />
+                    <label class="filter-label">Legality</label>
+                    <TristateSelect
+                        :modelValue="filters.legality"
+                        @update:modelValue="filters.legality = $event; emitFilters()"
+                        :options="legalityOptions"
+                        placeholder="Filter by legality..."
+                        :filterable="false"
+                    />
+                </div>
+
+                <div class="filter-section">
+                    <h4 class="filter-section-title">Other</h4>
+                    <label class="filter-label">Word Count</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.wordCountComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.wordCountValue" :min="0" :step="1" :disabled="!filters.wordCountComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                    <label class="filter-label">Elo</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.eloComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.eloValue" :min="0" :step="50" :disabled="!filters.eloComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                    <label class="filter-label">Popularity</label>
+                    <el-row :gutter="8">
+                        <el-col :span="12">
+                            <el-select v-model="filters.popularityComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
+                                <el-option label="Any" value="" />
+                                <el-option label="=" value="eq" />
+                                <el-option label="≠" value="neq" />
+                                <el-option label="<" value="lt" />
+                                <el-option label="≤" value="lte" />
+                                <el-option label=">" value="gt" />
+                                <el-option label="≥" value="gte" />
+                            </el-select>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-input-number v-model="filters.popularityValue" :min="0" :step="50" :disabled="!filters.popularityComparison" @change="emitFilters" style="width: 100%;" />
+                        </el-col>
+                    </el-row>
+                </div>
             </div>
-            <el-checkbox v-model="filters.colorsExactMatch" @change="emitFilters" style="margin-top: 4px;">Exact match</el-checkbox>
-
-            <h4 class="filter-section-title">Mana Value</h4>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.cmcComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.cmcValue" :min="0" :max="20" :step="1" :disabled="!filters.cmcComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Minimum Rarity</h4>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.rarityComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-select v-model="filters.rarityValue" :disabled="!filters.rarityComparison" @change="emitFilters" style="width: 100%;">
-                  <el-option label="Common" value="common" />
-                  <el-option label="Uncommon" value="uncommon" />
-                  <el-option label="Rare" value="rare" />
-                  <el-option label="Mythic" value="mythic" />
-                </el-select>
-              </el-col>
-            </el-row>
-
-            <h4 class="filter-section-title">Types</h4>
-            <TristateSelect
-              :modelValue="filters.types"
-              @update:modelValue="filters.types = $event; emitFilters()"
-              :options="typeOptions"
-              placeholder="Filter by type..."
-            />
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Tags</h4>
-            <TristateSelect
-              :modelValue="filters.tags"
-              @update:modelValue="filters.tags = $event; emitFilters()"
-              :options="tagOptions"
-              placeholder="Filter by tag..."
-            />
-
-            <h4 class="filter-section-title">Keywords</h4>
-            <TristateSelect
-              :modelValue="filters.keywords"
-              @update:modelValue="filters.keywords = $event; emitFilters()"
-              :options="availableKeywords"
-              placeholder="Filter by keyword..."
-            />
-
-            <h4 class="filter-section-title">Games</h4>
-            <div class="filter-checkboxes-grid">
-              <TristateCheckbox
-                v-for="game in gameOptions"
-                :key="game.value"
-                :modelValue="getTristateValue(filters.games, game.value)"
-                @update:modelValue="setTristateValue(filters.games, game.value, $event)"
-              >
-                {{ game.label }}
-              </TristateCheckbox>
-            </div>
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Minimum Price</h4>
-            <label class="filter-label">USD</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.priceUsdComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.priceUsdValue" :min="0" :precision="2" :step="1" :disabled="!filters.priceUsdComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-            <label class="filter-label">Tix</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.priceTixComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.priceTixValue" :min="0" :precision="2" :step="0.5" :disabled="!filters.priceTixComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Original Set / Release</h4>
-            <div class="filter-checkboxes" style="margin-top: 6px;">
-              <TristateCheckbox v-model="filters.isUniversesBeyond" @update:modelValue="emitFilters">Universes Beyond</TristateCheckbox>
-              <TristateCheckbox v-model="filters.isSupplementalProduct" @update:modelValue="emitFilters">Supplemental Product</TristateCheckbox>
-            </div>
-            <label class="filter-label">Set Code</label>
-            <TristateSelect
-              :modelValue="filters.setCodes"
-              @update:modelValue="filters.setCodes = $event; emitFilters()"
-              :options="availableSets"
-              placeholder="Filter by set..."
-            />
-            <label class="filter-label">Set Type</label>
-            <TristateSelect
-              :modelValue="filters.setTypes"
-              @update:modelValue="filters.setTypes = $event; emitFilters()"
-              :options="availableSetTypes"
-              placeholder="Filter by set type..."
-            />
-            <label class="filter-label">Release Year</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.releaseYearComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.releaseYearValue" :min="1993" :max="2030" :step="1" :disabled="!filters.releaseYearComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-          </div>
-
-          <div class="filter-section">
-            <h4 class="filter-section-title">Characteristics</h4>
-            <div class="filter-checkboxes" style="margin-top: 6px;">
-              <TristateCheckbox v-model="filters.makesTokens" @update:modelValue="emitFilters">Makes Tokens</TristateCheckbox>
-            </div>
-            <label class="filter-label">Layout</label>
-            <TristateSelect
-              :modelValue="filters.layouts"
-              @update:modelValue="filters.layouts = $event; emitFilters()"
-              :options="availableLayouts"
-              placeholder="Filter by layout..."
-            />
-            <label class="filter-label">Legality</label>
-            <TristateSelect
-              :modelValue="filters.legality"
-              @update:modelValue="filters.legality = $event; emitFilters()"
-              :options="legalityOptions"
-              placeholder="Filter by legality..."
-              :filterable="false"
-            />
-        </div>
-
-        <div class="filter-section">
-            <h4 class="filter-section-title">Other</h4>
-            <label class="filter-label">Word Count</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.wordCountComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.wordCountValue" :min="0" :step="1" :disabled="!filters.wordCountComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-            <label class="filter-label">Elo</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.eloComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.eloValue" :min="0" :step="50" :disabled="!filters.eloComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-            <label class="filter-label">Popularity</label>
-            <el-row :gutter="8">
-              <el-col :span="12">
-                <el-select v-model="filters.popularityComparison" @change="emitFilters" placeholder="Any" style="width: 100%;">
-                  <el-option label="Any" value="" />
-                  <el-option label="=" value="eq" />
-                  <el-option label="≠" value="neq" />
-                  <el-option label="<" value="lt" />
-                  <el-option label="≤" value="lte" />
-                  <el-option label=">" value="gt" />
-                  <el-option label="≥" value="gte" />
-                </el-select>
-              </el-col>
-              <el-col :span="12">
-                <el-input-number v-model="filters.popularityValue" :min="0" :step="50" :disabled="!filters.popularityComparison" @change="emitFilters" style="width: 100%;" />
-              </el-col>
-            </el-row>
-          </div>
-      </div>
-    </el-collapse-item>
-  </el-collapse>
+        </el-collapse-item>
+    </el-collapse>
 </template>
 
 <script setup lang="ts">
