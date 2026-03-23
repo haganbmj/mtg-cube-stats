@@ -366,7 +366,7 @@ minimized.cards = best;
 // Uses the raw cards array so tokens from dedicated token sets (excluded from stripped) are included.
 const tokensByOracleId: Record<string, any[]> = {};
 cards.forEach((card: any) => {
-    if (card.layout === 'token' || card.layout === 'double_faced_token') {
+    if (card.layout === 'token' || card.layout === 'double_faced_token' || card.set_type === 'token') {
         const key = card.oracle_id;
         if (!tokensByOracleId[key]) tokensByOracleId[key] = [];
         tokensByOracleId[key].push(card);

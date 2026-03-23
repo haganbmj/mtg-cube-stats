@@ -264,7 +264,11 @@
                                 </template>
                             </el-image>
                             <div class="token-info">
-                                <div class="token-name">{{ entry.token!.name }}</div>
+                                <div class="token-name">
+                                    <el-text truncated>{{ entry.token!.name }}</el-text>
+                                    <el-tag type="info" size="small" style="margin-left: 6px;">{{ entry.sources.length }}</el-tag>
+                                </div>
+
                                 <div class="token-type">{{ entry.token!.typeLine }}</div>
                                 <div v-if="entry.token!.power !== undefined" class="token-pt">
                                     {{ entry.token!.power }}/{{ entry.token!.toughness }}
@@ -580,6 +584,8 @@ const tokensTabData = computed(() => {
 .token-name {
     font-weight: 600;
     font-size: 13px;
+
+    display: flex;
 }
 
 .token-type {
