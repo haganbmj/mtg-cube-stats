@@ -45,6 +45,10 @@
             <WordCountPopularityScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
         </el-col>
 
+        <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+            <TokenCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+        </el-col>
+
         <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
             <CategoryTable :loadedCubes="loadedCubes" />
         </el-col> -->
@@ -65,6 +69,7 @@ import CubeCardCountHistogramChart from '../components/statistics/CubeCardCountH
 import ManaValueDistributionBoxPlotChart from '../components/statistics/ManaValueDistributionBoxPlotChart.vue';
 import ReleaseYearDistributionBoxPlotChart from '../components/statistics/ReleaseYearDistributionBoxPlotChart.vue';
 import ReleaseYearDistributionChart from '../components/statistics/ReleaseYearDistributionChart.vue';
+import TokenCountScatterPlotChart from '../components/statistics/TokenCountScatterPlotChart.vue';
 
 const props = defineProps({
     loadedCubes: {

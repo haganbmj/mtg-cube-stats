@@ -51,6 +51,7 @@
                             <div class="card-rank">{{ index + 1 }}</div>
                             <el-tooltip
                                 placement="right"
+                                effect="light"
                                 :show-after="500"
                                 popper-class="card-tooltip"
                                 :hide-after="0"
@@ -81,6 +82,7 @@
                             <div class="card-rank">{{ index + 1 }}</div>
                             <el-tooltip
                                 placement="right"
+                                effect="light"
                                 :show-after="500"
                                 popper-class="card-tooltip"
                                 :hide-after="0"

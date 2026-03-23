@@ -52,11 +52,23 @@ export interface ScryfallCard {
   isSupplementalProduct?: boolean;
   isNormalLayout?: boolean;
   makesTokens?: boolean;
+  tokenOracleIds?: string[];
+}
+
+export interface ScryfallToken {
+  name: string;
+  typeLine: string;
+  oracleText: string;
+  colors: string[];
+  power?: string;
+  toughness?: string;
+  urlFront: string;
 }
 
 export interface ScryfallDataStructure {
   cards: Record<string, ScryfallCard>; // keyed by oracleId
   sets: Record<string, string>; // setCode -> setName
+  tokens: Record<string, ScryfallToken>; // keyed by oracleId
 }
 
 // Type for the dynamic import result

@@ -5,6 +5,7 @@ import { detectCubeArchetypes } from './ArchetypeDetection';
 import type {
     ScryfallDataStructure,
     ScryfallCard,
+    ScryfallToken,
     Cube,
     CubeCard,
     CubeStats,
@@ -24,6 +25,10 @@ export async function initScryfall(): Promise<void> {
     const module = await scryfallLoad();
     scryfall = module.default;
     console.timeEnd('Loading Scryfall card data');
+}
+
+export function getTokens(): Record<string, ScryfallToken> {
+    return scryfall?.tokens ?? {};
 }
 
 const rarityScoreMap: Record<string, number> = {
@@ -144,6 +149,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             layout: scryfallCard?.layout ?? '',
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
+            tokenOracleIds: scryfallCard?.tokenOracleIds ?? [],
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
             minPriceTix: scryfallCard?.minPriceTix ?? null,
             urlFront: scryfallCard?.urlFront ?? '',
@@ -348,6 +354,7 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
         ...firstOrderStats,
         uniqueKeywords: Object.keys(firstOrderStats.keywords).length,
         uniqueNonEvergreenKeywords: Object.keys(firstOrderStats.keywords).filter(kw => !isEvergreenKeyword(kw)).length,
+        uniqueTokenCount: new Set(cards.flatMap(c => c.tokenOracleIds ?? [])).size,
         cardCounts: {
             // FIXME: Move the rest of the counts into this prop, then do percentages in a consistent way.
             removal: cards.filter(c => c.tags?.includes('removal')).length,

@@ -117,6 +117,10 @@
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.makesTokens ?? 0 }})</span>
                                 </el-descriptions-item>
                                 <el-descriptions-item>
+                                    <template #label><el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50"><span>Unique Tokens <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
+                                    {{ activeCube.stats?.uniqueTokenCount ?? 0 }}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50"><span>Abnormal Layout <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.abnormalLayout ?? 0 }})</span>
@@ -246,6 +250,45 @@
                     <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
                 </el-tab-pane>
 
+                <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" :lazy="true">
+                    <div class="tokens-tab">
+                        <div v-for="entry in tokensTabData" :key="entry.tokenId" class="token-entry">
+                            <el-image
+                                :src="entry.token!.urlFront"
+                                fit="contain"
+                                class="token-image"
+                                lazy
+                            >
+                                <template #placeholder>
+                                    <div class="token-image-placeholder" />
+                                </template>
+                            </el-image>
+                            <div class="token-info">
+                                <div class="token-name">{{ entry.token!.name }}</div>
+                                <div class="token-type">{{ entry.token!.typeLine }}</div>
+                                <div v-if="entry.token!.power !== undefined" class="token-pt">
+                                    {{ entry.token!.power }}/{{ entry.token!.toughness }}
+                                </div>
+                                <div class="token-sources">
+                                    <el-tooltip
+                                        v-for="card in entry.sources"
+                                        :key="card.oracleId"
+                                        effect="light"
+                                        placement="right"
+                                        :show-after="100"
+                                    >
+                                        <template #content>
+                                            <el-image :src="card.urlFront" fit="contain" style="width: 200px;" />
+                                        </template>
+                                        <div class="token-source-name">{{ card.name }}</div>
+                                    </el-tooltip>
+                                </div>
+                            </div>
+                        </div>
+                        <el-empty v-if="tokensTabData.length === 0" description="No tokens found" />
+                    </div>
+                </el-tab-pane>
+
                 <el-tab-pane label="Similar Cubes">
                     <SimilarCubesTable
                         :similarityMatrix="similarityMatrix"
@@ -295,6 +338,8 @@ import { Loading, InfoFilled } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
+import type { ScryfallToken } from '../types/scryfall';
+import { getTokens } from '../util/CubeFunctions';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';
 import ReleaseYearChart from './charts/basic/ReleaseYearChart.vue';
 import ColorIdentityDistributionChart from './charts/distributions/ColorIdentityDistributionChart.vue';
@@ -396,6 +441,28 @@ const samplePackUrl = computed(() => {
 const generateNewPack = () => {
     samplePackSeed.value = Date.now();
 };
+
+// Tokens tab: unique tokens from the active cube, sorted alphabetically, with the cards that produce each
+const tokensTabData = computed(() => {
+    const tokenMap = getTokens();
+    const tokenToCards = new Map<string, CubeCard[]>();
+
+    activeCubeCards.value.forEach(card => {
+        (card.tokenOracleIds ?? []).forEach(tokenId => {
+            if (!tokenToCards.has(tokenId)) tokenToCards.set(tokenId, []);
+            tokenToCards.get(tokenId)!.push(card);
+        });
+    });
+
+    return Array.from(tokenToCards.entries())
+        .map(([tokenId, sources]) => ({
+            tokenId,
+            token: tokenMap[tokenId] as ScryfallToken | undefined,
+            sources,
+        }))
+        .filter(entry => entry.token !== undefined)
+        .sort((a, b) => (a.token!.name).localeCompare(b.token!.name));
+});
 </script>
 
 <style scoped>
@@ -475,6 +542,72 @@ const generateNewPack = () => {
 
 .details-tab.el-row .el-col {
     padding: 10px;
+}
+
+.tokens-tab {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.token-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.token-image {
+    width: 100%;
+    aspect-ratio: 745 / 1040;
+    border-radius: 4.75% / 3.5%;
+    background: var(--el-fill-color-light);
+}
+
+.token-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-light);
+    border-radius: 4.75% / 3.5%;
+}
+
+.token-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.token-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.token-type {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+}
+
+.token-pt {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+}
+
+.token-sources {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.token-source-name {
+    font-size: 12px;
+    color: var(--el-text-color-regular);
+    cursor: default;
+    padding: 1px 0;
+
+    &:hover {
+        color: var(--el-color-primary);
+    }
 }
 
 .external-links {

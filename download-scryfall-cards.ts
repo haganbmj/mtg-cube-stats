@@ -227,6 +227,13 @@ const stripped = cards.filter((card: any) => {
 
 // fs.writeFileSync('./out.json', JSON.stringify(stripped, null, 2));
 
+// Build a lookup map from printing id → oracle_id.
+// Built from the raw cards array (not stripped) so token cards from excluded set types are included.
+const idToOracleId: Record<string, string> = {};
+cards.forEach((card: any) => {
+    idToOracleId[card.id] = card.oracle_id;
+});
+
 const minimized = stripped.sort((a: any, b: any) => {
     // From there organize everything by release date in reverse chronological order.
     // In the event of multiple printings from the same set (basics) sort by set number.
@@ -251,6 +258,12 @@ const minimized = stripped.sort((a: any, b: any) => {
         // And take that and tighten it down as much as possible.
         // FIXME: Trim this model even more. Should strip everything I'm not using to reduce the bundle size.
         const key = card.oracleId;
+        const tokenOracleIds = [...new Set(
+            card.allParts
+                .filter((part: any) => part.component === 'token')
+                .map((part: any) => idToOracleId[part.id])
+                .filter(Boolean)
+        )] as string[];
         store.cards[key] = store.cards[key] || [];
         store.cards[key].push({
             setCode: card.set.code,
@@ -287,6 +300,7 @@ const minimized = stripped.sort((a: any, b: any) => {
             // Apparently planeswalkers are "normal" layout?
             isNormalLayout: card.layout === 'normal' ? true : undefined,
             makesTokens: card.allParts.some((part: any) => part.component === 'token') ? true : undefined,
+            tokenOracleIds: tokenOracleIds.length > 0 ? tokenOracleIds : undefined,
 
             legality: {
                 standard: card.legalities?.standard === 'legal' ? true : undefined,
@@ -348,7 +362,38 @@ const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
 
 minimized.cards = best;
 
-console.log(`Found ${Object.keys(minimized.cards).length} distinct cards from ${Object.keys(minimized.sets).length} sets.`);
+// Build a map of the earliest printing of each token by oracle_id.
+// Uses the raw cards array so tokens from dedicated token sets (excluded from stripped) are included.
+const tokensByOracleId: Record<string, any[]> = {};
+cards.forEach((card: any) => {
+    if (card.layout === 'token' || card.layout === 'double_faced_token') {
+        const key = card.oracle_id;
+        if (!tokensByOracleId[key]) tokensByOracleId[key] = [];
+        tokensByOracleId[key].push(card);
+    }
+});
+
+const bestTokens = Object.keys(tokensByOracleId).reduce((store: any, key: string) => {
+    const earliest = tokensByOracleId[key].sort((a: any, b: any) =>
+        Date.parse(a.released_at) - Date.parse(b.released_at)
+    )[0];
+    store[key] = {
+        name: earliest.name,
+        typeLine: earliest.type_line,
+        oracleText: earliest.oracle_text || (earliest.card_faces?.[0]?.oracle_text !== undefined
+            ? earliest.card_faces.map((face: any) => face.oracle_text).join('\n\n')
+            : ''),
+        colors: earliest.colors || [],
+        power: earliest.power,
+        toughness: earliest.toughness,
+        urlFront: `https://cards.scryfall.io/large/front/${earliest.id.charAt(0)}/${earliest.id.charAt(1)}/${earliest.id}.jpg`,
+    };
+    return store;
+}, {});
+
+minimized.tokens = bestTokens;
+
+console.log(`Found ${Object.keys(minimized.cards).length} distinct cards and ${Object.keys(minimized.tokens).length} distinct tokens from ${Object.keys(minimized.sets).length} sets.`);
 
 assert.equal(
     minimized.sets['plc'],
