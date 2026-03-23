@@ -33,7 +33,7 @@
                             fit="contain"
                             :alt="showFront ? activeCard.name : (activeCard.name ?? '') + ' (back)'"
                             :class="'card-image ' + activeCard.setCode?.toLowerCase()"
-                            style="max-width: 300px; width: 100%;"
+                            style="width: 100%;"
                         />
                         <div v-if="activeCard.urlBack" style="margin-top: 8px;">
                             <el-button size="small" @click="showFront = !showFront">
