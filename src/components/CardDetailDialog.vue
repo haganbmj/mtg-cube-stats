@@ -17,8 +17,8 @@
                     underline="never"
                     style="margin-left: 0.75rem; font-size: 0.875rem;"
                 >
-                    <span class="card-dialog-name">{{ activeCard.name }}&nbsp;</span>
-                    <el-icon><Link /></el-icon>
+                    <span class="card-dialog-name">{{ activeCard.name }}</span>
+                    <el-icon class="el-icon--right"><Link /></el-icon>
                 </el-link>
             </div>
         </template>

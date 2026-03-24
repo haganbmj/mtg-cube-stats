@@ -12,8 +12,8 @@
             <div v-if="activeCube" class="cube-dialog-header">
                 <el-image :src="activeCube.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
                 <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
-                    <span class="cube-dialog-name">{{ activeCube.name }}&nbsp;</span>
-                    <el-icon><Link /></el-icon>
+                    <span class="cube-dialog-name">{{ activeCube.name }}</span>
+                    <el-icon class="el-icon--right"><Link /></el-icon>
                 </el-link>
                 <span class="cube-dialog-separator"> &mdash; </span>
                 <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
