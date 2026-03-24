@@ -85,6 +85,7 @@
 <script setup lang="ts">
 import { ref, computed, provide, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
+import { presetCollections } from './presets';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
@@ -113,19 +114,15 @@ const ensureScryfallInitialized = async () => {
     return scryfallInitPromise;
 };
 
-// FIXME: Move these somewhere else and dynamically include/exclude them based on the ENV.
-const presetComparisons = {
-    "WotC MTGO/Arena": () => import("../preloads/cubes-wotc.json"),
-    "CubeCobra Top 100": () => import("../preloads/cubes-cubecobra-top100.json"),
-    // "CubeCon 2025": () => import("../preloads/cubes-cubecon2025.json"),
-    // "haganbmj": () => import("../preloads/cubes-haganbmj.json"),
-    "Peasant Cubes": () => import("../preloads/cubes-peasant.json"),
-    // "Vertex Philly 2026": () => import("../preloads/cubes-vertex-philly-2026.json"),
-    // "Cube For A Cause 2026": () => import("../preloads/cubes-c4ac-feb2026.json"),
-    // "Connecticube 2026": () => import("../preloads/cubes-connecticube-2026.json"),
-    "Shoebox 2026": () => import("../preloads/cubes-shoebox-2026.json"),
-    "Cube Corner @ Amsterdam 2026": () => import("../preloads/cubes-cube-corner-2026.json"),
-};
+// import.meta.glob captures only files that exist at build time, so the build
+// succeeds even if a preload JSON hasn't been generated yet.
+const availablePreloadModules = import.meta.glob<{ default: any }>('../preloads/cubes-*.json');
+
+const presetComparisons = Object.fromEntries(
+    presetCollections
+        .filter(preset => `../preloads/cubes-${preset.name}.json` in availablePreloadModules)
+        .map(preset => [preset.label, availablePreloadModules[`../preloads/cubes-${preset.name}.json`]]),
+);
 
 const loadedCubes = ref({});
 
