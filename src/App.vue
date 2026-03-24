@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
 import { ref, computed, provide, onMounted, nextTick } from 'vue';
+import { ElMessage } from 'element-plus';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
@@ -208,6 +209,7 @@ const addCube = async (cubeId: string) => {
             loadedCubes.value[enrichedCube.id] = enrichedCube;
         } catch (e) {
             console.error("Error loading cube:", e);
+            ElMessage({ message: `Failed to load cube: ${id}`, type: 'error', duration: 4000 });
         }
         await nextTick();
         console.timeEnd(`Add Cube: ${id}`);
