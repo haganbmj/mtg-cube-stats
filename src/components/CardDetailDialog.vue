@@ -10,15 +10,15 @@
     >
         <template #header>
             <div v-if="activeCard" class="card-dialog-header">
-                <span class="card-dialog-name">{{ activeCard.name }}</span>
                 <el-link
                     :href="`https://scryfall.com/card/${activeCard.setCode?.toLowerCase()}/${activeCard.collectorNumber}`"
                     target="_blank"
-                    type="primary"
+                    type="default"
                     underline="never"
                     style="margin-left: 0.75rem; font-size: 0.875rem;"
                 >
-                    Scryfall &nearr;
+                    <span class="card-dialog-name">{{ activeCard.name }}&nbsp;</span>
+                    <el-icon><Link /></el-icon>
                 </el-link>
             </div>
         </template>
@@ -198,6 +198,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
+import { Link } from '@element-plus/icons-vue';
 import { capitalizeFirstLetter } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import type { Cube } from '../types';
