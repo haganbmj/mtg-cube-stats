@@ -515,14 +515,13 @@ const getComparisonArrow = (archetypeName: string) => {
 .supporting-cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
     align-items: center;
 }
 
 .card-thumbnail-container {
     position: relative;
-    width: 120px;
-    height: 168px;
+    width: 157px;
+    height: 220px;
     border-radius: 8px;
     overflow: hidden;
     cursor: help;
@@ -533,6 +532,7 @@ const getComparisonArrow = (archetypeName: string) => {
 .card-thumbnail-container:hover {
     transform: scale(1.05);
     border-color: var(--el-color-primary);
+    z-index: 10;
 }
 
 .card-thumbnail {
