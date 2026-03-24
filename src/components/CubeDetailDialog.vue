@@ -11,8 +11,9 @@
         <template #header>
             <div v-if="activeCube" class="cube-dialog-header">
                 <el-image :src="activeCube.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="primary" underline="never">
-                    <span class="cube-dialog-name">{{ activeCube.name }}</span>
+                <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
+                    <span class="cube-dialog-name">{{ activeCube.name }}&nbsp;</span>
+                    <el-icon><Link /></el-icon>
                 </el-link>
                 <span class="cube-dialog-separator"> &mdash; </span>
                 <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
@@ -338,7 +339,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useDateFormat } from '@vueuse/core';
-import { Loading, InfoFilled } from '@element-plus/icons-vue';
+import { Loading, InfoFilled, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
