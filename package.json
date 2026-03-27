@@ -22,7 +22,7 @@
     "element-plus": "^2.13.6",
     "katex": "^0.16.40",
     "mana-font": "^1.18.0",
-    "marked": "^17.0.4",
+    "marked": "^17.0.5",
     "vue": "^3.5.29",
     "vue-echarts": "^8.0.1"
   },
