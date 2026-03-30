@@ -113,6 +113,7 @@ export interface Cube {
   lastModified?: string;
   followerCount?: number;
   brief?: string;
+  fetchedAt?: string;
 
   // Card data and computed properties
   cards: CubeCard[];

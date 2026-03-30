@@ -202,7 +202,7 @@ const addCube = async (cubeId: string) => {
         console.time(`Add Cube: ${id}`);
         try {
             const rawCube = await getCubeData(id);
-            const enrichedCube = remapCube(rawCube);
+            const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
             loadedCubes.value[enrichedCube.id] = enrichedCube;
         } catch (e) {
             console.error("Error loading cube:", e);
