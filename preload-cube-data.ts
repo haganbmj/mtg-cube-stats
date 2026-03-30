@@ -488,15 +488,16 @@ for (const batch of batches) {
             } else {
                 console.log(`[${cubeId}] Local copy is fresh, using cached version.`);
                 const cube = JSON.parse(fs.readFileSync(`./preloads/cubes/${cubeId}.json`, 'utf-8'));
-                batchResult[cubeId] = remapCube(cube, false);
+                batchResult[cubeId] = remapCube(cube, false, new Date(stats.mtimeMs).toISOString());
                 continue;
             }
         }
 
         try {
             const cube = await getCubeData(cubeId);
+            const fetchedAt = new Date().toISOString();
             fs.writeFileSync(`./preloads/cubes/${cubeId}.json`, JSON.stringify(cube, null, 2));
-            batchResult[cubeId] = remapCube(cube, false);
+            batchResult[cubeId] = remapCube(cube, false, fetchedAt);
         } catch (e: any) {
             console.error(`[${cubeId}] Failed to fetch cube: ${e.message}`);
             // FIXME: Should this fault here, or can we proceed then just error out at the end?

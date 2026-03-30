@@ -64,7 +64,7 @@ export function getSetName(setCode: string): string {
  *
  * FIXME: This should probably be done as part of the function that fetches from Scryfall to remap that response object rather than relying on the caller to do it.
  */
-export function remapCube(cube: any, enrich: boolean = true): Cube {
+export function remapCube(cube: any, enrich: boolean = true, fetchedAt?: string): Cube {
     const cards: CubeCard[] = cube.cards.mainboard.map((card: any) => ({
         printingId: card.details.scryfall_id,
         oracleId: card.details.oracle_id,
@@ -86,6 +86,7 @@ export function remapCube(cube: any, enrich: boolean = true): Cube {
         lastModified: cube.date ?? undefined,
         followerCount: cube.following?.length ?? 0,
         brief: cube.brief ?? '',
+        fetchedAt: fetchedAt,
 
         cards: cards,
         suffixedCardIds: suffixedDuplicates(cards.map(c => c.oracleId)),

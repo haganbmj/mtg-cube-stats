@@ -205,6 +205,9 @@
                                 </el-descriptions-item>
                             </el-descriptions>
                         </el-col>
+                        <el-col :span="24" :xs="24" class="fetched-at-row">
+                            <el-text tag="small" type="info">Data fetched: {{ formattedFetchedAt }}</el-text>
+                        </el-col>
                     </el-row>
                 </el-tab-pane>
 
@@ -423,6 +426,12 @@ const formattedLastModified = computed(() => {
     return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
 });
 
+const formattedFetchedAt = computed(() => {
+    const ts = activeCube.value?.fetchedAt;
+    if (!ts) return 'N/A';
+    return useDateFormat(new Date(ts), 'YYYY-MM-DD HH:mm').value;
+});
+
 const formatPercentage = (value: number | undefined, total: number | undefined) => {
     const v = value ?? 0;
     const t = total ?? 1;
@@ -547,6 +556,11 @@ const tokensTabData = computed(() => {
 
 .details-tab.el-row .el-col {
     padding: 10px;
+}
+
+.fetched-at-row {
+    padding: 10px;
+    padding-top: 4px;
 }
 
 .tokens-tab {
