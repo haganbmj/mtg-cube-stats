@@ -121,6 +121,11 @@ export interface Cube {
   stats?: CubeStats;
 }
 
+export interface UserCollection {
+  name: string;
+  cubeIds: string[];
+}
+
 export interface SimilarityScore {
   cosineSimilarity: number;
   insersectionSize: number;

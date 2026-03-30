@@ -33,19 +33,91 @@
         </template>
     </el-dialog>
 
+    <el-dialog
+        v-model="saveDialogVisible"
+        title="Save Collection"
+        width="400"
+        align-center
+        destroy-on-close
+    >
+        <el-input
+            v-model="saveDialogName"
+            placeholder="Collection name"
+            maxlength="60"
+            show-word-limit
+            @keyup.enter="handleSaveCollection"
+        />
+        <template #footer>
+            <el-button @click="saveDialogVisible = false">Cancel</el-button>
+            <el-button type="primary" :disabled="!saveDialogName.trim()" @click="handleSaveCollection">Save</el-button>
+        </template>
+    </el-dialog>
+
+    <el-dialog
+        v-model="removeDialogVisible"
+        title="Remove Collection"
+        width="400"
+        align-center
+        destroy-on-close
+    >
+        <el-empty v-if="props.userCollections.length === 0" description="No saved collections" :image-size="60" />
+        <ul v-else class="collection-remove-list">
+            <li v-for="col in props.userCollections" :key="col.name" class="collection-remove-item">
+                <span>{{ col.name }}</span>
+                <el-button link type="danger" @click="handleRemoveCollection(col.name)">
+                    <el-icon><Delete /></el-icon>
+                </el-button>
+            </li>
+        </ul>
+        <template #footer>
+            <el-button @click="removeDialogVisible = false">Close</el-button>
+        </template>
+    </el-dialog>
+
     <el-row>
         <el-col :span="18" :xs="24" :sm="24" :md="18" :lg="18">
             <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
                 <el-form-item>
                     <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
                         <el-form-item style="min-width: 200px; width: 100%;">
-                            <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="handleLoadPreset" placeholder="Load Collection..." >
-                                <el-option
-                                    v-for="option in presetComparisonsSelect"
-                                    :key="option.value"
-                                    :label="option.label"
-                                    :value="option.value"
-                                />
+                            <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="handleCollectionSelect" placeholder="Load Collection...">
+                                <template #footer>
+                                    <div class="collection-select-header">
+                                        <el-button
+                                            text
+                                            bg
+                                            type="success"
+                                            size="small"
+                                            :disabled="Object.keys(props.loadedCubes).length === 0"
+                                            @click.stop="openSaveDialog"
+                                        >Save As...</el-button>
+                                        <el-divider direction="vertical" />
+                                        <el-button
+                                            text
+                                            bg
+                                            type="danger"
+                                            size="small"
+                                            :disabled="props.userCollections.length === 0"
+                                            @click.stop="openRemoveDialog"
+                                        >Remove...</el-button>
+                                    </div>
+                                </template>
+                                <el-option-group v-if="props.userCollections.length > 0" label="My Collections">
+                                    <el-option
+                                        v-for="col in props.userCollections"
+                                        :key="col.name"
+                                        :label="col.name"
+                                        :value="'__user__:' + col.name"
+                                    />
+                                </el-option-group>
+                                <el-option-group label="Presets">
+                                    <el-option
+                                        v-for="option in presetComparisonsSelect"
+                                        :key="option.value"
+                                        :label="option.label"
+                                        :value="option.value"
+                                    />
+                                </el-option-group>
                             </el-select>
                         </el-form-item>
                     </el-col>
@@ -210,10 +282,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, inject } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled } from '@element-plus/icons-vue';
+import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 
@@ -245,6 +319,22 @@ const props = defineProps({
     loadCollection: {
         type: Function,
         required: true,
+    },
+    userCollections: {
+        type: Array as () => UserCollection[],
+        default: () => [],
+    },
+    saveCollection: {
+        type: Function as unknown as () => (name: string) => void,
+        default: null,
+    },
+    loadUserCollection: {
+        type: Function as unknown as () => (name: string) => Promise<void>,
+        default: null,
+    },
+    removeCollection: {
+        type: Function as unknown as () => (name: string) => void,
+        default: null,
     },
 });
 
@@ -290,11 +380,69 @@ const submitAddCubeForm = async () => {
     addCubeForm.loading = false;
 };
 
-const handleLoadPreset = async (presetName: string) => {
+const handleCollectionSelect = async (value: string) => {
     addCubeForm.loading = true;
-    await props.loadCollection(presetName);
+    if (value.startsWith('__user__:')) {
+        const name = value.slice('__user__:'.length);
+        await props.loadUserCollection(name);
+    } else {
+        await props.loadCollection(value);
+    }
     addCubeForm.loading = false;
     addCubeForm.presetComparisonsSelection = '';
+};
+
+// Save collection dialog
+const saveDialogVisible = ref(false);
+const saveDialogName = ref('');
+
+const openSaveDialog = () => {
+    saveDialogName.value = '';
+    saveDialogVisible.value = true;
+};
+
+const handleSaveCollection = async () => {
+    const name = saveDialogName.value.trim();
+    if (!name) return;
+    const exists = props.userCollections.some((c: UserCollection) => c.name === name);
+    if (exists) {
+        try {
+            await ElMessageBox.confirm(
+                `A collection named "${name}" already exists. Overwrite it?`,
+                'Overwrite Collection',
+                { type: 'warning', confirmButtonText: 'Overwrite', cancelButtonText: 'Cancel' },
+            );
+        } catch {
+            return;
+        }
+    }
+    props.saveCollection(name);
+    saveDialogVisible.value = false;
+    saveDialogName.value = '';
+    ElMessage({ type: 'success', message: `Collection "${name}" saved.` });
+};
+
+// Remove collection dialog
+const removeDialogVisible = ref(false);
+
+const openRemoveDialog = () => {
+    removeDialogVisible.value = true;
+};
+
+const handleRemoveCollection = async (name: string) => {
+    try {
+        await ElMessageBox.confirm(
+            `Delete collection "${name}"? This cannot be undone.`,
+            'Remove Collection',
+            { type: 'warning', confirmButtonText: 'Delete', cancelButtonText: 'Cancel' },
+        );
+    } catch {
+        return;
+    }
+    props.removeCollection(name);
+    if (props.userCollections.length === 0) {
+        removeDialogVisible.value = false;
+    }
 };
 
 const removeCube = (cubeId: string) => {
@@ -475,3 +623,32 @@ const formatters = {
     },
 };
 </script>
+
+<style scoped>
+.collection-select-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.collection-remove-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.collection-remove-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.collection-remove-item:last-child {
+    border-bottom: none;
+}
+</style>

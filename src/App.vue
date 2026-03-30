@@ -32,6 +32,10 @@
                                 :addCube="addCube"
                                 :removeCube="removeCube"
                                 :loadCollection="loadCollection"
+                                :userCollections="userCollections"
+                                :saveCollection="saveCollection"
+                                :loadUserCollection="loadUserCollection"
+                                :removeCollection="removeCollection"
                             />
                         </el-tab-pane>
 
@@ -86,6 +90,8 @@
 import { ref, computed, provide, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import { presetCollections } from './presets';
+import { bindStorage } from './util/VueLocalStorage';
+import type { UserCollection } from './types';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
@@ -158,6 +164,8 @@ provide('openCardDetailDialog', openCardDetailDialog);
 
 const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
 
+const userCollections = bindStorage<UserCollection[]>('user-collections', v => Array.isArray(v) ? v : []);
+
 // FIXME: Still getting a double render on this for some reason, but the memoization is absorbing the hit.
 const similarityMatrix = computed(() => {
     return computeSimilarityMatrix(loadedCubes.value);
@@ -189,6 +197,47 @@ const overviewTableData = computed(() => {
         }
     });
 });
+
+const addCubes = async (cubeIds: string[]) => {
+    await ensureScryfallInitialized();
+    const queue = [...cubeIds];
+    const worker = async () => {
+        while (queue.length > 0) {
+            const id = queue.shift()!;
+            try {
+                const rawCube = await getCubeData(id);
+                const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
+                loadedCubes.value[enrichedCube.id] = enrichedCube;
+                await nextTick();
+            } catch (e) {
+                console.error(`Error loading cube: ${id}`, e);
+                ElMessage({ message: `Failed to load cube: ${id}`, type: 'error', duration: 4000 });
+            }
+        }
+    };
+    await Promise.all(Array.from({ length: 2 }, worker));
+};
+
+const saveCollection = (name: string) => {
+    const cubeIds = Object.keys(loadedCubes.value);
+    const existing = userCollections.value.findIndex(c => c.name === name);
+    if (existing >= 0) {
+        userCollections.value[existing] = { name, cubeIds };
+    } else {
+        userCollections.value = [...userCollections.value, { name, cubeIds }];
+    }
+};
+
+const loadUserCollection = async (name: string) => {
+    const collection = userCollections.value.find(c => c.name === name);
+    if (!collection) return;
+    loadedCubes.value = {};
+    await addCubes(collection.cubeIds);
+};
+
+const removeCollection = (name: string) => {
+    userCollections.value = userCollections.value.filter(c => c.name !== name);
+};
 
 const addCube = async (cubeId: string) => {
     await ensureScryfallInitialized();
