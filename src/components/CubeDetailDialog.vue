@@ -220,7 +220,14 @@
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
                             <div style="height: 300px;">
-                                <ReleaseYearChart class="chart" :releaseYearDistribution="activeCube.stats?.releaseYearDistribution || {}" />
+                                <ReleaseYearChart
+                                    class="chart"
+                                    :releaseYearDistribution="activeCube.stats?.releaseYearDistribution || {}"
+                                    :averageReleaseYear="activeCube.stats?.averageReleaseYear ?? 0"
+                                    :averageReleaseYearStdDev="activeCube.stats?.averageReleaseYearStdDev ?? 0"
+                                    :medianReleaseYear="activeCube.stats?.medianReleaseYear ?? 0"
+                                    :medianReleaseYearMAD="activeCube.stats?.medianReleaseYearMAD ?? 0"
+                                />
                             </div>
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
