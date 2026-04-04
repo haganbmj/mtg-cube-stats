@@ -32,12 +32,12 @@
                     {{ (row.cubeRate * 100).toFixed(1) }}%
                 </template>
             </el-table-column>
-            <el-table-column label="Avg Rate" width="100" sortable :sort-by="(row: any) => row.meanRate" align="right">
+            <el-table-column label="Global Rate" width="110" sortable :sort-by="(row: any) => row.globalRate" align="right">
                 <template #default="{ row }">
-                    {{ (row.meanRate * 100).toFixed(1) }}%
+                    {{ (row.globalRate * 100).toFixed(1) }}%
                 </template>
             </el-table-column>
-            <el-table-column prop="zScore" label="Deviation" width="110" sortable align="right">
+            <el-table-column prop="zScore" label="Global Dev" width="110" sortable align="right">
                 <template #default="{ row }">
                     <template v-if="row.zScore !== 0">
                         <span :style="{ color: row.zScore > 1 ? '#67c23a' : row.zScore < -1 ? '#f56c6c' : '' }">
@@ -47,9 +47,36 @@
                     <span v-else class="no-data">—</span>
                 </template>
             </el-table-column>
-            <el-table-column label="Global" width="90" sortable :sort-by="(row: any) => row.globalPct" align="right">
+            <el-table-column
+                v-if="tagTableData.some(r => r.hasPeerData)"
+                label="Peer Rate"
+                width="100"
+                sortable
+                :sort-by="(row: any) => row.peerMeanRate ?? -Infinity"
+                align="right"
+            >
                 <template #default="{ row }">
-                    {{ row.globalPct.toFixed(1) }}%
+                    <template v-if="row.peerMeanRate !== null">
+                        {{ (row.peerMeanRate * 100).toFixed(1) }}%
+                    </template>
+                    <span v-else class="no-data">—</span>
+                </template>
+            </el-table-column>
+            <el-table-column
+                v-if="tagTableData.some(r => r.hasPeerData)"
+                label="Peer Dev"
+                width="110"
+                sortable
+                :sort-by="(row: any) => row.peerZScore ?? -Infinity"
+                align="right"
+            >
+                <template #default="{ row }">
+                    <template v-if="row.peerZScore !== null">
+                        <span :style="{ color: row.peerZScore > 1 ? '#67c23a' : row.peerZScore < -1 ? '#f56c6c' : '' }">
+                            {{ row.peerZScore > 0 ? '+' : '' }}{{ row.peerZScore.toFixed(2) }}σ
+                        </span>
+                    </template>
+                    <span v-else class="no-data">—</span>
                 </template>
             </el-table-column>
         </el-table>
@@ -63,7 +90,7 @@ import { GraphChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { TooltipComponent, LegendComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
-import type { CubeCard } from '../../types/cube';
+import type { CubeCard, Cube } from '../../types/cube';
 
 use([
     CanvasRenderer,
@@ -90,6 +117,10 @@ const props = defineProps({
     },
     cardSizes: {
         type: Object as () => Record<string, number>,
+        default: () => ({}),
+    },
+    peerCubes: {
+        type: Object as () => Record<string, Cube>,
         default: () => ({}),
     },
 });
@@ -130,6 +161,7 @@ function getCardNodeColor(colorIdentity: string[] | undefined): string {
 const scoredTags = computed(() => {
     const cards = props.cards;
     const graph = tagGraphData.value;
+    const peerCubeList = Object.values(props.peerCubes) as Cube[];
 
     const mapTag = (tag: string): string => graph?.tagFamilyMap[tag] ?? tag;
 
@@ -146,6 +178,46 @@ const scoredTags = computed(() => {
 
     const uniqueCardCount = new Set(cards.map(c => c.oracleId)).size;
 
+    // Compute per-tag inclusion rates across peer cubes.
+    let peerStats: Record<string, [number, number]> | null = null;
+    if (peerCubeList.length >= 2) {
+        const peerRateSum: Record<string, number> = {};
+        const peerRateSumSq: Record<string, number> = {};
+        const peerCount: Record<string, number> = {};
+
+        for (const cube of peerCubeList) {
+            const cubeTagCounts = new Map<string, number>();
+            const seenIds = new Set<string>();
+            for (const card of (cube.cards ?? [])) {
+                if (seenIds.has(card.oracleId)) continue;
+                seenIds.add(card.oracleId);
+                const seenFamilies = new Set<string>();
+                for (const rawTag of (card.tags ?? [])) {
+                    const tag = mapTag(rawTag);
+                    if (seenFamilies.has(tag)) continue;
+                    seenFamilies.add(tag);
+                    cubeTagCounts.set(tag, (cubeTagCounts.get(tag) ?? 0) + 1);
+                }
+            }
+            const cubeUniqueCount = seenIds.size;
+            if (cubeUniqueCount === 0) continue;
+            for (const [tag, count] of cubeTagCounts) {
+                const rate = count / cubeUniqueCount;
+                peerRateSum[tag] = (peerRateSum[tag] ?? 0) + rate;
+                peerRateSumSq[tag] = (peerRateSumSq[tag] ?? 0) + rate * rate;
+                peerCount[tag] = (peerCount[tag] ?? 0) + 1;
+            }
+        }
+
+        peerStats = {};
+        for (const tag of Object.keys(peerRateSum)) {
+            const n = peerCount[tag];
+            const mean = peerRateSum[tag] / n;
+            const variance = (peerRateSumSq[tag] / n) - (mean * mean);
+            peerStats[tag] = [mean, Math.sqrt(Math.max(0, variance))];
+        }
+    }
+
     const all = Array.from(tagCounts.entries())
         .filter(([, count]) => count >= 1)
         .map(([tag, count]) => {
@@ -157,14 +229,22 @@ const scoredTags = computed(() => {
                 const rateStdDev = meta[4];
                 zScore = rateStdDev > 0 ? (cubeRate - meanRate) / rateStdDev : 0;
             }
-            return { tag, count, zScore, hasMeta: !!meta };
+            let peerZScore = 0;
+            let peerMeanRate: number | null = null;
+            const peer = peerStats?.[tag];
+            if (peer && uniqueCardCount > 0) {
+                const cubeRate = count / uniqueCardCount;
+                peerMeanRate = peer[0];
+                peerZScore = peer[1] > 0 ? (cubeRate - peer[0]) / peer[1] : 0;
+            }
+            return { tag, count, zScore, peerZScore, peerMeanRate, hasMeta: !!meta, hasPeer: !!peer };
         })
         .sort((a, b) => {
             if (graph) return b.zScore - a.zScore || b.count - a.count;
             return b.count - a.count;
         });
 
-    return { all, uniqueCardCount };
+    return { all, uniqueCardCount, hasPeerData: peerStats !== null };
 });
 
 const chartData = computed(() => {
@@ -291,14 +371,14 @@ const chartData = computed(() => {
 const tagTableData = computed(() => {
     const graph = tagGraphData.value;
     if (!graph) return [];
-    const { all, uniqueCardCount } = scoredTags.value;
+    const { all, uniqueCardCount, hasPeerData } = scoredTags.value;
     const chartTagIds = chartData.value
         ? new Set(chartData.value.tagNodes.map(n => n.id))
         : new Set<string>();
 
     return all
         .filter(qt => qt.hasMeta)
-        .map(({ tag, count, zScore }) => {
+        .map(({ tag, count, zScore, peerZScore, peerMeanRate, hasPeer }) => {
             const meta = graph.tagMeta[tag];
             const cubeRate = uniqueCardCount > 0 ? count / uniqueCardCount : 0;
             return {
@@ -306,10 +386,12 @@ const tagTableData = computed(() => {
                 tag,
                 count,
                 cubeRate,
-                meanRate: meta[3],
+                globalRate: meta[3],
                 zScore: Math.round(zScore * 100) / 100,
-                globalPct: (meta[0] / graph.totalCubes) * 100,
+                peerMeanRate: hasPeer ? peerMeanRate : null,
+                peerZScore: hasPeer ? Math.round(peerZScore * 100) / 100 : null,
                 inChart: chartTagIds.has(tag),
+                hasPeerData,
             };
         });
 });

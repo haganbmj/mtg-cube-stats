@@ -325,7 +325,7 @@
                             <el-input-number v-model="minTagCount" :min="1" :max="50" :step="1" controls-position="right" style="width: 120px;" />
                         </el-form-item>
                     </el-form>
-                    <TagSynergyChart :cards="activeCubeCards" :min-tag-count="minTagCount" />
+                    <TagSynergyChart :cards="activeCubeCards" :min-tag-count="minTagCount" :peer-cubes="peerCubesForActive" />
                 </el-tab-pane>
 
                 <el-tab-pane label="Sample Pack" :lazy="true">
@@ -428,6 +428,13 @@ const switchCube = (cubeId: string) => {
     activeCubeId.value = cubeId;
     samplePackSeed.value = Date.now();
 };
+
+const peerCubesForActive = computed(() => {
+    const activeId = activeCubeId.value ?? props.cubeRow?.id;
+    return Object.fromEntries(
+        Object.entries(props.loadedCubes).filter(([id]) => id !== activeId),
+    );
+});
 
 const avgSimilarityScore = computed(() => {
     if (!activeCube.value) return 0;
