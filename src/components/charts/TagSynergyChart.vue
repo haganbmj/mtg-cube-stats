@@ -28,7 +28,18 @@
         >
             <el-table-column prop="name" label="Tag" min-width="140" sortable>
                 <template #default="{ row }">
-                    <span :style="{ opacity: row.inChart ? 1 : 0.5 }">{{ row.name }}</span>
+                    <el-tooltip
+                        v-if="row.description || row.familyAliases.length"
+                        placement="right"
+                        :show-after="300"
+                    >
+                        <template #content>
+                            <div v-if="row.description" style="margin-bottom: 4px;">{{ row.description }}</div>
+                            <div v-if="row.familyAliases.length" style="color: #aaaaaa;">Also: {{ row.familyAliases.map((a: string) => formatTagLabel(a)).join(', ') }}</div>
+                        </template>
+                        <span :style="{ opacity: row.inChart ? 1 : 0.5, borderBottom: '1px dotted #aaaaaa', cursor: 'default' }">{{ row.name }}</span>
+                    </el-tooltip>
+                    <span v-else :style="{ opacity: row.inChart ? 1 : 0.5 }">{{ row.name }}</span>
                 </template>
             </el-table-column>
             <el-table-column prop="count" label="Cards" width="80" sortable align="right" />
@@ -108,7 +119,7 @@ interface TagGraphData {
     totalCubes: number;
     tagFamilyMap: Record<string, string>;
     tagPairs: [string, string, number, number][];
-    tagMeta: Record<string, [number, number, number, number, number]>;
+    tagMeta: Record<string, [number, number, number, number, number, string | null]>;
 }
 
 const props = defineProps({
@@ -350,7 +361,16 @@ const chartData = computed(() => {
         };
     });
 
-    // Tag nodes — annotate with global metadata and z-score when available.
+    // Build family alias lookup: rep tag → list of non-rep aliases.
+    const familyAliasesMap = new Map<string, string[]>();
+    if (graph) {
+        for (const [rawTag, rep] of Object.entries(graph.tagFamilyMap)) {
+            if (!familyAliasesMap.has(rep)) familyAliasesMap.set(rep, []);
+            familyAliasesMap.get(rep)!.push(rawTag);
+        }
+    }
+
+    // Tag nodes — annotate with global metadata, z-score, description, and family aliases when available.
     const tagNodes = chartTags.map(({ tag, count, zScore }) => {
         const meta = graph?.tagMeta[tag];
         const size = 10 + Math.round((count / maxTagCount) * 20);
@@ -364,6 +384,8 @@ const chartData = computed(() => {
             zScore: Math.round(zScore * 100) / 100,
             globalCubeCount: meta ? meta[0] : undefined,
             variance: meta ? meta[1] : undefined,
+            description: meta ? meta[5] : undefined,
+            familyAliases: familyAliasesMap.get(tag) ?? [],
             label: { show: size >= 22 },
         };
     });
@@ -378,6 +400,13 @@ const tagTableData = computed(() => {
     const chartTagIds = chartData.value
         ? new Set(chartData.value.tagNodes.map(n => n.id))
         : new Set<string>();
+
+    // Build family alias lookup for the table.
+    const familyAliasesMap = new Map<string, string[]>();
+    for (const [rawTag, rep] of Object.entries(graph.tagFamilyMap)) {
+        if (!familyAliasesMap.has(rep)) familyAliasesMap.set(rep, []);
+        familyAliasesMap.get(rep)!.push(rawTag);
+    }
 
     return all
         .filter(qt => qt.hasMeta)
@@ -395,6 +424,8 @@ const tagTableData = computed(() => {
                 peerZScore: hasPeer ? Math.round(peerZScore * 100) / 100 : null,
                 inChart: chartTagIds.has(tag),
                 hasPeerData,
+                description: meta[5] ?? null,
+                familyAliases: familyAliasesMap.get(tag) ?? [],
             };
         });
 });
@@ -426,7 +457,15 @@ const chartOptions = computed(() => {
                         return `<b>${params.data.name}</b>`;
                     }
                     const count = params.data.value;
-                    const parts = [`<b>${params.data.name}</b>`, `${count} card${count !== 1 ? 's' : ''}`];
+                    const parts = [`<b>${params.data.name}</b>`];
+                    if (params.data.description) {
+                        parts.push(`<i style="color:#cccccc">${params.data.description}</i>`);
+                    }
+                    if (params.data.familyAliases?.length) {
+                        const aliases = params.data.familyAliases.map(formatTagLabel).join(', ');
+                        parts.push(`Also: ${aliases}`);
+                    }
+                    parts.push(`${count} card${count !== 1 ? 's' : ''}`);
                     if (params.data.zScore !== undefined && params.data.zScore !== 0) {
                         const sign = params.data.zScore > 0 ? '+' : '';
                         parts.push(`Deviation: ${sign}${params.data.zScore.toFixed(2)}σ`);

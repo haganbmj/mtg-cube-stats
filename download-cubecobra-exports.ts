@@ -548,10 +548,23 @@ for (const [tag, rep] of Object.entries(tagToFamily)) {
     }
 }
 
-// Build compact tagMeta: [cubeCount, variance, meanCount, meanRate, rateStdDev] per family representative.
+// Load tag descriptions from tagger-data.json (label → description map).
+const taggerDescMap = new Map<string, string | null>();
+try {
+    const taggerRaw = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8')) as { data: Array<{ label: string; description: string | null }> };
+    for (const item of taggerRaw.data) {
+        if (item.label) taggerDescMap.set(item.label, item.description ?? null);
+    }
+    console.log(`Loaded ${taggerDescMap.size} tag descriptions from tagger-data.json`);
+} catch {
+    console.warn('Could not load tagger-data.json — descriptions will be omitted');
+}
+
+// Build compact tagMeta: [cubeCount, variance, meanCount, meanRate, rateStdDev, description] per family representative.
 // meanRate = average inclusion rate (tagCount / uniqueCards) across cubes where tag appears.
 // rateStdDev = standard deviation of that rate. Chart uses these for z-score computation.
-const tagMetaOutput: Record<string, [number, number, number, number, number]> = {};
+// description comes from tagger-data.json using the representative tag's label.
+const tagMetaOutput: Record<string, [number, number, number, number, number, string | null]> = {};
 for (const [tag, stats] of Object.entries(tagAnalysis)) {
     const i = tagIndex.get(tag)!;
     // Rate stats are computed across cubes where the tag has any cards (tagSum > 0 implies we accumulated).
@@ -569,6 +582,7 @@ for (const [tag, stats] of Object.entries(tagAnalysis)) {
         Math.round(stats.meanCount * 100) / 100,
         Math.round(meanRate * 10000) / 10000,
         Math.round(rateStdDev * 10000) / 10000,
+        taggerDescMap.get(tag) ?? null,
     ];
 }
 
