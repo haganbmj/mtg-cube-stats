@@ -10,6 +10,7 @@ const INDEX_MAP_JSON = `${EXPORT_DIR}/indexToOracleMap.json`;
 
 const OUTPUT_CARD_FREQUENCY = './data/cubecobra-card-frequency.json';
 const OUTPUT_TAG_ANALYSIS = './data/cubecobra-tag-analysis.json';
+const OUTPUT_TAG_GRAPH = './data/cubecobra-tag-graph.json';
 
 // Minimum number of Scryfall cards a tag must appear on to be included in co-occurrence analysis.
 const TAG_MIN_CARD_COUNT = 100;
@@ -496,6 +497,62 @@ const tagAnalysisOutput = {
 fs.writeFileSync(OUTPUT_TAG_ANALYSIS, JSON.stringify(tagAnalysisOutput));
 console.log(`Wrote ${OUTPUT_TAG_ANALYSIS} (${numTags} tags)`);
 console.timeEnd('tag-analysis');
+
+// ---------------------------------------------------------------------------
+// Phase 4: Tag Graph (compact output for chart consumption)
+// ---------------------------------------------------------------------------
+// Emits a compact file with tag-pair PMI values, tag family mappings, and
+// per-tag metadata. The TagSynergyChart loads this at runtime to add tag-tag
+// edges and map synonymous tags to family representatives.
+// Uses the already-computed topCorrelations from Phase 3 rather than re-scanning
+// all pairs, keeping the output compact (~300KB vs ~6MB for all qualifying pairs).
+
+console.log('Building tag graph for chart consumption ...');
+console.time('tag-graph');
+
+// Extract deduplicated tag pairs from the per-tag topCorrelations.
+const tagPairMap = new Map<string, [string, string, number, number]>();
+for (const [tag, stats] of Object.entries(tagAnalysis)) {
+    for (const corr of stats.topCorrelations) {
+        const [a, b] = tag < corr.tag ? [tag, corr.tag] : [corr.tag, tag];
+        const key = `${a}|${b}`;
+        if (!tagPairMap.has(key)) {
+            tagPairMap.set(key, [a, b, corr.pmi, corr.cooccurrenceCount]);
+        }
+    }
+}
+
+const tagPairs = Array.from(tagPairMap.values());
+tagPairs.sort((a, b) => b[2] - a[2]);
+
+// Build tagFamilyMap: raw tag → family representative (non-identity mappings only).
+const tagFamilyMapOutput: Record<string, string> = {};
+for (const [tag, rep] of Object.entries(tagToFamily)) {
+    if (tag !== rep) {
+        tagFamilyMapOutput[tag] = rep;
+    }
+}
+
+// Build compact tagMeta: [cubeCount, variance, meanCount] per family representative.
+const tagMetaOutput: Record<string, [number, number, number]> = {};
+for (const [tag, stats] of Object.entries(tagAnalysis)) {
+    tagMetaOutput[tag] = [
+        stats.cubeCount,
+        Math.round(stats.variance * 100) / 100,
+        Math.round(stats.meanCount * 100) / 100,
+    ];
+}
+
+const tagGraphOutput = {
+    totalCubes,
+    tagFamilyMap: tagFamilyMapOutput,
+    tagPairs,
+    tagMeta: tagMetaOutput,
+};
+
+fs.writeFileSync(OUTPUT_TAG_GRAPH, JSON.stringify(tagGraphOutput));
+console.log(`Wrote ${OUTPUT_TAG_GRAPH} (${tagPairs.length} tag pairs, ${Object.keys(tagFamilyMapOutput).length} family mappings)`);
+console.timeEnd('tag-graph');
 
 // ---------------------------------------------------------------------------
 // Summary

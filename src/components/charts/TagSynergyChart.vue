@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -31,6 +31,13 @@ use([
     LegendComponent,
     GraphChart,
 ]);
+
+interface TagGraphData {
+    totalCubes: number;
+    tagFamilyMap: Record<string, string>;
+    tagPairs: [string, string, number, number][];
+    tagMeta: Record<string, [number, number, number]>;
+}
 
 const props = defineProps({
     cards: {
@@ -49,6 +56,18 @@ const props = defineProps({
 
 const MAX_TAG_NODES = 80;
 const LARGE_GRAPH_THRESHOLD = 500;
+const TAG_TAG_PMI_THRESHOLD = 0.2;
+
+const tagGraphData = ref<TagGraphData | null>(null);
+
+onMounted(async () => {
+    try {
+        const module = await import('../../../data/cubecobra-tag-graph.json') as unknown as { default: TagGraphData };
+        tagGraphData.value = module.default;
+    } catch {
+        // Precomputed tag graph not available — chart works without it.
+    }
+});
 
 function formatTagLabel(tag: string): string {
     return tag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -69,16 +88,25 @@ function getCardNodeColor(colorIdentity: string[] | undefined): string {
 
 const chartData = computed(() => {
     const cards = props.cards;
+    const graph = tagGraphData.value;
 
-    // Build tag frequency map across all cards
+    // Map raw tag → family representative (deduplicates synonyms like tribal → typal).
+    const mapTag = (tag: string): string => graph?.tagFamilyMap[tag] ?? tag;
+
+    // Build tag frequency map using family-mapped tags.
+    // Use a Set per card to avoid double-counting when multiple synonyms map to the same rep.
     const tagCounts = new Map<string, number>();
     for (const card of cards) {
-        for (const tag of (card.tags ?? [])) {
+        const seen = new Set<string>();
+        for (const rawTag of (card.tags ?? [])) {
+            const tag = mapTag(rawTag);
+            if (seen.has(tag)) continue;
+            seen.add(tag);
             tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
         }
     }
 
-    // Filter tags meeting the threshold, then cap at MAX_TAG_NODES by frequency
+    // Filter tags meeting the threshold, then cap at MAX_TAG_NODES by frequency.
     const qualifyingTags = Array.from(tagCounts.entries())
         .filter(([, count]) => count >= props.minTagCount)
         .sort((a, b) => b[1] - a[1])
@@ -89,18 +117,22 @@ const chartData = computed(() => {
     const activeTagSet = new Set(qualifyingTags.map(([tag]) => tag));
     const maxTagCount = qualifyingTags[0][1];
 
-    // Determine which cards connect to at least one active tag
+    // Determine which cards connect to at least one active tag.
     const connectedCardIds = new Set<string>();
     for (const card of cards) {
-        if ((card.tags ?? []).some(t => activeTagSet.has(t))) {
-            connectedCardIds.add(card.oracleId);
+        for (const rawTag of (card.tags ?? [])) {
+            if (activeTagSet.has(mapTag(rawTag))) {
+                connectedCardIds.add(card.oracleId);
+                break;
+            }
         }
     }
 
     if (connectedCardIds.size === 0) return null;
 
-    // Build edges
-    const edges: { source: string; target: string }[] = [];
+    // Build card → tag edges (using mapped tags, deduplicated per card).
+    type LinkData = { source: string; target: string; lineStyle?: Record<string, any>; pmi?: number };
+    const edges: LinkData[] = [];
     const seenOracleIds = new Set<string>();
 
     for (const card of cards) {
@@ -108,14 +140,52 @@ const chartData = computed(() => {
         if (seenOracleIds.has(card.oracleId)) continue;
         seenOracleIds.add(card.oracleId);
 
-        for (const tag of (card.tags ?? [])) {
-            if (activeTagSet.has(tag)) {
+        const seenTags = new Set<string>();
+        for (const rawTag of (card.tags ?? [])) {
+            const tag = mapTag(rawTag);
+            if (activeTagSet.has(tag) && !seenTags.has(tag)) {
+                seenTags.add(tag);
                 edges.push({ source: card.oracleId, target: tag });
             }
         }
     }
 
-    // Card nodes (deduplicated by oracleId)
+    // Build tag → tag edges from precomputed PMI data.
+    // Only add edges between tags that are both active in this cube.
+    const tagTagEdges: LinkData[] = [];
+    if (graph) {
+        // Build a quick lookup for active pairs.
+        const pairLookup = new Map<string, number>();
+        for (const [a, b, pmi] of graph.tagPairs) {
+            if (pmi < TAG_TAG_PMI_THRESHOLD) continue;
+            pairLookup.set(`${a}|${b}`, pmi);
+            pairLookup.set(`${b}|${a}`, pmi);
+        }
+
+        const activeList = Array.from(activeTagSet);
+        for (let i = 0; i < activeList.length; i++) {
+            for (let j = i + 1; j < activeList.length; j++) {
+                const pmi = pairLookup.get(`${activeList[i]}|${activeList[j]}`);
+                if (pmi !== undefined) {
+                    const width = 1 + Math.min(pmi * 3, 4);
+                    tagTagEdges.push({
+                        source: activeList[i],
+                        target: activeList[j],
+                        pmi,
+                        lineStyle: {
+                            width,
+                            type: 'dashed',
+                            color: '#a070d0',
+                            opacity: 0.3 + Math.min(pmi * 0.5, 0.5),
+                            curveness: 0.2,
+                        },
+                    });
+                }
+            }
+        }
+    }
+
+    // Card nodes (deduplicated by oracleId).
     const cardNodes = Array.from(seenOracleIds).map(oracleId => {
         const card = cards.find(c => c.oracleId === oracleId)!;
         const size = props.cardSizes[oracleId] ?? 8;
@@ -130,8 +200,9 @@ const chartData = computed(() => {
         };
     });
 
-    // Tag nodes
+    // Tag nodes — annotate with global metadata when available.
     const tagNodes = qualifyingTags.map(([tag, count]) => {
+        const meta = graph?.tagMeta[tag];
         const size = 10 + Math.round((count / maxTagCount) * 20);
         return {
             id: tag,
@@ -140,11 +211,13 @@ const chartData = computed(() => {
             symbolSize: size,
             symbol: 'diamond',
             value: count,
+            globalCubeCount: meta ? meta[0] : undefined,
+            variance: meta ? meta[1] : undefined,
             label: { show: size >= 22 },
         };
     });
 
-    return { cardNodes, tagNodes, edges };
+    return { cardNodes, tagNodes, edges, tagTagEdges };
 });
 
 const isEmpty = computed(() => chartData.value === null);
@@ -160,8 +233,10 @@ const chartOptions = computed(() => {
     const data = chartData.value;
     if (!data) return {};
 
-    const { cardNodes, tagNodes, edges } = data;
+    const { cardNodes, tagNodes, edges, tagTagEdges } = data;
     const allNodes = [...cardNodes, ...tagNodes];
+    const allEdges = [...edges, ...tagTagEdges];
+    const hasTagCorrelations = tagTagEdges.length > 0;
 
     return {
         tooltip: {
@@ -172,7 +247,15 @@ const chartOptions = computed(() => {
                         return `<b>${params.data.name}</b>`;
                     }
                     const count = params.data.value;
-                    return `<b>${params.data.name}</b><br/>${count} card${count !== 1 ? 's' : ''}`;
+                    const parts = [`<b>${params.data.name}</b>`, `${count} card${count !== 1 ? 's' : ''}`];
+                    if (params.data.globalCubeCount) {
+                        const pct = ((params.data.globalCubeCount / (tagGraphData.value?.totalCubes ?? 1)) * 100).toFixed(1);
+                        parts.push(`${pct}% of cubes globally`);
+                    }
+                    return parts.join('<br/>');
+                }
+                if (params.dataType === 'edge' && params.data.pmi !== undefined) {
+                    return `<b>${formatTagLabel(params.data.source)} ↔ ${formatTagLabel(params.data.target)}</b><br/>PMI: ${params.data.pmi.toFixed(3)}`;
                 }
                 return '';
             },
@@ -186,7 +269,7 @@ const chartOptions = computed(() => {
             type: 'graph',
             layout: 'force',
             data: allNodes,
-            links: edges,
+            links: allEdges,
             categories: [
                 { name: 'Cards', itemStyle: { color: '#7289ab' } },
                 { name: 'Tags', itemStyle: { color: '#d4a4eb' } },
@@ -200,9 +283,9 @@ const chartOptions = computed(() => {
                 color: '#ffffff',
             },
             force: {
-                repulsion: 80,
+                repulsion: hasTagCorrelations ? 100 : 80,
                 gravity: 0.08,
-                edgeLength: [40, 120],
+                edgeLength: hasTagCorrelations ? [30, 140] : [40, 120],
                 layoutAnimation: true,
             },
             lineStyle: {
