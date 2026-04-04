@@ -1,5 +1,10 @@
 <template>
     <div class="tag-synergy-chart-container">
+        <el-form inline style="margin-bottom: 8px;">
+            <el-form-item label="Minimum Tag Occurrences:">
+                <el-input-number v-model="minTagCount" :min="1" :max="50" :step="1" controls-position="right" style="width: 120px;" />
+            </el-form-item>
+        </el-form>
         <el-alert
             v-if="isLargeGraph"
             type="warning"
@@ -111,10 +116,6 @@ const props = defineProps({
         type: Array as () => CubeCard[],
         default: () => [],
     },
-    minTagCount: {
-        type: Number,
-        default: 2,
-    },
     cardSizes: {
         type: Object as () => Record<string, number>,
         default: () => ({}),
@@ -124,6 +125,8 @@ const props = defineProps({
         default: () => ({}),
     },
 });
+
+const minTagCount = ref(2);
 
 const MAX_TAG_NODES = 80;
 const LARGE_GRAPH_THRESHOLD = 500;
@@ -256,7 +259,7 @@ const chartData = computed(() => {
 
     // Chart filters by minTagCount and caps at MAX_TAG_NODES.
     const chartTags = all
-        .filter(qt => qt.count >= props.minTagCount)
+        .filter(qt => qt.count >= minTagCount.value)
         .slice(0, MAX_TAG_NODES);
 
     if (chartTags.length === 0) return null;
