@@ -319,6 +319,15 @@
                     <ArchetypeAnalysis :cubeCards="activeCubeCards" />
                 </el-tab-pane>
 
+                <el-tab-pane label="Tag Synergy" name="tag-synergy" :lazy="true">
+                    <el-form inline style="margin-bottom: 8px;">
+                        <el-form-item label="Minimum Tag Occurrences:">
+                            <el-input-number v-model="minTagCount" :min="1" :max="50" :step="1" controls-position="right" style="width: 120px;" />
+                        </el-form-item>
+                    </el-form>
+                    <TagSynergyChart :cards="activeCubeCards" :min-tag-count="minTagCount" />
+                </el-tab-pane>
+
                 <el-tab-pane label="Sample Pack" :lazy="true">
                     <div class="sample-pack">
                         <el-button @click="generateNewPack" style="margin-bottom: 1em;">Generate New Pack</el-button>
@@ -365,6 +374,7 @@ import KeywordTable from './KeywordTable.vue';
 import SetNameTable from './SetNameTable.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
 import ArchetypeAnalysis from './ArchetypeAnalysis.vue';
+import TagSynergyChart from './charts/TagSynergyChart.vue';
 
 const props = defineProps({
     visible: {
@@ -396,6 +406,7 @@ const props = defineProps({
 defineEmits(['update:visible']);
 
 const activeCubeId = ref<string | null>(null);
+const minTagCount = ref(2);
 
 // Reset activeCubeId whenever the dialog opens with a new cube
 watch(() => props.cubeRow, (newRow) => {

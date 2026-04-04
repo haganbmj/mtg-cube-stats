@@ -51,6 +51,10 @@
                             <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
 
+                        <el-tab-pane label="Tags" name="tags" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
+                            <TagSynergyTab :loadedCubes="loadedCubes" />
+                        </el-tab-pane>
+
                         <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
@@ -106,6 +110,7 @@ import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
+import TagSynergyTab from './tabs/TagSynergyTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
