@@ -309,6 +309,10 @@ const tagCubeCount = new Float64Array(numTags);     // cubes where tag is "prese
 const tagSum = new Float64Array(numTags);            // sum of tag counts across cubes
 const tagSumSq = new Float64Array(numTags);          // sum of squared tag counts
 
+// Per-tag inclusion rate stats: tagCount / uniqueCardCount per cube (size-normalized).
+const tagRateSum = new Float64Array(numTags);        // sum of inclusion rates across cubes
+const tagRateSumSq = new Float64Array(numTags);      // sum of squared inclusion rates
+
 // Tag-tag co-occurrence: number of cubes where BOTH tags are present.
 // Stored as flat upper-triangle of numTags × numTags matrix.
 // cooccurrence[i * numTags + j] for i < j.
@@ -354,24 +358,35 @@ await new Promise<void>((resolve, reject) => {
         }
 
         // --- Tag profile for this cube (using family representatives) ---
-        const tagCounts = new Float64Array(numTags); // count of cards per qualified tag family
-        for (const oid of oracleIds) {
+        // Count each family at most once per oracle ID to get proper inclusion counts.
+        // Iterate over unique oracle IDs only (same dedup as card frequency).
+        const tagCounts = new Float64Array(numTags); // count of unique cards per qualified tag family
+        for (const oid of seen) {
             const tags = oracleToTags[oid];
             if (!tags) continue;
+            const seenFamilies = new Set<number>();
             for (const tag of tags) {
                 const family = tagToFamily[tag];
                 if (family === undefined) continue;
                 const ti = tagIndex.get(family);
-                if (ti !== undefined) tagCounts[ti]++;
+                if (ti !== undefined && !seenFamilies.has(ti)) {
+                    seenFamilies.add(ti);
+                    tagCounts[ti]++;
+                }
             }
         }
 
         // Update tag stats + co-occurrence.
+        const uniqueCardCount = seen.size; // unique cards in this cube
         const presentTags: number[] = []; // indices of tags "present" in this cube
         for (let t = 0; t < numTags; t++) {
             if (tagCounts[t] > 0) {
                 tagSum[t] += tagCounts[t];
                 tagSumSq[t] += tagCounts[t] * tagCounts[t];
+                // Inclusion rate: fraction of this cube's unique cards that carry this tag.
+                const rate = uniqueCardCount > 0 ? tagCounts[t] / uniqueCardCount : 0;
+                tagRateSum[t] += rate;
+                tagRateSumSq[t] += rate * rate;
             }
             if (tagCounts[t] >= TAG_PRESENCE_THRESHOLD) {
                 tagCubeCount[t]++;
@@ -533,13 +548,27 @@ for (const [tag, rep] of Object.entries(tagToFamily)) {
     }
 }
 
-// Build compact tagMeta: [cubeCount, variance, meanCount] per family representative.
-const tagMetaOutput: Record<string, [number, number, number]> = {};
+// Build compact tagMeta: [cubeCount, variance, meanCount, meanRate, rateStdDev] per family representative.
+// meanRate = average inclusion rate (tagCount / uniqueCards) across cubes where tag appears.
+// rateStdDev = standard deviation of that rate. Chart uses these for z-score computation.
+const tagMetaOutput: Record<string, [number, number, number, number, number]> = {};
 for (const [tag, stats] of Object.entries(tagAnalysis)) {
+    const i = tagIndex.get(tag)!;
+    // Rate stats are computed across cubes where the tag has any cards (tagSum > 0 implies we accumulated).
+    // cubeCount here is cubes where tag >= threshold, but rate sums include all cubes with any cards of this tag.
+    // For rate mean/stddev, use the number of cubes that contributed (those where tagCounts[t] > 0).
+    // We can approximate with tagCubeCount since cubes below threshold have negligible rates.
+    const n = tagCubeCount[i];
+    const meanRate = n > 0 ? tagRateSum[i] / n : 0;
+    const rateVariance = n > 0 ? (tagRateSumSq[i] / n) - (meanRate * meanRate) : 0;
+    const rateStdDev = Math.sqrt(Math.max(0, rateVariance));
+
     tagMetaOutput[tag] = [
         stats.cubeCount,
         Math.round(stats.variance * 100) / 100,
         Math.round(stats.meanCount * 100) / 100,
+        Math.round(meanRate * 10000) / 10000,
+        Math.round(rateStdDev * 10000) / 10000,
     ];
 }
 

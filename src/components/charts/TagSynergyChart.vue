@@ -13,6 +13,46 @@
             <el-empty description="No tag connections meet the current threshold" />
         </div>
         <VChart v-else class="chart" :option="chartOptions" autoresize />
+        <el-table
+            v-if="tagTableData.length > 0"
+            :data="tagTableData"
+            :default-sort="{ prop: 'zScore', order: 'descending' }"
+            size="small"
+            :max-height="320"
+            style="margin-top: 8px;"
+        >
+            <el-table-column prop="name" label="Tag" min-width="140" sortable>
+                <template #default="{ row }">
+                    <span :style="{ opacity: row.inChart ? 1 : 0.5 }">{{ row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="count" label="Cards" width="80" sortable align="right" />
+            <el-table-column label="Cube Rate" width="100" sortable :sort-by="(row: any) => row.cubeRate" align="right">
+                <template #default="{ row }">
+                    {{ (row.cubeRate * 100).toFixed(1) }}%
+                </template>
+            </el-table-column>
+            <el-table-column label="Avg Rate" width="100" sortable :sort-by="(row: any) => row.meanRate" align="right">
+                <template #default="{ row }">
+                    {{ (row.meanRate * 100).toFixed(1) }}%
+                </template>
+            </el-table-column>
+            <el-table-column prop="zScore" label="Deviation" width="110" sortable align="right">
+                <template #default="{ row }">
+                    <template v-if="row.zScore !== 0">
+                        <span :style="{ color: row.zScore > 1 ? '#67c23a' : row.zScore < -1 ? '#f56c6c' : '' }">
+                            {{ row.zScore > 0 ? '+' : '' }}{{ row.zScore.toFixed(2) }}σ
+                        </span>
+                    </template>
+                    <span v-else class="no-data">—</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="Global" width="90" sortable :sort-by="(row: any) => row.globalPct" align="right">
+                <template #default="{ row }">
+                    {{ row.globalPct.toFixed(1) }}%
+                </template>
+            </el-table-column>
+        </el-table>
     </div>
 </template>
 
@@ -36,7 +76,7 @@ interface TagGraphData {
     totalCubes: number;
     tagFamilyMap: Record<string, string>;
     tagPairs: [string, string, number, number][];
-    tagMeta: Record<string, [number, number, number]>;
+    tagMeta: Record<string, [number, number, number, number, number]>;
 }
 
 const props = defineProps({
@@ -86,15 +126,13 @@ function getCardNodeColor(colorIdentity: string[] | undefined): string {
     }
 }
 
-const chartData = computed(() => {
+// Scored tag list — independent of minTagCount so the table always shows all tags.
+const scoredTags = computed(() => {
     const cards = props.cards;
     const graph = tagGraphData.value;
 
-    // Map raw tag → family representative (deduplicates synonyms like tribal → typal).
     const mapTag = (tag: string): string => graph?.tagFamilyMap[tag] ?? tag;
 
-    // Build tag frequency map using family-mapped tags.
-    // Use a Set per card to avoid double-counting when multiple synonyms map to the same rep.
     const tagCounts = new Map<string, number>();
     for (const card of cards) {
         const seen = new Set<string>();
@@ -106,16 +144,45 @@ const chartData = computed(() => {
         }
     }
 
-    // Filter tags meeting the threshold, then cap at MAX_TAG_NODES by frequency.
-    const qualifyingTags = Array.from(tagCounts.entries())
-        .filter(([, count]) => count >= props.minTagCount)
-        .sort((a, b) => b[1] - a[1])
+    const uniqueCardCount = new Set(cards.map(c => c.oracleId)).size;
+
+    const all = Array.from(tagCounts.entries())
+        .filter(([, count]) => count >= 1)
+        .map(([tag, count]) => {
+            const meta = graph?.tagMeta[tag];
+            let zScore = 0;
+            if (meta && uniqueCardCount > 0) {
+                const cubeRate = count / uniqueCardCount;
+                const meanRate = meta[3];
+                const rateStdDev = meta[4];
+                zScore = rateStdDev > 0 ? (cubeRate - meanRate) / rateStdDev : 0;
+            }
+            return { tag, count, zScore, hasMeta: !!meta };
+        })
+        .sort((a, b) => {
+            if (graph) return b.zScore - a.zScore || b.count - a.count;
+            return b.count - a.count;
+        });
+
+    return { all, uniqueCardCount };
+});
+
+const chartData = computed(() => {
+    const cards = props.cards;
+    const graph = tagGraphData.value;
+    const { all } = scoredTags.value;
+
+    const mapTag = (tag: string): string => graph?.tagFamilyMap[tag] ?? tag;
+
+    // Chart filters by minTagCount and caps at MAX_TAG_NODES.
+    const chartTags = all
+        .filter(qt => qt.count >= props.minTagCount)
         .slice(0, MAX_TAG_NODES);
 
-    if (qualifyingTags.length === 0) return null;
+    if (chartTags.length === 0) return null;
 
-    const activeTagSet = new Set(qualifyingTags.map(([tag]) => tag));
-    const maxTagCount = qualifyingTags[0][1];
+    const activeTagSet = new Set(chartTags.map(qt => qt.tag));
+    const maxTagCount = Math.max(...chartTags.map(qt => qt.count));
 
     // Determine which cards connect to at least one active tag.
     const connectedCardIds = new Set<string>();
@@ -200,8 +267,8 @@ const chartData = computed(() => {
         };
     });
 
-    // Tag nodes — annotate with global metadata when available.
-    const tagNodes = qualifyingTags.map(([tag, count]) => {
+    // Tag nodes — annotate with global metadata and z-score when available.
+    const tagNodes = chartTags.map(({ tag, count, zScore }) => {
         const meta = graph?.tagMeta[tag];
         const size = 10 + Math.round((count / maxTagCount) * 20);
         return {
@@ -211,6 +278,7 @@ const chartData = computed(() => {
             symbolSize: size,
             symbol: 'diamond',
             value: count,
+            zScore: Math.round(zScore * 100) / 100,
             globalCubeCount: meta ? meta[0] : undefined,
             variance: meta ? meta[1] : undefined,
             label: { show: size >= 22 },
@@ -218,6 +286,32 @@ const chartData = computed(() => {
     });
 
     return { cardNodes, tagNodes, edges, tagTagEdges };
+});
+
+const tagTableData = computed(() => {
+    const graph = tagGraphData.value;
+    if (!graph) return [];
+    const { all, uniqueCardCount } = scoredTags.value;
+    const chartTagIds = chartData.value
+        ? new Set(chartData.value.tagNodes.map(n => n.id))
+        : new Set<string>();
+
+    return all
+        .filter(qt => qt.hasMeta)
+        .map(({ tag, count, zScore }) => {
+            const meta = graph.tagMeta[tag];
+            const cubeRate = uniqueCardCount > 0 ? count / uniqueCardCount : 0;
+            return {
+                name: formatTagLabel(tag),
+                tag,
+                count,
+                cubeRate,
+                meanRate: meta[3],
+                zScore: Math.round(zScore * 100) / 100,
+                globalPct: (meta[0] / graph.totalCubes) * 100,
+                inChart: chartTagIds.has(tag),
+            };
+        });
 });
 
 const isEmpty = computed(() => chartData.value === null);
@@ -248,6 +342,10 @@ const chartOptions = computed(() => {
                     }
                     const count = params.data.value;
                     const parts = [`<b>${params.data.name}</b>`, `${count} card${count !== 1 ? 's' : ''}`];
+                    if (params.data.zScore !== undefined && params.data.zScore !== 0) {
+                        const sign = params.data.zScore > 0 ? '+' : '';
+                        parts.push(`Deviation: ${sign}${params.data.zScore.toFixed(2)}σ`);
+                    }
                     if (params.data.globalCubeCount) {
                         const pct = ((params.data.globalCubeCount / (tagGraphData.value?.totalCubes ?? 1)) * 100).toFixed(1);
                         parts.push(`${pct}% of cubes globally`);
@@ -324,5 +422,9 @@ const chartOptions = computed(() => {
     align-items: center;
     justify-content: center;
     height: 300px;
+}
+
+.no-data {
+    color: #909399;
 }
 </style>
