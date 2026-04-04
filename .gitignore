@@ -2,6 +2,9 @@
 node_modules
 /dist
 
+# Large CubeCobra export files (download via npm run cubecobra-exports)
+data/cubecobra-export/
+
 
 # local env files
 .env.local
