@@ -188,12 +188,26 @@ const qualifiedTags = new Set(
         .map(([tag]) => tag),
 );
 
+// Load tag descriptions from tagger-data.json (label → description map).
+// Loaded here so family representative selection can prefer tags with descriptions.
+const taggerDescMap = new Map<string, string | null>();
+try {
+    const taggerRaw = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8')) as { data: Array<{ label: string; description: string | null }> };
+    for (const item of taggerRaw.data) {
+        if (item.label) taggerDescMap.set(item.label, item.description ?? null);
+    }
+    console.log(`Loaded ${taggerDescMap.size} tag descriptions from tagger-data.json`);
+} catch {
+    console.warn('Could not load tagger-data.json — descriptions will be omitted');
+}
+
 // ---------------------------------------------------------------------------
 // Tag Family Detection
 // ---------------------------------------------------------------------------
 // Tags that appear on the exact same set of oracle IDs are synonyms. We detect
 // this by hashing each tag's oracle ID set and grouping tags with identical hashes.
-// Within each family, the shortest tag name is chosen as the representative.
+// Within each family, the tag with a description is preferred as representative
+// (falling back to shortest name, then alphabetical).
 
 console.time('tag-families');
 
@@ -254,8 +268,12 @@ for (const group of Object.values(hashToTags)) {
     }
 
     for (const sg of subGroups) {
-        // Pick shortest tag name as the representative (break ties alphabetically).
-        sg.sort((a, b) => a.length - b.length || a.localeCompare(b));
+        // Pick representative: prefer tags with a description, then shortest name, then alphabetical.
+        sg.sort((a, b) => {
+            const aHasDesc = (taggerDescMap.get(a) ?? null) !== null ? 0 : 1;
+            const bHasDesc = (taggerDescMap.get(b) ?? null) !== null ? 0 : 1;
+            return aHasDesc - bHasDesc || a.length - b.length || a.localeCompare(b);
+        });
         const representative = sg[0];
         for (const tag of sg) {
             tagToFamily[tag] = representative;
@@ -546,18 +564,6 @@ for (const [tag, rep] of Object.entries(tagToFamily)) {
     if (tag !== rep) {
         tagFamilyMapOutput[tag] = rep;
     }
-}
-
-// Load tag descriptions from tagger-data.json (label → description map).
-const taggerDescMap = new Map<string, string | null>();
-try {
-    const taggerRaw = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8')) as { data: Array<{ label: string; description: string | null }> };
-    for (const item of taggerRaw.data) {
-        if (item.label) taggerDescMap.set(item.label, item.description ?? null);
-    }
-    console.log(`Loaded ${taggerDescMap.size} tag descriptions from tagger-data.json`);
-} catch {
-    console.warn('Could not load tagger-data.json — descriptions will be omitted');
 }
 
 // Build compact tagMeta: [cubeCount, variance, meanCount, meanRate, rateStdDev, description] per family representative.

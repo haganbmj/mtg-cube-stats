@@ -1,11 +1,11 @@
 <template>
     <div class="tag-synergy-chart-container">
-        <el-form inline style="margin-bottom: 8px;">
+        <!-- <el-form inline style="margin-bottom: 8px;">
             <el-form-item label="Minimum Tag Occurrences:">
                 <el-input-number v-model="minTagCount" :min="1" :max="50" :step="1" controls-position="right" style="width: 120px;" />
             </el-form-item>
-        </el-form>
-        <el-alert
+        </el-form> -->
+        <!-- <el-alert
             v-if="isLargeGraph"
             type="warning"
             :closable="false"
@@ -13,17 +13,17 @@
             :description="`${nodeCount} nodes — rendering may be slow. Try increasing the minimum tag count.`"
             show-icon
             style="margin-bottom: 8px;"
-        />
-        <div v-if="isEmpty" class="empty-state">
+        /> -->
+        <!-- <div v-if="isEmpty" class="empty-state">
             <el-empty description="No tag connections meet the current threshold" />
-        </div>
-        <VChart v-else class="chart" :option="chartOptions" autoresize />
+        </div> -->
+        <!-- <VChart v-else class="chart" :option="chartOptions" autoresize /> -->
         <el-table
             v-if="tagTableData.length > 0"
             :data="tagTableData"
             :default-sort="{ prop: 'zScore', order: 'descending' }"
             size="small"
-            :max-height="320"
+            :max-height="600"
             style="margin-top: 8px;"
         >
             <el-table-column prop="name" label="Tag" min-width="140" sortable>
@@ -34,8 +34,10 @@
                         :show-after="300"
                     >
                         <template #content>
-                            <div v-if="row.description" style="margin-bottom: 4px;">{{ row.description }}</div>
-                            <div v-if="row.familyAliases.length" style="color: #aaaaaa;">Also: {{ row.familyAliases.map((a: string) => formatTagLabel(a)).join(', ') }}</div>
+                            <div style="max-width: 300px; word-break: break-word;">
+                                <div v-if="row.description" v-html="renderMarkdown(row.description)" style="margin-bottom: 4px;" />
+                                <div v-if="row.familyAliases.length" style="color: #aaaaaa;">Also: {{ row.familyAliases.map((a: string) => formatTagLabel(a)).join(', ') }}</div>
+                            </div>
                         </template>
                         <span :style="{ opacity: row.inChart ? 1 : 0.5, borderBottom: '1px dotted #aaaaaa', cursor: 'default' }">{{ row.name }}</span>
                     </el-tooltip>
@@ -101,6 +103,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -156,6 +160,14 @@ onMounted(async () => {
 
 function formatTagLabel(tag: string): string {
     return tag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function renderMarkdownInline(text: string): string {
+    return DOMPurify.sanitize(marked.parseInline(text) as string);
+}
+
+function renderMarkdown(text: string): string {
+    return DOMPurify.sanitize(marked.parse(text) as string);
 }
 
 function getCardNodeColor(colorIdentity: string[] | undefined): string {
@@ -459,7 +471,7 @@ const chartOptions = computed(() => {
                     const count = params.data.value;
                     const parts = [`<b>${params.data.name}</b>`];
                     if (params.data.description) {
-                        parts.push(`<i style="color:#cccccc">${params.data.description}</i>`);
+                        parts.push(`<span style="color:#cccccc">${renderMarkdownInline(params.data.description)}</span>`);
                     }
                     if (params.data.familyAliases?.length) {
                         const aliases = params.data.familyAliases.map(formatTagLabel).join(', ');
@@ -474,7 +486,7 @@ const chartOptions = computed(() => {
                         const pct = ((params.data.globalCubeCount / (tagGraphData.value?.totalCubes ?? 1)) * 100).toFixed(1);
                         parts.push(`${pct}% of cubes globally`);
                     }
-                    return parts.join('<br/>');
+                    return `<div style="max-width:280px;word-break:break-word">${parts.join('<br/>')}</div>`;
                 }
                 if (params.dataType === 'edge' && params.data.pmi !== undefined) {
                     return `<b>${formatTagLabel(params.data.source)} ↔ ${formatTagLabel(params.data.target)}</b><br/>PMI: ${params.data.pmi.toFixed(3)}`;
