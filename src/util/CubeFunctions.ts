@@ -178,7 +178,9 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             return map;
         }, new Map<string, CubeCard>()).values(),
     );
-    const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
+    const cutoffDate = new Date();
+    cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+    const newDateCutoff = cutoffDate.toISOString().split('T')[0];
 
     const firstOrderStats = {
         totalCards: cards.length,
