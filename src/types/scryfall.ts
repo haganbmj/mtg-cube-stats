@@ -53,6 +53,10 @@ export interface ScryfallCard {
   isNormalLayout?: boolean;
   makesTokens?: boolean;
   tokenOracleIds?: string[];
+
+  // Combat stats (creatures/vehicles only)
+  power?: string;
+  toughness?: string;
 }
 
 export interface ScryfallToken {
@@ -68,6 +72,7 @@ export interface ScryfallToken {
 export interface ScryfallDataStructure {
   cards: Record<string, ScryfallCard>; // keyed by oracleId
   sets: Record<string, string>; // setCode -> setName
+  setDates: Record<string, string>; // setCode -> ISO release date (YYYY-MM-DD)
   tokens: Record<string, ScryfallToken>; // keyed by oracleId
 }
 

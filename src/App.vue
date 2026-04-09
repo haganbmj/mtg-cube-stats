@@ -311,6 +311,15 @@ html.dark {
     --el-color-primary-dark-7: #4b48d6;
     --el-color-primary-dark-8: #3f3db6;
     --el-color-primary-dark-9: #3f3db6;
+
+    --el-dropdown-menuItem-hover-fill: rgba(255, 255, 255, 0.08);
+    --el-dropdown-menuItem-hover-color: var(--el-text-color-primary);
+}
+
+html.dark .el-dropdown,
+html.dark .el-dropdown__popper {
+    --el-dropdown-menuItem-hover-fill: rgba(255, 255, 255, 0.08);
+    --el-dropdown-menuItem-hover-color: var(--el-text-color-primary);
 }
 
 .el-button:hover {

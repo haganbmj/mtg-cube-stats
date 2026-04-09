@@ -59,6 +59,13 @@ export function getSetName(setCode: string): string {
 }
 
 /**
+ * Get the set release dates map (setCode -> ISO date string)
+ */
+export function getSetReleaseDates(): Record<string, string> {
+    return scryfall?.setDates ?? {};
+}
+
+/**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
  *
@@ -151,6 +158,8 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
             tokenOracleIds: scryfallCard?.tokenOracleIds ?? [],
+            power: scryfallCard?.power ?? undefined,
+            toughness: scryfallCard?.toughness ?? undefined,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
             minPriceTix: scryfallCard?.minPriceTix ?? null,
             urlFront: scryfallCard?.urlFront ?? '',

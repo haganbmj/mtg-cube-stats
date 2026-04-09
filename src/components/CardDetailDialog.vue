@@ -81,6 +81,7 @@
                                     <span v-else>&mdash;</span>
                                 </el-descriptions-item>
                                 <el-descriptions-item label="Mana Value">{{ activeCard.cmc ?? 'N/A' }}</el-descriptions-item>
+                                <el-descriptions-item v-if="activeCard.power != null" label="P / T">{{ activeCard.power }} / {{ activeCard.toughness }}</el-descriptions-item>
                                 <el-descriptions-item label="Type Line">{{ activeCard.typeLine ?? 'N/A' }}</el-descriptions-item>
                                 <el-descriptions-item label="Layout">{{ capitalizeFirstLetter(activeCard.layout ?? '') }}</el-descriptions-item>
                             </el-descriptions>

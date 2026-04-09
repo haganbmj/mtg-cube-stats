@@ -1,0 +1,464 @@
+import type { QueryNode } from './CardFilterParser';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Context passed to the evaluator (gives cube name lookup for `cube:` keyword)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface FilterContext {
+    loadedCubes: Record<string, any>;
+    setDates?: Record<string, string>; // setCode (lowercase) -> ISO release date
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rarity ordering for comparative filters (r>uncommon, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RARITY_ORDER: Record<string, number> = {
+    common: 0,
+    uncommon: 1,
+    rare: 2,
+    mythic: 3,
+};
+
+// Single-letter aliases for rarity values (used when rarity is the value, not the keyword)
+const RARITY_VALUE_ALIASES: Record<string, string> = {
+    c: 'common',
+    u: 'uncommon',
+    r: 'rare',
+    m: 'mythic',
+};
+
+function resolveRarityValue(raw: string): string {
+    return RARITY_VALUE_ALIASES[raw.toLowerCase()] ?? raw.toLowerCase();
+}
+
+// Expand color name aliases to single-letter codes
+const COLOR_NAME_MAP: Record<string, string> = {
+    white: 'W', w: 'W',
+    blue: 'U',  u: 'U',
+    black: 'B', b: 'B',
+    red: 'R',   r: 'R',
+    green: 'G', g: 'G',
+    colorless: 'C', c: 'C',
+};
+
+/**
+ * Parse a color value like "rg", "blue", "wu", "bant" into an array of
+ * single-letter color codes.
+ */
+function parseColorValue(raw: string): string[] {
+    const lower = raw.toLowerCase();
+
+    // Full guild / shard / wedge / college / four-color nicknames
+    const GUILD_MAP: Record<string, string[]> = {
+        azorius:   ['W', 'U'],
+        dimir:     ['U', 'B'],
+        rakdos:    ['B', 'R'],
+        gruul:     ['R', 'G'],
+        selesnya:  ['G', 'W'],
+        orzhov:    ['W', 'B'],
+        izzet:     ['U', 'R'],
+        golgari:   ['B', 'G'],
+        boros:     ['R', 'W'],
+        simic:     ['G', 'U'],
+        bant:      ['G', 'W', 'U'],
+        esper:     ['W', 'U', 'B'],
+        grixis:    ['U', 'B', 'R'],
+        jund:      ['B', 'R', 'G'],
+        naya:      ['R', 'G', 'W'],
+        abzan:     ['W', 'B', 'G'],
+        jeskai:    ['U', 'R', 'W'],
+        sultai:    ['B', 'G', 'U'],
+        mardu:     ['R', 'W', 'B'],
+        temur:     ['G', 'U', 'R'],
+        quandrix:  ['G', 'U'],
+        prismari:  ['U', 'R'],
+        witherbloom: ['B', 'G'],
+        lorehold:  ['R', 'W'],
+        silverquill: ['W', 'B'],
+        chaos:     ['U', 'B', 'R', 'G'],
+        aggression: ['B', 'R', 'G', 'W'],
+        altruism:  ['R', 'G', 'W', 'U'],
+        growth:    ['G', 'W', 'U', 'B'],
+        artifice:  ['W', 'U', 'B', 'R'],
+        rainbow:   ['W', 'U', 'B', 'R', 'G'],
+        fivecolor: ['W', 'U', 'B', 'R', 'G'],
+    };
+
+    if (GUILD_MAP[lower]) return GUILD_MAP[lower];
+
+    // Single color name (white, blue, etc.)
+    if (COLOR_NAME_MAP[lower]) return [COLOR_NAME_MAP[lower]];
+
+    // Multi-char shorthand: "rg", "wu", etc.
+    const result: string[] = [];
+    for (const ch of lower) {
+        const mapped = COLOR_NAME_MAP[ch];
+        if (mapped) result.push(mapped);
+    }
+    if (result.length > 0) return result;
+
+    // Fallback: uppercase the raw value
+    return [raw.toUpperCase()];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Power / toughness helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Parse a Scryfall power/toughness string to a number.
+ * Returns null for non-numeric values like "*", "1+*", "∞".
+ */
+function parsePT(val: string | undefined | null): number | null {
+    if (val == null) return null;
+    if (val.includes('*') || val.includes('+') || val.includes('∞')) return null;
+    const n = parseFloat(val);
+    return isNaN(n) ? null : n;
+}
+
+/**
+ * Resolve a filter value for power/toughness comparisons.
+ * Supports numeric literals and cross-field keywords: pow/power/tou/toughness.
+ */
+function resolvePTValue(strVal: string, row: any): number | null {
+    const lower = strVal.toLowerCase();
+    if (lower === 'pow' || lower === 'power') return parsePT(row.power);
+    if (lower === 'tou' || lower === 'toughness') return parsePT(row.toughness);
+    const n = parseFloat(strVal);
+    return isNaN(n) ? null : n;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Numeric comparison helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+function compareValues(actual: number | undefined | null, op: string, target: number): boolean {
+    if (actual == null) return false;
+    switch (op) {
+        case ':':
+        case '=':  return actual === target;
+        case '!=': return actual !== target;
+        case '<':  return actual < target;
+        case '<=': return actual <= target;
+        case '>':  return actual > target;
+        case '>=': return actual >= target;
+        default:   return false;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// String comparison helper (`:` = substring, `=` = exact)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function compareStrings(actual: string | undefined | null, op: string, target: string): boolean {
+    if (actual == null) return false;
+    const a = actual.toLowerCase();
+    const t = target.toLowerCase();
+    switch (op) {
+        case ':':  return a.includes(t);
+        case '=':  return a === t;
+        case '!=': return a !== t;
+        default:   return false;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// is: / not: flag evaluation
+// ─────────────────────────────────────────────────────────────────────────────
+
+function evaluateFlag(flag: string, row: any): boolean {
+    const f = flag.toLowerCase();
+    switch (f) {
+        case 'universesbeyond':
+        case 'ub':
+            return !!row.isUniversesBeyond;
+        case 'supplemental':
+        case 'sp':
+            return !!row.isSupplementalProduct;
+        case 'token':
+            return !!row.isToken;
+        case 'digital':
+            return !!row.isDigital;
+        case 'promo':
+            return !!row.isPromo;
+        // Tag shorthands
+        case 'removal':
+        case 'draw':
+        case 'ramp':
+        case 'counterspell':
+        case 'flicker':
+        case 'tutor':
+            return (row.tags ?? []).some((t: string) => t.toLowerCase() === f);
+        default:
+            return false;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Condition evaluator — dispatches per canonical keyword
+// ─────────────────────────────────────────────────────────────────────────────
+
+function evaluateCondition(keyword: string, op: string, value: string | number, row: any, ctx: FilterContext): boolean {
+    const strVal = String(value);
+    const numVal = typeof value === 'number' ? value : parseFloat(strVal);
+
+    switch (keyword) {
+        // ── Text fields ──────────────────────────────────────────────────────
+        case 'name':
+            return compareStrings(row.name, op, strVal);
+
+        case 'oracle':
+            return compareStrings(row.oracleText ?? '', op, strVal);
+
+        case 'type':
+            return compareStrings(row.typeLine ?? '', op, strVal);
+
+        // ── Array text fields ─────────────────────────────────────────────────
+        case 'keyword':
+            if (op !== ':' && op !== '=') return false;
+            return (row.keywords ?? []).some((k: string) => k.toLowerCase() === strVal.toLowerCase());
+
+        case 'tag':
+            if (op !== ':' && op !== '=') return false;
+            return (row.tags ?? []).some((t: string) => t.toLowerCase() === strVal.toLowerCase());
+
+        // ── Color ─────────────────────────────────────────────────────────────
+        case 'color': {
+            const wantedColors = parseColorValue(strVal);
+            const rowColors: string[] = (row.effectiveColors ?? []).map((c: string) => c.toUpperCase());
+
+            if (op === '=') {
+                // Exact set equality: row must have exactly the wanted colors, no more
+                if (wantedColors.length !== rowColors.length) return false;
+                return wantedColors.every(wc => rowColors.includes(wc));
+            }
+            if (op === ':') {
+                // Contains all: all wanted colors must be present (supersets allowed)
+                return wantedColors.every(wc => rowColors.includes(wc));
+            }
+            if (op === '!=') {
+                return !wantedColors.every(wc => rowColors.includes(wc));
+            }
+            // Comparison operators on color count
+            const rowCount = rowColors.filter(c => c !== 'C').length;
+            return compareValues(rowCount, op, wantedColors.length);
+        }
+
+        case 'coloridentity': {
+            const wantedColors = parseColorValue(strVal);
+            const rowId: string[] = (row.colorIdentity ?? []).map((c: string) => c.toUpperCase());
+
+            if (op === '=') {
+                if (wantedColors.length !== rowId.length) return false;
+                return wantedColors.every(wc => rowId.includes(wc));
+            }
+            if (op === ':') {
+                return wantedColors.every(wc => rowId.includes(wc));
+            }
+            if (op === '!=') {
+                return !wantedColors.every(wc => rowId.includes(wc));
+            }
+            const rowCount = rowId.filter(c => c !== 'C').length;
+            return compareValues(rowCount, op, wantedColors.length);
+        }
+
+        // ── Numeric fields ─────────────────────────────────────────────────────
+        case 'cmc':
+            return compareValues(row.cmc, op, numVal);
+
+        case 'power': {
+            const rowPow = parsePT(row.power);
+            if (rowPow === null) return false;
+            const target = resolvePTValue(strVal, row);
+            if (target === null) return false;
+            return compareValues(rowPow, op, target);
+        }
+
+        case 'toughness': {
+            const rowTou = parsePT(row.toughness);
+            if (rowTou === null) return false;
+            const target = resolvePTValue(strVal, row);
+            if (target === null) return false;
+            return compareValues(rowTou, op, target);
+        }
+
+        case 'pt': {
+            const rowPow = parsePT(row.power);
+            const rowTou = parsePT(row.toughness);
+            if (rowPow === null || rowTou === null) return false;
+            const total = rowPow + rowTou;
+            const target = resolvePTValue(strVal, row);
+            if (target === null) return false;
+            return compareValues(total, op, target);
+        }
+
+        case 'wordcount':
+            return compareValues(row.oracleTextWordCountMinusParen, op, numVal);
+
+        case 'wordcountreminder':
+            return compareValues(row.oracleTextWordCount, op, numVal);
+
+        case 'year':
+            return compareValues(row.releaseYear, op, numVal);
+
+        // ── Date (full ISO date, bare year, set code, or now/today) ────────────
+        case 'date': {
+            const releaseDate: string = row.releaseDate ?? '';
+
+            // Resolve the comparison target to a canonical string
+            let resolved: string | number = strVal;
+            const lower = strVal.toLowerCase();
+
+            if (lower === 'now' || lower === 'today') {
+                resolved = new Date().toISOString().slice(0, 10);
+            } else if (typeof value === 'string' && ctx.setDates) {
+                const setDate = ctx.setDates[lower];
+                if (setDate) resolved = setDate;
+            }
+
+            const rsv = String(resolved);
+
+            // Year comparison (bare number or 4-digit string)
+            if (typeof resolved === 'number' || /^\d{4}$/.test(rsv)) {
+                const year = typeof resolved === 'number' ? resolved : parseInt(rsv, 10);
+                const releaseYear = row.releaseYear ?? parseInt(releaseDate.slice(0, 4), 10);
+                return compareValues(releaseYear, op === ':' ? '=' : op, year);
+            }
+            // Full ISO date — ISO strings sort lexicographically correctly
+            if (op === ':' || op === '=') return releaseDate === rsv;
+            if (op === '!=') return releaseDate !== rsv;
+            if (op === '<')  return releaseDate < rsv;
+            if (op === '<=') return releaseDate <= rsv;
+            if (op === '>')  return releaseDate > rsv;
+            if (op === '>=') return releaseDate >= rsv;
+            return false;
+        }
+
+        case 'usd':
+            return compareValues(row.minPriceUsd, op, numVal);
+
+        case 'tix':
+            return compareValues(row.minPriceTix, op, numVal);
+
+        case 'elo':
+            return compareValues(row.elo, op, numVal);
+
+        case 'popularity':
+            return compareValues(row.popularity, op, numVal);
+
+        case 'cubecount':
+            return compareValues(row.cubeCount, op, numVal);
+
+        case 'count':
+            return compareValues(row.count, op, numVal);
+
+        // ── Rarity ─────────────────────────────────────────────────────────────
+        case 'rarity': {
+            const resolvedRarity = resolveRarityValue(strVal);
+            const rowRarityVal = RARITY_ORDER[row.minRarity?.toLowerCase()] ?? -1;
+            if (op === ':') {
+                // Exact tier name match (supports aliases: c/u/r/m)
+                return row.minRarity?.toLowerCase() === resolvedRarity;
+            }
+            // Comparison against ordered rarity values
+            const targetRarityVal = RARITY_ORDER[resolvedRarity] ?? numVal;
+            return compareValues(rowRarityVal, op, targetRarityVal);
+        }
+
+        // ── Set / SetType / Layout ─────────────────────────────────────────────
+        case 'set':
+            return compareStrings(row.setCode, op, strVal);
+
+        case 'settype':
+            return compareStrings(row.setType, op, strVal);
+
+        case 'layout':
+            return compareStrings(row.layout, op, strVal);
+
+        // ── Format legality ────────────────────────────────────────────────────
+        case 'legal': {
+            const legalities: Record<string, boolean> = row.legality ?? {};
+            const isLegal = !!legalities[strVal.toLowerCase()];
+            if (op === ':' || op === '=') return isLegal;
+            if (op === '!=') return !isLegal;
+            return false;
+        }
+
+        // ── Games ──────────────────────────────────────────────────────────────
+        case 'game': {
+            const games: string[] = row.games ?? [];
+            const isAvailable = games.some((g: string) => g.toLowerCase() === strVal.toLowerCase());
+            if (op === ':' || op === '=') return isAvailable;
+            if (op === '!=') return !isAvailable;
+            return false;
+        }
+
+        // ── Cube membership (by cube name, key, or shortId) ───────────────────
+        case 'cube': {
+            const rowCubes: string[] = row.cubes ?? [];
+            const target = strVal.toLowerCase();
+
+            // Match against cube keys held in row.cubes
+            if (rowCubes.some((c: string) => c.toLowerCase().includes(target))) return true;
+
+            // Also match against loaded cube names and shortId
+            for (const [key, cube] of Object.entries(ctx.loadedCubes)) {
+                const nameMatch = (cube as any).name?.toLowerCase().includes(target);
+                const keyMatch = key.toLowerCase().includes(target);
+                const shortIdMatch = (cube as any).shortId?.toLowerCase().includes(target);
+                if ((nameMatch || keyMatch || shortIdMatch) && rowCubes.includes(key)) return true;
+            }
+
+            return false;
+        }
+
+        // ── Boolean flags ──────────────────────────────────────────────────────
+        case 'is': {
+            const result = evaluateFlag(strVal, row);
+            if (op === ':' || op === '=') return result;
+            if (op === '!=') return !result;
+            return false;
+        }
+
+        case 'not': {
+            const result = evaluateFlag(strVal, row);
+            if (op === ':' || op === '=') return !result;
+            if (op === '!=') return result;
+            return false;
+        }
+
+        default:
+            return false;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main evaluator — walks the AST recursively
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function evaluateCard(ast: QueryNode | null, row: any, ctx: FilterContext): boolean {
+    if (!ast) return true;
+
+    switch (ast.type) {
+        case 'and':
+            return evaluateCard(ast.left, row, ctx) && evaluateCard(ast.right, row, ctx);
+
+        case 'or':
+            return evaluateCard(ast.left, row, ctx) || evaluateCard(ast.right, row, ctx);
+
+        case 'not':
+            return !evaluateCard(ast.child, row, ctx);
+
+        case 'name':
+            // Bare word — name substring search
+            return (row.name ?? '').toLowerCase().includes(String(ast.value).toLowerCase());
+
+        case 'condition':
+            return evaluateCondition(ast.keyword, ast.op, ast.value, row, ctx);
+
+        default:
+            return true;
+    }
+}
