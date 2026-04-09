@@ -74,78 +74,72 @@
         </template>
     </el-dialog>
 
-    <el-row>
-        <el-col :span="18" :xs="24" :sm="24" :md="18" :lg="18">
-            <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
-                <el-form-item>
-                    <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
-                        <el-form-item style="min-width: 200px; width: 100%;">
-                            <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="handleCollectionSelect" placeholder="Load Collection...">
-                                <template #footer>
-                                    <div class="collection-select-header">
-                                        <el-button
-                                            text
-                                            bg
-                                            type="success"
-                                            size="small"
-                                            :disabled="Object.keys(props.loadedCubes).length === 0"
-                                            @click.stop="openSaveDialog"
-                                        >Save As...</el-button>
-                                        <el-divider direction="vertical" />
-                                        <el-button
-                                            text
-                                            bg
-                                            type="danger"
-                                            size="small"
-                                            :disabled="props.userCollections.length === 0"
-                                            @click.stop="openRemoveDialog"
-                                        >Remove...</el-button>
-                                    </div>
-                                </template>
-                                <el-option-group v-if="props.userCollections.length > 0" label="My Collections">
-                                    <el-option
-                                        v-for="col in props.userCollections"
-                                        :key="col.name"
-                                        :label="col.name"
-                                        :value="'__user__:' + col.name"
-                                    />
-                                </el-option-group>
-                                <el-option-group label="Presets">
-                                    <el-option
-                                        v-for="option in presetComparisonsSelect"
-                                        :key="option.value"
-                                        :label="option.label"
-                                        :value="option.value"
-                                    />
-                                </el-option-group>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="2" :xs="0" :sm="0" :md="2" :lg="2" style="text-align: center;">
-                        <span class="text-gray-500">OR</span>
-                    </el-col>
-                    <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11" style="display: flex; align-items: center;">
-                        <el-row :gutter="10">
-                            <el-col :span="20">
-                                <el-form-item style="min-width: 200px; width: 100%;">
-                                    <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-form-item>
-                                    <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
-                                    <input type="submit" style="display: none;" />
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                    </el-col>
-                </el-form-item>
-            </el-form>
-        </el-col>
-        <el-col :span="6" :xs="24" :sm="24" :md="6" :lg="6" style="text-align: right;">
-            <el-button plain @click="columnCustomizationVisible = true" style="width: 100%; max-width: 250px;">Customize Columns</el-button>
-        </el-col>
-    </el-row>
+    <div class="overview-toolbar" v-loading="addCubeForm.loading">
+        <form class="overview-add-form" @submit.prevent="submitAddCubeForm">
+            <el-select
+                class="overview-collection-select"
+                label="Collections"
+                v-model="addCubeForm.presetComparisonsSelection"
+                @change="handleCollectionSelect"
+                placeholder="Load Collection..."
+            >
+                <template #footer>
+                    <div class="collection-select-header">
+                        <el-button
+                            text
+                            bg
+                            type="success"
+                            size="small"
+                            :disabled="Object.keys(props.loadedCubes).length === 0"
+                            @click.stop="openSaveDialog"
+                        >Save As...</el-button>
+                        <el-divider direction="vertical" />
+                        <el-button
+                            text
+                            bg
+                            type="danger"
+                            size="small"
+                            :disabled="props.userCollections.length === 0"
+                            @click.stop="openRemoveDialog"
+                        >Remove...</el-button>
+                    </div>
+                </template>
+                <el-option-group v-if="props.userCollections.length > 0" label="My Collections">
+                    <el-option
+                        v-for="col in props.userCollections"
+                        :key="col.name"
+                        :label="col.name"
+                        :value="'__user__:' + col.name"
+                    />
+                </el-option-group>
+                <el-option-group label="Presets">
+                    <el-option
+                        v-for="option in presetComparisonsSelect"
+                        :key="option.value"
+                        :label="option.label"
+                        :value="option.value"
+                    />
+                </el-option-group>
+            </el-select>
+
+            <span class="overview-or-divider">OR</span>
+
+            <div class="overview-cube-id-row">
+                <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
+                <input type="submit" style="display: none;" />
+            </div>
+        </form>
+
+        <el-dropdown class="overview-menu-btn" trigger="click">
+            <el-button :icon="Menu" circle />
+            <template #dropdown>
+                <el-dropdown-menu>
+                    <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                </el-dropdown-menu>
+            </template>
+        </el-dropdown>
+    </div>
 
     <StickyTable
         :data="sortedData"
@@ -286,7 +280,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
@@ -625,6 +619,57 @@ const formatters = {
 </script>
 
 <style scoped>
+.overview-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.overview-add-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 400px;
+    max-width: 860px;
+    min-width: 0;
+}
+
+.overview-collection-select {
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+.overview-or-divider {
+    flex: 0 0 auto;
+    color: var(--el-text-color-secondary);
+}
+
+.overview-cube-id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 200px;
+}
+
+.overview-menu-btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+@media (max-width: 600px) {
+    .overview-collection-select,
+    .overview-cube-id-row {
+        flex-basis: 100%;
+    }
+
+    .overview-or-divider {
+        display: none;
+    }
+}
+
 .collection-select-header {
     display: flex;
     align-items: center;
