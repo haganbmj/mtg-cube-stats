@@ -136,13 +136,20 @@ const loadedCubes = ref({});
 // Loading progress for batch cube loads (addCubes)
 const loadingProgress = reactive({ active: false, loaded: 0, total: 0 });
 
-// Auto-sync the URL with the currently loaded cube IDs so the address bar is
+// Tracks which preset (by name) is currently loaded, so the URL can reflect
+// ?preset=name instead of a long list of cube IDs.
+const activePresetName = ref<string | null>(null);
+
+// Auto-sync the URL with the currently loaded state so the address bar is
 // always a valid share link. Fires whenever any cube is added or removed.
 watch(
     () => Object.keys(loadedCubes.value).join(','),
     (ids) => {
         if (!ids) {
             history.replaceState(null, '', window.location.pathname);
+        } else if (activePresetName.value) {
+            const params = new URLSearchParams({ preset: activePresetName.value });
+            history.replaceState(null, '', `?${params.toString()}`);
         } else {
             const params = new URLSearchParams({ cubes: ids });
             history.replaceState(null, '', `?${params.toString()}`);
@@ -217,6 +224,7 @@ const overviewTableData = computed(() => {
 });
 
 const addCubes = async (cubeIds: string[]) => {
+    activePresetName.value = null;
     loadingProgress.active = true;
     loadingProgress.total = cubeIds.length;
     loadingProgress.loaded = 0;
@@ -281,6 +289,7 @@ const addCube = async (cubeId: string) => {
             // network round-trip above can overlap with Scryfall initializing.
             await ensureScryfallInitialized();
             const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
+            activePresetName.value = null;
             loadedCubes.value[enrichedCube.id] = enrichedCube;
         } catch (e) {
             console.error("Error loading cube:", e);
@@ -303,6 +312,9 @@ const loadCollection = async (presetName: string) => {
         const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
 
         console.timeEnd(`Load Collection: ${presetName}`);
+        // Set the active preset BEFORE updating loadedCubes so the URL watcher
+        // writes ?preset=name rather than serializing the cube IDs.
+        activePresetName.value = presetCollections.find(p => p.label === presetName)?.name ?? null;
         loadedCubes.value = enrichedCubes;
         await nextTick();
 
@@ -315,6 +327,7 @@ const loadCollection = async (presetName: string) => {
  *  Doing a terrible job currently with these multiple IDs, and I think mutating the reactive object is done improperly.
  */
 const removeCube = (cubeId: string) => {
+    activePresetName.value = null;
     delete loadedCubes.value[cubeId];
 };
 
