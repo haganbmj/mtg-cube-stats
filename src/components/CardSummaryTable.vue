@@ -121,6 +121,16 @@
             </div>
         </template>
 
+        <template #cell-minRarity="{ row }">
+            <el-tag
+                v-if="row.minRarity"
+                size="small"
+                type="info"
+                :color="getRarityColor(row.minRarity)"
+                disable-transitions
+            >{{ capitalizeFirstLetter(row.minRarity) }}</el-tag>
+        </template>
+
         <template #cell-isUniversesBeyond="{ row }">
             <el-tag v-if="row.isUniversesBeyond" type="success" size="small">Yes</el-tag>
             <el-tag v-else type="info" size="small">No</el-tag>
@@ -193,6 +203,7 @@
 import { ref, computed, inject, watch } from 'vue';
 import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
+import { capitalizeFirstLetter, rarityOrder, getRarityColor } from '../util/HelperFunctions';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardTableFilters from './filters/CardTableFilters.vue';
