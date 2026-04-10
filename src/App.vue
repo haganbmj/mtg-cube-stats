@@ -31,6 +31,7 @@
                                 :presetComparisonsSelect="presetComparisonsSelect"
                                 :addCube="addCube"
                                 :removeCube="removeCube"
+                                :clearCubes="clearCubes"
                                 :loadCollection="loadCollection"
                                 :userCollections="userCollections"
                                 :saveCollection="saveCollection"
@@ -338,6 +339,11 @@ const loadCollection = async (presetName: string) => {
 const removeCube = (cubeId: string) => {
     activePresetName.value = null;
     delete loadedCubes.value[cubeId];
+};
+
+const clearCubes = () => {
+    activePresetName.value = null;
+    loadedCubes.value = {};
 };
 
 onMounted(async () => {

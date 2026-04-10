@@ -144,6 +144,11 @@
             </form>
 
             <div class="overview-toolbar-actions">
+                <el-button
+                    :disabled="Object.keys(props.loadedCubes).length === 0"
+                    @click="props.clearCubes()"
+                >Remove All</el-button>
+
                 <el-button-group>
                     <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
                     <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
@@ -381,6 +386,10 @@ const props = defineProps({
         required: true,
     },
     removeCube: {
+        type: Function,
+        required: true,
+    },
+    clearCubes: {
         type: Function,
         required: true,
     },
