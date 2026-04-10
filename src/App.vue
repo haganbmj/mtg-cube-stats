@@ -305,18 +305,27 @@ const loadCollection = async (presetName: string) => {
         console.time(`Render Collection: ${presetName}`);
         console.time(`Load Collection: ${presetName}`);
 
-        await ensureScryfallInitialized();
+        loadingProgress.active = true;
+        loadingProgress.total = 1;
+        loadingProgress.loaded = 0;
 
-        const cubesModule = await presetComparisons[presetName]();
-        preloadSimiliarityMatrix(cubesModule.default.similarities);
-        const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+        try {
+            await ensureScryfallInitialized();
 
-        console.timeEnd(`Load Collection: ${presetName}`);
-        // Set the active preset BEFORE updating loadedCubes so the URL watcher
-        // writes ?preset=name rather than serializing the cube IDs.
-        activePresetName.value = presetCollections.find(p => p.label === presetName)?.name ?? null;
-        loadedCubes.value = enrichedCubes;
-        await nextTick();
+            const cubesModule = await presetComparisons[presetName]();
+            preloadSimiliarityMatrix(cubesModule.default.similarities);
+            const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+
+            console.timeEnd(`Load Collection: ${presetName}`);
+            // Set the active preset BEFORE updating loadedCubes so the URL watcher
+            // writes ?preset=name rather than serializing the cube IDs.
+            activePresetName.value = presetCollections.find(p => p.label === presetName)?.name ?? null;
+            loadedCubes.value = enrichedCubes;
+            loadingProgress.loaded = 1;
+            await nextTick();
+        } finally {
+            loadingProgress.active = false;
+        }
 
         console.timeEnd(`Render Collection: ${presetName}`);
     }
