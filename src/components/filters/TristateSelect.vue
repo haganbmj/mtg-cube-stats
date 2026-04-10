@@ -132,6 +132,7 @@ const clearEntry = (key: string) => {
 .tristate-select {
   display: flex;
   align-items: center;
+  box-sizing: border-box;
   min-height: 32px;
   padding: 2px 8px;
   border: 1px solid var(--el-border-color);
