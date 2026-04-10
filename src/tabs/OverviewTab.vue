@@ -143,14 +143,21 @@
                 </div>
             </form>
 
-            <el-dropdown class="overview-menu-btn" trigger="click">
-                <el-button :icon="Menu" circle />
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+            <div class="overview-toolbar-actions">
+                <el-button-group>
+                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
+                </el-button-group>
+
+                <el-dropdown trigger="click">
+                    <el-button :icon="Menu" circle />
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
         </div>
 
         <div v-if="props.loadingProgress?.active" class="overview-progress">
@@ -163,7 +170,51 @@
             />
         </div>
 
+        <div v-if="visualDisplayVisible" class="overview-cube-grid">
+            <div
+                v-for="row in sortedData"
+                :key="row.id"
+                class="overview-cube-tile"
+                @click="openCubeDetailDialog(row.id)"
+            >
+                <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" />
+                <div class="cube-tile-body">
+                    <div class="cube-tile-name">{{ row.name }}</div>
+                    <div class="cube-tile-owner">
+                        <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank" @click.stop>{{ row.owner }}</el-link>
+                    </div>
+                    <div class="cube-tile-stats">
+                        <span class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ row.stats.totalCards }}</el-text>
+                            <el-text size="small" type="info"> cards</el-text>
+                        </span>
+                        <span class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ (row.stats.averageNonLandCmc ?? 0).toFixed(2) }}</el-text>
+                            <el-text size="small" type="info"> avg MV</el-text>
+                        </span>
+                        <span v-if="sortedData.length > 1" class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ (row.avgSimilarityScore * 100).toFixed(1) }}%</el-text>
+                            <el-text size="small" type="info"> similarity</el-text>
+                        </span>
+                    </div>
+                    <div v-if="row.stats.assumedCategories?.length" class="cube-tile-categories">
+                        <el-tag
+                            v-for="category in row.stats.assumedCategories"
+                            :key="category"
+                            size="small"
+                            type="info"
+                            :color="getCategoryTagColor(category)"
+                            disable-transitions
+                        >
+                            {{ category }}
+                        </el-tag>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <StickyTable
+            v-else
             :data="sortedData"
             :columns="tableColumns"
             :default-sort="{ prop: 'name', order: 'ascending' }"
@@ -303,7 +354,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
@@ -385,6 +436,7 @@ const config = bindStorage('cube-app-config', (v) => {
 });
 
 const columnCustomizationVisible = ref(false);
+const visualDisplayVisible = ref(false);
 
 const addCubeForm = reactive({
     loading: false,
@@ -714,7 +766,10 @@ const formatters = {
     flex: 1 1 200px;
 }
 
-.overview-menu-btn {
+.overview-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex: 0 0 auto;
     margin-left: auto;
 }
@@ -771,6 +826,76 @@ const formatters = {
 .overview-loading-container {
     position: relative;
     min-height: 120px;
+}
+
+.overview-cube-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.overview-cube-tile {
+    border: 1px solid var(--el-border-color);
+    border-radius: var(--el-border-radius-base);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.overview-cube-tile:hover {
+    border-color: var(--el-color-primary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cube-tile-thumbnail {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: block;
+    background-color: var(--el-fill-color);
+}
+
+.cube-tile-body {
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.cube-tile-name {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--el-text-color-primary);
+}
+
+.cube-tile-owner {
+    font-size: 12px;
+}
+
+.cube-tile-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.cube-tile-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.cube-tile-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
 }
 
 :global(.overview-loading .el-loading-text) {
