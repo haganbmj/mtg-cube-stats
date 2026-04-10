@@ -102,6 +102,15 @@
             ></i>
         </template>
 
+        <template #cell-effectiveColorIdentity="{ row }">
+            <i
+                v-for="color in row.effectiveColorIdentity"
+                :key="color"
+                :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
+                style="margin-right: 4px;"
+            ></i>
+        </template>
+
         <template #cell-tags="{ row }">
             <div class="tag-list flex gap-2">
                 <el-tag
@@ -294,6 +303,7 @@ const columnOptions = ref([
             { value: 'cubeCount', label: 'Cubes' },
             { value: 'count', label: 'Total Count' },
             { value: 'effectiveColors', label: 'Colors' },
+            { value: 'effectiveColorIdentity', label: 'Color Identity' },
             { value: 'cmc', label: 'Mana Value' },
             { value: 'power', label: 'Power' },
             { value: 'toughness', label: 'Toughness' },
@@ -339,7 +349,8 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
     { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') },
     { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') },
-    { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', visible: config.value.visibleColumns.includes('effectiveColors') },
+    { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
+    { key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'Color ID', minWidth: '75px', align: 'center', tooltip: 'Color Identity', visible: config.value.visibleColumns.includes('effectiveColorIdentity') },
     { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', sortable: true, tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
     { key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Power', visible: config.value.visibleColumns.includes('power') },
     { key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Toughness', visible: config.value.visibleColumns.includes('toughness') },
@@ -458,7 +469,7 @@ const exportToCsv = () => {
     };
 
     const headers = [
-        'Index', 'Name', 'Cubes', 'Total Count', 'Colors', 'Mana Value',
+        'Index', 'Name', 'Cubes', 'Total Count', 'Colors', 'Color Identity', 'Mana Value',
         'Elo', 'Popularity', 'Type Line', 'Tags', 'Min Rarity',
         'Set Code', 'Set Type', 'Layout', 'Release Date',
         'Min Price (USD)', 'Min Price (Tix)',
@@ -472,6 +483,7 @@ const exportToCsv = () => {
         row.cubeCount,
         row.count,
         row.effectiveColors.join(''),
+        row.effectiveColorIdentity.join(''),
         row.cmc ?? '',
         row.elo ?? '',
         row.popularity ?? '',
@@ -518,7 +530,8 @@ const tableData = computed(() => {
                 acc[card.oracleId] = {
                     ...card,
                     isRemoval: card.tags.includes('removal'),
-                    effectiveColors: card.colorIdentity.length === 0 ? ['C'] : card.colorIdentity,
+                    effectiveColors: (!card.colors || card.colors.length === 0) ? ['C'] : card.colors,
+                    effectiveColorIdentity: (!card.colorIdentity || card.colorIdentity.length === 0) ? ['C'] : card.colorIdentity,
                     count: 0,
                     cubes: [],
                     cubeCount: 0,
