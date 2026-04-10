@@ -262,19 +262,25 @@ const batches: Batch[] = [
         ],
     },
     {
-        name: 'cube-corner-2026',
+        name: 'saltbox-2026',
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
         shardCount: 2,
         cubes: [
-            '3c292cd9-e35c-474b-8bb1-dc926d0d43a3', // boomtak13 - Two Violins, a Drum and a Flute
-            '88a6d45d-6c62-4600-aa84-e812aff37d49', // tentakelmonster - Some amount of Ornithopters
-            '2eb1b1e5-0389-4799-9054-9207d724e899', // boomtak13 - Clone of The best of times, the worst of times
-            'a9971dee-ebce-4f3f-9af3-ebfb61942c65', // dafuzetti - IPA-block cube
-            '63d81aa162da200f69b5b90e', // rhythmicstudy - Means of Production
-            '0210e511-c0b3-47a2-8502-9610a047d4a7', // rhythmicstudy - Improbable Alliances
-            '049fa9c3-08c1-4560-a4d5-2d0e97aa307d', // boomtak13 - Prismatic Desert as featured at Magiccon Amsterdam!
-            '2c025ad0-2d49-4eed-a6a0-32c0a4006c36', // D3nn4 - No Nonsense Cube
-            '962ec01b-c119-484e-a1c0-e4e0eeebe7d1', // D3nn4 - Ghost of pioneer's past
+            'dafb7624-8329-4ac7-af2f-7ad80f94b038', // frogirl - The Wetlands
+            '8c5cddc2-7236-4728-9663-90c0ac2afcb5', // Phantoom - ZoSo
+            '42e16b6b-3c37-484d-a50c-cf21087d97fd', // dorsalfin - Red Terror
+            '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // haganbmj - The Kuleshov Cube
+            '9612ef94-a40f-446d-9244-a19a94dbcbcb', // SoftMaurice - Trenchfight
+            'd84d1801-703a-4ae2-b59b-270bcf796d25', // djbeatle - Virtually French Cube
+            '3c8379e4-dcf7-45da-9cd3-ad3e12592304', // andymangold - Sacred Geometry
+            '5dc09316845516168633e492', // anthonymattox - Regular Cube
+            '5fae85ff8459ff65ae3572c3', // fireroomfebbie - Reading Rainbow
+            '5d75442c8f152803feaeb607', // Kapernaumov - The Emerging Cube
+            'e5699dac-3158-47f3-8113-c2b7875341cc', // LuckyLooter - Arcane Lessons
+            '2f86175d-8675-4c23-bc20-644c6e9dcb07', // Phantoom - The Oldest School
+            '6374701db5261f6ef4c47a28', // apocta - The Odyssey
+            '5f3c0b1b69d5fd104e8e2c76', // Amelfa - Super Magic Fun Times
+            'cb64796b-b7c8-4a39-8a3a-13f5f38a39a6', // BigNuggetHusband - The United States Environmental Protection Agency (EPA)
         ],
     },
     {
