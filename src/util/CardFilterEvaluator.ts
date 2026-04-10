@@ -248,7 +248,7 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         case 'coloridentity': {
             const wantedColors = parseColorValue(strVal);
-            const rowId: string[] = (row.colorIdentity ?? []).map((c: string) => c.toUpperCase());
+            const rowId: string[] = (row.effectiveColorIdentity ?? []).map((c: string) => c.toUpperCase());
 
             if (op === '=') {
                 if (wantedColors.length !== rowId.length) return false;

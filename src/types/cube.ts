@@ -22,6 +22,7 @@ export interface CubeCard {
   // Enriched properties from Scryfall data
   name?: string;
   cmc?: number;
+  colors?: string[];
   colorIdentity?: string[];
   typeLine?: string;
   effectiveTypes?: string[];
@@ -63,7 +64,8 @@ export interface CubeStats {
   averagePopularity: number;
   blendedRarityScore: number;
   averageNonLandCmc: number;
-  cmcByStrictColor: Record<string, { totalCmc: number; count: number }>;
+  cmcByStrictColorIdentity: Record<string, { totalCmc: number; count: number }>;
+  colorIdentityDistribution: Record<string, number>;
   colorDistribution: Record<string, number>;
   cmcDistribution: Record<string | number, number>;
   typeLineDistribution: Record<string, number>;
