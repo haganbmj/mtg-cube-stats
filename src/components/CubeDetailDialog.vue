@@ -295,7 +295,7 @@
                                         <template #content>
                                             <el-image :src="card.urlFront" fit="contain" style="width: 200px;" />
                                         </template>
-                                        <div class="token-source-name">{{ card.name }}</div>
+                                        <el-link @click="openCardDetailDialog?.(card.oracleId)" class="token-source-name" underline="never">{{ card.name }}</el-link>
                                     </el-tooltip>
                                 </div>
                             </div>
@@ -347,7 +347,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import { useDateFormat } from '@vueuse/core';
 import { Loading, InfoFilled, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
@@ -394,6 +394,8 @@ const props = defineProps({
 });
 
 defineEmits(['update:visible']);
+
+const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
 const activeCubeId = ref<string | null>(null);
 
@@ -630,8 +632,9 @@ const tokensTabData = computed(() => {
 .token-source-name {
     font-size: 12px;
     color: var(--el-text-color-regular);
-    cursor: default;
+    cursor: pointer;
     padding: 1px 0;
+    justify-content: flex-start;
 
     &:hover {
         color: var(--el-color-primary);
