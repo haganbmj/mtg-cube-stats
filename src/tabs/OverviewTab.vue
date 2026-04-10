@@ -6,7 +6,13 @@
         align-center
     >
         <div v-for="option in columnOptions" :key="option.label" style="margin-bottom: 1em;">
-            <h4>{{ option.label }}</h4>
+            <div class="column-group-header">
+                <el-checkbox
+                    :model-value="isGroupAllChecked(option.options)"
+                    :indeterminate="isGroupIndeterminate(option.options)"
+                    @change="(v) => toggleGroupColumns(option.options, v as boolean)"
+                ><strong>{{ option.label }}</strong></el-checkbox>
+            </div>
             <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
                 <el-row :gutter="10">
                     <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
@@ -479,7 +485,23 @@ const removeCube = (cubeId: string) => {
     props.removeCube(cubeId);
 };
 
+const isGroupAllChecked = (options: { value: string }[]) =>
+    options.every(o => config.value.visibleColumns.includes(o.value));
 
+const isGroupIndeterminate = (options: { value: string }[]) => {
+    const someChecked = options.some(o => config.value.visibleColumns.includes(o.value));
+    return someChecked && !isGroupAllChecked(options);
+};
+
+const toggleGroupColumns = (options: { value: string }[], checked: boolean) => {
+    if (checked) {
+        const toAdd = options.map(o => o.value).filter(v => !config.value.visibleColumns.includes(v));
+        config.value.visibleColumns = [...config.value.visibleColumns, ...toAdd];
+    } else {
+        const values = new Set(options.map(o => o.value));
+        config.value.visibleColumns = config.value.visibleColumns.filter(v => !values.has(v));
+    }
+};
 
 const columnOptions = ref([
     {
@@ -737,6 +759,13 @@ const formatters = {
 
 .overview-progress {
     margin-bottom: 8px;
+}
+
+.column-group-header {
+    background-color: var(--el-fill-color);
+    border-radius: var(--el-border-radius-base);
+    padding: 6px 10px;
+    margin-bottom: 6px;
 }
 
 .overview-loading-container {
