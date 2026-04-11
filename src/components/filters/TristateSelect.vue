@@ -38,6 +38,22 @@
         </template>
 
         <div class="tristate-select-popover">
+            <div v-if="showModeToggle" class="tristate-select-popover__mode-toggle">
+                <el-button-group style="width: 100%;">
+                    <el-button
+                        size="small"
+                        :type="mode === 'filter' ? 'primary' : ''"
+                        style="flex: 1;"
+                        @click="$emit('update:mode', 'filter')"
+                    >Filter</el-button>
+                    <el-button
+                        size="small"
+                        :type="mode === 'highlight' ? 'primary' : ''"
+                        style="flex: 1;"
+                        @click="$emit('update:mode', 'highlight')"
+                    >Highlight</el-button>
+                </el-button-group>
+            </div>
             <el-input
                 v-if="filterable"
                 v-model="searchQuery"
@@ -90,9 +106,17 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    showModeToggle: {
+        type: Boolean,
+        default: false,
+    },
+    mode: {
+        type: String as () => 'filter' | 'highlight',
+        default: 'filter',
+    },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'update:mode']);
 
 const popoverVisible = ref(false);
 const searchQuery = ref('');
@@ -178,6 +202,11 @@ const clearEntry = (key: string) => {
 
 .tristate-select.is-active .tristate-select__arrow {
   transform: rotate(180deg);
+}
+
+.tristate-select-popover__mode-toggle {
+  margin-bottom: 8px;
+  display: flex;
 }
 
 .tristate-select-popover__search {

@@ -5,6 +5,7 @@
             v-model="activeQuery"
             :loadedCubes="loadedCubes"
             v-model:cubeFilter="activeCubeFilter"
+            v-model:cubeFilterMode="activeCubeFilterMode"
         />
         <el-button-group>
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
@@ -257,6 +258,7 @@ const pageSize = ref(50);
 const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
 const activeQuery = ref('');
 const activeCubeFilter = ref<Record<string, boolean | null>>({});
+const activeCubeFilterMode = ref<'filter' | 'highlight'>('filter');
 const columnCustomizationVisible = ref(false);
 const visualDisplayVisible = ref(false);
 
@@ -477,12 +479,38 @@ const applyTristateFilter = (
 const parsedQuery = computed(() => parseQuery(activeQuery.value));
 
 const highlightedOracleIds = computed<Set<string> | null>(() => {
-    if (!parsedQuery.value.ast) return null;
-    return computeHighlightedOracleIds(
-        parsedQuery.value.ast,
-        tableData.value,
-        { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates() },
-    );
+    // Build the query-based highlight set (highlight: keyword in text query)
+    const querySet = parsedQuery.value.ast
+        ? computeHighlightedOracleIds(
+            parsedQuery.value.ast,
+            tableData.value,
+            { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates() },
+        )
+        : null;
+
+    // Build the dropdown-based highlight set when mode is 'highlight'
+    let dropdownSet: Set<string> | null = null;
+    if (activeCubeFilterMode.value === 'highlight') {
+        const includedKeys = Object.entries(activeCubeFilter.value)
+            .filter(([, v]) => v === true)
+            .map(([k]) => k);
+        if (includedKeys.length > 0) {
+            dropdownSet = new Set<string>();
+            for (const row of tableData.value as any[]) {
+                const rowCubes: string[] = row.cubes ?? [];
+                if (rowCubes.some(c => includedKeys.includes(c))) {
+                    dropdownSet.add(row.oracleId);
+                }
+            }
+        }
+    }
+
+    if (!querySet && !dropdownSet) return null;
+
+    // Union both sets
+    const result = new Set<string>(querySet ?? []);
+    if (dropdownSet) dropdownSet.forEach(id => result.add(id));
+    return result;
 });
 
 const rowClassFn = (row: any): string => {
@@ -490,7 +518,7 @@ const rowClassFn = (row: any): string => {
     return highlightedOracleIds.value.has(row.oracleId) ? 'row--highlighted' : 'row--dimmed';
 };
 
-watch([activeQuery, activeCubeFilter], () => {
+watch([activeQuery, activeCubeFilter, activeCubeFilterMode], () => {
     currentPage.value = 1;
 });
 
@@ -637,7 +665,7 @@ const filteredRows = computed(() => {
 
     let rows = sortedRows.value;
 
-    if (hasCubeFilter) {
+    if (hasCubeFilter && activeCubeFilterMode.value === 'filter') {
         rows = rows.filter(row => applyTristateFilter(activeCubeFilter.value, row.cubes));
     }
 
