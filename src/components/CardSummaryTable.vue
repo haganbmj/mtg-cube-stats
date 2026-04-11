@@ -55,6 +55,10 @@
             v-for="card in visibleRows"
             :key="card.oracleId"
             class="visual-card-item"
+            :class="{
+                'card-item--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
+                'card-item--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
+            }"
             @click="openCardDetailDialog(card.oracleId)"
         >
             <el-image
@@ -77,6 +81,7 @@
         :columns="tableColumns"
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
         @sort-change="onSortChange"
+        :rowClassFn="rowClassFn"
         stripe
     >
         <template #cell-name="{ row }">
@@ -228,7 +233,7 @@ import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates } from '../util/CubeFunctions';
 
 const props = defineProps({
@@ -471,6 +476,20 @@ const applyTristateFilter = (
 };
 
 const parsedQuery = computed(() => parseQuery(activeQuery.value));
+
+const highlightedOracleIds = computed<Set<string> | null>(() => {
+    if (!parsedQuery.value.ast) return null;
+    return computeHighlightedOracleIds(
+        parsedQuery.value.ast,
+        tableData.value,
+        { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates() },
+    );
+});
+
+const rowClassFn = (row: any): string => {
+    if (!highlightedOracleIds.value) return '';
+    return highlightedOracleIds.value.has(row.oracleId) ? 'row--highlighted' : 'row--dimmed';
+};
 
 watch([activeQuery, activeCubeFilter], () => {
     currentPage.value = 1;
@@ -759,5 +778,25 @@ const visibleRows = computed(() => {
     border-radius: var(--el-border-radius-base);
     padding: 6px 10px;
     margin-bottom: 6px;
+}
+
+// ── Highlight / dim styles ──────────────────────────────────────────────────
+
+.sticky-table__row.row--highlighted {
+    background-color: rgba(103, 194, 58, 0.12);
+    box-shadow: inset 3px 0 0 var(--el-color-success);
+}
+
+.sticky-table__row.row--dimmed {
+    opacity: 0.35;
+}
+
+.visual-card-item.card-item--highlighted .card-image {
+    box-shadow: 0 0 0 3px var(--el-color-success);
+    border-radius: 4.75% / 3.5%;
+}
+
+.visual-card-item.card-item--dimmed {
+    opacity: 0.35;
 }
 </style>

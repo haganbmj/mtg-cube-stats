@@ -213,6 +213,11 @@ const FILTER_DOCS: FilterDoc[] = [
         description: 'Card appears in a loaded cube whose name, key, or short ID contains the text.',
         examples: ['cube:vintage', 'cube:peasant'],
     },
+    {
+        keywords: ['highlight'],
+        description: 'Visually highlights rows whose card appears in the matching cube. Does not filter out any cards — all rows remain visible, but non-matching rows are dimmed.',
+        examples: ['highlight:vintage', 'highlight:peasant'],
+    },
     // ── CubeCobra stats ────────────────────────────────────────────────────────
     {
         keywords: ['elo'],

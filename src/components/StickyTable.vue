@@ -46,10 +46,13 @@
                 <template v-for="(row, rowIndex) in data" :key="rowKey ? resolveValue(row, rowKey) : rowIndex">
                     <tr
                         class="sticky-table__row"
-                        :class="{
-                            'sticky-table__row--striped': stripe && rowIndex % 2 === 1,
-                            'sticky-table__row--hover': hoverRowIndex === rowIndex,
-                        }"
+                        :class="[
+                            {
+                                'sticky-table__row--striped': stripe && rowIndex % 2 === 1,
+                                'sticky-table__row--hover': hoverRowIndex === rowIndex,
+                            },
+                            rowClassFn ? rowClassFn(row, rowIndex) : '',
+                        ]"
                         @mouseenter="hoverRowIndex = rowIndex"
                         @mouseleave="hoverRowIndex = -1"
                     >
@@ -133,6 +136,10 @@ const props = defineProps({
     rowKey: {
         type: String,
         default: '',
+    },
+    rowClassFn: {
+        type: Function as unknown as () => (row: any, rowIndex: number) => string | Record<string, boolean>,
+        default: null,
     },
 });
 
