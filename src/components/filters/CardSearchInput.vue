@@ -31,6 +31,9 @@
                 :modelValue="cubeFilter"
                 @update:modelValue="$emit('update:cubeFilter', $event)"
                 :options="cubeOptions"
+                :showModeToggle="true"
+                :mode="cubeFilterMode"
+                @update:mode="$emit('update:cubeFilterMode', $event)"
                 placeholder="Filter by cube..."
             />
         </div>
@@ -60,9 +63,13 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    cubeFilterMode: {
+        type: String as () => 'filter' | 'highlight',
+        default: 'filter',
+    },
 });
 
-const emit = defineEmits(['update:modelValue', 'update:cubeFilter']);
+const emit = defineEmits(['update:modelValue', 'update:cubeFilter', 'update:cubeFilterMode']);
 
 const showHelp = ref(false);
 const queryInput = ref(props.modelValue);

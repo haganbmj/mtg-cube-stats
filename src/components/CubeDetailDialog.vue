@@ -155,7 +155,7 @@
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50"><span>Avg. Card Popularity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }}
+                                    {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50"><span>Rarity Score <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
