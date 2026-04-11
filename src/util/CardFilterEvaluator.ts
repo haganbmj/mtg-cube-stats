@@ -414,6 +414,11 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             return false;
         }
 
+        // ── Highlight (visual-only; never filters rows) ─────────────────────────
+        case 'highlight':
+            // highlight: is a visual annotation; it never excludes rows from results
+            return true;
+
         // ── Boolean flags ──────────────────────────────────────────────────────
         case 'is': {
             const result = evaluateFlag(strVal, row);
@@ -432,6 +437,60 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         default:
             return false;
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Highlight support — collect oracle IDs for highlight: conditions
+// ─────────────────────────────────────────────────────────────────────────────
+
+function resolveHighlightCubeKeys(value: string, ctx: FilterContext): Set<string> {
+    const target = value.toLowerCase();
+    const keys = new Set<string>();
+    for (const [key, cube] of Object.entries(ctx.loadedCubes)) {
+        const nameMatch = (cube as any).name?.toLowerCase().includes(target);
+        const keyMatch = key.toLowerCase().includes(target);
+        const shortIdMatch = (cube as any).shortId?.toLowerCase().includes(target);
+        if (nameMatch || keyMatch || shortIdMatch) keys.add(key);
+    }
+    return keys;
+}
+
+function collectHighlightCubeKeys(ast: QueryNode | null, ctx: FilterContext): Set<string> {
+    if (!ast) return new Set();
+    switch (ast.type) {
+        case 'and':
+        case 'or': {
+            const left = collectHighlightCubeKeys(ast.left, ctx);
+            const right = collectHighlightCubeKeys(ast.right, ctx);
+            return new Set([...left, ...right]);
+        }
+        case 'not':
+            return new Set();
+        case 'condition':
+            if (ast.keyword === 'highlight') return resolveHighlightCubeKeys(String(ast.value), ctx);
+            return new Set();
+        default:
+            return new Set();
+    }
+}
+
+/**
+ * Returns the set of oracle IDs whose cube membership matches any highlight:
+ * condition in the AST, or null if the query contains no highlight: terms.
+ */
+export function computeHighlightedOracleIds(
+    ast: QueryNode | null,
+    rows: any[],
+    ctx: FilterContext,
+): Set<string> | null {
+    const cubeKeys = collectHighlightCubeKeys(ast, ctx);
+    if (cubeKeys.size === 0) return null;
+    const result = new Set<string>();
+    for (const row of rows) {
+        const rowCubes: string[] = row.cubes ?? [];
+        if (rowCubes.some(c => cubeKeys.has(c))) result.add(row.oracleId);
+    }
+    return result;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

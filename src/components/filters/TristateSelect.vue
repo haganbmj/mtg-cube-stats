@@ -100,7 +100,10 @@ const searchQuery = ref('');
 const filteredOptions = computed(() => {
     if (!searchQuery.value) return props.options;
     const q = searchQuery.value.toLowerCase();
-    return props.options.filter((opt: any) => opt.label.toLowerCase().includes(q));
+    return props.options.filter((opt: any) => {
+        if (opt.searchTerms) return opt.searchTerms.some((t: string) => t.includes(q));
+        return opt.label.toLowerCase().includes(q);
+    });
 });
 
 const includedEntries = computed(() => {

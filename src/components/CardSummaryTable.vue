@@ -61,10 +61,13 @@
                 :src="card.urlFront"
                 fit="contain"
                 :alt="card.name"
-                :class="'card-image ' + card.setCode?.toLowerCase()"
+                :class="['card-image', card.setCode?.toLowerCase(), { 'card-image--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId) }]"
                 style="width: 100%;"
             />
-            <div class="visual-card-label">
+            <div class="visual-card-label" :class="{
+                'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
+                'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
+            }">
                 <el-text size="small" truncated>{{ card.name }}</el-text>
                 <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>
@@ -77,6 +80,7 @@
         :columns="tableColumns"
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
         @sort-change="onSortChange"
+        :rowClassFn="rowClassFn"
         stripe
     >
         <template #cell-name="{ row }">
@@ -228,7 +232,7 @@ import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates } from '../util/CubeFunctions';
 
 const props = defineProps({
@@ -472,6 +476,20 @@ const applyTristateFilter = (
 
 const parsedQuery = computed(() => parseQuery(activeQuery.value));
 
+const highlightedOracleIds = computed<Set<string> | null>(() => {
+    if (!parsedQuery.value.ast) return null;
+    return computeHighlightedOracleIds(
+        parsedQuery.value.ast,
+        tableData.value,
+        { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates() },
+    );
+});
+
+const rowClassFn = (row: any): string => {
+    if (!highlightedOracleIds.value) return '';
+    return highlightedOracleIds.value.has(row.oracleId) ? 'row--highlighted' : 'row--dimmed';
+};
+
 watch([activeQuery, activeCubeFilter], () => {
     currentPage.value = 1;
 });
@@ -704,6 +722,17 @@ const visibleRows = computed(() => {
     align-items: center;
     justify-content: center;
     width: 100%;
+    border-radius: var(--el-border-radius-base);
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+.visual-card-label--highlighted {
+    background-color: rgba(103, 194, 58, 0.25);
+}
+
+.visual-card-label--dimmed {
+    opacity: 0.4;
 }
 
 .el-pagination {
@@ -759,5 +788,20 @@ const visibleRows = computed(() => {
     border-radius: var(--el-border-radius-base);
     padding: 6px 10px;
     margin-bottom: 6px;
+}
+
+// ── Highlight / dim styles ──────────────────────────────────────────────────
+
+.sticky-table__row.row--highlighted {
+    background-color: rgba(103, 194, 58, 0.12);
+    box-shadow: inset 3px 0 0 var(--el-color-success);
+}
+
+.sticky-table__row.row--dimmed {
+    opacity: 0.5;
+}
+
+.card-image--dimmed {
+    opacity: 0.4;
 }
 </style>
