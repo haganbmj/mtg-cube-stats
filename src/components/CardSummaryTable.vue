@@ -788,7 +788,7 @@ const visibleRows = computed(() => {
 }
 
 .sticky-table__row.row--dimmed {
-    opacity: 0.35;
+    opacity: 0.5;
 }
 
 .visual-card-item.card-item--highlighted .card-image {
@@ -797,6 +797,6 @@ const visibleRows = computed(() => {
 }
 
 .visual-card-item.card-item--dimmed {
-    opacity: 0.35;
+    opacity: 0.5;
 }
 </style>

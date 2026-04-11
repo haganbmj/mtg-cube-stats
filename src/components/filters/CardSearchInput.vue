@@ -72,7 +72,17 @@ const hasCubes = computed(() => Object.keys(props.loadedCubes).length > 0);
 
 const cubeOptions = computed(() =>
     Object.entries(props.loadedCubes)
-        .map(([key, cube]: [string, any]) => ({ label: cube.name, value: key }))
+        .map(([key, cube]: [string, any]) => ({
+            label: cube.name,
+            value: key,
+            searchTerms: [
+                cube.name,
+                key,
+                cube.shortId,
+                cube.id,
+                cube.owner,
+            ].filter(Boolean).map((s: string) => s.toLowerCase()),
+        }))
         .sort((a, b) => a.label.localeCompare(b.label)),
 );
 
