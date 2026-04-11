@@ -55,20 +55,19 @@
             v-for="card in visibleRows"
             :key="card.oracleId"
             class="visual-card-item"
-            :class="{
-                'card-item--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
-                'card-item--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
-            }"
             @click="openCardDetailDialog(card.oracleId)"
         >
             <el-image
                 :src="card.urlFront"
                 fit="contain"
                 :alt="card.name"
-                :class="'card-image ' + card.setCode?.toLowerCase()"
+                :class="['card-image', card.setCode?.toLowerCase(), { 'card-image--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId) }]"
                 style="width: 100%;"
             />
-            <div class="visual-card-label">
+            <div class="visual-card-label" :class="{
+                'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
+                'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
+            }">
                 <el-text size="small" truncated>{{ card.name }}</el-text>
                 <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>
@@ -723,6 +722,17 @@ const visibleRows = computed(() => {
     align-items: center;
     justify-content: center;
     width: 100%;
+    border-radius: var(--el-border-radius-base);
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+.visual-card-label--highlighted {
+    background-color: rgba(103, 194, 58, 0.25);
+}
+
+.visual-card-label--dimmed {
+    opacity: 0.4;
 }
 
 .el-pagination {
@@ -791,12 +801,7 @@ const visibleRows = computed(() => {
     opacity: 0.5;
 }
 
-.visual-card-item.card-item--highlighted .card-image {
-    box-shadow: 0 0 0 3px var(--el-color-success);
-    border-radius: 4.75% / 3.5%;
-}
-
-.visual-card-item.card-item--dimmed {
-    opacity: 0.5;
+.card-image--dimmed {
+    opacity: 0.4;
 }
 </style>
