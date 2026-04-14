@@ -131,6 +131,8 @@ const batches: Batch[] = [
             '614788f7076b331a38983787', // richardgc - New Frontier
             '5e646fe670240a58539a3fee', // Narvuntien - Cards I Own Cube
             '3763af72-6ad9-4f01-9264-318c57df3aa7', // Uteqoute - Uteqoute's 360 Peasant C/Ube [No UB]
+            '375a3eb7-33bc-45e9-821e-e699cf196ace', // PepperMyr - PepperMyr's 360 Peasant Cube
+            '5f1c4ebcbb7e6b105ca59780', // rancoredmalone - Peasant Snow CUbe
         ],
     },
     {
