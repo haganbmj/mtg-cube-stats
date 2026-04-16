@@ -81,6 +81,7 @@
                                     <span v-else>&mdash;</span>
                                 </el-descriptions-item>
                                 <el-descriptions-item label="Mana Value">{{ activeCard.cmc ?? 'N/A' }}</el-descriptions-item>
+                                <el-descriptions-item v-if="activeCard.power != null" label="P / T">{{ activeCard.power }} / {{ activeCard.toughness }}</el-descriptions-item>
                                 <el-descriptions-item label="Type Line">{{ activeCard.typeLine ?? 'N/A' }}</el-descriptions-item>
                                 <el-descriptions-item label="Layout">{{ capitalizeFirstLetter(activeCard.layout ?? '') }}</el-descriptions-item>
                             </el-descriptions>
@@ -93,8 +94,26 @@
                                 </el-descriptions-item>
                                 <el-descriptions-item label="Set Type">{{ activeCard.setType ?? 'N/A' }}</el-descriptions-item>
                                 <el-descriptions-item label="Release Date">{{ activeCard.releaseDate ?? 'N/A' }}</el-descriptions-item>
-                                <el-descriptions-item label="Original Rarity">{{ capitalizeFirstLetter(activeCard.rarity ?? '') }}</el-descriptions-item>
-                                <el-descriptions-item label="Min Rarity">{{ capitalizeFirstLetter(activeCard.minRarity ?? '') }}</el-descriptions-item>
+                                <el-descriptions-item label="Original Rarity">
+                                    <el-tag
+                                        v-if="activeCard.rarity"
+                                        size="small"
+                                        type="info"
+                                        :color="getRarityColor(activeCard.rarity)"
+                                        disable-transitions
+                                    >{{ capitalizeFirstLetter(activeCard.rarity) }}</el-tag>
+                                    <span v-else>N/A</span>
+                                </el-descriptions-item>
+                                <el-descriptions-item label="Min Rarity">
+                                    <el-tag
+                                        v-if="activeCard.minRarity"
+                                        size="small"
+                                        type="info"
+                                        :color="getRarityColor(activeCard.minRarity)"
+                                        disable-transitions
+                                    >{{ capitalizeFirstLetter(activeCard.minRarity) }}</el-tag>
+                                    <span v-else>N/A</span>
+                                </el-descriptions-item>
                             </el-descriptions>
                         </el-col>
 
@@ -199,7 +218,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
 import { Link } from '@element-plus/icons-vue';
-import { capitalizeFirstLetter } from '../util/HelperFunctions';
+import { capitalizeFirstLetter, getRarityColor } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import type { Cube } from '../types';
 

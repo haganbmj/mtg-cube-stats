@@ -49,6 +49,22 @@ if (!fs.existsSync('./data/flavor-words.json') || process.argv[2] == "--update" 
     console.log('Using existing flavor data.');
 }
 
+if (!fs.existsSync('./data/sets.json') || process.argv[2] == "--update" || refresh.toLowerCase() === 'true') {
+    console.log('Downloading fresh set data.');
+
+    const setsResp = await axios({
+        url: 'https://api.scryfall.com/sets',
+        method: 'GET',
+        headers: {
+            'User-Agent': 'Griselbrand/0.1.0',
+        },
+    });
+
+    fs.writeFileSync('./data/sets.json', JSON.stringify(setsResp.data, null, 2));
+} else {
+    console.log('Using existing set data.');
+}
+
 if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" || refresh.toLowerCase() === 'true') {
     console.log('Downloading fresh tagger data.');
 
@@ -71,6 +87,13 @@ if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" |
 const cards = JSON.parse(fs.readFileSync('./data/default-cards.json', 'utf8'));
 const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json', 'utf8'));
 const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8'));
+const setsData = JSON.parse(fs.readFileSync('./data/sets.json', 'utf8'));
+
+// Build a compact setCode -> ISO release date map for use in date filters
+const setDates: Record<string, string> = {};
+setsData.data.forEach((set: any) => {
+    if (set.released_at) setDates[set.code.toLowerCase()] = set.released_at;
+});
 
 const customPromoSetTypes = [
     'from_the_vault',
@@ -221,6 +244,8 @@ const stripped = cards.filter((card: any) => {
         },
         priceUsd: card.prices?.usd ? parseFloat(card.prices.usd) : undefined,
         priceTix: card.prices?.tix ? parseFloat(card.prices.tix) : undefined,
+        power: card.power ?? card.card_faces?.[0]?.power,
+        toughness: card.toughness ?? card.card_faces?.[0]?.toughness,
     };
 });
 
@@ -290,6 +315,8 @@ const minimized = stripped.sort((a: any, b: any) => {
             fromBooster: card.fromBooster,
             promoTypes: card.promoTypes,
             layout: card.layout,
+            power: card.power,
+            toughness: card.toughness,
 
             isDigital: card.isDigital ? true : undefined,
             isPromo: card.isPromo ? true : undefined,
@@ -357,6 +384,8 @@ const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
 }, {});
 
 minimized.cards = best;
+
+minimized.setDates = setDates;
 
 // Build a map of the earliest printing of each token by oracle_id.
 // Uses the raw cards array so tokens from dedicated token sets (excluded from stripped) are included.

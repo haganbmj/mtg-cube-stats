@@ -59,6 +59,13 @@ export function getSetName(setCode: string): string {
 }
 
 /**
+ * Get the set release dates map (setCode -> ISO date string)
+ */
+export function getSetReleaseDates(): Record<string, string> {
+    return scryfall?.setDates ?? {};
+}
+
+/**
  * Strip down the Cube model from CubeCobra to just the couple fields we care about.
  * The CubeCobra object has most of the card details we would care about, but they include user edits and might be for reprints.
  *
@@ -126,6 +133,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             ...card,
             name: scryfallCard?.name ?? 'Unknown Card',
             cmc: scryfallCard?.cmc ?? 0,
+            colors: scryfallCard?.colors ?? [],
             colorIdentity: scryfallCard?.colorIdentity ?? [],
             typeLine: scryfallCard?.typeLine ?? '',
             effectiveTypes: scryfallCard?.effectiveTypes ?? [],
@@ -151,6 +159,8 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,
             makesTokens: scryfallCard?.makesTokens ?? false,
             tokenOracleIds: scryfallCard?.tokenOracleIds ?? [],
+            power: scryfallCard?.power ?? undefined,
+            toughness: scryfallCard?.toughness ?? undefined,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
             minPriceTix: scryfallCard?.minPriceTix ?? null,
             urlFront: scryfallCard?.urlFront ?? '',
@@ -178,7 +188,9 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             return map;
         }, new Map<string, CubeCard>()).values(),
     );
-    const newDateCutoff = `${new Date().getFullYear() - 1}-${new Date().getMonth()}-${new Date().getDate()}`;
+    const cutoffDate = new Date();
+    cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+    const newDateCutoff = cutoffDate.toISOString().split('T')[0];
 
     const firstOrderStats = {
         totalCards: cards.length,
@@ -195,7 +207,7 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
         averageNonLandCmc: nonLandCards.reduce((sum, c) => sum + (c.cmc ?? 0), 0) / nonLandCards.length,
 
         // FIXME: Strict color category should be something I embed on the main card model.
-        cmcByStrictColor: nonLandCards.reduce((sums: Record<string, {totalCmc: number, count: number}>, c) => {
+        cmcByStrictColorIdentity: nonLandCards.reduce((sums: Record<string, {totalCmc: number, count: number}>, c) => {
             let colorKey = '';
             if (!c.colorIdentity || c.colorIdentity.length === 0) {
                 colorKey = 'C';
@@ -213,13 +225,21 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             sums[colorKey].count += 1;
             return sums;
         }, {}),
-        colorDistribution: {
+        colorIdentityDistribution: {
             W: nonLandCards.filter(c => c.colorIdentity?.includes('W')).length,
             U: nonLandCards.filter(c => c.colorIdentity?.includes('U')).length,
             B: nonLandCards.filter(c => c.colorIdentity?.includes('B')).length,
             R: nonLandCards.filter(c => c.colorIdentity?.includes('R')).length,
             G: nonLandCards.filter(c => c.colorIdentity?.includes('G')).length,
             C: nonLandCards.filter(c => !c.colorIdentity || c.colorIdentity.length === 0).length,
+        },
+        colorDistribution: {
+            W: nonLandCards.filter(c => c.colors?.includes('W')).length,
+            U: nonLandCards.filter(c => c.colors?.includes('U')).length,
+            B: nonLandCards.filter(c => c.colors?.includes('B')).length,
+            R: nonLandCards.filter(c => c.colors?.includes('R')).length,
+            G: nonLandCards.filter(c => c.colors?.includes('G')).length,
+            C: nonLandCards.filter(c => !c.colors || c.colors.length === 0).length,
         },
         cmcDistribution: (() => {
             // FIXME: Should this just try and account for Lands as their own entry?

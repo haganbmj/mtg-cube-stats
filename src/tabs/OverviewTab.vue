@@ -6,7 +6,13 @@
         align-center
     >
         <div v-for="option in columnOptions" :key="option.label" style="margin-bottom: 1em;">
-            <h4>{{ option.label }}</h4>
+            <div class="column-group-header">
+                <el-checkbox
+                    :model-value="isGroupAllChecked(option.options)"
+                    :indeterminate="isGroupIndeterminate(option.options)"
+                    @change="(v) => toggleGroupColumns(option.options, v as boolean)"
+                ><strong>{{ option.label }}</strong></el-checkbox>
+            </div>
             <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
                 <el-row :gutter="10">
                     <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
@@ -74,210 +80,277 @@
         </template>
     </el-dialog>
 
-    <el-row>
-        <el-col :span="18" :xs="24" :sm="24" :md="18" :lg="18">
-            <el-form :model="addCubeForm" :inline="true" @submit.prevent="submitAddCubeForm" v-loading="addCubeForm.loading">
-                <el-form-item>
-                    <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11">
-                        <el-form-item style="min-width: 200px; width: 100%;">
-                            <el-select label="Collections" v-model="addCubeForm.presetComparisonsSelection" @change="handleCollectionSelect" placeholder="Load Collection...">
-                                <template #footer>
-                                    <div class="collection-select-header">
-                                        <el-button
-                                            text
-                                            bg
-                                            type="success"
-                                            size="small"
-                                            :disabled="Object.keys(props.loadedCubes).length === 0"
-                                            @click.stop="openSaveDialog"
-                                        >Save As...</el-button>
-                                        <el-divider direction="vertical" />
-                                        <el-button
-                                            text
-                                            bg
-                                            type="danger"
-                                            size="small"
-                                            :disabled="props.userCollections.length === 0"
-                                            @click.stop="openRemoveDialog"
-                                        >Remove...</el-button>
-                                    </div>
-                                </template>
-                                <el-option-group v-if="props.userCollections.length > 0" label="My Collections">
-                                    <el-option
-                                        v-for="col in props.userCollections"
-                                        :key="col.name"
-                                        :label="col.name"
-                                        :value="'__user__:' + col.name"
-                                    />
-                                </el-option-group>
-                                <el-option-group label="Presets">
-                                    <el-option
-                                        v-for="option in presetComparisonsSelect"
-                                        :key="option.value"
-                                        :label="option.label"
-                                        :value="option.value"
-                                    />
-                                </el-option-group>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="2" :xs="0" :sm="0" :md="2" :lg="2" style="text-align: center;">
-                        <span class="text-gray-500">OR</span>
-                    </el-col>
-                    <el-col :span="11" :xs="24" :sm="24" :md="11" :lg="11" style="display: flex; align-items: center;">
-                        <el-row :gutter="10">
-                            <el-col :span="20">
-                                <el-form-item style="min-width: 200px; width: 100%;">
-                                    <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-form-item>
-                                    <el-button type="primary" @click="submitAddCubeForm" :disabled="addCubeForm.loading">Add</el-button>
-                                    <input type="submit" style="display: none;" />
-                                </el-form-item>
-                            </el-col>
-                        </el-row>
-                    </el-col>
-                </el-form-item>
-            </el-form>
-        </el-col>
-        <el-col :span="6" :xs="24" :sm="24" :md="6" :lg="6" style="text-align: right;">
-            <el-button plain @click="columnCustomizationVisible = true" style="width: 100%; max-width: 250px;">Customize Columns</el-button>
-        </el-col>
-    </el-row>
-
-    <StickyTable
-        :data="sortedData"
-        :columns="tableColumns"
-        :default-sort="{ prop: 'name', order: 'ascending' }"
-        @sort-change="onSortChange"
-        stripe
+    <div
+        class="overview-loading-container"
+        v-loading="isLoading"
+        :element-loading-text="loadingText"
+        element-loading-custom-class="overview-loading"
     >
-        <template #cell-thumbnail="{ row }">
-            <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-            <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
-                <el-icon><Delete /></el-icon>
-            </el-button>
-        </template>
-
-        <template #cell-rowNumber="{ rowIndex }">
-            {{ rowIndex + 1 }}
-        </template>
-
-        <template #cell-name="{ row }">
-            <el-link @click="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
-            <template v-if="row.stats.graveyardOrderMatters">
-                <el-tooltip
-                    content="This cube contains cards that care about Graveyard Order."
-                    placement="top"
-                    :hide-after="50"
+        <div class="overview-toolbar">
+            <form class="overview-add-form" @submit.prevent="submitAddCubeForm">
+                <el-select
+                    class="overview-collection-select"
+                    label="Collections"
+                    v-model="addCubeForm.presetComparisonsSelection"
+                    @change="handleCollectionSelect"
+                    placeholder="Collections..."
                 >
-                    <el-icon color="yellow" style="margin-left: 0.25rem;"><WarnTriangleFilled /></el-icon>
-                </el-tooltip>
-            </template>
-        </template>
+                    <template #footer>
+                        <div class="collection-select-header">
+                            <el-button
+                                text
+                                bg
+                                type="success"
+                                size="small"
+                                :disabled="Object.keys(props.loadedCubes).length === 0"
+                                @click.stop="openSaveDialog"
+                            >Save As...</el-button>
+                            <el-divider direction="vertical" />
+                            <el-button
+                                text
+                                bg
+                                type="danger"
+                                size="small"
+                                :disabled="props.userCollections.length === 0"
+                                @click.stop="openRemoveDialog"
+                            >Remove...</el-button>
+                        </div>
+                    </template>
+                    <el-option-group v-if="props.userCollections.length > 0" label="My Collections">
+                        <el-option
+                            v-for="col in props.userCollections"
+                            :key="col.name"
+                            :label="col.name"
+                            :value="'__user__:' + col.name"
+                        />
+                    </el-option-group>
+                    <el-option-group label="Presets">
+                        <el-option
+                            v-for="option in presetComparisonsSelect"
+                            :key="option.value"
+                            :label="option.label"
+                            :value="option.value"
+                        />
+                    </el-option-group>
+                </el-select>
 
-        <template #cell-owner="{ row }">
-            <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
-        </template>
+                <span class="overview-or-divider">OR</span>
 
-        <template #cell-arenaPlayable="{ row }">
-            <el-tag :type="row.stats.arenaPlayable ? 'success' : 'danger'">
-                {{ row.stats.arenaPlayable ? 'Yes' : 'No' }}
-            </el-tag>
-        </template>
+                <div class="overview-cube-id-row">
+                    <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                    <el-button type="primary" @click="submitAddCubeForm" :disabled="isLoading">Add</el-button>
+                    <input type="submit" style="display: none;" />
+                </div>
+            </form>
 
-        <template #cell-mtgoPlayable="{ row }">
-            <el-tag :type="row.stats.mtgoPlayable ? 'success' : 'danger'">
-                {{ row.stats.mtgoPlayable ? 'Yes' : 'No' }}
-            </el-tag>
-        </template>
+            <div class="overview-toolbar-actions">
+                <el-button
+                    :disabled="Object.keys(props.loadedCubes).length === 0"
+                    @click="props.clearCubes()"
+                >Remove All</el-button>
 
-        <template #cell-paperPlayable="{ row }">
-            <el-tag :type="row.stats.paperPlayable ? 'success' : 'danger'">
-                {{ row.stats.paperPlayable ? 'Yes' : 'No' }}
-            </el-tag>
-        </template>
+                <el-button-group>
+                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
+                </el-button-group>
 
-        <template #cell-assumedCategories="{ row }">
-            <div class="tag-list flex gap-2">
-                <el-tooltip
-                    v-for="category in row.stats.assumedCategories"
-                    :key="category"
-                    :content="getCategoryTooltip(category)"
-                    placement="top"
-                    :hide-after="50"
-                >
-                    <el-tag
-                        size="small"
-                        type="info"
-                        :color="getCategoryTagColor(category)"
-                        disable-transitions
-                    >
-                        {{ category }}
-                    </el-tag>
-                </el-tooltip>
+                <el-dropdown trigger="click">
+                    <el-button :icon="Menu" circle />
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
             </div>
-        </template>
+        </div>
 
-        <template #cell-averageReleaseYear="{ row }">
-            {{ Math.round(row.stats?.averageReleaseYear ?? 0) }} (±{{ (row.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})
-        </template>
+        <div v-if="props.loadingProgress?.active" class="overview-progress">
+            <el-progress
+                :percentage="loadingProgressPercent"
+                :striped="true"
+                :striped-flow="true"
+                :duration="10"
+                :format="() => `${props.loadingProgress.loaded} / ${props.loadingProgress.total}`"
+            />
+        </div>
 
-        <template #cell-medianReleaseYear="{ row }">
-            {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
-        </template>
+        <div v-if="visualDisplayVisible" class="overview-cube-grid">
+            <div
+                v-for="row in sortedData"
+                :key="row.id"
+                class="overview-cube-tile"
+                @click="openCubeDetailDialog(row.id)"
+            >
+                <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" />
+                <div class="cube-tile-body">
+                    <div class="cube-tile-name">{{ row.name }}</div>
+                    <div class="cube-tile-owner">
+                        <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank" @click.stop>{{ row.owner }}</el-link>
+                    </div>
+                    <div class="cube-tile-stats">
+                        <span class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ row.stats.totalCards }}</el-text>
+                            <el-text size="small" type="info"> cards</el-text>
+                        </span>
+                        <span class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ (row.stats.averageNonLandCmc ?? 0).toFixed(2) }}</el-text>
+                            <el-text size="small" type="info"> avg MV</el-text>
+                        </span>
+                        <span v-if="sortedData.length > 1" class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ (row.avgSimilarityScore * 100).toFixed(1) }}%</el-text>
+                            <el-text size="small" type="info"> similarity</el-text>
+                        </span>
+                    </div>
+                    <div v-if="row.stats.assumedCategories?.length" class="cube-tile-categories">
+                        <el-tag
+                            v-for="category in row.stats.assumedCategories"
+                            :key="category"
+                            size="small"
+                            type="info"
+                            :color="getCategoryTagColor(category)"
+                            disable-transitions
+                        >
+                            {{ category }}
+                        </el-tag>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <template #cell-totalUniqueCards="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.totalUniqueCards / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.totalUniqueCards }})</el-text>
-        </template>
+        <StickyTable
+            v-else
+            :data="sortedData"
+            :columns="tableColumns"
+            :default-sort="{ prop: 'name', order: 'ascending' }"
+            @sort-change="onSortChange"
+            stripe
+        >
+            <template #cell-thumbnail="{ row }">
+                <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
+                <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
+                    <el-icon><Delete /></el-icon>
+                </el-button>
+            </template>
 
-        <template #cell-newCards="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
-        </template>
+            <template #cell-rowNumber="{ rowIndex }">
+                {{ rowIndex + 1 }}
+            </template>
 
-        <template #cell-landCards="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
-        </template>
+            <template #cell-name="{ row }">
+                <el-link @click="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
+                <template v-if="row.stats.graveyardOrderMatters">
+                    <el-tooltip
+                        content="This cube contains cards that care about Graveyard Order."
+                        placement="top"
+                        :hide-after="50"
+                    >
+                        <el-icon color="yellow" style="margin-left: 0.25rem;"><WarnTriangleFilled /></el-icon>
+                    </el-tooltip>
+                </template>
+            </template>
 
-        <template #cell-creatureCards="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.creatureCards / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.creatureCards }})</el-text>
-        </template>
+            <template #cell-owner="{ row }">
+                <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
+            </template>
 
-        <template #cell-abnormalLayout="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
-        </template>
+            <template #cell-arenaPlayable="{ row }">
+                <el-tag :type="row.stats.arenaPlayable ? 'success' : 'danger'">
+                    {{ row.stats.arenaPlayable ? 'Yes' : 'No' }}
+                </el-tag>
+            </template>
 
-        <template #cell-makesTokens="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.makesTokens / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
-        </template>
+            <template #cell-mtgoPlayable="{ row }">
+                <el-tag :type="row.stats.mtgoPlayable ? 'success' : 'danger'">
+                    {{ row.stats.mtgoPlayable ? 'Yes' : 'No' }}
+                </el-tag>
+            </template>
 
-        <template #cell-uniqueTokenCount="{ row }">
-            <el-text class="cell-primary">{{ row.stats.uniqueTokenCount }}</el-text>
-        </template>
+            <template #cell-paperPlayable="{ row }">
+                <el-tag :type="row.stats.paperPlayable ? 'success' : 'danger'">
+                    {{ row.stats.paperPlayable ? 'Yes' : 'No' }}
+                </el-tag>
+            </template>
 
-        <template #cell-removal="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
-        </template>
+            <template #cell-assumedCategories="{ row }">
+                <div class="tag-list flex gap-2">
+                    <el-tooltip
+                        v-for="category in row.stats.assumedCategories"
+                        :key="category"
+                        :content="getCategoryTooltip(category)"
+                        placement="top"
+                        :hide-after="50"
+                    >
+                        <el-tag
+                            size="small"
+                            type="info"
+                            :color="getCategoryTagColor(category)"
+                            disable-transitions
+                        >
+                            {{ category }}
+                        </el-tag>
+                    </el-tooltip>
+                </div>
+            </template>
 
-        <template #cell-universesBeyond="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
-        </template>
+            <template #cell-averageReleaseYear="{ row }">
+                {{ Math.round(row.stats?.averageReleaseYear ?? 0) }} (±{{ (row.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})
+            </template>
 
-        <template #cell-supplementalProduct="{ row }">
-            <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
-            <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
-        </template>
-    </StickyTable>
+            <template #cell-medianReleaseYear="{ row }">
+                {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
+            </template>
+
+            <template #cell-totalUniqueCards="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.totalUniqueCards / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.totalUniqueCards }})</el-text>
+            </template>
+
+            <template #cell-newCards="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
+            </template>
+
+            <template #cell-landCards="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
+            </template>
+
+            <template #cell-creatureCards="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.creatureCards / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.creatureCards }})</el-text>
+            </template>
+
+            <template #cell-abnormalLayout="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
+            </template>
+
+            <template #cell-makesTokens="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.makesTokens / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
+            </template>
+
+            <template #cell-uniqueTokenCount="{ row }">
+                <el-text class="cell-primary">{{ row.stats.uniqueTokenCount }}</el-text>
+            </template>
+
+            <template #cell-removal="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
+            </template>
+
+            <template #cell-universesBeyond="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
+            </template>
+
+            <template #cell-supplementalProduct="{ row }">
+                <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
+                <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
+            </template>
+        </StickyTable>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -286,7 +359,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
@@ -316,6 +389,10 @@ const props = defineProps({
         type: Function,
         required: true,
     },
+    clearCubes: {
+        type: Function,
+        required: true,
+    },
     loadCollection: {
         type: Function,
         required: true,
@@ -334,6 +411,10 @@ const props = defineProps({
     },
     removeCollection: {
         type: Function as unknown as () => (name: string) => void,
+        default: null,
+    },
+    loadingProgress: {
+        type: Object as () => { active: boolean; loaded: number; total: number } | null,
         default: null,
     },
 });
@@ -364,11 +445,27 @@ const config = bindStorage('cube-app-config', (v) => {
 });
 
 const columnCustomizationVisible = ref(false);
+const visualDisplayVisible = ref(false);
 
 const addCubeForm = reactive({
     loading: false,
     cubeId: '',
     presetComparisonsSelection: '',
+});
+
+const isLoading = computed(() => addCubeForm.loading || !!props.loadingProgress?.active);
+
+const loadingText = computed(() => {
+    if (props.loadingProgress?.active && (props.loadingProgress.total ?? 0) > 1) {
+        return `Loading cubes (${props.loadingProgress.loaded} / ${props.loadingProgress.total})`;
+    }
+    return undefined;
+});
+
+const loadingProgressPercent = computed(() => {
+    const { loaded, total } = props.loadingProgress ?? { loaded: 0, total: 0 };
+    if (!total) return 0;
+    return Math.round((loaded / total) * 100);
 });
 
 const openCubeDetailDialog = inject('openCubeDetailDialog');
@@ -447,6 +544,24 @@ const handleRemoveCollection = async (name: string) => {
 
 const removeCube = (cubeId: string) => {
     props.removeCube(cubeId);
+};
+
+const isGroupAllChecked = (options: { value: string }[]) =>
+    options.every(o => config.value.visibleColumns.includes(o.value));
+
+const isGroupIndeterminate = (options: { value: string }[]) => {
+    const someChecked = options.some(o => config.value.visibleColumns.includes(o.value));
+    return someChecked && !isGroupAllChecked(options);
+};
+
+const toggleGroupColumns = (options: { value: string }[], checked: boolean) => {
+    if (checked) {
+        const toAdd = options.map(o => o.value).filter(v => !config.value.visibleColumns.includes(v));
+        config.value.visibleColumns = [...config.value.visibleColumns, ...toAdd];
+    } else {
+        const values = new Set(options.map(o => o.value));
+        config.value.visibleColumns = config.value.visibleColumns.filter(v => !values.has(v));
+    }
 };
 
 const columnOptions = ref([
@@ -625,6 +740,60 @@ const formatters = {
 </script>
 
 <style scoped>
+.overview-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.overview-add-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 400px;
+    max-width: 600px;
+    min-width: 0;
+}
+
+.overview-collection-select {
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+.overview-or-divider {
+    flex: 0 0 auto;
+    color: var(--el-text-color-secondary);
+}
+
+.overview-cube-id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 200px;
+}
+
+.overview-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+@media (max-width: 600px) {
+    .overview-collection-select,
+    .overview-cube-id-row {
+        flex-basis: 100%;
+    }
+
+    .overview-or-divider {
+        display: none;
+    }
+}
+
 .collection-select-header {
     display: flex;
     align-items: center;
@@ -650,5 +819,96 @@ const formatters = {
 
 .collection-remove-item:last-child {
     border-bottom: none;
+}
+
+.overview-progress {
+    margin-bottom: 8px;
+}
+
+.column-group-header {
+    background-color: var(--el-fill-color);
+    border-radius: var(--el-border-radius-base);
+    padding: 6px 10px;
+    margin-bottom: 6px;
+}
+
+.overview-loading-container {
+    position: relative;
+    min-height: 120px;
+}
+
+.overview-cube-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.overview-cube-tile {
+    border: 1px solid var(--el-border-color);
+    border-radius: var(--el-border-radius-base);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.overview-cube-tile:hover {
+    border-color: var(--el-color-primary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cube-tile-thumbnail {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: block;
+    background-color: var(--el-fill-color);
+}
+
+.cube-tile-body {
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.cube-tile-name {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--el-text-color-primary);
+}
+
+.cube-tile-owner {
+    font-size: 12px;
+}
+
+.cube-tile-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.cube-tile-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.cube-tile-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+:global(.overview-loading .el-loading-text) {
+    color: var(--el-text-color-primary) !important;
+    font-size: 14px;
 }
 </style>

@@ -31,11 +31,13 @@
                                 :presetComparisonsSelect="presetComparisonsSelect"
                                 :addCube="addCube"
                                 :removeCube="removeCube"
+                                :clearCubes="clearCubes"
                                 :loadCollection="loadCollection"
                                 :userCollections="userCollections"
                                 :saveCollection="saveCollection"
                                 :loadUserCollection="loadUserCollection"
                                 :removeCollection="removeCollection"
+                                :loadingProgress="loadingProgress"
                             />
                         </el-tab-pane>
 
@@ -83,8 +85,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide, onMounted, nextTick } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ref, computed, reactive, watch, provide, onMounted, nextTick } from 'vue';
+import { ElMessage, ElNotification } from 'element-plus';
 import { presetCollections } from './presets';
 import { bindStorage } from './util/VueLocalStorage';
 import type { UserCollection } from './types';
@@ -127,6 +129,30 @@ const presetComparisons = Object.fromEntries(
 );
 
 const loadedCubes = ref({});
+
+// Loading progress for batch cube loads (addCubes)
+const loadingProgress = reactive({ active: false, loaded: 0, total: 0 });
+
+// Tracks which preset (by name) is currently loaded, so the URL can reflect
+// ?preset=name instead of a long list of cube IDs.
+const activePresetName = ref<string | null>(null);
+
+// Auto-sync the URL with the currently loaded state so the address bar is
+// always a valid share link. Fires whenever any cube is added or removed.
+watch(
+    () => Object.keys(loadedCubes.value).join(','),
+    (ids) => {
+        if (!ids) {
+            history.replaceState(null, '', window.location.pathname);
+        } else if (activePresetName.value) {
+            const params = new URLSearchParams({ preset: activePresetName.value });
+            history.replaceState(null, '', `?${params.toString()}`);
+        } else {
+            const params = new URLSearchParams({ cubes: ids });
+            history.replaceState(null, '', `?${params.toString()}`);
+        }
+    },
+);
 
 const activeTab = ref('overview');
 
@@ -195,23 +221,33 @@ const overviewTableData = computed(() => {
 });
 
 const addCubes = async (cubeIds: string[]) => {
-    await ensureScryfallInitialized();
+    activePresetName.value = null;
+    loadingProgress.active = true;
+    loadingProgress.total = cubeIds.length;
+    loadingProgress.loaded = 0;
     const queue = [...cubeIds];
     const worker = async () => {
         while (queue.length > 0) {
             const id = queue.shift()!;
             try {
+                // Fetch from CubeCobra immediately — no Scryfall dependency yet.
                 const rawCube = await getCubeData(id);
+                // Scryfall must be ready before enrichment; await here so the
+                // network round-trip above can overlap with Scryfall initializing.
+                await ensureScryfallInitialized();
                 const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
                 await nextTick();
             } catch (e) {
                 console.error(`Error loading cube: ${id}`, e);
                 ElMessage({ message: `Failed to load cube: ${id}`, type: 'error', duration: 4000 });
+            } finally {
+                loadingProgress.loaded += 1;
             }
         }
     };
     await Promise.all(Array.from({ length: 2 }, worker));
+    loadingProgress.active = false;
 };
 
 const saveCollection = (name: string) => {
@@ -236,8 +272,6 @@ const removeCollection = (name: string) => {
 };
 
 const addCube = async (cubeId: string) => {
-    await ensureScryfallInitialized();
-
     // Attempt to take just the Cube ID based on multiple possible input formats.
     const input = cubeId.split('?')[0].trim();
     const [ id ] = input.match(/([^\/]+)\/?$/);
@@ -246,8 +280,13 @@ const addCube = async (cubeId: string) => {
     if (!Object.values(loadedCubes.value).some(cube => cube.id === id || cube.shortId === id)) {
         console.time(`Add Cube: ${id}`);
         try {
+            // Fetch from CubeCobra immediately — no Scryfall dependency yet.
             const rawCube = await getCubeData(id);
+            // Scryfall must be ready before enrichment; await here so the
+            // network round-trip above can overlap with Scryfall initializing.
+            await ensureScryfallInitialized();
             const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
+            activePresetName.value = null;
             loadedCubes.value[enrichedCube.id] = enrichedCube;
         } catch (e) {
             console.error("Error loading cube:", e);
@@ -263,15 +302,27 @@ const loadCollection = async (presetName: string) => {
         console.time(`Render Collection: ${presetName}`);
         console.time(`Load Collection: ${presetName}`);
 
-        await ensureScryfallInitialized();
+        loadingProgress.active = true;
+        loadingProgress.total = 1;
+        loadingProgress.loaded = 0;
 
-        const cubesModule = await presetComparisons[presetName]();
-        preloadSimiliarityMatrix(cubesModule.default.similarities);
-        const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+        try {
+            await ensureScryfallInitialized();
 
-        console.timeEnd(`Load Collection: ${presetName}`);
-        loadedCubes.value = enrichedCubes;
-        await nextTick();
+            const cubesModule = await presetComparisons[presetName]();
+            preloadSimiliarityMatrix(cubesModule.default.similarities);
+            const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+
+            console.timeEnd(`Load Collection: ${presetName}`);
+            // Set the active preset BEFORE updating loadedCubes so the URL watcher
+            // writes ?preset=name rather than serializing the cube IDs.
+            activePresetName.value = presetCollections.find(p => p.label === presetName)?.name ?? null;
+            loadedCubes.value = enrichedCubes;
+            loadingProgress.loaded = 1;
+            await nextTick();
+        } finally {
+            loadingProgress.active = false;
+        }
 
         console.timeEnd(`Render Collection: ${presetName}`);
     }
@@ -282,12 +333,53 @@ const loadCollection = async (presetName: string) => {
  *  Doing a terrible job currently with these multiple IDs, and I think mutating the reactive object is done improperly.
  */
 const removeCube = (cubeId: string) => {
+    activePresetName.value = null;
     delete loadedCubes.value[cubeId];
+};
+
+const clearCubes = () => {
+    activePresetName.value = null;
+    loadedCubes.value = {};
 };
 
 onMounted(async () => {
     // Start scryfall initialization in the background without blocking the UI
     ensureScryfallInitialized();
+
+    // Load cubes or a preset collection from URL query parameters (share links).
+    // The URL watcher above keeps the address bar in sync from this point forward,
+    // so no manual history.replaceState is needed here.
+    const params = new URLSearchParams(window.location.search);
+    const presetParam = params.get('preset');
+    const cubesParam = params.get('cubes');
+
+    if (presetParam) {
+        const preset = presetCollections.find(p => p.name === presetParam);
+        if (preset && preset.label in presetComparisons) {
+            await loadCollection(preset.label);
+        }
+    } else if (cubesParam) {
+        const ids = cubesParam.split(',').map(s => s.trim()).filter(Boolean);
+        if (ids.length > 0) {
+            await addCubes(ids);
+
+            // Show a non-blocking hint only if the loaded set isn't already saved
+            const loadedIds = Object.keys(loadedCubes.value);
+            const alreadySaved = userCollections.value.some(col => {
+                const savedSet = new Set(col.cubeIds);
+                return savedSet.size === loadedIds.length && loadedIds.every(id => savedSet.has(id));
+            });
+            if (!alreadySaved && loadedIds.length > 0) {
+                ElNotification({
+                    type: 'info',
+                    title: 'Share link loaded',
+                    message: `${loadedIds.length} cube${loadedIds.length !== 1 ? 's' : ''} loaded. Use "Save As…" to keep this collection.`,
+                    duration: 6000,
+                    position: 'bottom-right',
+                });
+            }
+        }
+    }
 });
 </script>
 
@@ -307,6 +399,15 @@ html.dark {
     --el-color-primary-dark-7: #4b48d6;
     --el-color-primary-dark-8: #3f3db6;
     --el-color-primary-dark-9: #3f3db6;
+
+    --el-dropdown-menuItem-hover-fill: rgba(255, 255, 255, 0.08);
+    --el-dropdown-menuItem-hover-color: var(--el-text-color-primary);
+}
+
+html.dark .el-dropdown,
+html.dark .el-dropdown__popper {
+    --el-dropdown-menuItem-hover-fill: rgba(255, 255, 255, 0.08);
+    --el-dropdown-menuItem-hover-color: var(--el-text-color-primary);
 }
 
 .el-button:hover {

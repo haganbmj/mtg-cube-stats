@@ -61,7 +61,7 @@ const highlightedSeries = computed(() => {
                 value = cube.stats.averageNonLandCmc;
                 cardCount = cube.stats.totalCards - cube.stats.landCards;
             } else {
-                const colorData = cube.stats.cmcByStrictColor[dim.key];
+                const colorData = cube.stats.cmcByStrictColorIdentity[dim.key];
                 if (colorData && colorData.count > 0) {
                     value = colorData.totalCmc / colorData.count;
                     cardCount = colorData.count;
@@ -94,8 +94,8 @@ const chartOptions = computed(() => {
             if (dim.key === 'A') {
                 return cube.stats.averageNonLandCmc;
             }
-            return cube.stats.cmcByStrictColor[dim.key] ?
-                (cube.stats.cmcByStrictColor[dim.key].totalCmc / cube.stats.cmcByStrictColor[dim.key].count) :
+            return cube.stats.cmcByStrictColorIdentity[dim.key] ?
+                (cube.stats.cmcByStrictColorIdentity[dim.key].totalCmc / cube.stats.cmcByStrictColorIdentity[dim.key].count) :
                 0;
         });
 

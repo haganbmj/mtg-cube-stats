@@ -161,7 +161,7 @@
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50"><span>Avg. Card Popularity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }}
+                                    {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50"><span>Rarity Score <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
@@ -238,7 +238,7 @@
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
                             <div style="height: 300px;">
-                                <ColorIdentityDistributionChart class="chart" :colorDistribution="activeCube.stats?.colorDistribution || {}" />
+                                <ColorIdentityDistributionChart class="chart" :colorDistribution="activeCube.stats?.colorIdentityDistribution || {}" />
                             </div>
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
@@ -299,9 +299,9 @@
                                         :show-after="100"
                                     >
                                         <template #content>
-                                            <el-image :src="card.urlFront" fit="contain" style="width: 200px;" />
+                                            <el-image :src="card.urlFront" fit="contain" :class="['card-image', card.setCode?.toLowerCase()]" style="width: 200px;" />
                                         </template>
-                                        <div class="token-source-name">{{ card.name }}</div>
+                                        <el-link @click="openCardDetailDialog?.(card.oracleId)" class="token-source-name" underline="never">{{ card.name }}</el-link>
                                     </el-tooltip>
                                 </div>
                             </div>
@@ -353,7 +353,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import { useDateFormat } from '@vueuse/core';
 import { Loading, InfoFilled, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
@@ -402,6 +402,8 @@ const props = defineProps({
 });
 
 defineEmits(['update:visible']);
+
+const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
 const activeCubeId = ref<string | null>(null);
 
@@ -647,8 +649,9 @@ const tokensTabData = computed(() => {
 .token-source-name {
     font-size: 12px;
     color: var(--el-text-color-regular);
-    cursor: default;
+    cursor: pointer;
     padding: 1px 0;
+    justify-content: flex-start;
 
     &:hover {
         color: var(--el-color-primary);
