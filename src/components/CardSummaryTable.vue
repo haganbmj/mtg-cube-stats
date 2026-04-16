@@ -68,10 +68,12 @@
                 :class="['card-image', card.setCode?.toLowerCase(), { 'card-image--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId) }]"
                 style="width: 100%; aspect-ratio: 63 / 88;"
             />
-            <div class="visual-card-label" :class="{
-                'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
-                'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
-            }">
+            <div
+                class="visual-card-label" :class="{
+                    'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
+                    'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
+                }"
+            >
                 <el-text size="small" truncated>{{ card.name }}</el-text>
                 <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>

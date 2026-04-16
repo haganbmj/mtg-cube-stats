@@ -34,7 +34,7 @@
                         <!-- Card thumbnails -->
                         <div class="cluster-thumbnails">
                             <el-tooltip
-                                v-for="card in cluster.topMatchingCards"
+                                v-for="card in visibleCards(cluster)"
                                 :key="card.oracleId"
                                 effect="dark"
                                 placement="top"
@@ -60,9 +60,27 @@
                                     />
                                 </div>
                             </el-tooltip>
-                            <el-text v-if="cluster.matchCount > cluster.topMatchingCards.length" type="info" size="small" class="more-cards">
-                                +{{ cluster.matchCount - cluster.topMatchingCards.length }} more
-                            </el-text>
+                            <div class="show-more-wrap">
+                                <el-button
+                                    v-if="shownCards(cluster) < cluster.matchCount"
+                                    link
+                                    type="primary"
+                                    size="small"
+                                    @click="expandCluster(cluster.id)"
+                                >
+                                    Show {{ Math.min(PAGE_SIZE, cluster.matchCount - shownCards(cluster)) }} more
+                                    ({{ cluster.matchCount - shownCards(cluster) }} remaining)
+                                </el-button>
+                                <el-button
+                                    v-if="shownCards(cluster) > INITIAL_CARDS"
+                                    link
+                                    type="info"
+                                    size="small"
+                                    @click="collapseCluster(cluster.id)"
+                                >
+                                    Show less
+                                </el-button>
+                            </div>
                         </div><!-- end cluster-thumbnails -->
                     </div><!-- end cluster-body -->
                 </div><!-- end cluster-section -->
@@ -76,7 +94,8 @@ import { computed, ref } from 'vue';
 import type { CubeCard } from '../../types/cube';
 import { getArchetypeDefinitions, getCardClusterAssignments } from '../../util/MLArchetypeDetection';
 
-const MAX_CARDS_PER_CLUSTER = 10;
+const INITIAL_CARDS = 10;
+const PAGE_SIZE = 10;
 
 const MTG_COLORS: Record<string, string> = {
     W: '#f0ede0',
@@ -178,7 +197,6 @@ interface RelevantCluster {
     matchCount: number;
     colorCounts: Record<string, number>;
     allMatchingCards: MatchingCard[];
-    topMatchingCards: MatchingCard[];
 }
 
 const relevantClusters = computed<RelevantCluster[]>(() => {
@@ -235,13 +253,33 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
             matchCount: allMatching.length,
             colorCounts,
             allMatchingCards: allMatching,
-            topMatchingCards: allMatching.slice(0, MAX_CARDS_PER_CLUSTER),
+            topMatchingCards: allMatching.slice(0, INITIAL_CARDS),
         });
     }
 
     results.sort((a, b) => b.matchCount - a.matchCount);
     return results;
 });
+
+// Per-cluster expanded card count (keyed by cluster.id).
+const expandedCounts = ref<Record<number, number>>({});
+
+function shownCards(cluster: { id: number; matchCount: number }): number {
+    return expandedCounts.value[cluster.id] ?? INITIAL_CARDS;
+}
+
+function visibleCards(cluster: { id: number; allMatchingCards: { oracleId: string; name: string; urlFront: string; weight: number; colorIdentity: string[] }[] }) {
+    return cluster.allMatchingCards.slice(0, shownCards(cluster));
+}
+
+function expandCluster(clusterId: number) {
+    const current = expandedCounts.value[clusterId] ?? INITIAL_CARDS;
+    expandedCounts.value = { ...expandedCounts.value, [clusterId]: current + PAGE_SIZE };
+}
+
+function collapseCluster(clusterId: number) {
+    expandedCounts.value = { ...expandedCounts.value, [clusterId]: INITIAL_CARDS };
+}
 </script>
 
 
@@ -305,8 +343,8 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
 }
 
 .card-thumb-wrap {
-    width: 100px;
-    height: 140px;
+    width: 175px;
+    height: 245px;
     border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
@@ -333,5 +371,14 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
 
 .more-cards {
     padding: 0 8px;
+}
+
+.show-more-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 4px 8px;
+    align-self: flex-end;
 }
 </style>

@@ -17,11 +17,11 @@ const CATEGORIES_FILE = './data/cubecobra-cube-categories.json';
 // ---------------------------------------------------------------------------
 
 // Number of archetypes (k-means clusters) to discover.
-const NUM_ARCHETYPES = 100;
+const NUM_ARCHETYPES = 200;
 // Number of k-means restarts for stability.
 const KMEANS_RESTARTS = 10;
 // Cube classification: broad cube categories derived from cluster profiles.
-const NUM_CUBE_CATEGORIES = 12;
+const NUM_CUBE_CATEGORIES = 30;
 // Minimum cube size (cards) to include in cube classification.
 const MIN_CUBE_CARDS = 360;
 // Maximum cubes to use for k-means fit (random sample for speed).
@@ -222,39 +222,92 @@ const kmeansResult = kmeans(embeddings, NUM_ARCHETYPES, {
     seed: 42,
 });
 
-const { clusters, centroids } = kmeansResult;
+const { centroids } = kmeansResult;
+console.timeEnd('kmeans');
 
+// ---------------------------------------------------------------------------
+// Step 5: Compute card distinctiveness and build cluster outputs
+// ---------------------------------------------------------------------------
+// For each card we compute distances to ALL k centroids.  The "distinctiveness"
+// of a card for its primary cluster is the ratio:
+//
+//   distinctiveness = distance_to_2nd_nearest / distance_to_nearest
+//
+// A ratio of 3 means the card is 3× closer to cluster A than cluster B — it
+// strongly identifies cluster A.  A ratio near 1 means the card sits between
+// clusters (e.g. a generic color staple that appears everywhere).
+//
+// Using distinctiveness as the sort key, each cluster's representative cards
+// are those most exclusive to it, not merely those closest to its centroid.
+
+console.log('Step 5: Computing card distinctiveness and building cluster outputs ...');
+console.time('clusters');
+
+interface CardDistData {
+    kIdx: number;           // primary k-means cluster index
+    distinctiveness: number;// d2/d1, capped at 5.0 (higher = more exclusive)
+    secondaryKIdxs: number[];// k-means indices within 1.5× of primary distance
+}
+
+const cardDistData: CardDistData[] = [];
+
+for (let i = 0; i < numEmbedded; i++) {
+    const embedding = embeddings[i];
+
+    // Compute L2 distance from this embedding to every centroid.
+    const allDists: { kIdx: number; dist: number }[] = new Array(centroids.length);
+    for (let k = 0; k < centroids.length; k++) {
+        const centroid = centroids[k];
+        let distSq = 0;
+        for (let d = 0; d < embeddingDim; d++) {
+            const diff = embedding[d] - centroid[d];
+            distSq += diff * diff;
+        }
+        allDists[k] = { kIdx: k, dist: Math.sqrt(distSq) };
+    }
+    allDists.sort((a, b) => a.dist - b.dist);
+
+    const d1 = allDists[0].dist;
+    const d2 = allDists[1]?.dist ?? d1 * 5;
+    // Guard against degenerate d1 ≈ 0 (card exactly at centroid).
+    const distinctiveness = Math.min(d1 > 1e-9 ? d2 / d1 : 5.0, 5.0);
+
+    // Secondary assignments: any centroid within 1.5× of primary distance.
+    const secondaryKIdxs: number[] = [];
+    for (let j = 1; j < Math.min(allDists.length, 6); j++) {
+        if (allDists[j].dist > d1 * 1.5) break;
+        secondaryKIdxs.push(allDists[j].kIdx);
+    }
+
+    cardDistData.push({
+        kIdx: allDists[0].kIdx,
+        distinctiveness,
+        secondaryKIdxs,
+    });
+}
+
+// Build per-cluster card lists sorted by distinctiveness DESC.
 interface ClusterCard {
     oracleId: string;
-    distance: number;
+    distinctiveness: number;
 }
 
 const clusterCards: ClusterCard[][] = Array.from({ length: NUM_ARCHETYPES }, () => []);
 
 for (let i = 0; i < numEmbedded; i++) {
-    const k = clusters[i];
-    const centroid = centroids[k];
-    let distSq = 0;
-    for (let d = 0; d < embeddingDim; d++) {
-        const diff = embeddings[i][d] - centroid[d];
-        distSq += diff * diff;
-    }
-    clusterCards[k].push({
+    clusterCards[cardDistData[i].kIdx].push({
         oracleId: embeddedCards[i],
-        distance: Math.sqrt(distSq),
+        distinctiveness: cardDistData[i].distinctiveness,
     });
 }
 
-// Sort each cluster's cards by distance (closest first = most representative).
+// Sort by distinctiveness DESC — most exclusive cards first.
 for (const cards of clusterCards) {
-    cards.sort((a, b) => a.distance - b.distance);
+    cards.sort((a, b) => b.distinctiveness - a.distinctiveness);
 }
 
-console.timeEnd('kmeans');
-
 // ---------------------------------------------------------------------------
-// Step 5: Build cluster output
-// ---------------------------------------------------------------------------
+// (continued Step 5) Build cluster output objects
 // Each cluster is represented by all its member cards sorted by proximity
 // to the centroid. The label is derived from the top representative cards.
 
@@ -274,15 +327,19 @@ for (let k = 0; k < NUM_ARCHETYPES; k++) {
     const members = clusterCards[k];
     if (members.length === 0) continue;
 
-    // All member cards with distance-based weight (1.0 = closest to centroid).
-    const maxDist = members[members.length - 1].distance || 1;
-    const cards = members.map(({ oracleId, distance }) => ({
+    // Normalize distinctiveness to [0, 1] within this cluster so weights are
+    // comparable across clusters regardless of their absolute spread.
+    const maxD = members[0].distinctiveness;
+    const minD = members[members.length - 1].distinctiveness;
+    const range = maxD - minD > 0 ? maxD - minD : 1;
+
+    const cards = members.map(({ oracleId, distinctiveness }) => ({
         oracleId,
-        weight: maxDist > 0 ? Math.round((1 - distance / maxDist) * 1000) / 1000 : 1,
+        weight: Math.round(((distinctiveness - minD) / range) * 1000) / 1000,
         name: cardMeta.get(oracleId)?.name ?? 'Unknown',
     }));
 
-    // Label: top 3 representative card names (closest to centroid).
+    // Label: top 3 most distinctive card names (highest exclusivity first).
     const label = cards.slice(0, 3).map(c => c.name).join(', ');
 
     clusterOutputs.push({
@@ -293,10 +350,17 @@ for (let k = 0; k < NUM_ARCHETYPES; k++) {
     });
 }
 
-// Sort clusters by member count descending.
+// Sort clusters by member count descending, reassign IDs.
 clusterOutputs.sort((a, b) => b.memberCount - a.memberCount);
-// Reassign IDs after sorting.
-clusterOutputs.forEach((c, i) => { c.id = i; });
+// Track original k-means index before ID reassignment.
+const kIdxToClusterId = new Map<number, number>();
+for (const cluster of clusterOutputs) {
+    kIdxToClusterId.set(cluster.id, cluster.id); // temporary (id still = kIdx here)
+}
+clusterOutputs.forEach((c, i) => {
+    kIdxToClusterId.set(c.id, i); // remap kIdx → new sorted id
+    c.id = i;
+});
 
 console.timeEnd('clusters');
 
@@ -307,8 +371,6 @@ console.timeEnd('clusters');
 console.log('Step 6: Building card-cluster lookup ...');
 console.time('card-lookup');
 
-// Each card belongs to one primary cluster, but we also compute
-// proximity to other cluster centroids for secondary assignments.
 interface CardClusterAssignment {
     clusterId: number;
     weight: number;
@@ -316,58 +378,32 @@ interface CardClusterAssignment {
 
 const cardClusters: Record<string, CardClusterAssignment[]> = {};
 
-// Build a mapping from cluster output id to original k-means cluster index.
-const clusterIdToKmeansIdx = new Map<number, number>();
-for (const cluster of clusterOutputs) {
-    if (cluster.cards.length === 0) continue;
-    const firstCardId = cluster.cards[0].oracleId;
-    for (let k = 0; k < clusterCards.length; k++) {
-        if (clusterCards[k].length > 0 && clusterCards[k][0].oracleId === firstCardId) {
-            clusterIdToKmeansIdx.set(cluster.id, k);
-            break;
-        }
-    }
-}
+// cardDistData already contains per-card kIdx, distinctiveness, and secondaryKIdxs
+// from Step 5. We just need to translate k-means indices to cluster output IDs.
 
 for (let i = 0; i < numEmbedded; i++) {
     const oracleId = embeddedCards[i];
-    const embedding = embeddings[i];
+    const { kIdx, distinctiveness, secondaryKIdxs } = cardDistData[i];
 
-    // Compute distance to all centroids.
-    const distances: { clusterId: number; distance: number }[] = [];
-    for (const cluster of clusterOutputs) {
-        const kIdx = clusterIdToKmeansIdx.get(cluster.id);
-        if (kIdx === undefined) continue;
+    const primaryClusterId = kIdxToClusterId.get(kIdx);
+    if (primaryClusterId === undefined) continue;
 
-        const centroid = centroids[kIdx];
-        let distSq = 0;
-        for (let d = 0; d < embeddingDim; d++) {
-            const diff = embedding[d] - centroid[d];
-            distSq += diff * diff;
-        }
-        distances.push({ clusterId: cluster.id, distance: Math.sqrt(distSq) });
-    }
-
-    distances.sort((a, b) => a.distance - b.distance);
-
-    // Primary assignment (nearest centroid) plus close secondary assignments.
-    const primary = distances[0];
-    if (!primary) continue;
-
+    // Primary assignment: weight = distinctiveness (capped at 5, normalized to cluster's [0,1] range in Step 5).
+    // Use the raw distinctiveness here so the scale is consistent across clusters.
     const assignments: CardClusterAssignment[] = [{
-        clusterId: primary.clusterId,
-        weight: 1.0,
+        clusterId: primaryClusterId,
+        weight: Math.round(distinctiveness * 1000) / 1000,
     }];
 
-    // Add secondary assignments if within 1.5x of primary distance.
-    for (let d = 1; d < Math.min(distances.length, 5); d++) {
-        const ratio = distances[d].distance / (primary.distance || 1);
-        if (ratio <= 1.5) {
-            assignments.push({
-                clusterId: distances[d].clusterId,
-                weight: Math.round((1 / ratio) * 1000) / 1000,
-            });
-        }
+    // Secondary assignments for cards near multiple cluster boundaries.
+    for (const secKIdx of secondaryKIdxs) {
+        const secClusterId = kIdxToClusterId.get(secKIdx);
+        if (secClusterId === undefined) continue;
+        // Secondary weight is lower — use half of primary distinctiveness as a proxy.
+        assignments.push({
+            clusterId: secClusterId,
+            weight: Math.round((distinctiveness * 0.5) * 1000) / 1000,
+        });
     }
 
     cardClusters[oracleId] = assignments;
