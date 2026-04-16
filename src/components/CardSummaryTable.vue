@@ -48,22 +48,25 @@
             <el-button size="small" @click="toggleVisualSortOrder">
                 {{ visualSortOrder === 'ascending' ? '↑ Ascending' : '↓ Descending' }}
             </el-button>
+            <el-divider direction="vertical" />
+            <span class="sort-label">Columns</span>
+            <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" style="width: 90px;" controls-position="right" />
         </el-space>
     </el-row>
 
-    <div v-if="visualDisplayVisible" class="visual-card-grid">
+    <div v-if="visualDisplayVisible" class="visual-card-grid" :style="{ gridTemplateColumns: `repeat(${config.visualColumnCount}, 1fr)` }">
         <div
             v-for="card in visibleRows"
             :key="card.oracleId"
             class="visual-card-item"
-            @click="openCardDetailDialog(card.oracleId)"
+            @click="openCardDetailDialog?.(card.oracleId)"
         >
             <el-image
                 :src="card.urlFront"
                 fit="contain"
                 :alt="card.name"
                 :class="['card-image', card.setCode?.toLowerCase(), { 'card-image--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId) }]"
-                style="width: 100%;"
+                style="width: 100%; aspect-ratio: 63 / 88;"
             />
             <div class="visual-card-label" :class="{
                 'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
@@ -94,7 +97,7 @@
                         :class="'card-image ' + row.setCode?.toLowerCase()"
                     />
                 </template>
-                <el-link @click="openCardDetailDialog(row.oracleId)">{{ row.name }}</el-link>
+                <el-link @click="openCardDetailDialog?.(row.oracleId)">{{ row.name }}</el-link>
             </el-tooltip>
         </template>
 
@@ -203,7 +206,7 @@
                 <el-checkbox
                     :model-value="isGroupAllChecked(group.options)"
                     :indeterminate="isGroupIndeterminate(group.options)"
-                    @change="(v) => toggleGroupColumns(group.options, v as boolean)"
+                    @change="(v: boolean | string | number) => toggleGroupColumns(group.options, v as boolean)"
                 ><strong>{{ group.label }}</strong></el-checkbox>
             </div>
             <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
@@ -251,7 +254,7 @@ const props = defineProps({
     },
 });
 
-const openCardDetailDialog = inject('openCardDetailDialog');
+const openCardDetailDialog = inject<(id: string) => void>('openCardDetailDialog');
 
 const currentPage = ref(1);
 const pageSize = ref(50);
@@ -297,6 +300,7 @@ const defaultVisibleColumns = [
 
 const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
+    visualColumnCount: 6,
 };
 
 const config = bindStorage('card-summary-table-config', (v) => {
@@ -304,7 +308,8 @@ const config = bindStorage('card-summary-table-config', (v) => {
         return { ...defaultConfig };
     }
     return {
-        visibleColumns: Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns],
+        visibleColumns: (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[],
+        visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : 6,
     };
 });
 
@@ -594,8 +599,8 @@ const tableData = computed(() => {
     if (Object.keys(props.loadedCubes).length === 0) {
         return [];
     }
-    const allCards = Object.keys(props.loadedCubes).reduce((acc, key) => {
-        props.loadedCubes[key].cards.forEach(card => {
+    const allCards = Object.keys(props.loadedCubes).reduce((acc: Record<string, any>, key) => {
+        props.loadedCubes[key].cards.forEach((card: any) => {
             if (acc[card.oracleId] === undefined) {
                 acc[card.oracleId] = {
                     ...card,
@@ -614,7 +619,7 @@ const tableData = computed(() => {
             }
         });
         return acc;
-    }, {});
+    }, {} as Record<string, any>);
 
     return Object.values(allCards);
 });
@@ -630,9 +635,10 @@ const sortedRows = computed(() => {
         return alphaSorted;
     }
 
+    const sort = activeSort.value;
     return alphaSorted.slice(0).sort((a, b) => {
-        const sortKey = activeSort.value.prop;
-        const dir = activeSort.value.order === 'ascending' ? 1 : -1;
+        const sortKey = sort.prop;
+        const dir = sort.order === 'ascending' ? 1 : -1;
 
         // Rarity sorting with defined ordering
         if (sortKey === 'minRarity') {
@@ -728,16 +734,14 @@ const visibleRows = computed(() => {
 
 .visual-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 300px));
     gap: 12px;
-    justify-content: center;
 }
 
 .visual-card-item {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    min-width: 0;
 
     &:hover .card-image {
         opacity: 0.85;
