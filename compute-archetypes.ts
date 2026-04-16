@@ -17,7 +17,7 @@ const CATEGORIES_FILE = './data/cubecobra-cube-categories.json';
 // ---------------------------------------------------------------------------
 
 // Number of archetypes (k-means clusters) to discover.
-const NUM_ARCHETYPES = 200;
+const NUM_ARCHETYPES = 150;
 // Number of k-means restarts for stability.
 const KMEANS_RESTARTS = 10;
 // Cube classification: broad cube categories derived from cluster profiles.

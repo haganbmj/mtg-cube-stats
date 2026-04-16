@@ -322,7 +322,7 @@
                 </el-tab-pane>
 
                 <el-tab-pane label="Clusters" :lazy="true">
-                    <ClusterGraphChart :cards="activeCubeCards" />
+                    <ClusterGraphChart :cards="activeCubeCards" :category="cubeCategory" />
                 </el-tab-pane>
 
                 <el-tab-pane label="Sample Pack" :lazy="true">

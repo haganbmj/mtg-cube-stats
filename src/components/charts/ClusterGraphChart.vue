@@ -1,8 +1,16 @@
 <template>
     <div class="cluster-graph-container">
-        <el-form inline style="margin-bottom: 8px;">
+        <el-form inline style="margin-bottom: 8px; align-items: center;">
             <el-form-item label="Min Cards per Cluster:">
                 <el-input-number v-model="minCardCount" :min="1" :max="50" :step="1" controls-position="right" style="width: 120px;" />
+            </el-form-item>
+            <el-form-item label="Max Cluster Overlap:">
+                <el-tooltip content="Hide clusters whose card sets are too similar to a higher-ranked cluster. Lower values deduplicate more aggressively." placement="top" effect="dark">
+                    <el-input-number v-model="maxJaccard" :min="0.1" :max="1.0" :step="0.05" :precision="2" controls-position="right" style="width: 120px;" />
+                </el-tooltip>
+            </el-form-item>
+            <el-form-item>
+                <span class="cluster-count-label">{{ relevantClusters.length }} cluster{{ relevantClusters.length === 1 ? '' : 's' }} match</span>
             </el-form-item>
         </el-form>
 
@@ -12,10 +20,12 @@
 
         <template v-else>
             <div class="cluster-cards-grid">
-                <div v-for="(cluster, index) in relevantClusters" :key="cluster.id" class="cluster-section">
+                <div v-for="(cluster, index) in displayedClusters" :key="cluster.id" class="cluster-section">
                     <div class="cluster-header">
                         <span class="cluster-label">Cluster {{ index + 1 }}</span>
-                        <el-tag size="small" type="info">{{ cluster.matchCount }} cards</el-tag>
+                        <el-tooltip content="Cards in this cube that belong to this cluster / total cards in the cluster globally" placement="right" effect="dark">
+                            <el-tag size="small" type="info">{{ cluster.matchCount }} / {{ cluster.memberCount }} cards</el-tag>
+                        </el-tooltip>
                     </div>
                     <div class="cluster-body">
                         <!-- Color distribution donut -->
@@ -31,41 +41,43 @@
                                 />
                             </svg>
                         </el-tooltip>
-                        <!-- Card thumbnails -->
-                        <div class="cluster-thumbnails">
-                            <el-tooltip
-                                v-for="card in visibleCards(cluster)"
-                                :key="card.oracleId"
-                                effect="dark"
-                                placement="top"
-                                popper-class="card-image-tooltip"
-                                :show-after="400"
-                            >
-                                <template #content>
-                                    <div class="card-tooltip-content">
+                        <!-- Card thumbnails + show more -->
+                        <div class="cluster-content">
+                            <div class="cluster-thumbnails">
+                                <el-tooltip
+                                    v-for="card in visibleCards(cluster)"
+                                    :key="card.oracleId"
+                                    effect="dark"
+                                    placement="top"
+                                    popper-class="card-image-tooltip"
+                                    :show-after="400"
+                                >
+                                    <template #content>
+                                        <div class="card-tooltip-content">
+                                            <el-image
+                                                :src="card.urlFront"
+                                                fit="contain"
+                                                :alt="card.name"
+                                                class="card-tooltip-image"
+                                            />
+                                        </div>
+                                    </template>
+                                    <div class="card-thumb-wrap">
                                         <el-image
                                             :src="card.urlFront"
-                                            fit="contain"
+                                            fit="cover"
                                             :alt="card.name"
-                                            class="card-tooltip-image"
+                                            class="card-thumb"
                                         />
                                     </div>
-                                </template>
-                                <div class="card-thumb-wrap">
-                                    <el-image
-                                        :src="card.urlFront"
-                                        fit="cover"
-                                        :alt="card.name"
-                                        class="card-thumb"
-                                    />
-                                </div>
-                            </el-tooltip>
-                            <div class="show-more-wrap">
+                                </el-tooltip>
+                            </div><!-- end cluster-thumbnails -->
+                            <div v-if="shownCards(cluster) < cluster.matchCount || shownCards(cluster) > INITIAL_CARDS" class="show-more-row">
                                 <el-button
                                     v-if="shownCards(cluster) < cluster.matchCount"
-                                    link
-                                    type="primary"
+                                    plain
                                     size="small"
+                                    style="flex: 1;"
                                     @click="expandCluster(cluster.id)"
                                 >
                                     Show {{ Math.min(PAGE_SIZE, cluster.matchCount - shownCards(cluster)) }} more
@@ -73,18 +85,34 @@
                                 </el-button>
                                 <el-button
                                     v-if="shownCards(cluster) > INITIAL_CARDS"
-                                    link
-                                    type="info"
+                                    plain
                                     size="small"
+                                    style="flex: 1;"
                                     @click="collapseCluster(cluster.id)"
                                 >
                                     Show less
                                 </el-button>
                             </div>
-                        </div><!-- end cluster-thumbnails -->
+                        </div><!-- end cluster-content -->
                     </div><!-- end cluster-body -->
                 </div><!-- end cluster-section -->
             </div><!-- end cluster-cards-grid -->
+            <div v-if="relevantClusters.length > INITIAL_CLUSTERS" class="show-more-clusters-row">
+                <el-button
+                    v-if="!showAllClusters"
+                    plain
+                    @click="showAllClusters = true"
+                >
+                    Show {{ relevantClusters.length - INITIAL_CLUSTERS }} more clusters
+                </el-button>
+                <el-button
+                    v-else
+                    plain
+                    @click="showAllClusters = false"
+                >
+                    Show fewer clusters
+                </el-button>
+            </div>
         </template>
     </div>
 </template>
@@ -92,10 +120,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { CubeCard } from '../../types/cube';
+import type { CubeCategoryDefinition } from '../../util/CubeCategoryDetection';
 import { getArchetypeDefinitions, getCardClusterAssignments } from '../../util/MLArchetypeDetection';
 
-const INITIAL_CARDS = 10;
-const PAGE_SIZE = 10;
+const INITIAL_CARDS = 8;
+const PAGE_SIZE = 8;
+const INITIAL_CLUSTERS = 6;
 
 const MTG_COLORS: Record<string, string> = {
     W: '#f0ede0',
@@ -124,9 +154,15 @@ const props = defineProps({
         type: Array as () => CubeCard[],
         default: () => [],
     },
+    category: {
+        type: Object as () => CubeCategoryDefinition | null,
+        default: null,
+    },
 });
 
-const minCardCount = ref(5);
+const minCardCount = ref(10);
+const showAllClusters = ref(false);
+const maxJaccard = ref(0.5);
 
 function colorCategory(colorIdentity: string[] | undefined): string {
     if (!colorIdentity || colorIdentity.length === 0) return 'C';
@@ -195,6 +231,9 @@ interface MatchingCard {
 interface RelevantCluster {
     id: number;
     matchCount: number;
+    memberCount: number;
+    significance: number;
+    avgWeight: number;
     colorCounts: Record<string, number>;
     allMatchingCards: MatchingCard[];
 }
@@ -232,6 +271,24 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
         }
     }
 
+    // Cube-local cluster spread per card: how many matched clusters does this card appear in
+    // within THIS cube? A card exclusive to one cube cluster is more "vital" to it than one
+    // that drifts across five clusters (even if it's globally distinctive).
+    const cardCubeClusterCount = new Map<string, number>();
+    for (const matches of clusterMatchMap.values()) {
+        for (const m of matches) {
+            cardCubeClusterCount.set(m.oracleId, (cardCubeClusterCount.get(m.oracleId) ?? 0) + 1);
+        }
+    }
+
+    // Cube-internal totals: used to measure how concentrated the cube is in each cluster
+    // relative to its own spread. Computed across ALL cluster matches (pre-filter) so
+    // the denominator reflects the full archetype signal, not just the visible clusters.
+    const totalCubeMatches = Array.from(clusterMatchMap.values())
+        .reduce((sum, matches) => sum + matches.length, 0);
+    const numActiveClusters = Math.max(clusterMatchMap.size, 1);
+    const avgCubeMatchesPerCluster = totalCubeMatches / numActiveClusters;
+
     const allClusters = getArchetypeDefinitions();
     const results: RelevantCluster[] = [];
 
@@ -239,8 +296,14 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
         const allMatching = clusterMatchMap.get(cluster.id);
         if (!allMatching || allMatching.length < minCardCount.value) continue;
 
-        // Sort by weight descending (highest weight = closest to centroid first).
-        allMatching.sort((a, b) => b.weight - a.weight);
+        // Sort by weight descending (highest distinctiveness first).
+        // Use cube-local effective weight: global distinctiveness ÷ how many cube clusters
+        // the card appears in. Cards vital specifically to this cluster rank above generic
+        // inclusions that drift across multiple cube archetypes.
+        const effectiveWeight = (card: MatchingCard) =>
+            card.weight / Math.max(cardCubeClusterCount.get(card.oracleId) ?? 1, 1);
+
+        allMatching.sort((a, b) => effectiveWeight(b) - effectiveWeight(a));
 
         const colorCounts: Record<string, number> = {};
         for (const m of allMatching) {
@@ -248,18 +311,71 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
             colorCounts[cat] = (colorCounts[cat] || 0) + 1;
         }
 
+        // avgWeight uses cube-local effective weight so significance also rewards clusters
+        // where the matched cards are specifically vital to this cube (not generic filler).
+        const avgWeight = allMatching.reduce((s, m) => s + effectiveWeight(m), 0) / allMatching.length;
+
+        // Category-relative ratio: how much more of this cluster does the cube have
+        // compared to what its cube category typically expects?
+        // Clusters that are routine for this cube type are penalized; unusual ones are boosted.
+        let categoryRatio = 1.0;
+        if (props.category?.centroid) {
+            const actualFraction = allMatching.length / Math.max(cubeCards.length, 1);
+            // Use a small epsilon floor so zero-expectation clusters don't get infinite ratios.
+            const expectedFraction = Math.max(props.category.centroid[cluster.id] ?? 0, 0.002);
+            categoryRatio = Math.min(actualFraction / expectedFraction, 5.0);
+        }
+
+        // Significance: coverage (matchCount/memberCount) × distinctiveness × category surprise × internal concentration.
+        const internalConcentration = allMatching.length / Math.max(avgCubeMatchesPerCluster, 1);
+        const significance = (allMatching.length / (cluster.memberCount || 1)) * avgWeight * categoryRatio * internalConcentration;
+
         results.push({
             id: cluster.id,
             matchCount: allMatching.length,
+            memberCount: cluster.memberCount,
+            significance,
+            avgWeight,
             colorCounts,
             allMatchingCards: allMatching,
-            topMatchingCards: allMatching.slice(0, INITIAL_CARDS),
         });
     }
 
-    results.sort((a, b) => b.matchCount - a.matchCount);
-    return results;
+    results.sort((a, b) => b.significance - a.significance);
+
+    // Greedy Jaccard deduplication: iterate clusters in significance order, discard any
+    // cluster whose matched card set overlaps too heavily with a higher-ranked kept cluster.
+    // J(A,B) = |A∩B| / |A∪B|. Two clusters that describe the same cube cards are redundant;
+    // the more significant one already captures that archetype signal.
+    const kept: RelevantCluster[] = [];
+    const keptSets: Set<string>[] = [];
+
+    for (const cluster of results) {
+        const cardSet = new Set(cluster.allMatchingCards.map(c => c.oracleId));
+        let dominated = false;
+        for (const keptSet of keptSets) {
+            let intersection = 0;
+            for (const id of cardSet) {
+                if (keptSet.has(id)) intersection++;
+            }
+            const union = cardSet.size + keptSet.size - intersection;
+            if (union > 0 && intersection / union >= maxJaccard.value) {
+                dominated = true;
+                break;
+            }
+        }
+        if (!dominated) {
+            kept.push(cluster);
+            keptSets.push(cardSet);
+        }
+    }
+
+    return kept;
 });
+
+const displayedClusters = computed(() =>
+    showAllClusters.value ? relevantClusters.value : relevantClusters.value.slice(0, INITIAL_CLUSTERS),
+);
 
 // Per-cluster expanded card count (keyed by cluster.id).
 const expandedCounts = ref<Record<number, number>>({});
@@ -320,19 +436,31 @@ function collapseCluster(clusterId: number) {
     color: var(--el-text-color-primary);
 }
 
-.cluster-thumbnails {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-    flex: 1;
-    min-width: 0;
-}
-
 .cluster-body {
     display: flex;
     align-items: flex-start;
     gap: 12px;
+}
+
+.cluster-content {
+    container-type: inline-size;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cluster-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+@container (min-width: 900px) {
+    .cluster-thumbnails {
+        grid-template-columns: repeat(8, 1fr);
+    }
 }
 
 .color-donut {
@@ -343,8 +471,8 @@ function collapseCluster(clusterId: number) {
 }
 
 .card-thumb-wrap {
-    width: 175px;
-    height: 245px;
+    width: 100%;
+    aspect-ratio: 63 / 88;
     border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
@@ -369,16 +497,20 @@ function collapseCluster(clusterId: number) {
     width: 280px;
 }
 
-.more-cards {
-    padding: 0 8px;
+.show-more-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
 }
 
-.show-more-wrap {
+.show-more-clusters-row {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 4px 8px;
-    align-self: flex-end;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.cluster-count-label {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
 }
 </style>

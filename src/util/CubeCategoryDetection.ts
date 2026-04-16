@@ -1,6 +1,6 @@
 import type { CubeCard } from '../types';
 
-interface CubeCategoryDefinition {
+export interface CubeCategoryDefinition {
     id: number;
     memberCount: number;
     /** Cluster IDs (0-indexed) most over-represented in this category. */
