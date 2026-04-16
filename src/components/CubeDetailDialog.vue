@@ -66,6 +66,12 @@
                                     </el-tag>
                                     <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
                                 </el-descriptions-item>
+                                <el-descriptions-item v-if="cubeCategory">
+                                    <template #label><el-tooltip content="Broad ML-derived cube category based on cluster profile similarity to 245K CubeCobra cubes" placement="top" :hide-after="50"><span>ML Category <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
+                                    <el-tooltip :content="`Top clusters: ${cubeCategory.topClusters.slice(0,5).map(id => 'Cluster ' + (id + 1)).join(', ')}`" placement="top" :hide-after="50">
+                                        <el-tag size="default" type="warning">Category {{ cubeCategory.id + 1 }}</el-tag>
+                                    </el-tooltip>
+                                </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Whether the cube is playable on MTG Arena" placement="top" :hide-after="50"><span>Arena Playable <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     <el-tag :type="activeCube.stats?.arenaPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.arenaPlayable ? 'Yes' : 'No' }}</el-tag>
@@ -315,12 +321,8 @@
                     />
                 </el-tab-pane>
 
-                <el-tab-pane label="Themes" :lazy="true">
-                    <ArchetypeAnalysis :cubeCards="activeCubeCards" />
-                </el-tab-pane>
-
-                <el-tab-pane label="Tag Synergy" name="tag-synergy" :lazy="true">
-                    <TagSynergyChart :cards="activeCubeCards" :peer-cubes="peerCubesForActive" />
+                <el-tab-pane label="Clusters" :lazy="true">
+                    <ClusterGraphChart :cards="activeCubeCards" />
                 </el-tab-pane>
 
                 <el-tab-pane label="Sample Pack" :lazy="true">
@@ -368,8 +370,9 @@ import LegalityDistributionChart from './charts/distributions/LegalityDistributi
 import KeywordTable from './KeywordTable.vue';
 import SetNameTable from './SetNameTable.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
-import ArchetypeAnalysis from './ArchetypeAnalysis.vue';
-import TagSynergyChart from './charts/TagSynergyChart.vue';
+import ClusterGraphChart from './charts/ClusterGraphChart.vue';
+import { initCubeCategoryData, classifyCube } from '../util/CubeCategoryDetection';
+import { archetypeCardClusters } from '../util/MLArchetypeDetection';
 
 const props = defineProps({
     visible: {
@@ -418,17 +421,19 @@ const activeCubeCards = computed(() => {
     return props.loadedCubes[activeCubeId.value]?.cards || props.cubeCards;
 });
 
+const cubeCategory = computed(() => {
+    const cards = activeCubeCards.value;
+    const clusters = archetypeCardClusters();
+    if (!clusters) return null;
+    return classifyCube(cards, clusters);
+});
+
+initCubeCategoryData();
+
 const switchCube = (cubeId: string) => {
     activeCubeId.value = cubeId;
     samplePackSeed.value = Date.now();
 };
-
-const peerCubesForActive = computed(() => {
-    const activeId = activeCubeId.value ?? props.cubeRow?.id;
-    return Object.fromEntries(
-        Object.entries(props.loadedCubes).filter(([id]) => id !== activeId),
-    );
-});
 
 const avgSimilarityScore = computed(() => {
     if (!activeCube.value) return 0;

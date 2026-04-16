@@ -13,6 +13,8 @@
     "cards:update": "tsx download-scryfall-cards.ts --update",
     "cubecobra-exports": "tsx download-cubecobra-exports.ts",
     "cubecobra-exports:update": "tsx download-cubecobra-exports.ts --update",
+    "archetypes": "tsx --max-old-space-size=4096 compute-archetypes.ts",
+    "archetypes:update": "tsx --max-old-space-size=4096 compute-archetypes.ts --update",
     "preload": "tsx preload-cube-data.ts",
     "test": "vitest"
   },
@@ -36,6 +38,8 @@
     "eslint": "^10.1.0",
     "eslint-plugin-vue": "^10.8.0",
     "happy-dom": "^20.8.9",
+    "ml-kmeans": "^7.0.0",
+    "ml-matrix": "^6.12.2",
     "sass": "^1.97.3",
     "tsx": "^4.19.2",
     "typescript-eslint": "^8.57.1",

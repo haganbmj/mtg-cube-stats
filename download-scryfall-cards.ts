@@ -1,8 +1,7 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import { detectCardArchetypes } from './src/util/ArchetypeDetection';
-import type { CubeCard } from './src/types';
+
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
 
@@ -353,9 +352,6 @@ const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
 
     const allGames = Array.from(new Set(card.flatMap((c: any) => c.games)));
     store[key].games = allGames;
-
-    // Detect archetypes for this card now that we have all the data
-    store[key].archetypes = detectCardArchetypes(store[key] as CubeCard);
 
     return store;
 }, {});

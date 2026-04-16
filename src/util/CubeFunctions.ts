@@ -1,7 +1,7 @@
 import { useMemoize } from '@vueuse/core';
 import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions';
 import { isEvergreenKeyword } from './Keywords';
-import { detectCubeArchetypes } from './ArchetypeDetection';
+import { detectCubeArchetypes, detectCardArchetypes } from './MLArchetypeDetection';
 import type {
     ScryfallDataStructure,
     ScryfallCard,
@@ -145,7 +145,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             keywords: scryfallCard?.keywords ?? [],
             games: scryfallCard?.games ?? [], // custom cards won't have a game listed.
             tags: scryfallCard?.tags ?? [],
-            archetypes: scryfallCard?.archetypes ?? [],
+            archetypes: detectCardArchetypes(card),
             setType: scryfallCard?.setType ?? '',
             layout: scryfallCard?.layout ?? '',
             isNormalLayout: scryfallCard?.isNormalLayout ?? false,

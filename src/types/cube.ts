@@ -4,9 +4,6 @@ import type { ScryfallLegality } from './scryfall';
 
 export interface ArchetypeResult {
   name: string;
-  description: string;
-  color: string;
-  threshold: number;
   count: number;
   cards: string[];
   percentage: string;

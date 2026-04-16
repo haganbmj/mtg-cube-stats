@@ -47,14 +47,6 @@
                             <StatisticsTab :loadedCubes="overviewTableData" />
                         </el-tab-pane>
 
-                        <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
-                        </el-tab-pane>
-
-                        <el-tab-pane label="Tags" name="tags" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <TagSynergyTab :loadedCubes="loadedCubes" />
-                        </el-tab-pane>
-
                         <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
@@ -99,6 +91,7 @@ import type { UserCollection } from './types';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
+import { initArchetypeData } from './util/MLArchetypeDetection';
 import { getCubeData } from './util/CubeCobra';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme';
@@ -106,11 +99,9 @@ import About from './components/About.vue';
 import CubeDetailDialog from './components/CubeDetailDialog.vue';
 import CardDetailDialog from './components/CardDetailDialog.vue';
 import OverviewTab from './tabs/OverviewTab.vue';
-import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
-import TagSynergyTab from './tabs/TagSynergyTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
@@ -120,7 +111,7 @@ let scryfallInitPromise = null;
 
 const ensureScryfallInitialized = async () => {
     if (scryfallInitPromise === null) {
-        scryfallInitPromise = initScryfall();
+        scryfallInitPromise = Promise.all([initScryfall(), initArchetypeData()]);
     }
     return scryfallInitPromise;
 };

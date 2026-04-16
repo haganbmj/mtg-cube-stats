@@ -66,7 +66,53 @@ if (!fs.existsSync(CUBES_JSON) || isUpdate) {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 1b: Convert cubes.json → cubes.jsonl (stream-parse JSON array)
+// Phase 1b: Download encoder model files
+// ---------------------------------------------------------------------------
+
+const MODEL_DIR = `${EXPORT_DIR}/model`;
+const ENCODER_DIR = `${MODEL_DIR}/encoder`;
+const MODEL_INDEX_MAP = `${MODEL_DIR}/indexToOracleMap.json`;
+const MODEL_JSON = `${ENCODER_DIR}/model.json`;
+const NUM_SHARDS = 18;
+
+if (!fs.existsSync(ENCODER_DIR)) {
+    fs.mkdirSync(ENCODER_DIR, { recursive: true });
+}
+
+async function downloadFile(url: string, dest: string): Promise<void> {
+    const resp = await axios({ url, method: 'GET', responseType: 'stream' });
+    const write = fs.createWriteStream(dest);
+    resp.data.pipe(write);
+    await new Promise((res, rej) => {
+        write.on('finish', res);
+        write.on('error', rej);
+    });
+}
+
+if (!fs.existsSync(MODEL_INDEX_MAP) || isUpdate) {
+    console.log('Downloading model/indexToOracleMap.json ...');
+    await downloadFile(`${S3_BASE}/model/indexToOracleMap.json`, MODEL_INDEX_MAP);
+} else {
+    console.log('Using existing model/indexToOracleMap.json.');
+}
+
+if (!fs.existsSync(MODEL_JSON) || isUpdate) {
+    console.log('Downloading model/encoder/model.json ...');
+    await downloadFile(`${S3_BASE}/model/encoder/model.json`, MODEL_JSON);
+
+    console.log(`Downloading ${NUM_SHARDS} encoder weight shards ...`);
+    for (let i = 1; i <= NUM_SHARDS; i++) {
+        const shardName = `group1-shard${i}of${NUM_SHARDS}.bin`;
+        console.log(`  ${shardName} (${i}/${NUM_SHARDS})`);
+        await downloadFile(`${S3_BASE}/model/encoder/${shardName}`, `${ENCODER_DIR}/${shardName}`);
+    }
+    console.log('Encoder model downloaded.');
+} else {
+    console.log('Using existing encoder model.');
+}
+
+// ---------------------------------------------------------------------------
+// Phase 1c: Convert cubes.json → cubes.jsonl (stream-parse JSON array)
 // ---------------------------------------------------------------------------
 
 // cubes.json is a large JSON array [ {...}, {...}, ... ]. We stream-parse it into
