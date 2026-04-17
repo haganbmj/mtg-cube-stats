@@ -23,8 +23,14 @@
                 <div v-for="(cluster, index) in displayedClusters" :key="cluster.id" class="cluster-section">
                     <div class="cluster-header">
                         <span class="cluster-label">Cluster {{ index + 1 }}</span>
-                        <el-tooltip content="Cards in this cube that belong to this cluster / total cards in the cluster globally" placement="right" effect="dark">
+                        <el-tooltip content="Cards in this cube that belong to this cluster / total cards in the cluster globally" placement="top" effect="dark">
                             <el-tag size="small" type="info">{{ cluster.matchCount }} / {{ cluster.memberCount }} cards</el-tag>
+                        </el-tooltip>
+                        <el-tooltip content="Composite relevance score — higher means this cluster is more distinctively represented in this cube relative to its global frequency, category expectations, and internal concentration" placement="top" effect="dark">
+                            <span class="cluster-stat">&#963; {{ cluster.significance.toPrecision(3) }}</span>
+                        </el-tooltip>
+                        <el-tooltip content="Average effective card weight — how exclusively the matched cards belong to this cluster within this cube (0–5 scale, higher = more distinctive)" placement="top" effect="dark">
+                            <span class="cluster-stat">&#773;w {{ cluster.avgWeight.toFixed(2) }}</span>
                         </el-tooltip>
                     </div>
                     <div class="cluster-body">
@@ -121,11 +127,13 @@
 import { computed, ref } from 'vue';
 import type { CubeCard } from '../../types/cube';
 import type { CubeCategoryDefinition } from '../../util/CubeCategoryDetection';
+import type { TagCategoryDefinition } from '../../util/CubeTagCategoryDetection';
+import { getTagToIdx } from '../../util/CubeTagCategoryDetection';
 import { getArchetypeDefinitions, getCardClusterAssignments } from '../../util/MLArchetypeDetection';
 
 const INITIAL_CARDS = 8;
 const PAGE_SIZE = 8;
-const INITIAL_CLUSTERS = 6;
+const INITIAL_CLUSTERS = 10;
 
 const MTG_COLORS: Record<string, string> = {
     W: '#f0ede0',
@@ -156,6 +164,10 @@ const props = defineProps({
     },
     category: {
         type: Object as () => CubeCategoryDefinition | null,
+        default: null,
+    },
+    tagCategory: {
+        type: Object as () => TagCategoryDefinition | null,
         default: null,
     },
 });
@@ -326,9 +338,44 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
             categoryRatio = Math.min(actualFraction / expectedFraction, 5.0);
         }
 
-        // Significance: coverage (matchCount/memberCount) × distinctiveness × category surprise × internal concentration.
+        // Tag-category ratio: compare the tag composition of this cluster's matched cards
+        // against what cubes in this tag category typically look like. Clusters whose matched
+        // cards carry tags that are over-represented for this cube type are boosted; clusters
+        // populated with universally common tags (removal, draw) that don't distinguish this
+        // cube type from others are penalized. Uses human-curated Scryfall Tagger data.
+        let tagCategoryRatio = 1.0;
+        const tagToIdx = getTagToIdx();
+        if (props.tagCategory?.centroid && tagToIdx) {
+            const tagCounts = new Map<number, number>();
+            let totalTagPairs = 0;
+            for (const card of allMatching) {
+                const cubeCard = cubeCardMap.get(card.oracleId);
+                if (!cubeCard?.tags) continue;
+                for (const tag of cubeCard.tags) {
+                    const idx = tagToIdx.get(tag);
+                    if (idx !== undefined) {
+                        tagCounts.set(idx, (tagCounts.get(idx) ?? 0) + 1);
+                        totalTagPairs++;
+                    }
+                }
+            }
+            if (totalTagPairs > 0) {
+                let ratioSum = 0;
+                let ratioCount = 0;
+                for (const [idx, count] of tagCounts) {
+                    const actualFraction = count / totalTagPairs;
+                    const expectedFraction = Math.max(props.tagCategory.centroid[idx] ?? 0, 0.001);
+                    ratioSum += Math.min(actualFraction / expectedFraction, 5.0);
+                    ratioCount++;
+                }
+                tagCategoryRatio = ratioCount > 0 ? ratioSum / ratioCount : 1.0;
+            }
+        }
+
+        // Significance: coverage (matchCount/memberCount) × distinctiveness × category surprise
+        //             × tag-category surprise × internal concentration.
         const internalConcentration = allMatching.length / Math.max(avgCubeMatchesPerCluster, 1);
-        const significance = (allMatching.length / (cluster.memberCount || 1)) * avgWeight * categoryRatio * internalConcentration;
+        const significance = (allMatching.length / (cluster.memberCount || 1)) * avgWeight * categoryRatio * tagCategoryRatio * internalConcentration;
 
         results.push({
             id: cluster.id,
@@ -380,7 +427,7 @@ const displayedClusters = computed(() =>
 // Per-cluster expanded card count (keyed by cluster.id).
 const expandedCounts = ref<Record<number, number>>({});
 
-function shownCards(cluster: { id: number; matchCount: number }): number {
+function shownCards(cluster: { id: number }): number {
     return expandedCounts.value[cluster.id] ?? INITIAL_CARDS;
 }
 
@@ -512,5 +559,17 @@ function collapseCluster(clusterId: number) {
 .cluster-count-label {
     color: var(--el-text-color-secondary);
     font-size: 13px;
+}
+
+.cluster-stat {
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--el-text-color-secondary);
+    background: var(--el-fill-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 4px;
+    padding: 1px 5px;
+    cursor: default;
+    white-space: nowrap;
 }
 </style>

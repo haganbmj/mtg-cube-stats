@@ -322,7 +322,7 @@
                 </el-tab-pane>
 
                 <el-tab-pane label="Clusters" :lazy="true">
-                    <ClusterGraphChart :cards="activeCubeCards" :category="cubeCategory" />
+                    <ClusterGraphChart :cards="activeCubeCards" :category="cubeCategory" :tag-category="tagCategory" />
                 </el-tab-pane>
 
                 <el-tab-pane label="Sample Pack" :lazy="true">
@@ -372,6 +372,8 @@ import SetNameTable from './SetNameTable.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
 import ClusterGraphChart from './charts/ClusterGraphChart.vue';
 import { initCubeCategoryData, classifyCube } from '../util/CubeCategoryDetection';
+import { initTagCategoryData, classifyCubeByTags } from '../util/CubeTagCategoryDetection';
+import type { TagCategoryDefinition } from '../util/CubeTagCategoryDetection';
 import { archetypeCardClusters } from '../util/MLArchetypeDetection';
 
 const props = defineProps({
@@ -430,7 +432,12 @@ const cubeCategory = computed(() => {
     return classifyCube(cards, clusters);
 });
 
+const tagCategory = computed((): TagCategoryDefinition | null => {
+    return classifyCubeByTags(activeCubeCards.value);
+});
+
 initCubeCategoryData();
+initTagCategoryData();
 
 const switchCube = (cubeId: string) => {
     activeCubeId.value = cubeId;

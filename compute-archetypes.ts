@@ -11,6 +11,7 @@ const CUBES_JSONL = `${EXPORT_DIR}/cubes.jsonl`;
 const INDEX_TO_ORACLE = `${EXPORT_DIR}/indexToOracleMap.json`;
 const OUTPUT_FILE = './data/cubecobra-archetypes.json';
 const CATEGORIES_FILE = './data/cubecobra-cube-categories.json';
+const TAG_CATEGORIES_FILE = './data/cubecobra-tag-categories.json';
 
 // ---------------------------------------------------------------------------
 // Tunable parameters
@@ -28,6 +29,8 @@ const MIN_CUBE_CARDS = 360;
 const CUBE_KMEANS_SAMPLE = 30000;
 // Restarts for cube-level k-means (fewer needed, lower dimensionality).
 const CUBE_KMEANS_RESTARTS = 5;
+// Minimum number of cards a Scryfall Tagger tag must appear on to join the vocabulary.
+const MIN_TAG_CARD_COUNT = 100;
 
 const isUpdate = process.argv[2] === '--update';
 
@@ -605,5 +608,187 @@ if (!fs.existsSync(CUBES_JSONL) || !fs.existsSync(INDEX_TO_ORACLE)) {
 }
 
 console.timeEnd('cube-categories');
+
+// ---------------------------------------------------------------------------
+// Step 8: Tag-based cube classification
+// ---------------------------------------------------------------------------
+// Represent each cube as a normalized tag-frequency vector: for every card,
+// expand it to its Scryfall Tagger tags, accumulate counts, then normalize by
+// total (card, tag) pairs. This makes the vector comparable across cubes of
+// different sizes and different per-card tag densities.
+//
+// Unlike Step 7 (cluster-based), this method captures human-curated strategic
+// themes (removal, ramp, recursion, etc.) rather than encoder-learned geometry.
+// Lands ARE included — fetch-land, dual-land, basic etc. carry real signal.
+//
+// The tag vocabulary is embedded in the output file so the browser can
+// reconstruct profiles at runtime without re-running this script.
+// ---------------------------------------------------------------------------
+
+console.log('\nStep 8: Classifying cubes by tag profile ...');
+console.time('tag-categories');
+
+if (!fs.existsSync(CUBES_JSONL) || !fs.existsSync(INDEX_TO_ORACLE)) {
+    console.log('  Skipping tag classification — cubes.jsonl or indexToOracleMap.json not found.');
+} else {
+    // Build tag vocabulary from the full Scryfall card pool (including lands).
+    const tagCardCounts = new Map<string, number>();
+    for (const oracleId of Object.keys(cardsMinimized.cards)) {
+        const card = cardsMinimized.cards[oracleId];
+        if (!card?.tags) continue;
+        for (const tag of card.tags as string[]) {
+            tagCardCounts.set(tag, (tagCardCounts.get(tag) ?? 0) + 1);
+        }
+    }
+
+    // Keep only tags on >= MIN_TAG_CARD_COUNT cards; sort descending for determinism.
+    const tagVocabulary: string[] = Array.from(tagCardCounts.entries())
+        .filter(([, count]) => count >= MIN_TAG_CARD_COUNT)
+        .sort((a, b) => b[1] - a[1])
+        .map(([tag]) => tag);
+
+    const tagToIdx = new Map<string, number>(tagVocabulary.map((tag, i) => [tag, i]));
+    const tagVocabSize = tagVocabulary.length;
+    console.log(`  Tag vocabulary: ${tagVocabSize} tags (${tagCardCounts.size} total in tagger data, min ${MIN_TAG_CARD_COUNT} cards)`);
+
+    const indexToOracle2: Record<string, string> = JSON.parse(fs.readFileSync(INDEX_TO_ORACLE, 'utf8'));
+    const tagCubeProfiles: number[][] = [];
+    let tagSkippedSmall = 0, tagSkippedNoTags = 0;
+
+    const cubeLines2 = fs.readFileSync(CUBES_JSONL, 'utf8').split('\n');
+    for (const line of cubeLines2) {
+        if (!line.trim()) continue;
+        let cube: { id: string; cards: number[]; card_count: number };
+        try { cube = JSON.parse(line); } catch { continue; }
+
+        if (cube.card_count < MIN_CUBE_CARDS) { tagSkippedSmall++; continue; }
+
+        const tagProfile = new Array<number>(tagVocabSize).fill(0);
+        let totalTagPairs = 0;
+
+        for (const idx of cube.cards) {
+            const oracleId = indexToOracle2[idx];
+            if (!oracleId) continue;
+            const card = cardsMinimized.cards[oracleId];
+            if (!card?.tags) continue;
+            for (const tag of card.tags as string[]) {
+                const tagIdx = tagToIdx.get(tag);
+                if (tagIdx !== undefined) {
+                    tagProfile[tagIdx]++;
+                    totalTagPairs++;
+                }
+            }
+        }
+
+        // Require a minimum density of tag coverage to filter cubes with sparse data.
+        if (totalTagPairs < 50) { tagSkippedNoTags++; continue; }
+
+        // Normalize by total (card, tag) pairs — comparable across cube sizes
+        // and different per-card tag densities.
+        for (let j = 0; j < tagVocabSize; j++) tagProfile[j] /= totalTagPairs;
+        tagCubeProfiles.push(tagProfile);
+    }
+
+    console.log(`  Qualifying cubes: ${tagCubeProfiles.length} (skipped ${tagSkippedSmall} too small, ${tagSkippedNoTags} insufficient tags)`);
+
+    if (tagCubeProfiles.length < NUM_CUBE_CATEGORIES) {
+        console.log('  Not enough cubes for tag classification, skipping.');
+    } else {
+        const tagSampleSize = Math.min(CUBE_KMEANS_SAMPLE, tagCubeProfiles.length);
+        const tagShuffled = [...tagCubeProfiles];
+        let lcgSeed = 54321;
+        for (let i = tagShuffled.length - 1; i > 0; i--) {
+            lcgSeed = (lcgSeed * 1664525 + 1013904223) & 0x7fffffff;
+            const j = lcgSeed % (i + 1);
+            [tagShuffled[i], tagShuffled[j]] = [tagShuffled[j], tagShuffled[i]];
+        }
+        const tagSample = tagShuffled.slice(0, tagSampleSize);
+
+        console.log(`  Running k-means on ${tagSample.length} cubes (k=${NUM_CUBE_CATEGORIES}, restarts=${CUBE_KMEANS_RESTARTS}) ...`);
+        console.time('tag-kmeans');
+        const tagCatResult = kmeans(tagSample, NUM_CUBE_CATEGORIES, {
+            initialization: 'kmeans++',
+            seed: 42,
+            maxIterations: 100,
+        });
+        console.timeEnd('tag-kmeans');
+
+        const tagCentroids = tagCatResult.centroids as number[][];
+
+        // Assign all profiles to nearest centroid to get final category counts.
+        const tagCatCounts = new Array<number>(NUM_CUBE_CATEGORIES).fill(0);
+        const tagCatSums: number[][] = Array.from(
+            { length: NUM_CUBE_CATEGORIES },
+            () => new Array<number>(tagVocabSize).fill(0),
+        );
+
+        for (const profile of tagCubeProfiles) {
+            let minDist = Infinity, nearest = 0;
+            for (let c = 0; c < tagCentroids.length; c++) {
+                let d = 0;
+                for (let j = 0; j < tagVocabSize; j++) {
+                    const diff = profile[j] - tagCentroids[c][j];
+                    d += diff * diff;
+                }
+                if (d < minDist) { minDist = d; nearest = c; }
+            }
+            tagCatCounts[nearest]++;
+            for (let j = 0; j < tagVocabSize; j++) tagCatSums[nearest][j] += profile[j];
+        }
+
+        // Compute global average tag weights across all qualifying cubes.
+        const tagGlobalAvg = new Array<number>(tagVocabSize).fill(0);
+        for (const profile of tagCubeProfiles) {
+            for (let j = 0; j < tagVocabSize; j++) tagGlobalAvg[j] += profile[j];
+        }
+        for (let j = 0; j < tagVocabSize; j++) tagGlobalAvg[j] /= tagCubeProfiles.length;
+
+        // Build category definitions labelled by most over-represented tags.
+        interface TagCubeCategory {
+            id: number;
+            memberCount: number;
+            topTags: string[];
+            label: string;
+            centroid: number[];
+        }
+
+        const tagCatDefs: TagCubeCategory[] = Array.from({ length: NUM_CUBE_CATEGORIES }, (_, c) => {
+            const count = tagCatCounts[c] || 1;
+            const catAvg = tagCatSums[c].map(s => s / count);
+
+            const ratios = catAvg.map((v, j) => ({ tagIdx: j, ratio: v / (tagGlobalAvg[j] || 0.0001) }));
+            ratios.sort((a, b) => b.ratio - a.ratio);
+
+            const topTags = ratios.slice(0, 5).map(r => tagVocabulary[r.tagIdx]);
+            const label = topTags.slice(0, 3).join(', ');
+            const centroid = tagCentroids[c].map(v => Math.round(v * 100000) / 100000);
+
+            return { id: c, memberCount: tagCatCounts[c], topTags, label, centroid };
+        });
+
+        tagCatDefs.sort((a, b) => b.memberCount - a.memberCount);
+        tagCatDefs.forEach((cat, i) => { cat.id = i; });
+
+        const tagCategoriesOutput = {
+            numCategories: NUM_CUBE_CATEGORIES,
+            tagVocabulary,
+            minTagCardCount: MIN_TAG_CARD_COUNT,
+            minCubeCards: MIN_CUBE_CARDS,
+            cubeCount: tagCubeProfiles.length,
+            categories: tagCatDefs,
+        };
+
+        fs.writeFileSync(TAG_CATEGORIES_FILE, JSON.stringify(tagCategoriesOutput));
+        const tagFileSizeKB = Math.round(fs.statSync(TAG_CATEGORIES_FILE).size / 1024);
+        console.log(`  Wrote ${TAG_CATEGORIES_FILE} (${tagFileSizeKB} KB)`);
+
+        console.log('\nTag-based cube categories:');
+        for (const cat of tagCatDefs) {
+            console.log(`  [${cat.memberCount} cubes] ${cat.label}`);
+        }
+    }
+}
+
+console.timeEnd('tag-categories');
 
 console.log('\nDone.');
