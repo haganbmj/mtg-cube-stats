@@ -61,7 +61,7 @@ jobs:
       - run: VITE_BUILD_SHA=$GITHUB_SHA npm run build
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./dist
 
