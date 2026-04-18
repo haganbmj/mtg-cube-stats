@@ -33,6 +33,15 @@
                             <span class="cluster-stat">&#773;w {{ cluster.avgWeight.toFixed(2) }}</span>
                         </el-tooltip>
                     </div>
+                    <div v-if="cluster.topTags.length > 0" class="cluster-tags">
+                        <el-tag
+                            v-for="tag in cluster.topTags"
+                            :key="tag"
+                            size="small"
+                            type="info"
+                            class="cluster-tag-chip"
+                        >{{ tag }}</el-tag>
+                    </div>
                     <div class="cluster-body">
                         <!-- Color distribution donut -->
                         <el-tooltip :content="formatColorCounts(cluster.colorCounts)" placement="right" effect="dark">
@@ -128,7 +137,7 @@ import { computed, ref } from 'vue';
 import type { CubeCard } from '../../types/cube';
 import type { CubeCategoryDefinition } from '../../util/CubeCategoryDetection';
 import type { TagCategoryDefinition } from '../../util/CubeTagCategoryDetection';
-import { getTagToIdx } from '../../util/CubeTagCategoryDetection';
+import { getTagToIdx, getTagVocabulary } from '../../util/CubeTagCategoryDetection';
 import { getArchetypeDefinitions, getCardClusterAssignments } from '../../util/MLArchetypeDetection';
 
 const INITIAL_CARDS = 8;
@@ -248,6 +257,7 @@ interface RelevantCluster {
     avgWeight: number;
     colorCounts: Record<string, number>;
     allMatchingCards: MatchingCard[];
+    topTags: string[];
 }
 
 const relevantClusters = computed<RelevantCluster[]>(() => {
@@ -301,6 +311,28 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
     const numActiveClusters = Math.max(clusterMatchMap.size, 1);
     const avgCubeMatchesPerCluster = totalCubeMatches / numActiveClusters;
 
+    // Tag infrastructure — resolved once and shared across all cluster iterations.
+    const tagToIdx = getTagToIdx();
+    const tagVocabulary = getTagVocabulary();
+
+    // Cube-wide tag profile: used as the denominator when scoring cluster-specific tags.
+    // A tag that appears in 30% of a cluster but only 5% of the cube scores 6× — distinctive.
+    // A tag that appears equally throughout the cube scores ~1× — not cluster-specific.
+    const cubeTagCounts = new Map<number, number>();
+    let cubeTagTotal = 0;
+    if (tagToIdx) {
+        for (const cubeCard of cubeCardMap.values()) {
+            if (!cubeCard.tags) continue;
+            for (const tag of cubeCard.tags) {
+                const idx = tagToIdx.get(tag);
+                if (idx !== undefined) {
+                    cubeTagCounts.set(idx, (cubeTagCounts.get(idx) ?? 0) + 1);
+                    cubeTagTotal++;
+                }
+            }
+        }
+    }
+
     const allClusters = getArchetypeDefinitions();
     const results: RelevantCluster[] = [];
 
@@ -338,37 +370,80 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
             categoryRatio = Math.min(actualFraction / expectedFraction, 5.0);
         }
 
-        // Tag-category ratio: compare the tag composition of this cluster's matched cards
-        // against what cubes in this tag category typically look like. Clusters whose matched
-        // cards carry tags that are over-represented for this cube type are boosted; clusters
-        // populated with universally common tags (removal, draw) that don't distinguish this
-        // cube type from others are penalized. Uses human-curated Scryfall Tagger data.
-        let tagCategoryRatio = 1.0;
-        const tagToIdx = getTagToIdx();
-        if (props.tagCategory?.centroid && tagToIdx) {
-            const tagCounts = new Map<number, number>();
-            let totalTagPairs = 0;
+        // Build cluster tag counts in one pass — reused for both tagCategoryRatio and topTags.
+        // tagCardSets tracks which oracle IDs in this cluster carry each tag; used for Jaccard
+        // deduplication so near-synonym tags (e.g. "removal"/"exile-removal"/"single-target-removal")
+        // that appear on largely the same cards collapse to just the highest-scored representative.
+        const clusterTagCounts = new Map<number, number>();
+        const tagCardSets = new Map<number, Set<string>>();
+        let clusterTagTotal = 0;
+        if (tagToIdx) {
             for (const card of allMatching) {
                 const cubeCard = cubeCardMap.get(card.oracleId);
                 if (!cubeCard?.tags) continue;
                 for (const tag of cubeCard.tags) {
                     const idx = tagToIdx.get(tag);
                     if (idx !== undefined) {
-                        tagCounts.set(idx, (tagCounts.get(idx) ?? 0) + 1);
-                        totalTagPairs++;
+                        clusterTagCounts.set(idx, (clusterTagCounts.get(idx) ?? 0) + 1);
+                        let s = tagCardSets.get(idx);
+                        if (!s) { s = new Set(); tagCardSets.set(idx, s); }
+                        s.add(card.oracleId);
+                        clusterTagTotal++;
                     }
                 }
             }
-            if (totalTagPairs > 0) {
-                let ratioSum = 0;
-                let ratioCount = 0;
-                for (const [idx, count] of tagCounts) {
-                    const actualFraction = count / totalTagPairs;
-                    const expectedFraction = Math.max(props.tagCategory.centroid[idx] ?? 0, 0.001);
-                    ratioSum += Math.min(actualFraction / expectedFraction, 5.0);
-                    ratioCount++;
+        }
+
+        // Tag-category ratio: compare the tag composition of this cluster's matched cards
+        // against what cubes in this tag category typically look like. Clusters whose matched
+        // cards carry tags that are over-represented for this cube type are boosted; clusters
+        // populated with universally common tags (removal, draw) that don't distinguish this
+        // cube type from others are penalized. Uses human-curated Scryfall Tagger data.
+        let tagCategoryRatio = 1.0;
+        if (props.tagCategory?.centroid && tagToIdx && clusterTagTotal > 0) {
+            let ratioSum = 0;
+            let ratioCount = 0;
+            for (const [idx, count] of clusterTagCounts) {
+                const actualFraction = count / clusterTagTotal;
+                const expectedFraction = Math.max(props.tagCategory.centroid[idx] ?? 0, 0.001);
+                ratioSum += Math.min(actualFraction / expectedFraction, 5.0);
+                ratioCount++;
+            }
+            tagCategoryRatio = ratioCount > 0 ? ratioSum / ratioCount : 1.0;
+        }
+
+        // Top tags: tags most over-represented in this cluster vs the cube overall.
+        // Score = clusterFrac / cubeGlobalFrac. Tags that are evenly spread across the whole
+        // cube score ~1×; tags concentrated in this cluster score high. Min 2 cards, min 1.5× lift.
+        // Greedy Jaccard dedup: if two tags appear on nearly the same cluster cards they're
+        // near-synonyms (e.g. "removal" / "exile-removal"); keep only the higher-scored one.
+        const topTags: string[] = [];
+        if (tagToIdx && tagVocabulary && cubeTagTotal > 0 && clusterTagTotal > 0) {
+            const scored: { idx: number; score: number }[] = [];
+            for (const [idx, count] of clusterTagCounts) {
+                if (count < 2) continue;
+                const clusterFrac = count / clusterTagTotal;
+                const cubeFrac = Math.max((cubeTagCounts.get(idx) ?? 0) / cubeTagTotal, 0.001);
+                const score = clusterFrac / cubeFrac;
+                if (score > 1.5) scored.push({ idx, score });
+            }
+            scored.sort((a, b) => b.score - a.score);
+
+            const keptTagSets: Set<string>[] = [];
+            for (const { idx } of scored) {
+                if (topTags.length >= 6) break;
+                const cardSet = tagCardSets.get(idx) ?? new Set<string>();
+                let dominated = false;
+                for (const kept of keptTagSets) {
+                    let intersection = 0;
+                    for (const id of cardSet) { if (kept.has(id)) intersection++; }
+                    const union = cardSet.size + kept.size - intersection;
+                    if (union > 0 && intersection / union >= 0.5) { dominated = true; break; }
                 }
-                tagCategoryRatio = ratioCount > 0 ? ratioSum / ratioCount : 1.0;
+                if (!dominated) {
+                    topTags.push(tagVocabulary[idx]);
+                    keptTagSets.push(cardSet);
+                }
             }
         }
 
@@ -385,6 +460,7 @@ const relevantClusters = computed<RelevantCluster[]>(() => {
             avgWeight,
             colorCounts,
             allMatchingCards: allMatching,
+            topTags,
         });
     }
 
@@ -571,5 +647,17 @@ function collapseCluster(clusterId: number) {
     padding: 1px 5px;
     cursor: default;
     white-space: nowrap;
+}
+
+.cluster-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.cluster-tag-chip {
+    font-size: 11px;
+    cursor: default;
 }
 </style>

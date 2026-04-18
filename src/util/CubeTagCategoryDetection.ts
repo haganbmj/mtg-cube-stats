@@ -55,6 +55,14 @@ export function getTagToIdx(): Map<string, number> | null {
 }
 
 /**
+ * Returns the ordered tag vocabulary array (index → tag name).
+ * Returns null if tag data has not been loaded yet.
+ */
+export function getTagVocabulary(): string[] | null {
+    return tagCategoriesData?.tagVocabulary ?? null;
+}
+
+/**
  * Classify a cube by comparing its tag-frequency profile to the category centroids.
  *
  * The profile is built by iterating each cube card's `tags` array and counting
