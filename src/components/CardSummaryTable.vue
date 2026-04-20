@@ -23,23 +23,17 @@
     </div>
 
     <div class="card-table-pagination-row">
-        <el-text tag="i">
-            Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards
-            <template v-if="!isMobile">
-                &nbsp;&middot;&nbsp;{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes
-            </template>
-            <template v-if="!isMobile">
-                &nbsp;&middot;&nbsp;avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube
-            </template>
-            <template v-if="filteredStats.highlightedCubeCardCount !== null">
-                &nbsp;&middot;&nbsp;{{ filteredStats.highlightedCubeCardCount }} in highlighted
-            </template>
-        </el-text>
+        <el-breadcrumb separator="·" class="filter-summary">
+            <el-breadcrumb-item>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile && filteredStats.highlightedCubeCardCount !== null">{{ filteredStats.highlightedCubeCardCount }} in highlighted</el-breadcrumb-item>
+        </el-breadcrumb>
         <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
             :page-sizes="[25, 50, 100, 250]"
-            :pager-count="5"
+            :pager-count="isMobile ? 3 : 5"
             :layout="paginationLayout"
             :total="filteredRows.length"
         />
