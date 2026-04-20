@@ -23,12 +23,17 @@
     </div>
 
     <div class="card-table-pagination-row">
-        <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
+        <el-breadcrumb separator="·" class="filter-summary">
+            <el-breadcrumb-item>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile && filteredStats.highlightedCubeCardCount !== null">{{ filteredStats.highlightedCubeCardCount }} in highlighted</el-breadcrumb-item>
+        </el-breadcrumb>
         <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
             :page-sizes="[25, 50, 100, 250]"
-            :pager-count="5"
+            :pager-count="isMobile ? 3 : 5"
             :layout="paginationLayout"
             :total="filteredRows.length"
         />
@@ -527,6 +532,18 @@ watch([activeQuery, activeCubeFilter, activeCubeFilterMode], () => {
     currentPage.value = 1;
 });
 
+watch(() => Object.keys(props.loadedCubes), (cubeKeys) => {
+    const cubeKeySet = new Set(cubeKeys);
+    const staleKeys = Object.keys(activeCubeFilter.value).filter(k => !cubeKeySet.has(k));
+    if (staleKeys.length > 0) {
+        const updated = { ...activeCubeFilter.value };
+        for (const key of staleKeys) {
+            delete updated[key];
+        }
+        activeCubeFilter.value = updated;
+    }
+});
+
 const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
     activeSort.value = sortInfo;
     currentPage.value = 1;
@@ -689,6 +706,28 @@ const filteredRows = computed(() => {
 
 const visibleRows = computed(() => {
     return filteredRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+});
+
+const filteredStats = computed(() => {
+    const filteredOracleIds = new Set(filteredRows.value.map(row => row.oracleId));
+    const cubeMatchCounts: Record<string, number> = {};
+    for (const key of Object.keys(props.loadedCubes)) {
+        cubeMatchCounts[key] = props.loadedCubes[key].cards.filter((c: any) => filteredOracleIds.has(c.oracleId)).length;
+    }
+    const counts = Object.values(cubeMatchCounts);
+    const cubeCount = counts.length;
+    const cubesWithMatch = counts.filter(c => c > 0).length;
+    const matchingCounts = counts.filter(c => c > 0);
+    const avgPerCube = matchingCounts.length > 0 ? matchingCounts.reduce((a: number, b: number) => a + b, 0) / matchingCounts.length : 0;
+
+    const highlightedKeys = activeCubeFilterMode.value === 'highlight'
+        ? Object.entries(activeCubeFilter.value).filter(([, v]) => v === true).map(([k]) => k)
+        : [];
+    const highlightedCubeCardCount = highlightedKeys.length > 0
+        ? highlightedKeys.reduce((sum: number, key: string) => sum + (cubeMatchCounts[key] ?? 0), 0)
+        : null;
+
+    return { cubesWithMatch, avgPerCube, cubeCount, highlightedCubeCardCount };
 });
 </script>
 
