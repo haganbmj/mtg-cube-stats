@@ -23,7 +23,18 @@
     </div>
 
     <div class="card-table-pagination-row">
-        <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
+        <el-text tag="i">
+            Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards
+            <template v-if="!isMobile">
+                &nbsp;&middot;&nbsp;{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes
+            </template>
+            <template v-if="!isMobile">
+                &nbsp;&middot;&nbsp;avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube
+            </template>
+            <template v-if="filteredStats.highlightedCubeCardCount !== null">
+                &nbsp;&middot;&nbsp;{{ filteredStats.highlightedCubeCardCount }} in highlighted
+            </template>
+        </el-text>
         <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
@@ -689,6 +700,28 @@ const filteredRows = computed(() => {
 
 const visibleRows = computed(() => {
     return filteredRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+});
+
+const filteredStats = computed(() => {
+    const filteredOracleIds = new Set(filteredRows.value.map(row => row.oracleId));
+    const cubeMatchCounts: Record<string, number> = {};
+    for (const key of Object.keys(props.loadedCubes)) {
+        cubeMatchCounts[key] = props.loadedCubes[key].cards.filter((c: any) => filteredOracleIds.has(c.oracleId)).length;
+    }
+    const counts = Object.values(cubeMatchCounts);
+    const cubeCount = counts.length;
+    const cubesWithMatch = counts.filter(c => c > 0).length;
+    const matchingCounts = counts.filter(c => c > 0);
+    const avgPerCube = matchingCounts.length > 0 ? matchingCounts.reduce((a: number, b: number) => a + b, 0) / matchingCounts.length : 0;
+
+    const highlightedKeys = activeCubeFilterMode.value === 'highlight'
+        ? Object.entries(activeCubeFilter.value).filter(([, v]) => v === true).map(([k]) => k)
+        : [];
+    const highlightedCubeCardCount = highlightedKeys.length > 0
+        ? highlightedKeys.reduce((sum: number, key: string) => sum + (cubeMatchCounts[key] ?? 0), 0)
+        : null;
+
+    return { cubesWithMatch, avgPerCube, cubeCount, highlightedCubeCardCount };
 });
 </script>
 
