@@ -532,6 +532,18 @@ watch([activeQuery, activeCubeFilter, activeCubeFilterMode], () => {
     currentPage.value = 1;
 });
 
+watch(() => Object.keys(props.loadedCubes), (cubeKeys) => {
+    const cubeKeySet = new Set(cubeKeys);
+    const staleKeys = Object.keys(activeCubeFilter.value).filter(k => !cubeKeySet.has(k));
+    if (staleKeys.length > 0) {
+        const updated = { ...activeCubeFilter.value };
+        for (const key of staleKeys) {
+            delete updated[key];
+        }
+        activeCubeFilter.value = updated;
+    }
+});
+
 const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
     activeSort.value = sortInfo;
     currentPage.value = 1;
