@@ -462,6 +462,10 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             // highlight: is a visual annotation; it never excludes rows from results
             return true;
 
+        // ── Global inclusion rate (CubeCobra frequency data, compared as %) ────
+        case 'globalrate':
+            return compareValues(row.globalRatePercent ?? null, op, numVal);
+
         // ── Boolean flags ──────────────────────────────────────────────────────
         case 'is': {
             const result = evaluateFlag(strVal, row);

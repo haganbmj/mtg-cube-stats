@@ -254,6 +254,11 @@ const FILTER_DOCS: FilterDoc[] = [
         description: 'Total copies of this card across all loaded cubes.',
         examples: ['count>1'],
     },
+    {
+        keywords: ['global', 'globalrate', 'gr'],
+        description: 'Global inclusion rate (%) from CubeCobra frequency data (based on the selected category in the dropdown).',
+        examples: ['global>=5', 'gr>=10'],
+    },
     // ── Boolean flags ──────────────────────────────────────────────────────────
     {
         keywords: ['is:', 'not:'],

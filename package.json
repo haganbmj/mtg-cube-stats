@@ -11,6 +11,8 @@
     "lint:fix": "eslint --fix",
     "cards": "tsx download-scryfall-cards.ts",
     "cards:update": "tsx download-scryfall-cards.ts --update",
+    "cubecobra-exports": "tsx download-cubecobra-exports.ts",
+    "cubecobra-exports:update": "tsx download-cubecobra-exports.ts --update",
     "preload": "tsx preload-cube-data.ts",
     "test": "vitest",
     "nearley": "nearleyc src/util/cardFilters.ne -o src/util/cardFilters.generated.cjs"

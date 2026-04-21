@@ -127,6 +127,10 @@ const KEYWORD_ALIASES: Record<string, string> = {
     // Cube playability (mtgo, arena, paper)
     playable: 'playable',
     play: 'playable',
+    // Global inclusion rate (CubeCobra frequency data)
+    global: 'globalrate',
+    globalrate: 'globalrate',
+    gr: 'globalrate',
     // Boolean flags
     is: 'is',
     not: 'not',
