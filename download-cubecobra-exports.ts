@@ -272,7 +272,8 @@ if (!cubesLastModified) {
 }
 const cutoffDate = new Date(baseDate);
 cutoffDate.setMonth(cutoffDate.getMonth() - RECENCY_MONTHS);
-const cutoffTimestamp = Math.floor(cutoffDate.getTime() / 1000);
+// date_last_updated in the export is in milliseconds — keep cutoff in ms too.
+const cutoffTimestamp = cutoffDate.getTime();
 console.log(`Recency filter: ${RECENCY_MONTHS} months from ${baseDate.toISOString().slice(0, 10)} → cubes updated after ${cutoffDate.toISOString().slice(0, 10)}`);
 
 // ---------------------------------------------------------------------------

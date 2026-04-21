@@ -3,7 +3,7 @@
         <h2>About This Tool</h2>
         <p>This is a static analysis tool for Magic: The Gathering cube collections. It lets you compare cube lists side-by-side, explore card inclusion rates across a group of cubes, and analyze statistical properties of cube contents.</p>
         <p>Data is pre-fetched at build time from <a href="https://cubecobra.com" target="_blank">CubeCobra</a> and <a href="https://scryfall.com" target="_blank">Scryfall</a> — there is no backend server. The cubes available for comparison are configured in preset groups (e.g. CubeCon 2025, Top 100, local event pools).</p>
-        <p>The Cards tab includes optional global inclusion rate data, derived from a full CubeCobra bulk export filtered to cubes updated within the past 12 months. This gives a broader population-level view of how frequently any card appears across the wider cube community. Note that this will differ from Popularity because the Exports only contain publicly visible cubes, while Popularity contains all cubes apparently.</p>
+        <p>The Cards tab includes optional global inclusion rate data, derived from a full CubeCobra bulk export filtered to publicly-accessible cubes updated within the past 12 months. This gives a broader population-level view of how frequently any card appears across the wider cube community.</p>
 
         <el-divider />
 
