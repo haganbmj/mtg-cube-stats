@@ -7,6 +7,26 @@
             v-model:cubeFilter="activeCubeFilter"
             v-model:cubeFilterMode="activeCubeFilterMode"
         />
+        <el-select
+            v-if="frequencyCategoryOptions.length > 0"
+            v-model="config.frequencyCategory"
+            size="default"
+            style="width: 180px;"
+            placeholder="Global Rate"
+        >
+            <el-option-group
+                v-for="group in groupedFrequencyOptions"
+                :key="group.label"
+                :label="group.label"
+            >
+                <el-option
+                    v-for="opt in group.options"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                />
+            </el-option-group>
+        </el-select>
         <el-button-group>
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
@@ -17,6 +37,7 @@
                 <el-dropdown-menu>
                     <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
                     <el-dropdown-item @click="exportToCsv">Export as CSV</el-dropdown-item>
+                    <el-dropdown-item divided @click="config.showAllCards = !config.showAllCards">Show All Cards{{ config.showAllCards ? ' ✓' : '' }}</el-dropdown-item>
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
@@ -89,10 +110,12 @@
                 :class="['card-image', card.setCode?.toLowerCase(), { 'card-image--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId) }]"
                 style="width: 100%; aspect-ratio: 63 / 88;"
             />
-            <div class="visual-card-label" :class="{
-                'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
-                'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
-            }">
+            <div
+                class="visual-card-label" :class="{
+                    'visual-card-label--highlighted': highlightedOracleIds && highlightedOracleIds.has(card.oracleId),
+                    'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
+                }"
+            >
                 <el-text size="small" truncated>{{ card.name }}</el-text>
                 <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>
@@ -258,7 +281,8 @@ import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
-import { getSetReleaseDates } from '../util/CubeFunctions';
+import { getSetReleaseDates, getScryfallCards } from '../util/CubeFunctions';
+import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
 
 const props = defineProps({
     loadedCubes: {
@@ -315,13 +339,15 @@ const paginationLayout = computed(() => {
 
 // --- Column visibility config ---
 const defaultVisibleColumns = [
-    'cubeCount', 'effectiveColors', 'cmc', 'typeLine', 'tags',
+    'cubeCount', 'globalRate', 'effectiveColors', 'cmc', 'typeLine', 'tags',
     'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
 const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
     visualColumnCount: 6,
+    frequencyCategory: 'total',
+    showAllCards: false,
 };
 
 const config = bindStorage('card-summary-table-config', (v) => {
@@ -331,8 +357,34 @@ const config = bindStorage('card-summary-table-config', (v) => {
     return {
         visibleColumns: (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[],
         visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : 6,
+        frequencyCategory: typeof v.frequencyCategory === 'string' ? v.frequencyCategory : 'total',
+        showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
+
+const frequencyCategoryOptions = computed(() => getFrequencyCategoryOptions());
+
+const groupedFrequencyOptions = computed(() => {
+    const opts = frequencyCategoryOptions.value;
+    const ungrouped = opts.filter(o => !o.group);
+    const groups = new Map<string, typeof opts>();
+    for (const o of opts) {
+        if (!o.group) continue;
+        if (!groups.has(o.group)) groups.set(o.group, []);
+        groups.get(o.group)!.push(o);
+    }
+    const result: { label: string; options: typeof opts }[] = [];
+    if (ungrouped.length > 0) result.push({ label: 'General', options: ungrouped });
+    for (const [label, options] of groups) result.push({ label, options });
+    return result;
+});
+
+const selectedFrequencyLabel = computed(() => {
+    const opt = frequencyCategoryOptions.value.find(o => o.value === config.value.frequencyCategory);
+    return opt?.label ?? 'Global';
+});
+
+const selectedFrequencyCubeCount = computed(() => resolveCubeCount(config.value.frequencyCategory));
 
 const isGroupAllChecked = (options: { value: string }[]) =>
     options.every(o => config.value.visibleColumns.includes(o.value));
@@ -358,6 +410,7 @@ const columnOptions = ref([
         options: [
             { value: 'cubeCount', label: 'Cubes' },
             { value: 'count', label: 'Total Count' },
+            { value: 'globalRate', label: 'Global Inclusion Rate' },
             { value: 'effectiveColors', label: 'Colors' },
             { value: 'effectiveColorIdentity', label: 'Color Identity' },
             { value: 'cmc', label: 'Mana Value' },
@@ -397,6 +450,7 @@ const columnOptions = ref([
             { value: 'games', label: 'Games' },
         ],
     },
+
 ]);
 
 // --- Table column definitions ---
@@ -405,6 +459,14 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
     { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') },
     { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') },
+    { key: 'globalRate', prop: 'globalRatePercent', label: selectedFrequencyLabel.value, minWidth: '100px', align: 'center', sortable: true, formatter: (row: any) => {
+        const count = row.globalRateCount;
+        if (count == null) return 'N/A';
+        const total = selectedFrequencyCubeCount.value;
+        if (!total) return count.toLocaleString();
+        const pct = ((count / total) * 100).toFixed(1);
+        return `${count.toLocaleString()} (${pct}%)`;
+    }, tooltip: `Inclusion count across CubeCobra cubes (${selectedFrequencyLabel.value})`, visible: config.value.visibleColumns.includes('globalRate') },
     { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
     { key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'Color ID', minWidth: '75px', align: 'center', tooltip: 'Color Identity', visible: config.value.visibleColumns.includes('effectiveColorIdentity') },
     { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', sortable: true, tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
@@ -583,6 +645,7 @@ const exportToCsv = () => {
         'Min Price (USD)', 'Min Price (Tix)',
         'Word Count', 'Word Count (No Reminder)',
         'Universes Beyond', 'Supplemental', 'Makes Tokens', 'Games',
+        `Global Rate (${selectedFrequencyLabel.value})`,
     ].map(escapeCsvValue).join(',');
 
     const csvRows = filteredRows.value.map(row => [
@@ -610,6 +673,7 @@ const exportToCsv = () => {
         row.isSupplementalProduct ? 'Yes' : 'No',
         row.makesTokens ? 'Yes' : 'No',
         (row.games ?? []).join(', '),
+        row.globalRateCount ?? '',
     ].map(escapeCsvValue).join(','));
 
     const csvContent = [headers, ...csvRows].join('\n');
@@ -643,6 +707,13 @@ const tableData = computed(() => {
                     count: 0,
                     cubes: [],
                     cubeCount: 0,
+                    globalRateCount: resolveCardCount(card.oracleId, config.value.frequencyCategory),
+                    globalRatePercent: (() => {
+                        const count = resolveCardCount(card.oracleId, config.value.frequencyCategory);
+                        const total = resolveCubeCount(config.value.frequencyCategory);
+                        if (count == null || !total) return null;
+                        return (count / total) * 100;
+                    })(),
                 };
             }
             acc[card.oracleId].count += 1;
@@ -653,6 +724,35 @@ const tableData = computed(() => {
         });
         return acc;
     }, {} as Record<string, any>);
+
+    if (config.value.showAllCards) {
+        const scryfallCards = getScryfallCards();
+        for (const [oracleId, card] of Object.entries(scryfallCards)) {
+            if (allCards[oracleId] !== undefined) continue;
+            const effectiveColors = (!card.colors || card.colors.length === 0) ? ['C'] : card.colors;
+            const effectiveColorIdentity = (!card.colorIdentity || card.colorIdentity.length === 0) ? ['C'] : card.colorIdentity;
+            allCards[oracleId] = {
+                ...card,
+                oracleId,
+                setCode: card.setCode?.toUpperCase() ?? '',
+                isRemoval: card.tags.includes('removal'),
+                effectiveColors,
+                effectiveColorIdentity,
+                count: 0,
+                cubes: [],
+                cubeCount: 0,
+                elo: undefined,
+                popularity: undefined,
+                globalRateCount: resolveCardCount(oracleId, config.value.frequencyCategory),
+                globalRatePercent: (() => {
+                    const count = resolveCardCount(oracleId, config.value.frequencyCategory);
+                    const total = resolveCubeCount(config.value.frequencyCategory);
+                    if (count == null || !total) return null;
+                    return (count / total) * 100;
+                })(),
+            };
+        }
+    }
 
     return Object.values(allCards);
 });

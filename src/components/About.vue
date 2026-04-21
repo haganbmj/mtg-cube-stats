@@ -1,5 +1,12 @@
 <template>
     <div class="about-page" ref="aboutRef">
+        <h2>About This Tool</h2>
+        <p>This is a static analysis tool for Magic: The Gathering cube collections. It lets you compare cube lists side-by-side, explore card inclusion rates across a group of cubes, and analyze statistical properties of cube contents.</p>
+        <p>Data is pre-fetched at build time from <a href="https://cubecobra.com" target="_blank">CubeCobra</a> and <a href="https://scryfall.com" target="_blank">Scryfall</a> — there is no backend server. The cubes available for comparison are configured in preset groups (e.g. CubeCon 2025, Top 100, local event pools).</p>
+        <p>The Cards tab includes optional global inclusion rate data, derived from a full CubeCobra bulk export filtered to publicly-accessible cubes updated within the past 12 months. This gives a broader population-level view of how frequently any card appears across the wider cube community.</p>
+
+        <el-divider />
+
         <h2>Card Data</h2>
 
         <section>
@@ -147,6 +154,7 @@
         <p>Repository: <a href="https://github.com/haganbmj/mtg-cube-stats" target="_blank">github.com/haganbmj/mtg-cube-stats</a></p>
         <p>Build SHA: <a :href="'https://github.com/haganbmj/mtg-cube-stats/commit/' + getBuildSha()" target="_blank">{{ getBuildSha() }}</a></p>
         <p>Timestamp: {{ getBuildTimestamp() }}</p>
+        <p v-if="frequencyCubesLastModified">CubeCobra Bulk Export (S3) Last Modified: {{ frequencyCubesLastModified }}<template v-if="frequencyTotalCubes"> ({{ frequencyTotalCubes.toLocaleString() }} cubes)</template></p>
 
         <el-divider />
 
@@ -155,8 +163,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import katex from 'katex';
+import { getFrequencyData } from '../util/CubeCobraFrequency';
 
 const aboutRef = ref<HTMLElement>();
 
@@ -210,6 +219,15 @@ function getBuildTimestamp() {
 function getBuildSha() {
     return import.meta.env.VITE_BUILD_SHA || 'local';
 }
+
+const frequencyCubesLastModified = computed(() => {
+    const raw = getFrequencyData()?.cubesLastModified;
+    if (!raw) return null;
+    // Parse the HTTP date string into a more readable format
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? raw : d.toISOString().slice(0, 10);
+});
+const frequencyTotalCubes = computed(() => getFrequencyData()?.cubeCount?.total ?? null);
 
 const rarityScoreData = [
     { rarity: 'Common', weight: '0.333' },

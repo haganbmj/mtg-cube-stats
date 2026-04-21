@@ -1,2 +1,3 @@
 *.json
 */*
+!cubecobra-card-frequency.json
