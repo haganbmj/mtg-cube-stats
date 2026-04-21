@@ -466,7 +466,9 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
         if (!total) return count.toLocaleString();
         const pct = ((count / total) * 100).toFixed(1);
         return `${count.toLocaleString()} (${pct}%)`;
-    }, tooltip: `Inclusion count across CubeCobra cubes (${selectedFrequencyLabel.value})`, visible: config.value.visibleColumns.includes('globalRate') },
+    }, tooltip: selectedFrequencyCubeCount.value
+        ? `Inclusion rate across CubeCobra — ${selectedFrequencyLabel.value} (${selectedFrequencyCubeCount.value.toLocaleString()} cubes)`
+        : `Inclusion count across CubeCobra (${selectedFrequencyLabel.value})`, visible: config.value.visibleColumns.includes('globalRate') },
     { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
     { key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'Color ID', minWidth: '75px', align: 'center', tooltip: 'Color Identity', visible: config.value.visibleColumns.includes('effectiveColorIdentity') },
     { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', sortable: true, tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
