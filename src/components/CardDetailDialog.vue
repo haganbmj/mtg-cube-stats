@@ -137,19 +137,6 @@
                                 <el-descriptions-item label="Makes Tokens">
                                     <el-tag :type="activeCard.makesTokens ? 'success' : 'info'" size="small">{{ activeCard.makesTokens ? 'Yes' : 'No' }}</el-tag>
                                 </el-descriptions-item>
-                                <el-descriptions-item label="Tags">
-                                    <div v-if="filteredTags(activeCard.tags ?? []).length > 0" class="tag-list flex gap-2">
-                                        <el-tag
-                                            v-for="tag in filteredTags(activeCard.tags ?? [])"
-                                            :key="tag"
-                                            size="small"
-                                            type="info"
-                                            :color="getTagColor(tag)"
-                                            disable-transitions
-                                        >{{ tag }}</el-tag>
-                                    </div>
-                                    <span v-else>&mdash;</span>
-                                </el-descriptions-item>
                                 <el-descriptions-item label="Word Count">
                                     {{ activeCard.oracleTextWordCountMinusParen ?? 'N/A' }}
                                     <span class="cell-secondary">({{ activeCard.oracleTextWordCount ?? 'N/A' }} incl. reminder)</span>
@@ -161,6 +148,25 @@
                             <el-descriptions title="Pricing" :column="1" :label-width="150" :border="true" size="default">
                                 <el-descriptions-item label="Min Price (USD)">{{ activeCard.minPriceUsd != null ? `$${activeCard.minPriceUsd.toFixed(2)}` : 'N/A' }}</el-descriptions-item>
                                 <el-descriptions-item label="Min Price (Tix)">{{ activeCard.minPriceTix != null ? activeCard.minPriceTix.toFixed(2) : 'N/A' }}</el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+
+                        <el-col v-if="(activeCard.tags ?? []).length > 0" :span="24">
+                            <el-descriptions title="Tags" :border="false" size="default">
+                                <el-descriptions-item :span="3">
+                                    <div class="tag-list flex gap-2">
+                                        <el-tag
+                                            v-for="tag in (activeCard.tags ?? [])"
+                                            :key="tag"
+                                            size="small"
+                                            type="info"
+                                            :color="getTagColor(tag)"
+                                            disable-transitions
+                                            style="cursor: pointer;"
+                                            @click="appendTagFilter(tag)"
+                                        >{{ tag }}</el-tag>
+                                    </div>
+                                </el-descriptions-item>
                             </el-descriptions>
                         </el-col>
                     </el-row>
@@ -217,9 +223,11 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
+import type { Ref } from 'vue';
 import { Link } from '@element-plus/icons-vue';
 import { capitalizeFirstLetter, getRarityColor } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
+import { getScryfallCards } from '../util/CubeFunctions';
 import type { Cube } from '../types';
 
 const props = defineProps({
@@ -245,6 +253,15 @@ defineEmits(['update:visible']);
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog', () => {});
 
+const cardTableQuery = inject<Ref<string>>('cardTableQuery');
+
+const appendTagFilter = (tag: string) => {
+    if (!cardTableQuery) return;
+    const clause = `tag:${tag}`;
+    const current = cardTableQuery.value.trim();
+    cardTableQuery.value = current ? `${current} ${clause}` : clause;
+};
+
 const showFront = ref(true);
 
 const activeCard = computed(() => {
@@ -266,10 +283,15 @@ const activeCard = computed(() => {
         }
     }
 
-    if (!cardData) return null;
+    if (!cardData) {
+        const scryfallCards = getScryfallCards();
+        cardData = scryfallCards[props.oracleId] ?? null;
+        if (!cardData) return null;
+    }
 
     return {
         ...cardData,
+        setCode: cardData.setCode?.toUpperCase() ?? '',
         effectiveColors: (cardData.colorIdentity?.length === 0) ? ['C'] : (cardData.colorIdentity ?? []),
         cubes: cubeKeys,
         cubeCount: cubeKeys.length,
@@ -308,10 +330,6 @@ const gamesMeta = [
     { value: 'mtgo', color: 'rgba(70, 130, 180, 0.3)' },
     { value: 'arena', color: 'rgba(218, 112, 214, 0.3)' },
 ];
-
-const filteredTags = (cardTags: string[]) => {
-    return cardTags.filter(tag => tagsMeta.some(t => t.value.toLowerCase() === tag.toLowerCase()));
-};
 
 const getTagColor = (tag: string) => {
     return tagsMeta.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
