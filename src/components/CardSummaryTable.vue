@@ -31,6 +31,7 @@
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
         </el-button-group>
+        <el-button :type="config.showAllCards ? 'primary' : ''" @click="config.showAllCards = !config.showAllCards" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
         <el-dropdown trigger="click">
             <el-button :icon="Menu" circle />
             <template #dropdown>
@@ -46,7 +47,7 @@
     <div class="card-table-pagination-row">
         <el-breadcrumb separator="·" class="filter-summary">
             <el-breadcrumb-item>
-                <el-tooltip :content="`${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
+                <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
                     <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
                 </el-tooltip>
             </el-breadcrumb-item>
@@ -131,6 +132,9 @@
         :rowClassFn="rowClassFn"
         stripe
     >
+        <template v-if="noCubesLoaded && !config.showAllCards" #empty>
+            No cubes loaded. Load a cube to see card statistics, or click <strong>All Cards</strong> to browse the full Scryfall database with global rates.
+        </template>
         <template #cell-name="{ row }">
             <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
                 <template #content>
@@ -141,26 +145,81 @@
                         :class="'card-image ' + row.setCode?.toLowerCase()"
                     />
                 </template>
-                <el-link @click="openCardDetailDialog?.(row.oracleId)">{{ row.name }}</el-link>
+                <span
+                    class="name-cell-truncate"
+                    :title="nameOverflowSet.has(row.oracleId) ? row.name : undefined"
+                    @mouseenter="onNameMouseenter($event.currentTarget as HTMLElement, row.oracleId)"
+                >
+                    <el-link @click="openCardDetailDialog?.(row.oracleId)">{{ row.name }}</el-link>
+                </span>
             </el-tooltip>
         </template>
 
         <template #cell-effectiveColors="{ row }">
-            <i
-                v-for="color in row.effectiveColors"
-                :key="color"
-                :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
-                style="margin-right: 4px;"
-            ></i>
+            <span
+                style="cursor: pointer;"
+                :title="`Filter: color=${row.effectiveColors.join('')}`"
+                @click="appendFilter(`color=${row.effectiveColors.join('')}`)"
+            >
+                <i
+                    v-for="color in row.effectiveColors"
+                    :key="color"
+                    :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
+                    style="margin-right: 4px;"
+                ></i>
+            </span>
         </template>
 
         <template #cell-effectiveColorIdentity="{ row }">
-            <i
-                v-for="color in row.effectiveColorIdentity"
-                :key="color"
-                :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
-                style="margin-right: 4px;"
-            ></i>
+            <span
+                style="cursor: pointer;"
+                :title="`Filter: id=${row.effectiveColorIdentity.join('')}`"
+                @click="appendFilter(`id=${row.effectiveColorIdentity.join('')}`)"
+            >
+                <i
+                    v-for="color in row.effectiveColorIdentity"
+                    :key="color"
+                    :class="'ms ms-' + color.toLowerCase() + ' ms-cost'"
+                    style="margin-right: 4px;"
+                ></i>
+            </span>
+        </template>
+
+        <template #cell-typeLine="{ row }">
+            <el-tooltip
+                :content="row.typeLine"
+                placement="top-start"
+                effect="light"
+                :show-after="600"
+                :disabled="!typeLineOverflowSet.has(row.oracleId)"
+            >
+                <span
+                    class="type-line-words type-line-words--truncate"
+                    @mouseenter="onTypeLineMouseenter($event.currentTarget as HTMLElement, row.oracleId)"
+                >
+                    <template v-for="(word, i) in row.typeLine.split(/\s+/)" :key="i">
+                        <span v-if="word === '\u2014'">{{ word }}</span>
+                        <span
+                            v-else
+                            style="cursor: pointer;"
+                            class="clickable-filter-word"
+                            :title="`Filter: type:${word}`"
+                            @click.stop="appendFilter(`type:${word}`)"
+                        >{{ word }}</span>
+                    </template>
+                </span>
+            </el-tooltip>
+        </template>
+
+        <template #cell-cmc="{ row }">
+            <span
+                v-if="row.cmc != null"
+                style="cursor: pointer;"
+                class="clickable-filter-word"
+                :title="`Filter: cmc=${row.cmc}`"
+                @click="appendFilter(`cmc=${row.cmc}`)"
+            >{{ row.cmc }}</span>
+            <span v-else>&mdash;</span>
         </template>
 
         <template #cell-tags="{ row }">
@@ -186,6 +245,39 @@
                 :color="getRarityColor(row.minRarity)"
                 disable-transitions
             >{{ capitalizeFirstLetter(row.minRarity) }}</el-tag>
+        </template>
+
+        <template #cell-setCode="{ row }">
+            <span
+                v-if="row.setCode"
+                style="cursor: pointer;"
+                class="clickable-filter-word"
+                :title="`Filter: set:${row.setCode}`"
+                @click="appendFilter(`set:${row.setCode}`)"
+            >{{ row.setCode }}</span>
+            <span v-else>&mdash;</span>
+        </template>
+
+        <template #cell-setType="{ row }">
+            <span
+                v-if="row.setType"
+                style="cursor: pointer;"
+                class="clickable-filter-word"
+                :title="`Filter: settype:${row.setType}`"
+                @click="appendFilter(`settype:${row.setType}`)"
+            >{{ row.setType }}</span>
+            <span v-else>&mdash;</span>
+        </template>
+
+        <template #cell-layout="{ row }">
+            <span
+                v-if="row.layout"
+                style="cursor: pointer;"
+                class="clickable-filter-word"
+                :title="`Filter: layout:${row.layout}`"
+                @click="appendFilter(`layout:${row.layout}`)"
+            >{{ row.layout }}</span>
+            <span v-else>&mdash;</span>
         </template>
 
         <template #cell-power="{ row }">
@@ -271,7 +363,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue';
+import { ref, computed, inject, watch, reactive } from 'vue';
+import type { Ref } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
@@ -304,7 +397,7 @@ const openCardDetailDialog = inject<(id: string) => void>('openCardDetailDialog'
 const currentPage = ref(1);
 const pageSize = ref(50);
 const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
-const activeQuery = ref('');
+const activeQuery = inject<Ref<string>>('cardTableQuery', ref(''));
 const activeCubeFilter = ref<Record<string, boolean | null>>({});
 const activeCubeFilterMode = ref<'filter' | 'highlight'>('filter');
 const columnCustomizationVisible = ref(false);
@@ -386,6 +479,8 @@ const selectedFrequencyLabel = computed(() => {
 
 const selectedFrequencyCubeCount = computed(() => resolveCubeCount(config.value.frequencyCategory));
 
+const noCubesLoaded = computed(() => Object.keys(props.loadedCubes).length === 0);
+
 const isGroupAllChecked = (options: { value: string }[]) =>
     options.every(o => config.value.visibleColumns.includes(o.value));
 
@@ -457,8 +552,8 @@ const columnOptions = ref([
 const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'index', prop: 'index', label: '#', width: '50px' },
     { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
-    { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') },
-    { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') },
+    { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') && !noCubesLoaded.value },
+    { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') && !noCubesLoaded.value },
     { key: 'globalRate', prop: 'globalRatePercent', label: selectedFrequencyLabel.value, minWidth: '100px', align: 'center', sortable: true, formatter: (row: any) => {
         const count = row.globalRateCount;
         if (count == null) return 'N/A';
@@ -475,8 +570,8 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Power', visible: config.value.visibleColumns.includes('power') },
     { key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Toughness', visible: config.value.visibleColumns.includes('toughness') },
     { key: 'typeLine', prop: 'typeLine', label: 'Type', minWidth: '100px', maxWidth: '220px', showOverflowTooltip: true, sortable: true, tooltip: 'Type Line', visible: config.value.visibleColumns.includes('typeLine') },
-    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') },
-    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') },
+    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') && !noCubesLoaded.value },
+    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') && !noCubesLoaded.value },
     { key: 'tags', prop: 'tags', label: 'Tags', minWidth: '75px', visible: config.value.visibleColumns.includes('tags') },
     { key: 'minRarity', prop: 'minRarity', label: 'Min Rarity', minWidth: '75px', sortable: true, tooltip: 'Minimum rarity across all printings', visible: config.value.visibleColumns.includes('minRarity') },
     { key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '60px', sortable: true, visible: config.value.visibleColumns.includes('setCode') },
@@ -536,6 +631,31 @@ const getTagColor = (tag: string) => {
 
 const getGameTagColor = (game: string) => {
     return gamesMeta.find(g => g.value.toLowerCase() === game.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+};
+
+const appendFilter = (clause: string) => {
+    const current = activeQuery.value.trim();
+    activeQuery.value = current ? `${current} ${clause}` : clause;
+};
+
+const typeLineOverflowSet = reactive(new Set<string>());
+
+const onTypeLineMouseenter = (el: HTMLElement, oracleId: string) => {
+    if (el.scrollWidth > el.clientWidth) {
+        typeLineOverflowSet.add(oracleId);
+    } else {
+        typeLineOverflowSet.delete(oracleId);
+    }
+};
+
+const nameOverflowSet = reactive(new Set<string>());
+
+const onNameMouseenter = (el: HTMLElement, oracleId: string) => {
+    if (el.scrollWidth > el.clientWidth) {
+        nameOverflowSet.add(oracleId);
+    } else {
+        nameOverflowSet.delete(oracleId);
+    }
 };
 
 // --- Tristate filter helper for the cube dropdown ---
@@ -695,9 +815,6 @@ const exportToCsv = () => {
 
 // --- Data pipeline ---
 const tableData = computed(() => {
-    if (Object.keys(props.loadedCubes).length === 0) {
-        return [];
-    }
     const allCards = Object.keys(props.loadedCubes).reduce((acc: Record<string, any>, key) => {
         props.loadedCubes[key].cards.forEach((card: any) => {
             if (acc[card.oracleId] === undefined) {
@@ -955,6 +1072,39 @@ const filteredStats = computed(() => {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+}
+
+.clickable-filter-word {
+    border-radius: 2px;
+    padding: 0 1px;
+    transition: background-color 0.15s;
+
+    &:hover {
+        background-color: var(--el-fill-color);
+    }
+}
+
+.name-cell-truncate {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.type-line-words {
+    display: inline-flex;
+    gap: 0.3em;
+    flex-wrap: wrap;
+    align-items: baseline;
+
+    &.type-line-words--truncate {
+        display: flex;
+        width: 100%;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    }
 }
 
 .row-rarities {

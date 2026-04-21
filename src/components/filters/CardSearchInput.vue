@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Search, QuestionFilled } from '@element-plus/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import TristateSelect from './TristateSelect.vue';
@@ -74,6 +74,12 @@ const emit = defineEmits(['update:modelValue', 'update:cubeFilter', 'update:cube
 const showHelp = ref(false);
 const queryInput = ref(props.modelValue);
 const parseError = ref<string | null>(null);
+
+watch(() => props.modelValue, (value) => {
+    if (value !== queryInput.value) {
+        queryInput.value = value;
+    }
+});
 
 const hasCubes = computed(() => Object.keys(props.loadedCubes).length > 0);
 

@@ -53,7 +53,7 @@
                             <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
 
-                        <el-tab-pane label="Cards" name="cards" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
+                        <el-tab-pane label="Cards" name="cards" :lazy="true">
                             <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
 
@@ -188,6 +188,9 @@ const openCardDetailDialog = (oracleId) => {
     cardDetailDialogOracleId.value = oracleId;
 };
 provide('openCardDetailDialog', openCardDetailDialog);
+
+const cardTableQuery = ref('');
+provide('cardTableQuery', cardTableQuery);
 
 const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
 
