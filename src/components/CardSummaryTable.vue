@@ -339,7 +339,7 @@ const paginationLayout = computed(() => {
 
 // --- Column visibility config ---
 const defaultVisibleColumns = [
-    'cubeCount', 'effectiveColors', 'cmc', 'typeLine', 'tags',
+    'cubeCount', 'globalRate', 'effectiveColors', 'cmc', 'typeLine', 'tags',
     'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
