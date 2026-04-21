@@ -414,6 +414,49 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             return false;
         }
 
+        // ── Cube size (total card count) ───────────────────────────────────────
+        case 'cubesize': {
+            const rowCubes: string[] = row.cubes ?? [];
+            return rowCubes.some((cubeKey: string) => {
+                const cube = ctx.loadedCubes[cubeKey] as any;
+                const totalCards = cube?.stats?.totalCards ?? cube?.cards?.length;
+                return compareValues(totalCards, op, numVal);
+            });
+        }
+
+        // ── Cube category (assumed categories like peasant, pauper, powered) ───
+        case 'cubecategory': {
+            const rowCubes: string[] = row.cubes ?? [];
+            return rowCubes.some((cubeKey: string) => {
+                const cube = ctx.loadedCubes[cubeKey] as any;
+                const categories: string[] = cube?.stats?.assumedCategories ?? [];
+                if (op === ':') return categories.some((cat: string) => cat.toLowerCase().includes(strVal.toLowerCase()));
+                if (op === '=') return categories.some((cat: string) => cat.toLowerCase() === strVal.toLowerCase());
+                if (op === '!=') return !categories.some((cat: string) => cat.toLowerCase() === strVal.toLowerCase());
+                return false;
+            });
+        }
+
+        // ── Cube playability (mtgo, arena, paper) ──────────────────────────────
+        case 'playable': {
+            const rowCubes: string[] = row.cubes ?? [];
+            const platform = strVal.toLowerCase();
+            const flagKey: Record<string, string> = {
+                mtgo: 'mtgoPlayable',
+                arena: 'arenaPlayable',
+                paper: 'paperPlayable',
+            };
+            const statKey = flagKey[platform];
+            if (!statKey) return false;
+            const isPlayable = rowCubes.some((cubeKey: string) => {
+                const cube = ctx.loadedCubes[cubeKey] as any;
+                return !!cube?.stats?.[statKey];
+            });
+            if (op === ':' || op === '=') return isPlayable;
+            if (op === '!=') return !isPlayable;
+            return false;
+        }
+
         // ── Highlight (visual-only; never filters rows) ─────────────────────────
         case 'highlight':
             // highlight: is a visual annotation; it never excludes rows from results
@@ -491,6 +534,116 @@ export function computeHighlightedOracleIds(
         if (rowCubes.some(c => cubeKeys.has(c))) result.add(row.oracleId);
     }
     return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Eligible-cube computation — which loaded cubes satisfy cube-level filters
+// (cubesize / cubecategory / playable) in the AST.
+//
+// Returns null when the AST contains no cube-level conditions (no restriction),
+// otherwise returns the Set of cube keys that pass those conditions.
+// Card-level conditions (cmc, type, …) are treated as unconstrained (null),
+// so they never exclude cubes from the eligible set.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function hasCubeLevelFilters(ast: QueryNode | null): boolean {
+    if (!ast) return false;
+    switch (ast.type) {
+        case 'and':
+        case 'or':
+            return hasCubeLevelFilters(ast.left) || hasCubeLevelFilters(ast.right);
+        case 'not':
+            return hasCubeLevelFilters(ast.child);
+        case 'condition':
+            return ast.keyword === 'cubesize' || ast.keyword === 'cubecategory' || ast.keyword === 'playable';
+        default:
+            return false;
+    }
+}
+
+/**
+ * Tri-state eligibility for a single cube:
+ *   true  — cube satisfies the cube-level conditions
+ *   false — cube fails a cube-level condition
+ *   null  — no cube-level conditions apply (unconstrained)
+ */
+function checkCubeEligibility(ast: QueryNode, cube: any): boolean | null {
+    switch (ast.type) {
+        case 'and': {
+            const l = checkCubeEligibility(ast.left, cube);
+            const r = checkCubeEligibility(ast.right, cube);
+            if (l === false || r === false) return false;
+            if (l === null && r === null) return null;
+            if (l === null) return r;
+            if (r === null) return l;
+            return true;
+        }
+        case 'or': {
+            const l = checkCubeEligibility(ast.left, cube);
+            const r = checkCubeEligibility(ast.right, cube);
+            // If either branch is unconstrained the cube is always potentially eligible
+            if (l === null || r === null) return null;
+            return l || r;
+        }
+        case 'not': {
+            const child = checkCubeEligibility(ast.child, cube);
+            if (child === null) return null; // negating a card-level filter → no cube restriction
+            return !child;
+        }
+        case 'condition': {
+            const { keyword, op, value } = ast;
+            const strVal = String(value);
+            const numVal = typeof value === 'number' ? value : parseFloat(strVal);
+            switch (keyword) {
+                case 'cubesize': {
+                    const totalCards = cube?.stats?.totalCards ?? cube?.cards?.length;
+                    return compareValues(totalCards, op, numVal);
+                }
+                case 'cubecategory': {
+                    const categories: string[] = cube?.stats?.assumedCategories ?? [];
+                    if (op === ':') return categories.some(c => c.toLowerCase().includes(strVal.toLowerCase()));
+                    if (op === '=') return categories.some(c => c.toLowerCase() === strVal.toLowerCase());
+                    if (op === '!=') return !categories.some(c => c.toLowerCase() === strVal.toLowerCase());
+                    return null;
+                }
+                case 'playable': {
+                    const flagMap: Record<string, string> = {
+                        mtgo: 'mtgoPlayable',
+                        arena: 'arenaPlayable',
+                        paper: 'paperPlayable',
+                    };
+                    const statKey = flagMap[strVal.toLowerCase()];
+                    if (!statKey) return null;
+                    const isPlayable = !!cube?.stats?.[statKey];
+                    if (op === ':' || op === '=') return isPlayable;
+                    if (op === '!=') return !isPlayable;
+                    return null;
+                }
+                default:
+                    return null; // card-level condition — no cube restriction
+            }
+        }
+        default:
+            return null;
+    }
+}
+
+/**
+ * Returns the set of cube keys that are eligible based on cube-level filters
+ * (size / category / playable) present in the AST.
+ * Returns null if the AST contains no cube-level conditions.
+ */
+export function computeEligibleCubes(
+    ast: QueryNode | null,
+    loadedCubes: Record<string, any>,
+): Set<string> | null {
+    if (!ast || !hasCubeLevelFilters(ast)) return null;
+    const eligible = new Set<string>();
+    for (const [key, cube] of Object.entries(loadedCubes)) {
+        // null = unconstrained → include; false = explicitly excluded
+        if (checkCubeEligibility(ast, cube) !== false) eligible.add(key);
+    }
+    return eligible;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
