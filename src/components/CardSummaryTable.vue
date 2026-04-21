@@ -241,7 +241,7 @@ import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard, computeHighlightedOracleIds } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates } from '../util/CubeFunctions';
 
 const props = defineProps({
@@ -708,14 +708,23 @@ const visibleRows = computed(() => {
     return filteredRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 
+const eligibleCubeKeys = computed(() =>
+    computeEligibleCubes(parsedQuery.value.ast, props.loadedCubes),
+);
+
 const filteredStats = computed(() => {
     const filteredOracleIds = new Set(filteredRows.value.map(row => row.oracleId));
+    // Use eligible cubes as the denominator when cube-level filters are active,
+    // otherwise fall back to all loaded cubes.
+    const candidateKeys = eligibleCubeKeys.value
+        ? [...eligibleCubeKeys.value]
+        : Object.keys(props.loadedCubes);
     const cubeMatchCounts: Record<string, number> = {};
-    for (const key of Object.keys(props.loadedCubes)) {
+    for (const key of candidateKeys) {
         cubeMatchCounts[key] = props.loadedCubes[key].cards.filter((c: any) => filteredOracleIds.has(c.oracleId)).length;
     }
     const counts = Object.values(cubeMatchCounts);
-    const cubeCount = counts.length;
+    const cubeCount = candidateKeys.length;
     const cubesWithMatch = counts.filter(c => c > 0).length;
     const matchingCounts = counts.filter(c => c > 0);
     const avgPerCube = matchingCounts.length > 0 ? matchingCounts.reduce((a: number, b: number) => a + b, 0) / matchingCounts.length : 0;

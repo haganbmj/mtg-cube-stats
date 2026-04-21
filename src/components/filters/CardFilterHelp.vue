@@ -218,6 +218,21 @@ const FILTER_DOCS: FilterDoc[] = [
         description: 'Visually highlights rows whose card appears in the matching cube. Does not filter out any cards — all rows remain visible, but non-matching rows are dimmed.',
         examples: ['highlight:vintage', 'highlight:peasant'],
     },
+    {
+        keywords: ['size', 'cubesize'],
+        description: 'Card appears in at least one cube whose total card count satisfies the comparison.',
+        examples: ['size=360', 'size<=450', 'size>=540'],
+    },
+    {
+        keywords: ['category', 'cat'],
+        description: 'Card appears in at least one cube with the given assumed category (e.g. pauper, peasant, powered, desert). ":" for substring match, "=" for exact.',
+        examples: ['category:peasant', 'category=powered', '-category:pauper'],
+    },
+    {
+        keywords: ['playable', 'play'],
+        description: 'Card appears in at least one cube that is fully playable on the given platform (all cards available). Accepts: mtgo, arena, paper.',
+        examples: ['playable:mtgo', 'playable=arena', '-playable:paper'],
+    },
     // ── CubeCobra stats ────────────────────────────────────────────────────────
     {
         keywords: ['elo'],
