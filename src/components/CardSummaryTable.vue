@@ -24,10 +24,26 @@
 
     <div class="card-table-pagination-row">
         <el-breadcrumb separator="·" class="filter-summary">
-            <el-breadcrumb-item>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!isMobile">{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!isMobile">avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!isMobile && filteredStats.highlightedCubeCardCount !== null">{{ filteredStats.highlightedCubeCardCount }} in highlighted</el-breadcrumb-item>
+            <el-breadcrumb-item>
+                <el-tooltip :content="`${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">
+                <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">
+                <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
+                    <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile && filteredStats.highlightedCubeCardCount !== null">
+                <el-tooltip content="Total matching cards summed across all highlighted cubes" placement="bottom" effect="light">
+                    <span>{{ filteredStats.highlightedCubeCardCount }} in highlighted</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
         </el-breadcrumb>
         <el-pagination
             v-model:current-page="currentPage"
