@@ -37,6 +37,7 @@
                 <el-dropdown-menu>
                     <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
                     <el-dropdown-item @click="exportToCsv">Export as CSV</el-dropdown-item>
+                    <el-dropdown-item divided @click="config.showAllCards = !config.showAllCards">Show All Cards{{ config.showAllCards ? ' ✓' : '' }}</el-dropdown-item>
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
@@ -280,7 +281,7 @@ import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
-import { getSetReleaseDates } from '../util/CubeFunctions';
+import { getSetReleaseDates, getScryfallCards } from '../util/CubeFunctions';
 import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
 
 const props = defineProps({
@@ -346,6 +347,7 @@ const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
     visualColumnCount: 6,
     frequencyCategory: 'total',
+    showAllCards: false,
 };
 
 const config = bindStorage('card-summary-table-config', (v) => {
@@ -356,6 +358,7 @@ const config = bindStorage('card-summary-table-config', (v) => {
         visibleColumns: (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[],
         visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : 6,
         frequencyCategory: typeof v.frequencyCategory === 'string' ? v.frequencyCategory : 'total',
+        showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
 
@@ -721,6 +724,35 @@ const tableData = computed(() => {
         });
         return acc;
     }, {} as Record<string, any>);
+
+    if (config.value.showAllCards) {
+        const scryfallCards = getScryfallCards();
+        for (const [oracleId, card] of Object.entries(scryfallCards)) {
+            if (allCards[oracleId] !== undefined) continue;
+            const effectiveColors = (!card.colors || card.colors.length === 0) ? ['C'] : card.colors;
+            const effectiveColorIdentity = (!card.colorIdentity || card.colorIdentity.length === 0) ? ['C'] : card.colorIdentity;
+            allCards[oracleId] = {
+                ...card,
+                oracleId,
+                setCode: card.setCode?.toUpperCase() ?? '',
+                isRemoval: card.tags.includes('removal'),
+                effectiveColors,
+                effectiveColorIdentity,
+                count: 0,
+                cubes: [],
+                cubeCount: 0,
+                elo: undefined,
+                popularity: undefined,
+                globalRateCount: resolveCardCount(oracleId, config.value.frequencyCategory),
+                globalRatePercent: (() => {
+                    const count = resolveCardCount(oracleId, config.value.frequencyCategory);
+                    const total = resolveCubeCount(config.value.frequencyCategory);
+                    if (count == null || !total) return null;
+                    return (count / total) * 100;
+                })(),
+            };
+        }
+    }
 
     return Object.values(allCards);
 });

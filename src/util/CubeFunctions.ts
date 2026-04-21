@@ -31,6 +31,10 @@ export function getTokens(): Record<string, ScryfallToken> {
     return scryfall?.tokens ?? {};
 }
 
+export function getScryfallCards(): Record<string, ScryfallCard> {
+    return scryfall?.cards ?? {};
+}
+
 const rarityScoreMap: Record<string, number> = {
     common: 0.333,
     uncommon: 0.666,

@@ -4,6 +4,7 @@
 export interface CubeCobraFrequencyData {
     generatedAt: string;
     recencyMonths: number;
+    cubesLastModified?: string | null;
     cubeCount: Record<string, number>;
     broadGroups: Record<string, string[]>;
     cards: Record<string, Record<string, number>>;

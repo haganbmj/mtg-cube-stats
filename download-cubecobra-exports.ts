@@ -22,6 +22,19 @@ if (!fs.existsSync(EXPORT_DIR)) {
     fs.mkdirSync(EXPORT_DIR, { recursive: true });
 }
 
+// Fetch the S3 Last-Modified timestamp for cubes.json (lightweight HEAD request).
+let cubesLastModified: string | null = null;
+try {
+    const headResp = await axios({
+        url: `${S3_BASE}/export/cubes.json`,
+        method: 'HEAD',
+    });
+    cubesLastModified = (headResp.headers as any)['last-modified'] ?? null;
+    if (cubesLastModified) console.log(`CubeCobra export last modified: ${cubesLastModified}`);
+} catch {
+    console.warn('Could not fetch S3 Last-Modified header for cubes.json.');
+}
+
 // Download indexToOracleMap.json (small file, load into memory).
 if (!fs.existsSync(INDEX_MAP_JSON) || isUpdate) {
     console.log('Downloading indexToOracleMap.json ...');
@@ -250,10 +263,17 @@ function detectCubeCategories(oracleIds: string[]): string[] {
 // Date cutoff
 // ---------------------------------------------------------------------------
 
-const cutoffDate = new Date();
+// Base the recency window on the S3 Last-Modified date of the export file rather
+// than the current time. This keeps the cutoff stable across re-runs until the
+// export itself is refreshed.
+const baseDate = cubesLastModified ? new Date(cubesLastModified) : new Date();
+if (!cubesLastModified) {
+    console.warn('No S3 Last-Modified available — using current time as recency base.');
+}
+const cutoffDate = new Date(baseDate);
 cutoffDate.setMonth(cutoffDate.getMonth() - RECENCY_MONTHS);
 const cutoffTimestamp = Math.floor(cutoffDate.getTime() / 1000);
-console.log(`Recency filter: ${RECENCY_MONTHS} months → cubes updated after ${cutoffDate.toISOString().slice(0, 10)}`);
+console.log(`Recency filter: ${RECENCY_MONTHS} months from ${baseDate.toISOString().slice(0, 10)} → cubes updated after ${cutoffDate.toISOString().slice(0, 10)}`);
 
 // ---------------------------------------------------------------------------
 // Process cubes
@@ -352,6 +372,7 @@ console.log('Writing card frequency data ...');
 const frequencyOutput = {
     generatedAt: new Date().toISOString().slice(0, 10),
     recencyMonths: RECENCY_MONTHS,
+    cubesLastModified,
     cubeCount: cubeCountMap,
     broadGroups: BROAD_GROUPS,
     cards: cardFreq,
