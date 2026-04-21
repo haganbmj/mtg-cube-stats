@@ -23,12 +23,33 @@
     </div>
 
     <div class="card-table-pagination-row">
-        <el-text tag="i">Filtered to {{ filteredRows.length }} / {{ sortedRows.length }} Cards</el-text>
+        <el-breadcrumb separator="·" class="filter-summary">
+            <el-breadcrumb-item>
+                <el-tooltip :content="`${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">
+                <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile">
+                <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
+                    <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="!isMobile && filteredStats.highlightedCubeCardCount !== null">
+                <el-tooltip content="Total matching cards summed across all highlighted cubes" placement="bottom" effect="light">
+                    <span>{{ filteredStats.highlightedCubeCardCount }} in highlighted</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+        </el-breadcrumb>
         <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
             :page-sizes="[25, 50, 100, 250]"
-            :pager-count="5"
+            :pager-count="isMobile ? 3 : 5"
             :layout="paginationLayout"
             :total="filteredRows.length"
         />
@@ -238,7 +259,7 @@ import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard, computeHighlightedOracleIds } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates } from '../util/CubeFunctions';
 
 const props = defineProps({
@@ -529,6 +550,18 @@ watch([activeQuery, activeCubeFilter, activeCubeFilterMode], () => {
     currentPage.value = 1;
 });
 
+watch(() => Object.keys(props.loadedCubes), (cubeKeys) => {
+    const cubeKeySet = new Set(cubeKeys);
+    const staleKeys = Object.keys(activeCubeFilter.value).filter(k => !cubeKeySet.has(k));
+    if (staleKeys.length > 0) {
+        const updated = { ...activeCubeFilter.value };
+        for (const key of staleKeys) {
+            delete updated[key];
+        }
+        activeCubeFilter.value = updated;
+    }
+});
+
 const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
     activeSort.value = sortInfo;
     currentPage.value = 1;
@@ -691,6 +724,37 @@ const filteredRows = computed(() => {
 
 const visibleRows = computed(() => {
     return filteredRows.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+});
+
+const eligibleCubeKeys = computed(() =>
+    computeEligibleCubes(parsedQuery.value.ast, props.loadedCubes),
+);
+
+const filteredStats = computed(() => {
+    const filteredOracleIds = new Set(filteredRows.value.map(row => row.oracleId));
+    // Use eligible cubes as the denominator when cube-level filters are active,
+    // otherwise fall back to all loaded cubes.
+    const candidateKeys = eligibleCubeKeys.value
+        ? [...eligibleCubeKeys.value]
+        : Object.keys(props.loadedCubes);
+    const cubeMatchCounts: Record<string, number> = {};
+    for (const key of candidateKeys) {
+        cubeMatchCounts[key] = props.loadedCubes[key].cards.filter((c: any) => filteredOracleIds.has(c.oracleId)).length;
+    }
+    const counts = Object.values(cubeMatchCounts);
+    const cubeCount = candidateKeys.length;
+    const cubesWithMatch = counts.filter(c => c > 0).length;
+    const matchingCounts = counts.filter(c => c > 0);
+    const avgPerCube = matchingCounts.length > 0 ? matchingCounts.reduce((a: number, b: number) => a + b, 0) / matchingCounts.length : 0;
+
+    const highlightedKeys = activeCubeFilterMode.value === 'highlight'
+        ? Object.entries(activeCubeFilter.value).filter(([, v]) => v === true).map(([k]) => k)
+        : [];
+    const highlightedCubeCardCount = highlightedKeys.length > 0
+        ? highlightedKeys.reduce((sum: number, key: string) => sum + (cubeMatchCounts[key] ?? 0), 0)
+        : null;
+
+    return { cubesWithMatch, avgPerCube, cubeCount, highlightedCubeCardCount };
 });
 </script>
 

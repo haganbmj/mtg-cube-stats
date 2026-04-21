@@ -117,6 +117,16 @@ const KEYWORD_ALIASES: Record<string, string> = {
     cube: 'cube',
     // Cube highlight (visual-only; rows are never filtered out)
     highlight: 'highlight',
+    // Cube size (card count)
+    size: 'cubesize',
+    cubesize: 'cubesize',
+    // Cube category (assumed categories like peasant, pauper, powered)
+    category: 'cubecategory',
+    cat: 'cubecategory',
+    cubecategory: 'cubecategory',
+    // Cube playability (mtgo, arena, paper)
+    playable: 'playable',
+    play: 'playable',
     // Boolean flags
     is: 'is',
     not: 'not',
