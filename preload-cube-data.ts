@@ -134,6 +134,7 @@ const batches: Batch[] = [
             '375a3eb7-33bc-45e9-821e-e699cf196ace', // PepperMyr - PepperMyr's 360 Peasant Cube
             '5f1c4ebcbb7e6b105ca59780', // rancoredmalone - Peasant Snow CUbe
             '315272ac-9bc6-45ee-82d4-2e2279b034fe', // SultanYakub - Resource Cube (Open Beta)
+            '8cf14ff3-b9fa-486e-9faf-ce37c1a8ccb1', // emielboven - Emiel's Peasant Cube
         ],
     },
     {
