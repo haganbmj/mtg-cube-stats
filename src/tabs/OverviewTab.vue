@@ -907,6 +907,17 @@ const formatters = {
     margin-top: 2px;
 }
 
+:global(.overview-loading.el-loading-mask) {
+    align-items: flex-start !important;
+    padding-top: 60px !important;
+}
+
+:global(.overview-loading.el-loading-mask .el-loading-spinner) {
+    position: absolute !important;
+    top: 60px !important;
+    margin-top: 0 !important;
+}
+
 :global(.overview-loading .el-loading-text) {
     color: var(--el-text-color-primary) !important;
     font-size: 14px;
