@@ -1,4 +1,5 @@
 import { useMemoize } from '@vueuse/core';
+import { ref } from 'vue';
 import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions';
 import { isEvergreenKeyword } from './Keywords';
 import { detectCubeArchetypes } from './ArchetypeDetection';
@@ -17,6 +18,9 @@ const scryfallLoad = () => import('../../data/cards-minimized.json') as Promise<
 
 let scryfall: ScryfallDataStructure | null = null;
 
+/** Reactive flag that becomes true once Scryfall card data has finished loading. */
+export const scryfallReady = ref(false);
+
 /**
  * Initialize Scryfall card data from the minimized JSON file
  */
@@ -24,6 +28,7 @@ export async function initScryfall(): Promise<void> {
     console.time('Loading Scryfall card data');
     const module = await scryfallLoad();
     scryfall = module.default;
+    scryfallReady.value = true;
     console.timeEnd('Loading Scryfall card data');
 }
 

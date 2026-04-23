@@ -97,7 +97,7 @@
         </el-space>
     </el-row>
 
-    <div v-if="visualDisplayVisible" class="visual-card-grid" :style="{ gridTemplateColumns: `repeat(${config.visualColumnCount}, 1fr)` }">
+    <div v-if="visualDisplayVisible" class="visual-card-grid" v-loading="!scryfallReady" :style="{ gridTemplateColumns: `repeat(${config.visualColumnCount}, 1fr)` }">
         <div
             v-for="card in visibleRows"
             :key="card.oracleId"
@@ -118,7 +118,10 @@
                 }"
             >
                 <el-text size="small" truncated>{{ card.name }}</el-text>
-                <el-tag type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
+                <el-tag v-if="noCubesLoaded" type="info" size="small" style="margin-left: 6px;">
+                    {{ card.globalRatePercent != null ? card.globalRatePercent.toFixed(1) + '%' : 'N/A' }}
+                </el-tag>
+                <el-tag v-else type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>
         </div>
     </div>
@@ -130,9 +133,13 @@
         :default-sort="{ prop: 'cubeCount', order: 'descending' }"
         @sort-change="onSortChange"
         :rowClassFn="rowClassFn"
+        v-loading="!scryfallReady"
         stripe
     >
-        <template v-if="noCubesLoaded && !config.showAllCards" #empty>
+        <template v-if="!scryfallReady" #empty>
+            Loading card data&hellip;
+        </template>
+        <template v-else-if="noCubesLoaded && !config.showAllCards" #empty>
             No cubes loaded. Load a cube to see card statistics, or click <strong>All Cards</strong> to browse the full Scryfall database with global rates.
         </template>
         <template #cell-name="{ row }">
@@ -374,7 +381,7 @@ import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
-import { getSetReleaseDates, getScryfallCards } from '../util/CubeFunctions';
+import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
 import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
 
 const props = defineProps({
@@ -844,7 +851,7 @@ const tableData = computed(() => {
         return acc;
     }, {} as Record<string, any>);
 
-    if (config.value.showAllCards) {
+    if (config.value.showAllCards && scryfallReady.value) {
         const scryfallCards = getScryfallCards();
         for (const [oracleId, card] of Object.entries(scryfallCards)) {
             if (allCards[oracleId] !== undefined) continue;
