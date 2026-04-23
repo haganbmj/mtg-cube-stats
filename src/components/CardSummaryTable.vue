@@ -7,26 +7,6 @@
             v-model:cubeFilter="activeCubeFilter"
             v-model:cubeFilterMode="activeCubeFilterMode"
         />
-        <el-select
-            v-if="frequencyCategoryOptions.length > 0"
-            v-model="config.frequencyCategory"
-            size="default"
-            style="width: 180px;"
-            placeholder="Global Rate"
-        >
-            <el-option-group
-                v-for="group in groupedFrequencyOptions"
-                :key="group.label"
-                :label="group.label"
-            >
-                <el-option
-                    v-for="opt in group.options"
-                    :key="opt.value"
-                    :label="opt.label"
-                    :value="opt.value"
-                />
-            </el-option-group>
-        </el-select>
         <el-button-group>
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
@@ -118,7 +98,7 @@
                 }"
             >
                 <el-text size="small" truncated>{{ card.name }}</el-text>
-                <el-tag v-if="noCubesLoaded" type="info" size="small" style="margin-left: 6px;">
+                <el-tag v-if="Object.keys(loadedCubes).length <= 1" type="info" size="small" style="margin-left: 6px;">
                     {{ card.globalRatePercent != null ? card.globalRatePercent.toFixed(1) + '%' : 'N/A' }}
                 </el-tag>
                 <el-tag v-else type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
@@ -354,8 +334,35 @@
             </div>
             <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
                 <el-row :gutter="10">
-                    <el-col :span="12" :xs="24" v-for="item in group.options" :key="item.value">
-                        <el-checkbox :label="item.value">
+                    <el-col :span="item.value === 'globalRate' ? 24 : 12" :xs="24" v-for="item in group.options" :key="item.value">
+                        <template v-if="item.value === 'globalRate'">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <el-checkbox :value="item.value">
+                                    {{ item.label }}
+                                </el-checkbox>
+                                <el-select
+                                    v-if="frequencyCategoryOptions.length > 0"
+                                    v-model="config.frequencyCategory"
+                                    size="small"
+                                    style="flex: 1; min-width: 120px; max-width: 200px;"
+                                    placeholder="Global Rate"
+                                >
+                                    <el-option-group
+                                        v-for="grp in groupedFrequencyOptions"
+                                        :key="grp.label"
+                                        :label="grp.label"
+                                    >
+                                        <el-option
+                                            v-for="opt in grp.options"
+                                            :key="opt.value"
+                                            :label="opt.label"
+                                            :value="opt.value"
+                                        />
+                                    </el-option-group>
+                                </el-select>
+                            </div>
+                        </template>
+                        <el-checkbox v-else :value="item.value">
                             {{ item.label }}
                         </el-checkbox>
                     </el-col>
@@ -382,7 +389,7 @@ import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
-import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
+import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
 
 const props = defineProps({
     loadedCubes: {
@@ -462,7 +469,10 @@ const config = bindStorage('card-summary-table-config', (v) => {
     };
 });
 
-const frequencyCategoryOptions = computed(() => getFrequencyCategoryOptions());
+const frequencyCategoryOptions = computed(() => {
+    void frequencyDataReady.value; // reactive dependency
+    return getFrequencyCategoryOptions();
+});
 
 const groupedFrequencyOptions = computed(() => {
     const opts = frequencyCategoryOptions.value;

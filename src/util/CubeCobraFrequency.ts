@@ -1,4 +1,5 @@
 import type { CubeCobraFrequencyData } from '../types';
+import { ref } from 'vue';
 
 // ---------------------------------------------------------------------------
 // Lazy-load the frequency data file (Vite code-splits it into its own chunk).
@@ -6,6 +7,9 @@ import type { CubeCobraFrequencyData } from '../types';
 // ---------------------------------------------------------------------------
 
 let frequencyData: CubeCobraFrequencyData | null = null;
+
+/** Reactive flag that becomes true once CubeCobra frequency data has finished loading. */
+export const frequencyDataReady = ref(false);
 
 export async function initFrequencyData(): Promise<void> {
     try {
@@ -18,6 +22,7 @@ export async function initFrequencyData(): Promise<void> {
             return;
         }
         frequencyData = data;
+        frequencyDataReady.value = true;
         console.log(`Loaded CubeCobra frequency data (${Object.keys(frequencyData.cards).length} cards, generated ${frequencyData.generatedAt})`);
     } catch {
         console.warn('CubeCobra card frequency data not available — column will be hidden.');
