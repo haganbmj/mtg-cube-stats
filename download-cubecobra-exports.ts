@@ -1,6 +1,7 @@
 import fs from 'fs';
 import readline from 'readline';
 import axios from 'axios';
+import { assumedCategories, BROAD_GROUPS } from './src/util/CubeCategories';
 
 const S3_BASE = 'https://cubecobra-public.s3.us-east-2.amazonaws.com';
 const EXPORT_DIR = './data/cubecobra-export';
@@ -187,79 +188,6 @@ for (const [oracleId, card] of Object.entries(cardsMinimized.cards) as [string, 
 console.timeEnd('reference-data');
 
 // ---------------------------------------------------------------------------
-// Category detection (ported from CubeFunctions.ts assumedCategories)
-// ---------------------------------------------------------------------------
-
-const powerOracleIds = [
-    '550c74d4-1fcb-406a-b02a-639a760a4380', // Ancestral Recall
-    '5089ec1a-f881-4d55-af14-5d996171203b', // Black Lotus
-    '376ee366-e082-402f-b4db-6592fcfcacd2', // Mox Emerald
-    '0677f49e-f8bf-4349-af52-2ccde9287c2e', // Mox Jet
-    '824597b8-c89a-47ec-8526-7efc6e24ef0e', // Mox Pearl
-    'ed85fa82-e4fa-434b-92a8-36b6075708d1', // Mox Ruby
-    'd5ed1233-df87-4b90-8918-13922ec95249', // Mox Sapphire
-    'c823e687-6311-4c99-974b-fd77d204141a', // Timetwister
-    'd0209d3f-3f7e-4fd5-bce5-10bce6f29c86', // Time Walk
-];
-
-const BROAD_GROUPS: Record<string, string[]> = {
-    pauper: ['pauper', 'pauper+', 'pauper-ish', 'pauper+ish'],
-    peasant: ['peasant', 'peasant+', 'peasant-ish', 'peasant+ish'],
-};
-
-type RarityCounts = { common: number; uncommon: number; rare: number; mythic: number; total: number };
-
-function detectCubeCategories(oracleIds: string[]): string[] {
-    const totalCards = oracleIds.length;
-    const categories: string[] = [];
-
-    const counts: { all: RarityCounts; nonLand: RarityCounts; land: RarityCounts } = {
-        all:     { common: 0, uncommon: 0, rare: 0, mythic: 0, total: 0 },
-        nonLand: { common: 0, uncommon: 0, rare: 0, mythic: 0, total: 0 },
-        land:    { common: 0, uncommon: 0, rare: 0, mythic: 0, total: 0 },
-    };
-
-    for (const oid of oracleIds) {
-        const card = scryfallCards[oid];
-        const minRarity = (card?.minRarity ?? 'common') as keyof RarityCounts;
-        const bucket = card?.effectiveTypes?.includes('Land') ? 'land' : 'nonLand';
-
-        if (counts.all[minRarity] !== undefined) counts.all[minRarity]++;
-        counts.all.total++;
-        if (counts[bucket][minRarity] !== undefined) counts[bucket][minRarity]++;
-        counts[bucket].total++;
-    }
-
-    if (counts.all.common === totalCards) {
-        categories.push('pauper');
-    } else if (counts.nonLand.common + counts.land.total === totalCards) {
-        categories.push('pauper+');
-    } else if (counts.nonLand.common >= counts.nonLand.total * 0.925 && counts.land.common === counts.land.total) {
-        categories.push('pauper-ish');
-    } else if (counts.nonLand.common >= counts.nonLand.total * 0.925) {
-        categories.push('pauper+ish');
-    } else if (counts.all.common + counts.all.uncommon === totalCards) {
-        categories.push('peasant');
-    } else if (counts.nonLand.common + counts.nonLand.uncommon + counts.land.total === totalCards) {
-        categories.push('peasant+');
-    } else if (counts.nonLand.common + counts.nonLand.uncommon >= counts.nonLand.total * 0.925 && counts.land.common + counts.land.uncommon === counts.land.total) {
-        categories.push('peasant-ish');
-    } else if (counts.nonLand.common + counts.nonLand.uncommon >= counts.nonLand.total * 0.925) {
-        categories.push('peasant+ish');
-    }
-
-    if (oracleIds.some(oid => powerOracleIds.includes(oid))) {
-        categories.push('powered');
-    }
-
-    if (counts.land.total >= totalCards * 0.28) {
-        categories.push('desert');
-    }
-
-    return categories;
-}
-
-// ---------------------------------------------------------------------------
 // Date cutoff
 // ---------------------------------------------------------------------------
 
@@ -323,7 +251,7 @@ await new Promise<void>((resolve, reject) => {
         }
 
         // Detect categories for this cube.
-        const categories = detectCubeCategories(oracleIds);
+        const categories = assumedCategories(oracleIds.map(oid => ({ oracleId: oid, ...scryfallCards[oid] })));
 
         cubeCountMap.total++;
         if (categories.length === 0) {

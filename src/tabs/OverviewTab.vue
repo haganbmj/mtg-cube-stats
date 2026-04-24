@@ -357,6 +357,7 @@
 import { ref, reactive, computed, inject } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
+import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
@@ -619,27 +620,6 @@ const columnOptions = ref([
         ],
     },
 ]);
-
-const categories = [
-    { text: 'pauper', value: 'pauper', color: 'rgba(255, 165, 0, 0.2)', tooltip: 'All cards are commons.' },
-    { text: 'pauper+', value: 'pauper+', color: 'rgba(0, 255, 115, 0.2)', tooltip: 'All non-land cards are commons.' },
-    { text: 'pauper-ish', value: 'pauper-ish', color: 'rgba(95, 95, 235, 0.2)', tooltip: '≥92.5% of non-land cards are commons; no uncommon/rare lands.' },
-    { text: 'pauper+ish', value: 'pauper+ish', color: 'rgba(95, 235, 95, 0.2)', tooltip: '≥92.5% of non-land cards are commons; contains uncommon/rare lands.' },
-    { text: 'peasant', value: 'peasant', color: 'rgba(0, 128, 0, 0.2)', tooltip: 'All cards are common or uncommon.' },
-    { text: 'peasant+', value: 'peasant+', color: 'rgba(34, 145, 169, 0.2)', tooltip: 'All non-land cards are common or uncommon.' },
-    { text: 'peasant-ish', value: 'peasant-ish', color: 'rgba(128, 0, 128, 0.2)', tooltip: '≥92.5% of non-land cards are common or uncommon; no rare lands.' },
-    { text: 'peasant+ish', value: 'peasant+ish', color: 'rgba(128, 128, 0, 0.2)', tooltip: '≥92.5% of non-land cards are common or uncommon; contains rare lands.' },
-    { text: 'powered', value: 'powered', color: 'rgba(128, 0, 20, 0.2)', tooltip: 'Contains one or more pieces of the Power 9.' },
-    { text: 'desert?', value: 'desert?', color: 'rgba(169, 150, 35, 0.2)', tooltip: 'Contains more than 28% lands.' },
-];
-
-const getCategoryTagColor = (category: string) => {
-    return categories.find(c => c.value.toLowerCase() === category?.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
-};
-
-const getCategoryTooltip = (category: string) => {
-    return categories.find(c => c.value.toLowerCase() === category?.toLowerCase())?.tooltip ?? '';
-};
 
 const sortMethods = {
     caseInsensitiveName: (a: any, b: any) => {

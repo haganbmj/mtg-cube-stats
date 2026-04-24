@@ -54,16 +54,23 @@
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" placement="top" :hide-after="50"><span>Categories <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    <el-tag
+                                    <el-tooltip
                                         v-for="category in (activeCube.stats?.assumedCategories || [])"
                                         :key="category"
-                                        size="default"
-                                        type="info"
-                                        style="margin-right: 0.25rem;"
-                                        disable-transitions
+                                        :content="getCategoryTooltip(category)"
+                                        placement="top"
+                                        :hide-after="50"
                                     >
-                                        {{ category }}
-                                    </el-tag>
+                                        <el-tag
+                                            size="default"
+                                            type="info"
+                                            :color="getCategoryTagColor(category)"
+                                            style="margin-right: 0.25rem;"
+                                            disable-transitions
+                                        >
+                                            {{ category }}
+                                        </el-tag>
+                                    </el-tooltip>
                                     <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
                                 </el-descriptions-item>
                                 <el-descriptions-item>
@@ -355,6 +362,7 @@ import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
 import type { ScryfallToken } from '../types/scryfall';
 import { getTokens } from '../util/CubeFunctions';
+import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';
 import ReleaseYearChart from './charts/basic/ReleaseYearChart.vue';
 import ColorIdentityDistributionChart from './charts/distributions/ColorIdentityDistributionChart.vue';
