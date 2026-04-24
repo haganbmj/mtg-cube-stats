@@ -103,45 +103,54 @@
                                     <template #label><el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50"><span>New Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.newCards ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.newCardRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50"><span>Lands <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.landCards, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.landCards ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.landRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards with 'Creature' in their Type Line" placement="top" :hide-after="50"><span>Creatures <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.creatureCards, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.creatureCards ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.creatureRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards tagged as 'removal' in Scryfall's Tagger" placement="top" :hide-after="50"><span>Removal <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.removal ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.removalRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards that Create one or more Tokens" placement="top" :hide-after="50"><span>Makes Tokens <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.cardCounts?.makesTokens, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.makesTokens ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.makesTokensRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50"><span>Unique Tokens <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ activeCube.stats?.uniqueTokenCount ?? 0 }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.uniqueTokenCount" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50"><span>Abnormal Layout <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.abnormalLayout ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.abnormalLayoutRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50"><span>Universes Beyond <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.universesBeyond ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.universesBeyondRatio" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50"><span>Supplemental Product <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
                                     <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.supplementalProduct ?? 0 }})</span>
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.supplementalProductRatio" />
                                 </el-descriptions-item>
                             </el-descriptions>
                         </el-col>
@@ -151,30 +160,37 @@
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50"><span>Avg. Similarity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(avgSimilarityScore, 1) }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.avgSimilarityScore" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50"><span>Avg. Mana Value <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averageNonLandCmc ?? 0).toFixed(2) }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageNonLandCmc" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average CubeCobra Card Elo Rating" placement="top" :hide-after="50"><span>Avg. Card Elo <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageElo" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50"><span>Avg. Card Popularity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.averagePopularity" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50"><span>Rarity Score <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.blendedRarityScore" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Release Year of Cards in the Cube (± Standard Deviation)" placement="top" :hide-after="50"><span>Avg. Release Year <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }} (±{{ (activeCube.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageReleaseYear" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50"><span>Median Release Year <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} (±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.medianReleaseYear" />
                                 </el-descriptions-item>
                             </el-descriptions>
                         </el-col>
@@ -184,18 +200,22 @@
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageWordCount" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count (Unique) <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageWordCountUnique" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Number of Unique Keywords" placement="top" :hide-after="50"><span>Keywords <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ activeCube.stats?.uniqueKeywords ?? 0 }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.uniqueKeywords" />
                                 </el-descriptions-item>
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Number of Unique Non-Evergreen Keywords" placement="top" :hide-after="50"><span>Non-Evergreen Keywords <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}
+                                    <StatCmpIndicator :comparison="activeCubeComparisons.uniqueNonEvergreenKeywords" />
                                 </el-descriptions-item>
                             </el-descriptions>
                         </el-col>
@@ -371,6 +391,7 @@ import RarityDistributionChart from './charts/distributions/RarityDistributionCh
 import LegalityDistributionChart from './charts/distributions/LegalityDistributionChart.vue';
 import KeywordTable from './KeywordTable.vue';
 import SetNameTable from './SetNameTable.vue';
+import StatCmpIndicator from './StatCmpIndicator.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
 import ArchetypeAnalysis from './ArchetypeAnalysis.vue';
 
@@ -398,6 +419,10 @@ const props = defineProps({
     loadedCubes: {
         type: Object as () => Record<string, Cube>,
         default: () => ({}),
+    },
+    peerStats: {
+        type: Object as () => Record<string, { mean: number; stddev: number }> | null,
+        default: null,
     },
 });
 
@@ -435,6 +460,47 @@ const avgSimilarityScore = computed(() => {
     if (totalCubes === 0) return 0;
     const totalScore = Object.values(scores).reduce((acc: number, c: any) => acc + c.cosineSimilarity, 0);
     return totalScore / totalCubes;
+});
+
+// --- Peer comparison ---
+type ComparisonResult = 'high' | 'low';
+
+const cmp = (value: number, key: string): ComparisonResult | null => {
+    if (!props.peerStats) return null;
+    const s = props.peerStats[key];
+    if (!s || s.stddev === 0) return null;
+    if (value > s.mean + s.stddev) return 'high';
+    if (value < s.mean - s.stddev) return 'low';
+    return null;
+};
+
+const activeCubeComparisons = computed((): Record<string, ComparisonResult | null> => {
+    const cube = activeCube.value;
+    if (!cube || !props.peerStats) return {};
+    const stats = cube.stats;
+    const t = stats?.totalCards || 1;
+    return {
+        newCardRatio:               cmp((stats?.newCards ?? 0) / t, 'newCardRatio'),
+        landRatio:                  cmp((stats?.landCards ?? 0) / t, 'landRatio'),
+        creatureRatio:              cmp((stats?.creatureCards ?? 0) / t, 'creatureRatio'),
+        removalRatio:               cmp((stats?.cardCounts?.removal ?? 0) / t, 'removalRatio'),
+        makesTokensRatio:           cmp((stats?.cardCounts?.makesTokens ?? 0) / t, 'makesTokensRatio'),
+        abnormalLayoutRatio:        cmp((stats?.cardCounts?.abnormalLayout ?? 0) / t, 'abnormalLayoutRatio'),
+        universesBeyondRatio:       cmp((stats?.cardCounts?.universesBeyond ?? 0) / t, 'universesBeyondRatio'),
+        supplementalProductRatio:   cmp((stats?.cardCounts?.supplementalProduct ?? 0) / t, 'supplementalProductRatio'),
+        uniqueTokenCount:           cmp((stats?.uniqueTokenCount ?? 0) / t, 'uniqueTokenCount'),
+        avgSimilarityScore:         cmp(avgSimilarityScore.value, 'avgSimilarityScore'),
+        averageNonLandCmc:          cmp(stats?.averageNonLandCmc ?? 0, 'averageNonLandCmc'),
+        averageElo:                 cmp(stats?.averageElo ?? 0, 'averageElo'),
+        averagePopularity:          cmp(stats?.averagePopularity ?? 0, 'averagePopularity'),
+        blendedRarityScore:         cmp(stats?.blendedRarityScore ?? 0, 'blendedRarityScore'),
+        averageReleaseYear:         cmp(stats?.averageReleaseYear ?? 0, 'averageReleaseYear'),
+        medianReleaseYear:          cmp(stats?.medianReleaseYear ?? 0, 'medianReleaseYear'),
+        averageWordCount:           cmp(stats?.averageWordCount ?? 0, 'averageWordCount'),
+        averageWordCountUnique:     cmp(stats?.averageWordCountUnique ?? 0, 'averageWordCountUnique'),
+        uniqueKeywords:             cmp((stats?.uniqueKeywords ?? 0) / t, 'uniqueKeywords'),
+        uniqueNonEvergreenKeywords: cmp((stats?.uniqueNonEvergreenKeywords ?? 0) / t, 'uniqueNonEvergreenKeywords'),
+    };
 });
 
 const formattedLastModified = computed(() => {

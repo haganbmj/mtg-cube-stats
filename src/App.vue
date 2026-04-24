@@ -38,6 +38,7 @@
                                 :loadUserCollection="loadUserCollection"
                                 :removeCollection="removeCollection"
                                 :loadingProgress="loadingProgress"
+                                :peerStats="peerStats"
                             />
                         </el-tab-pane>
 
@@ -69,6 +70,7 @@
                         :similarityMatrix="similarityMatrix"
                         :overviewTableData="overviewTableData"
                         :loadedCubes="loadedCubes"
+                        :peerStats="peerStats"
                     />
 
                     <CardDetailDialog
@@ -226,6 +228,44 @@ const overviewTableData = computed(() => {
             avgSimilarityScore: getAverageSimilarityScore(id),
         }
     });
+});
+
+const peerStats = computed(() => {
+    const cubes = overviewTableData.value;
+    if (cubes.length <= 1) return null;
+
+    const ms = (values: number[]) => {
+        const n = values.length;
+        const mean = values.reduce((a, b) => a + b, 0) / n;
+        const stddev = Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / n);
+        return { mean, stddev };
+    };
+
+    const ratio = (getter: (c: typeof cubes[number]) => number) =>
+        cubes.map(c => getter(c) / (c.stats?.totalCards || 1));
+
+    return {
+        newCardRatio:               ms(ratio(c => c.stats?.newCards ?? 0)),
+        landRatio:                  ms(ratio(c => c.stats?.landCards ?? 0)),
+        creatureRatio:              ms(ratio(c => c.stats?.creatureCards ?? 0)),
+        removalRatio:               ms(ratio(c => c.stats?.cardCounts?.removal ?? 0)),
+        makesTokensRatio:           ms(ratio(c => c.stats?.cardCounts?.makesTokens ?? 0)),
+        abnormalLayoutRatio:        ms(ratio(c => c.stats?.cardCounts?.abnormalLayout ?? 0)),
+        universesBeyondRatio:       ms(ratio(c => c.stats?.cardCounts?.universesBeyond ?? 0)),
+        supplementalProductRatio:   ms(ratio(c => c.stats?.cardCounts?.supplementalProduct ?? 0)),
+        uniqueTokenCount:           ms(ratio(c => c.stats?.uniqueTokenCount ?? 0)),
+        avgSimilarityScore:         ms(cubes.map(c => c.avgSimilarityScore ?? 0)),
+        averageNonLandCmc:          ms(cubes.map(c => c.stats?.averageNonLandCmc ?? 0)),
+        averageElo:                 ms(cubes.map(c => c.stats?.averageElo ?? 0)),
+        averagePopularity:          ms(cubes.map(c => c.stats?.averagePopularity ?? 0)),
+        blendedRarityScore:         ms(cubes.map(c => c.stats?.blendedRarityScore ?? 0)),
+        averageReleaseYear:         ms(cubes.map(c => c.stats?.averageReleaseYear ?? 0)),
+        medianReleaseYear:          ms(cubes.map(c => c.stats?.medianReleaseYear ?? 0)),
+        averageWordCount:           ms(cubes.map(c => c.stats?.averageWordCount ?? 0)),
+        averageWordCountUnique:     ms(cubes.map(c => c.stats?.averageWordCountUnique ?? 0)),
+        uniqueKeywords:             ms(ratio(c => c.stats?.uniqueKeywords ?? 0)),
+        uniqueNonEvergreenKeywords: ms(ratio(c => c.stats?.uniqueNonEvergreenKeywords ?? 0)),
+    };
 });
 
 const addCubes = async (cubeIds: string[]) => {
