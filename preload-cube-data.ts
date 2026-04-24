@@ -63,6 +63,7 @@ const batches: Batch[] = [
             'efd54fa5-39aa-4fe0-94b1-7d4d6e219a1f', // Trizeam - Trizeam's Peasant Cube
             '5e15392c09f9671fcb1dc6e0', // watertheweeds - 450 Peasant Cube
             '09eb35c7-3c13-4fa4-8035-6edc4cd295aa', // windston - Greenless Peasant+
+            'ffa4acad-f82e-4a9f-b87b-2994a7eb966e', // windston - Windston_Peasant+
             '742939f0-39da-4fe7-88f6-2f6d1cdc1775', // MoxYargle - We are all peasants now!
             '5e878d986f01105bb05f9df9', // Kattvalp - C/Ube
             '5d3ed83247586d63776acbf6', // sammich - Sammich's Peasant Cube
