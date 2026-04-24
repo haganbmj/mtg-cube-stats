@@ -295,10 +295,12 @@
 
             <template #cell-averageReleaseYear="{ row }">
                 {{ Math.round(row.stats?.averageReleaseYear ?? 0) }} (±{{ (row.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averageReleaseYear ?? 0, 'averageReleaseYear')" />
             </template>
 
             <template #cell-medianReleaseYear="{ row }">
                 {{ Math.round(row.stats?.medianReleaseYear ?? 0) }} (±{{ (row.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.medianReleaseYear ?? 0, 'medianReleaseYear')" />
             </template>
 
             <template #cell-totalUniqueCards="{ row }">
@@ -309,45 +311,99 @@
             <template #cell-newCards="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.newCards / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.newCards }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.newCards / row.stats.totalCards, 'newCardRatio')" />
             </template>
 
             <template #cell-landCards="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.landCards / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.landCards }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.landCards / row.stats.totalCards, 'landRatio')" />
             </template>
 
             <template #cell-creatureCards="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.creatureCards / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.creatureCards }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.creatureCards / row.stats.totalCards, 'creatureRatio')" />
             </template>
 
             <template #cell-abnormalLayout="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.abnormalLayout / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.cardCounts.abnormalLayout }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.cardCounts.abnormalLayout / row.stats.totalCards, 'abnormalLayoutRatio')" />
             </template>
 
             <template #cell-makesTokens="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.makesTokens / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.cardCounts.makesTokens }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.cardCounts.makesTokens / row.stats.totalCards, 'makesTokensRatio')" />
             </template>
 
             <template #cell-uniqueTokenCount="{ row }">
                 <el-text class="cell-primary">{{ row.stats.uniqueTokenCount }}</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.uniqueTokenCount / row.stats.totalCards, 'uniqueTokenCount')" />
             </template>
 
             <template #cell-removal="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.removal / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.cardCounts.removal }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.cardCounts.removal / row.stats.totalCards, 'removalRatio')" />
             </template>
 
             <template #cell-universesBeyond="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.universesBeyond / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.cardCounts.universesBeyond }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.cardCounts.universesBeyond / row.stats.totalCards, 'universesBeyondRatio')" />
             </template>
 
             <template #cell-supplementalProduct="{ row }">
                 <el-text class="cell-primary">{{ formatters.percentageFormatter(row.stats.cardCounts.supplementalProduct / row.stats.totalCards) }}</el-text>
                 <el-text class="cell-secondary">({{ row.stats.cardCounts.supplementalProduct }})</el-text>
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.cardCounts.supplementalProduct / row.stats.totalCards, 'supplementalProductRatio')" />
+            </template>
+
+            <template #cell-avgSimilarityScore="{ row }">
+                {{ (row.avgSimilarityScore * 100).toFixed(2) }}%
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.avgSimilarityScore, 'avgSimilarityScore')" />
+            </template>
+
+            <template #cell-averageNonLandCmc="{ row }">
+                {{ (row.stats?.averageNonLandCmc ?? 0).toFixed(2) }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averageNonLandCmc ?? 0, 'averageNonLandCmc')" />
+            </template>
+
+            <template #cell-averageElo="{ row }">
+                {{ (row.stats?.averageElo ?? 0).toFixed(2) }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averageElo ?? 0, 'averageElo')" />
+            </template>
+
+            <template #cell-averagePopularity="{ row }">
+                {{ (row.stats?.averagePopularity ?? 0).toFixed(2) }} %
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averagePopularity ?? 0, 'averagePopularity')" />
+            </template>
+
+            <template #cell-blendedRarityScore="{ row }">
+                {{ (row.stats?.blendedRarityScore ?? 0).toFixed(2) }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.blendedRarityScore ?? 0, 'blendedRarityScore')" />
+            </template>
+
+            <template #cell-averageWordCount="{ row }">
+                {{ (row.stats?.averageWordCount ?? 0).toFixed(2) }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averageWordCount ?? 0, 'averageWordCount')" />
+            </template>
+
+            <template #cell-averageWordCountUnique="{ row }">
+                {{ (row.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averageWordCountUnique ?? 0, 'averageWordCountUnique')" />
+            </template>
+
+            <template #cell-uniqueKeywords="{ row }">
+                {{ row.stats?.uniqueKeywords ?? 0 }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp((row.stats?.uniqueKeywords ?? 0) / row.stats.totalCards, 'uniqueKeywords')" />
+            </template>
+
+            <template #cell-uniqueNonEvergreenKeywords="{ row }">
+                {{ row.stats?.uniqueNonEvergreenKeywords ?? 0 }}
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp((row.stats?.uniqueNonEvergreenKeywords ?? 0) / row.stats.totalCards, 'uniqueNonEvergreenKeywords')" />
             </template>
         </StickyTable>
     </div>
@@ -363,6 +419,7 @@ import { useDateFormat } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
+import StatCmpIndicator from '../components/StatCmpIndicator.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 
 const props = defineProps({
@@ -418,10 +475,15 @@ const props = defineProps({
         type: Object as () => { active: boolean; loaded: number; total: number } | null,
         default: null,
     },
+    peerStats: {
+        type: Object as () => Record<string, { mean: number; stddev: number }> | null,
+        default: null,
+    },
 });
 
 const defaultConfig = {
     visibleColumns: [
+        'peerComparisons',
         'rowNumber',
         'name',
         'owner',
@@ -565,7 +627,24 @@ const toggleGroupColumns = (options: { value: string }[], checked: boolean) => {
     }
 };
 
+const showPeerComparisons = computed(() => config.value.visibleColumns.includes('peerComparisons'));
+
+const rowCmp = (value: number, key: string): 'high' | 'low' | null => {
+    if (!props.peerStats) return null;
+    const s = props.peerStats[key];
+    if (!s || s.stddev === 0) return null;
+    if (value > s.mean + s.stddev) return 'high';
+    if (value < s.mean - s.stddev) return 'low';
+    return null;
+};
+
 const columnOptions = ref([
+    {
+        label: 'Display Options',
+        options: [
+            { value: 'peerComparisons', label: "Peer Comparison Indicators", tooltip: "Show ▲/▼ indicators on stat values that are notably higher or lower than other loaded cubes (±1 standard deviation)" },
+        ],
+    },
     {
         label: 'Core',
         options: [
