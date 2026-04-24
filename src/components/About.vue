@@ -132,7 +132,7 @@
             <h4>Powered</h4>
             <p>Flagged if the cube contains any card from the Power Nine (Ancestral Recall, Black Lotus, Mox Emerald/Jet/Pearl/Ruby/Sapphire, Timetwister, Time Walk).</p>
 
-            <h4>Desert?</h4>
+            <h4>Desert</h4>
             <p>Flagged if ≥28% of the cube's cards are lands.</p>
         </section>
 

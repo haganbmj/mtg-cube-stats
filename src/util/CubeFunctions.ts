@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './SimiliartyFunctions';
 import { isEvergreenKeyword } from './Keywords';
 import { detectCubeArchetypes } from './ArchetypeDetection';
+import { assumedCategories } from './CubeCategories';
 import type {
     ScryfallDataStructure,
     ScryfallCard,
@@ -47,18 +48,6 @@ const rarityScoreMap: Record<string, number> = {
     mythic: 1.200,
     bonus: 1.000,
 };
-
-const powerOracleIds = [
-    '550c74d4-1fcb-406a-b02a-639a760a4380', // Ancestral Recall
-    '5089ec1a-f881-4d55-af14-5d996171203b', // Black Lotus
-    '376ee366-e082-402f-b4db-6592fcfcacd2', // Mox Emerald
-    '0677f49e-f8bf-4349-af52-2ccde9287c2e', // Mox Jet
-    '824597b8-c89a-47ec-8526-7efc6e24ef0e', // Mox Pearl
-    'ed85fa82-e4fa-434b-92a8-36b6075708d1', // Mox Ruby
-    'd5ed1233-df87-4b90-8918-13922ec95249', // Mox Sapphire
-    'c823e687-6311-4c99-974b-fd77d204141a', // Timetwister
-    'd0209d3f-3f7e-4fd5-bce5-10bce6f29c86', // Time Walk
-];
 
 /**
  * Get the full set name for a given set code
@@ -400,83 +389,6 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
     }
 
     return secondOrderStats;
-}
-
-function assumedCategories(cards: CubeCard[]): string[] {
-    const totalCards = cards.length;
-    const categories = new Set<string>(); // Not really necessary here since we should be only appending unique entries.
-
-    const mappedRarities = cards.reduce((catCounts: Record<string, Record<string, number>>, c) => {
-        const isLand = c.effectiveTypes?.includes('Land') ? 'land' : 'nonLand';
-        const minRarity = c.minRarity ?? 'common';
-
-        catCounts['all'] = catCounts['all'] || {};
-        catCounts['all'][minRarity] = (catCounts['all'][minRarity] || 0) + 1;
-        catCounts['all']['total'] = (catCounts['all']['total'] || 0) + 1;
-
-        catCounts[isLand] = catCounts[isLand] || {};
-        catCounts[isLand][minRarity] = (catCounts[isLand][minRarity] || 0) + 1;
-        catCounts[isLand]['total'] = (catCounts[isLand]['total'] || 0) + 1;
-
-        return catCounts;
-    }, {
-        all: {
-            common: 0,
-            uncommon: 0,
-            rare: 0,
-            mythic: 0,
-            total: 0,
-        },
-        nonLand: {
-            common: 0,
-            uncommon: 0,
-            rare: 0,
-            mythic: 0,
-            total: 0,
-        },
-        land: {
-            common: 0,
-            uncommon: 0,
-            rare: 0,
-            mythic: 0,
-            total: 0,
-        },
-    });
-
-    if (mappedRarities.all.common === totalCards) {
-        categories.add('pauper');
-    } else if (mappedRarities.nonLand.common + mappedRarities.land.total === totalCards) {
-        categories.add('pauper+');
-    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925 && mappedRarities.land.common === mappedRarities.land.total) {
-        categories.add('pauper-ish');
-    } else if (mappedRarities.nonLand.common >= (mappedRarities.nonLand.total) * 0.925) {
-        categories.add('pauper+ish');
-    } else if (mappedRarities.all.common + mappedRarities.all.uncommon === totalCards) {
-        categories.add('peasant');
-    } else if (mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon + mappedRarities.land.total === totalCards) {
-        categories.add('peasant+');
-    } else if (mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon >= (mappedRarities.nonLand.total) * 0.925 && mappedRarities.land.common + mappedRarities.land.uncommon === mappedRarities.land.total) {
-        categories.add('peasant-ish');
-    } else if ((mappedRarities.nonLand.common + mappedRarities.nonLand.uncommon) >= (mappedRarities.nonLand.total * 0.925)) {
-        categories.add('peasant+ish');
-    }
-
-    if (cards.some(c => powerOracleIds.includes(c.oracleId))) {
-        categories.add('powered');
-    } else {
-        // TODO: I don't think it's worth flagging this as it's kind of implied by the absence of another tag?
-        // categories.add('unpowered');
-    }
-
-    // Flag something as a desert if it has more than 28% lands?
-    // Just opening up a few it looks like 31% is pretty typical, but we'll swing a bit lower.
-    // We can't really make assumptions about how big the draft pool is, so we can't really use asfans.
-    if (mappedRarities.land.total >= totalCards * 0.28) {
-        // Is it worth throwing these secondary categories in their own prop?
-        categories.add('desert?');
-    }
-
-    return Array.from(categories);
 }
 
 function similarityScoreKey(keyA: string, keyB: string): string {
