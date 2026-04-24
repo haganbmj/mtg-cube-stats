@@ -7,11 +7,38 @@
             v-model:cubeFilter="activeCubeFilter"
             v-model:cubeFilterMode="activeCubeFilterMode"
         />
+        <el-dropdown trigger="hover" :hide-on-click="false">
+            <el-button :type="config.showAllCards ? 'primary' : ''" @click="config.showAllCards = !config.showAllCards" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
+            <template #dropdown>
+                <div class="all-cards-dropdown">
+                    <div class="all-cards-dropdown__label">Frequency Category</div>
+                    <el-select
+                        v-if="frequencyCategoryOptions.length > 0"
+                        v-model="config.frequencyCategory"
+                        size="small"
+                        style="width: 220px;"
+                        placeholder="Global Rate"
+                    >
+                        <el-option-group
+                            v-for="grp in groupedFrequencyOptions"
+                            :key="grp.label"
+                            :label="grp.label"
+                        >
+                            <el-option
+                                v-for="opt in grp.options"
+                                :key="opt.value"
+                                :label="opt.label"
+                                :value="opt.value"
+                            />
+                        </el-option-group>
+                    </el-select>
+                </div>
+            </template>
+        </el-dropdown>
         <el-button-group>
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
         </el-button-group>
-        <el-button :type="config.showAllCards ? 'primary' : ''" @click="config.showAllCards = !config.showAllCards" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
         <el-dropdown trigger="click">
             <el-button :icon="Menu" circle />
             <template #dropdown>
@@ -1153,6 +1180,18 @@ const filteredStats = computed(() => {
     border-radius: var(--el-border-radius-base);
     padding: 6px 10px;
     margin-bottom: 6px;
+}
+
+.all-cards-dropdown {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.all-cards-dropdown__label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
 }
 
 // ── Highlight / dim styles ──────────────────────────────────────────────────
