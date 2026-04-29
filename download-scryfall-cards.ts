@@ -1,6 +1,11 @@
 import fs from 'fs';
 import axios from 'axios';
 import { strict as assert } from 'assert';
+import { createRequire } from 'module';
+const _require = createRequire(import.meta.url);
+const { chain } = _require('stream-chain');
+const { parser } = _require('stream-json');
+const { streamArray } = _require('stream-json/streamers/stream-array');
 import { detectCardArchetypes } from './src/util/ArchetypeDetection';
 import type { CubeCard } from './src/types';
 
@@ -85,7 +90,18 @@ if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" |
     console.log('Using existing tagger data.');
 }
 
-const cards = JSON.parse(fs.readFileSync('./data/default-cards.json', 'utf8'));
+// default-cards.json exceeds V8's ~512MB string limit so it must be parsed as a stream.
+const cards: any[] = await new Promise((resolve, reject) => {
+    const result: any[] = [];
+    const pipeline = chain([
+        fs.createReadStream('./data/default-cards.json'),
+        parser(),
+        streamArray(),
+    ]);
+    pipeline.on('data', ({ value }: { value: any }) => result.push(value));
+    pipeline.on('end', () => resolve(result));
+    pipeline.on('error', reject);
+});
 const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json', 'utf8'));
 const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8'));
 const setsData = JSON.parse(fs.readFileSync('./data/sets.json', 'utf8'));
