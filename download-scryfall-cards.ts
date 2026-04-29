@@ -255,7 +255,11 @@ const stripped = cards.filter((card: any) => {
             code: card.set,
         },
         cmc: card.cmc,
-        colors: card.colors || [],
+        // For split cards use combined colors (both halves are cast); for all other multi-face cards
+        // (modal_dfc, transform, adventure, flip, etc.) use front-face colors only.
+        colors: (card.card_faces && card.layout !== 'split')
+            ? (card.card_faces[0].colors ?? card.colors ?? [])
+            : (card.colors ?? []),
         colorIdentity: card.color_identity || [],
         typeLine: card.type_line,
         effectiveTypes: effectiveTypes(card),
