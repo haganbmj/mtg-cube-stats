@@ -238,6 +238,10 @@
                     </el-row>
                 </el-tab-pane>
 
+                <el-tab-pane label="List" :lazy="true">
+                    <CubeListView :cards="activeCubeCards" />
+                </el-tab-pane>
+
                 <el-tab-pane label="Charts">
                     <el-row justify="space-between" class="chart-row" :gutter="20">
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
@@ -394,6 +398,7 @@ import SetNameTable from './SetNameTable.vue';
 import StatCmpIndicator from './StatCmpIndicator.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
 import ArchetypeAnalysis from './ArchetypeAnalysis.vue';
+import CubeListView from './CubeListView.vue';
 
 const props = defineProps({
     visible: {
