@@ -274,6 +274,15 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             });
             return types;
         })(),
+        primaryTypeDistribution: (() => {
+            const types: Record<string, number> = {};
+            cards.forEach(card => {
+                if (card.primaryType) {
+                    types[card.primaryType] = (types[card.primaryType] ?? 0) + 1;
+                }
+            });
+            return types;
+        })(),
         minimumFormatLegalityDistribution: (() => {
             const formats = ['standard', 'pioneer', 'modern', 'legacy', 'vintage', 'cube'];
             const legality: Record<string, number> = {};

@@ -264,7 +264,7 @@
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
                             <div style="height: 300px;">
-                                <TypeLineDistributionChart class="chart" :typeLineDistribution="activeCube.stats?.typeLineDistribution || {}" />
+                                <TypeLineDistributionChart class="chart" :primaryTypeDistribution="activeCube.stats?.primaryTypeDistribution || {}" />
                             </div>
                         </el-col>
                         <el-col :span="12" :xs="24" :md="12" :xl="8">

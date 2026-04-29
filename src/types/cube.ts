@@ -71,6 +71,7 @@ export interface CubeStats {
   colorDistribution: Record<string, number>;
   cmcDistribution: Record<string | number, number>;
   typeLineDistribution: Record<string, number>;
+  primaryTypeDistribution: Record<string, number>;
   minimumFormatLegalityDistribution: Record<string, number>;
   releaseYearDistribution: Record<number, number>;
   setCodeDistribution: Record<string, number>;
