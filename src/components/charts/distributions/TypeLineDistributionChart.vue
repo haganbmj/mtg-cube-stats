@@ -19,21 +19,30 @@ use([
     PieChart,
 ]);
 
+const PRIMARY_TYPE_ORDER = ['Land', 'Creature', 'Artifact', 'Enchantment', 'Instant', 'Sorcery'];
+
 const props = defineProps({
-    typeLineDistribution: {
+    primaryTypeDistribution: {
         type: Object,
         required: true,
     },
 });
 
 const chartOptions = computed(() => {
-    const data = Object.entries(props.typeLineDistribution).map(([key, value]) => {
+    const data = Object.entries(props.primaryTypeDistribution).map(([key, value]) => {
         return { name: key, value };
+    }).sort((a, b) => {
+        const ai = PRIMARY_TYPE_ORDER.indexOf(a.name);
+        const bi = PRIMARY_TYPE_ORDER.indexOf(b.name);
+        if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
     });
 
     return {
         title: {
-            text: 'Card Types',
+            text: 'Primary Card Types',
             left: 'center',
         },
         tooltip: {
@@ -43,6 +52,7 @@ const chartOptions = computed(() => {
         series: [
             {
                 data,
+                name: 'Primary Type',
                 type: 'pie',
                 label: {
                     color: 'rgba(255, 255, 255, 0.3)',

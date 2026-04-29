@@ -135,6 +135,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             colorIdentity: scryfallCard?.colorIdentity ?? [],
             typeLine: scryfallCard?.typeLine ?? '',
             effectiveTypes: scryfallCard?.effectiveTypes ?? [],
+            primaryType: scryfallCard?.primaryType,
             oracleText: scryfallCard?.oracleText ?? '',
             oracleTextWordCount: scryfallCard?.oracleTextWordCount ?? 0,
             oracleTextWordCountMinusParen: scryfallCard?.oracleTextWordCountMinusParen ?? 0,
@@ -269,6 +270,15 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
                         }
                         types[type]++;
                     }
+                }
+            });
+            return types;
+        })(),
+        primaryTypeDistribution: (() => {
+            const types: Record<string, number> = {};
+            cards.forEach(card => {
+                if (card.primaryType) {
+                    types[card.primaryType] = (types[card.primaryType] ?? 0) + 1;
                 }
             });
             return types;

@@ -1,6 +1,7 @@
 // TypeScript definitions for cube data structures used throughout the application
 
 import type { ScryfallLegality } from './scryfall';
+import type { PrimaryType } from './scryfall';
 
 export interface ArchetypeResult {
   name: string;
@@ -26,6 +27,7 @@ export interface CubeCard {
   colorIdentity?: string[];
   typeLine?: string;
   effectiveTypes?: string[];
+  primaryType?: PrimaryType;
   oracleText?: string;
   oracleTextWordCount?: number;
   oracleTextWordCountMinusParen?: number;
@@ -69,6 +71,7 @@ export interface CubeStats {
   colorDistribution: Record<string, number>;
   cmcDistribution: Record<string | number, number>;
   typeLineDistribution: Record<string, number>;
+  primaryTypeDistribution: Record<string, number>;
   minimumFormatLegalityDistribution: Record<string, number>;
   releaseYearDistribution: Record<number, number>;
   setCodeDistribution: Record<string, number>;

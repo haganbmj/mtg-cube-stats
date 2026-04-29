@@ -194,6 +194,24 @@ const effectiveTypes = (card: any): string[] => {
     }
 };
 
+const PRIMARY_TYPE_RANKING = ['Land', 'Creature', 'Artifact', 'Enchantment', 'Instant', 'Sorcery'];
+const SUPERTYPES = new Set(['Legendary', 'Basic', 'Snow', 'World', 'Elite']);
+
+const primaryType = (card: any): string => {
+    // Split cards: most significant type across all faces wins.
+    // All other multi-face cards (DFC, adventure, flip, etc.): front face wins.
+    // Single-face cards: use the card's own type line.
+    const types = card.layout === 'split'
+        ? card.card_faces.flatMap((face: any) => flatMapTypes(face.type_line))
+        : card.card_faces
+            ? flatMapTypes(card.card_faces[0].type_line)
+            : flatMapTypes(card.type_line);
+    for (const ranked of PRIMARY_TYPE_RANKING) {
+        if (types.includes(ranked)) return ranked;
+    }
+    return types.find((t: string) => !SUPERTYPES.has(t)) ?? types[0];
+};
+
 const minRarityOrder = ['common', 'uncommon', 'rare', 'mythic', 'special', 'bonus'];
 
 const stripped = cards.filter((card: any) => {
@@ -241,6 +259,7 @@ const stripped = cards.filter((card: any) => {
         colorIdentity: card.color_identity || [],
         typeLine: card.type_line,
         effectiveTypes: effectiveTypes(card),
+        primaryType: primaryType(card),
         oracleText: card.oracle_text || (card.card_faces?.[0]?.oracle_text !== undefined ? card.card_faces.map((face: any) => face.oracle_text).join('\n\n') : ''),
         keywords: card.keywords || [],
         games: card.games || [],
@@ -318,6 +337,7 @@ const minimized = stripped.sort((a: any, b: any) => {
             colorIdentity: card.colorIdentity,
             typeLine: card.typeLine,
             effectiveTypes: card.effectiveTypes,
+            primaryType: card.primaryType,
             oracleText: card.oracleText,
             oracleTextWordCount: card.oracleText.split(/\b\W+\b/g).filter((v: string) => v != '').length,
             oracleTextWordCountMinusParen: card.oracleText.replace(/\(.*?\)/g, '').split(/\b\W+\b/g).filter((v: string) => v != '').length,
