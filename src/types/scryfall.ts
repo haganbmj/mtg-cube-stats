@@ -1,5 +1,7 @@
 // TypeScript definitions for the minimized Scryfall card data structure
 
+export type PrimaryType = 'Land' | 'Creature' | 'Artifact' | 'Enchantment' | 'Instant' | 'Sorcery' | string;
+
 export interface ScryfallLegality {
   [key: string]: boolean | undefined;
   standard?: boolean;
@@ -20,6 +22,7 @@ export interface ScryfallCard {
   colorIdentity: string[];
   typeLine: string;
   effectiveTypes: string[];
+  primaryType: PrimaryType;
   oracleText: string;
   oracleTextWordCount: number;
   oracleTextWordCountMinusParen: number;

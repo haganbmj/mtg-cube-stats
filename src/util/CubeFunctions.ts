@@ -135,6 +135,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             colorIdentity: scryfallCard?.colorIdentity ?? [],
             typeLine: scryfallCard?.typeLine ?? '',
             effectiveTypes: scryfallCard?.effectiveTypes ?? [],
+            primaryType: scryfallCard?.primaryType,
             oracleText: scryfallCard?.oracleText ?? '',
             oracleTextWordCount: scryfallCard?.oracleTextWordCount ?? 0,
             oracleTextWordCountMinusParen: scryfallCard?.oracleTextWordCountMinusParen ?? 0,
