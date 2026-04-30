@@ -443,6 +443,7 @@ const activeQuery = inject<Ref<string>>('cardTableQuery', ref(''));
 const activeCubeFilter = ref<Record<string, boolean | null>>({});
 const activeCubeFilterMode = ref<'filter' | 'highlight'>('filter');
 const columnCustomizationVisible = ref(false);
+useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 const visualDisplayVisible = ref(false);
 
 const visualSortProp = computed({

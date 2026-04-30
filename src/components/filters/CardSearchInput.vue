@@ -44,6 +44,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useBackDismiss } from '../../util/useBackDismiss';
 import { Search, QuestionFilled } from '@element-plus/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import TristateSelect from './TristateSelect.vue';
@@ -72,6 +73,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'update:cubeFilter', 'update:cubeFilterMode']);
 
 const showHelp = ref(false);
+useBackDismiss(showHelp, () => { showHelp.value = false; });
 const queryInput = ref(props.modelValue);
 const parseError = ref<string | null>(null);
 

@@ -411,6 +411,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, inject } from 'vue';
+import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
@@ -508,6 +509,7 @@ const config = bindStorage('cube-app-config', (v) => {
 });
 
 const columnCustomizationVisible = ref(false);
+useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 const visualDisplayVisible = ref(false);
 
 const addCubeForm = reactive({
@@ -554,6 +556,7 @@ const handleCollectionSelect = async (value: string) => {
 
 // Save collection dialog
 const saveDialogVisible = ref(false);
+useBackDismiss(saveDialogVisible, () => { saveDialogVisible.value = false; });
 const saveDialogName = ref('');
 
 const openSaveDialog = () => {
@@ -584,6 +587,7 @@ const handleSaveCollection = async () => {
 
 // Remove collection dialog
 const removeDialogVisible = ref(false);
+useBackDismiss(removeDialogVisible, () => { removeDialogVisible.value = false; });
 
 const openRemoveDialog = () => {
     removeDialogVisible.value = true;
