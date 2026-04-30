@@ -39,7 +39,7 @@
     "axios": "^1.15.0",
     "eslint": "^10.2.0",
     "eslint-plugin-vue": "^10.8.0",
-    "happy-dom": "^20.8.9",
+    "happy-dom": "^20.9.0",
     "nearley": "^2.20.1",
     "sass": "^1.99.0",
     "stream-chain": "^3.6.1",
