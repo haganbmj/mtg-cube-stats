@@ -231,6 +231,97 @@ describe('date filter — set code resolution', () => {
     it('date>mh3 does not match card released before MH3', () => expect(evaluateWithSets('date>mh3', oldCard)).toBe(false));
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Color filter — set inclusion operators
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('color filter — subset (<=)', () => {
+    // c<=r: cards that are red or colorless (row's color set ⊆ {R})
+    it('c<=r matches a mono-red card', () => {
+        expect(evaluate('c<=r', makeCard({ effectiveColors: ['R'] }))).toBe(true);
+    });
+    it('c<=r matches a colorless card (empty colors)', () => {
+        expect(evaluate('c<=r', makeCard({ effectiveColors: [] }))).toBe(true);
+    });
+    it('c<=r matches a colorless card (C marker)', () => {
+        expect(evaluate('c<=r', makeCard({ effectiveColors: ['C'] }))).toBe(true);
+    });
+    it('c<=r does not match a mono-blue card', () => {
+        expect(evaluate('c<=r', makeCard({ effectiveColors: ['U'] }))).toBe(false);
+    });
+    it('c<=r does not match a red-blue card', () => {
+        expect(evaluate('c<=r', makeCard({ effectiveColors: ['R', 'U'] }))).toBe(false);
+    });
+});
+
+describe('color filter — proper subset (<)', () => {
+    // c<ur: cards that are mono-red, mono-blue, or colorless (but NOT both together)
+    it('c<ur matches a mono-red card', () => {
+        expect(evaluate('c<ur', makeCard({ effectiveColors: ['R'] }))).toBe(true);
+    });
+    it('c<ur matches a mono-blue card', () => {
+        expect(evaluate('c<ur', makeCard({ effectiveColors: ['U'] }))).toBe(true);
+    });
+    it('c<ur matches a colorless card', () => {
+        expect(evaluate('c<ur', makeCard({ effectiveColors: [] }))).toBe(true);
+    });
+    it('c<ur does not match a red-blue card (equal, not proper subset)', () => {
+        expect(evaluate('c<ur', makeCard({ effectiveColors: ['U', 'R'] }))).toBe(false);
+    });
+    it('c<ur does not match a green card (not a subset at all)', () => {
+        expect(evaluate('c<ur', makeCard({ effectiveColors: ['G'] }))).toBe(false);
+    });
+    it('c<ur does not match a red-green card', () => {
+        expect(evaluate('c<ur', makeCard({ effectiveColors: ['R', 'G'] }))).toBe(false);
+    });
+});
+
+describe('color filter — proper superset (>)', () => {
+    // c>r: cards that are red plus one or more other colors
+    it('c>r matches a red-blue card', () => {
+        expect(evaluate('c>r', makeCard({ effectiveColors: ['R', 'U'] }))).toBe(true);
+    });
+    it('c>r matches a three-color card containing red', () => {
+        expect(evaluate('c>r', makeCard({ effectiveColors: ['R', 'U', 'G'] }))).toBe(true);
+    });
+    it('c>r does not match a mono-red card (equal, not proper superset)', () => {
+        expect(evaluate('c>r', makeCard({ effectiveColors: ['R'] }))).toBe(false);
+    });
+    it('c>r does not match a colorless card', () => {
+        expect(evaluate('c>r', makeCard({ effectiveColors: [] }))).toBe(false);
+    });
+    it('c>r does not match a blue-green card (missing red)', () => {
+        expect(evaluate('c>r', makeCard({ effectiveColors: ['U', 'G'] }))).toBe(false);
+    });
+});
+
+describe('color filter — superset (>=)', () => {
+    // c>=r: cards that are red (and possibly more)
+    it('c>=r matches a mono-red card', () => {
+        expect(evaluate('c>=r', makeCard({ effectiveColors: ['R'] }))).toBe(true);
+    });
+    it('c>=r matches a red-blue card', () => {
+        expect(evaluate('c>=r', makeCard({ effectiveColors: ['R', 'U'] }))).toBe(true);
+    });
+    it('c>=r does not match a colorless card', () => {
+        expect(evaluate('c>=r', makeCard({ effectiveColors: [] }))).toBe(false);
+    });
+    it('c>=r does not match a mono-blue card', () => {
+        expect(evaluate('c>=r', makeCard({ effectiveColors: ['U'] }))).toBe(false);
+    });
+});
+
+describe('color filter — exact (=) and contains (:) unchanged', () => {
+    it('c=r matches only mono-red', () => {
+        expect(evaluate('c=r', makeCard({ effectiveColors: ['R'] }))).toBe(true);
+        expect(evaluate('c=r', makeCard({ effectiveColors: ['R', 'U'] }))).toBe(false);
+    });
+    it('c:rg matches a card with both red and green', () => {
+        expect(evaluate('c:rg', makeCard({ effectiveColors: ['R', 'G'] }))).toBe(true);
+        expect(evaluate('c:rg', makeCard({ effectiveColors: ['R'] }))).toBe(false);
+    });
+});
+
 describe('date filter — now/today', () => {
     const today = new Date().toISOString().slice(0, 10);
     const todayYear = new Date().getFullYear();

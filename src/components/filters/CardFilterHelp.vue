@@ -38,7 +38,7 @@
                 <code>:</code> — contains / equals &nbsp;
                 <code>=</code> — exact match &nbsp;
                 <code>!=</code> — not equal &nbsp;
-                <code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code> — numeric comparison
+                <code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code> — numeric comparison (most fields) or set comparison (color / identity)
             </p>
             <p>For text fields (<code>name</code>, <code>oracle</code>, <code>type</code>), <code>:</code> is a <em>substring</em> match. For numeric fields it acts as <code>=</code>.</p>
 
@@ -47,6 +47,12 @@
                 Single letters: <code>w u b r g c</code> (white/blue/black/red/green/colorless).
                 Multi-letter strings require <em>all</em> colors: <code>c:rg</code> = red AND green.
                 Named guilds, shards, and wedges work too: <code>c:azorius</code>, <code>c:bant</code>.
+            </p>
+            <p>
+                For <code>color</code> and <code>identity</code>, the comparison operators perform <em>set</em> comparisons rather than numeric ones:
+                <code>c&lt;=r</code> matches red or colorless (row's colors ⊆ {R});
+                <code>c&lt;ur</code> matches mono-red, mono-blue, or colorless but not both together (proper subset of {U,R});
+                <code>c&gt;r</code> matches red plus one or more other colors (proper superset of {R}).
             </p>
 
             <h4 class="help-section-title">Rarity values</h4>
@@ -114,13 +120,13 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Color ─────────────────────────────────────────────────────────────────
     {
         keywords: ['color', 'c'],
-        description: 'Card\'s colors. ":" means contains all (supersets OK); "=" means exactly these colors. Multi-char values AND all colors together.',
-        examples: ['c:u', 'c:rg', 'c=r (exactly red)', 'c:azorius', '-c:b'],
+        description: 'Card\'s colors. ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset of these colors (includes colorless); "<" = proper subset; ">" = proper superset (these colors plus others).',
+        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c<ur', 'c>r', 'c:azorius', '-c:b'],
     },
     {
         keywords: ['identity', 'id'],
-        description: 'Color identity (for Commander). Same color syntax; ":" contains, "=" exact.',
-        examples: ['id:bant', 'id=uw', 'id<=esper'],
+        description: 'Color identity (for Commander). Same color syntax: ":" / ">=" = contains, "=" = exact, "<=" = subset (includes colorless), "<" = proper subset, ">" = proper superset.',
+        examples: ['id:bant', 'id=uw', 'id<=esper', 'id<naya', 'id>r'],
     },
     // ── Numeric fields ─────────────────────────────────────────────────────────
     {
