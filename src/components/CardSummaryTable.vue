@@ -7,10 +7,11 @@
             v-model:cubeFilter="activeCubeFilter"
             v-model:cubeFilterMode="activeCubeFilterMode"
         />
-        <el-dropdown trigger="hover" :hide-on-click="false">
-            <el-button :type="config.showAllCards ? 'primary' : ''" @click="config.showAllCards = !config.showAllCards" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
+        <el-dropdown trigger="click" :hide-on-click="false">
+            <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
             <template #dropdown>
                 <div class="all-cards-dropdown">
+                    <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
                     <div class="all-cards-dropdown__label">Frequency Category</div>
                     <el-select
                         v-if="frequencyCategoryOptions.length > 0"
@@ -1187,6 +1188,12 @@ const filteredStats = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.all-cards-dropdown__toggle {
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    margin-bottom: 2px;
 }
 
 .all-cards-dropdown__label {
