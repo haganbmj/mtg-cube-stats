@@ -410,6 +410,7 @@ import type { Ref } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
+import { useBackDismiss } from '../util/useBackDismiss';
 import { capitalizeFirstLetter, rarityOrder, getRarityColor } from '../util/HelperFunctions';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
