@@ -92,6 +92,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, provide, onMounted, nextTick } from 'vue';
+import { useBackDismiss } from './util/useBackDismiss';
 import { ElMessage, ElNotification } from 'element-plus';
 import { presetCollections } from './presets';
 import { bindStorage } from './util/VueLocalStorage';
@@ -190,6 +191,9 @@ const openCardDetailDialog = (oracleId) => {
     cardDetailDialogOracleId.value = oracleId;
 };
 provide('openCardDetailDialog', openCardDetailDialog);
+
+useBackDismiss(cubeDetailDialogVisible, () => { cubeDetailDialogId.value = null; });
+useBackDismiss(cardDetailDialogVisible, () => { cardDetailDialogOracleId.value = null; });
 
 const cardTableQuery = ref('');
 provide('cardTableQuery', cardTableQuery);
