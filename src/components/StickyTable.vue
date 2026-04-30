@@ -384,7 +384,7 @@ const toggleExpand = (rowIndex: number) => {
     position: relative;
     padding: 0 12px;
     line-height: 23px;
-    overflow-wrap: break-word;
+    white-space: nowrap;
 
     &--overflow {
         overflow: hidden;
