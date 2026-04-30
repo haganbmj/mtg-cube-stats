@@ -241,9 +241,29 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             if (op === '!=') {
                 return !wantedColors.every(wc => rowColors.includes(wc));
             }
-            // Comparison operators on color count
-            const rowCount = rowColors.filter(c => c !== 'C').length;
-            return compareValues(rowCount, op, wantedColors.length);
+            // Set inclusion operators — strip the 'C' colorless marker so colorless cards
+            // are treated as the empty color set {} for subset/superset comparisons.
+            const rowColorSet = rowColors.filter(c => c !== 'C');
+            const wantedColorSet = wantedColors.filter(c => c !== 'C');
+            if (op === '>=') {
+                // Superset: row has all wanted colors (and possibly more)
+                return wantedColorSet.every(wc => rowColorSet.includes(wc));
+            }
+            if (op === '>') {
+                // Proper superset: row has all wanted colors AND at least one extra
+                if (!wantedColorSet.every(wc => rowColorSet.includes(wc))) return false;
+                return rowColorSet.some(rc => !wantedColorSet.includes(rc));
+            }
+            if (op === '<=') {
+                // Subset: every color of the row must be in wantedColors (colorless {} matches any)
+                return rowColorSet.every(rc => wantedColorSet.includes(rc));
+            }
+            if (op === '<') {
+                // Proper subset: subset AND not equal to wantedColors
+                if (!rowColorSet.every(rc => wantedColorSet.includes(rc))) return false;
+                return wantedColorSet.some(wc => !rowColorSet.includes(wc));
+            }
+            return false;
         }
 
         case 'coloridentity': {
@@ -260,8 +280,24 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             if (op === '!=') {
                 return !wantedColors.every(wc => rowId.includes(wc));
             }
-            const rowCount = rowId.filter(c => c !== 'C').length;
-            return compareValues(rowCount, op, wantedColors.length);
+            // Set inclusion operators — strip the 'C' colorless marker
+            const rowIdSet = rowId.filter(c => c !== 'C');
+            const wantedColorSet = wantedColors.filter(c => c !== 'C');
+            if (op === '>=') {
+                return wantedColorSet.every(wc => rowIdSet.includes(wc));
+            }
+            if (op === '>') {
+                if (!wantedColorSet.every(wc => rowIdSet.includes(wc))) return false;
+                return rowIdSet.some(rc => !wantedColorSet.includes(rc));
+            }
+            if (op === '<=') {
+                return rowIdSet.every(rc => wantedColorSet.includes(rc));
+            }
+            if (op === '<') {
+                if (!rowIdSet.every(rc => wantedColorSet.includes(rc))) return false;
+                return wantedColorSet.some(wc => !rowIdSet.includes(wc));
+            }
+            return false;
         }
 
         // ── Numeric fields ─────────────────────────────────────────────────────
