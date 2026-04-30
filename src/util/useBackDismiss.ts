@@ -46,20 +46,28 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
     // once per open cycle and don't get out of sync on rapid toggles.
     let pushed = false;
 
+    // Wrapper stored in dismissStack. Setting pushed=false here — before
+    // close() is called — prevents the watcher's programmatic-close branch
+    // from firing and calling history.back() a second time.
+    const onBackPressed = () => {
+        pushed = false;
+        close();
+    };
+
     const stop = watch(isOpen, (open) => {
         if (open && !pushed) {
             // Dialog opened: push a history entry and register the close callback.
             history.pushState({ backDismiss: true }, '');
-            dismissStack.push(close);
+            dismissStack.push(onBackPressed);
             pushed = true;
         } else if (!open && pushed) {
             // Dialog closed programmatically: remove the callback and consume
             // the history entry so the browser doesn't navigate back a real page.
-            const idx = dismissStack.lastIndexOf(close);
+            pushed = false;
+            const idx = dismissStack.lastIndexOf(onBackPressed);
             if (idx !== -1) dismissStack.splice(idx, 1);
             ignoreNextPop++;
             history.back();
-            pushed = false;
         }
     });
 
@@ -67,11 +75,11 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
         // Clean up if the component is destroyed while the dialog is open.
         stop();
         if (pushed) {
-            const idx = dismissStack.lastIndexOf(close);
+            pushed = false;
+            const idx = dismissStack.lastIndexOf(onBackPressed);
             if (idx !== -1) dismissStack.splice(idx, 1);
             ignoreNextPop++;
             history.back();
-            pushed = false;
         }
     });
 }
