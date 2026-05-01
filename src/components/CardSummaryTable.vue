@@ -150,6 +150,14 @@
         <template v-else-if="noCubesLoaded && !config.showAllCards" #empty>
             No cubes loaded. Load a cube to see card statistics, or click <strong>All Cards</strong> to browse the full Scryfall database with global rates.
         </template>
+        <template #cell-globalRate="{ row }">
+            <template v-if="row.globalRateCount == null">N/A</template>
+            <template v-else-if="!selectedFrequencyCubeCount">{{ row.globalRateCount.toLocaleString() }}</template>
+            <template v-else>
+                <el-text class="cell-primary">{{ ((row.globalRateCount / selectedFrequencyCubeCount) * 100).toFixed(1) }}%</el-text>
+                <el-text class="cell-secondary">({{ row.globalRateCount.toLocaleString() }})</el-text>
+            </template>
+        </template>
         <template #cell-name="{ row }">
             <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
                 <template #content>
@@ -601,14 +609,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
     { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') && !noCubesLoaded.value },
     { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') && !noCubesLoaded.value },
-    { key: 'globalRate', prop: 'globalRatePercent', label: selectedFrequencyLabel.value, minWidth: '100px', align: 'center', sortable: true, formatter: (row: any) => {
-        const count = row.globalRateCount;
-        if (count == null) return 'N/A';
-        const total = selectedFrequencyCubeCount.value;
-        if (!total) return count.toLocaleString();
-        const pct = ((count / total) * 100).toFixed(1);
-        return `${count.toLocaleString()} (${pct}%)`;
-    }, tooltip: selectedFrequencyCubeCount.value
+    { key: 'globalRate', prop: 'globalRatePercent', label: selectedFrequencyLabel.value, minWidth: '100px', align: 'center', sortable: true, tooltip: selectedFrequencyCubeCount.value
         ? `Inclusion rate across CubeCobra — ${selectedFrequencyLabel.value} (${selectedFrequencyCubeCount.value.toLocaleString()} cubes)`
         : `Inclusion count across CubeCobra (${selectedFrequencyLabel.value})`, visible: config.value.visibleColumns.includes('globalRate') },
     { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
