@@ -539,4 +539,29 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
     gap: 0.5rem;
     flex-wrap: wrap;
 }
+
+@media (max-width: 760px) {
+    .el-tabs__nav-prev,
+    .el-tabs__nav-next {
+        display: none !important;
+    }
+
+    .el-tabs__nav-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .el-tabs__nav-wrap::-webkit-scrollbar {
+        display: none;
+    }
+
+    .el-tabs__nav-wrap::after {
+        display: none !important;
+    }
+
+    .el-tabs__nav-scroll {
+        overflow: visible !important;
+    }
+}
 </style>

@@ -143,6 +143,12 @@ const KEYWORD_ALIASES: Record<string, string> = {
     // Total power + toughness
     pt: 'pt',
     powtou: 'pt',
+    // Sort order
+    order: 'order',
+    sort: 'order',
+    // Sort direction
+    dir: 'direction',
+    direction: 'direction',
 };
 
 export function normalizeKeyword(raw: string): string {

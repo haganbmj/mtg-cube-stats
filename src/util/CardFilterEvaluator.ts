@@ -11,6 +11,88 @@ export interface FilterContext {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Sort directive extraction from AST (order: / direction: keywords)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SortDirective {
+    prop: string;
+    order: 'ascending' | 'descending';
+}
+
+const ORDER_ALIASES: Record<string, { prop: string; defaultOrder: 'ascending' | 'descending' }> = {
+    name: { prop: 'name', defaultOrder: 'ascending' },
+    cmc: { prop: 'cmc', defaultOrder: 'ascending' },
+    mv: { prop: 'cmc', defaultOrder: 'ascending' },
+    manavalue: { prop: 'cmc', defaultOrder: 'ascending' },
+    cubes: { prop: 'cubeCount', defaultOrder: 'descending' },
+    cubecount: { prop: 'cubeCount', defaultOrder: 'descending' },
+    count: { prop: 'count', defaultOrder: 'descending' },
+    color: { prop: 'effectiveColors', defaultOrder: 'ascending' },
+    colors: { prop: 'effectiveColors', defaultOrder: 'ascending' },
+    type: { prop: 'typeLine', defaultOrder: 'ascending' },
+    rarity: { prop: 'minRarity', defaultOrder: 'descending' },
+    set: { prop: 'setCode', defaultOrder: 'ascending' },
+    settype: { prop: 'setType', defaultOrder: 'ascending' },
+    layout: { prop: 'layout', defaultOrder: 'ascending' },
+    date: { prop: 'releaseDate', defaultOrder: 'descending' },
+    released: { prop: 'releaseDate', defaultOrder: 'descending' },
+    price: { prop: 'minPriceUsd', defaultOrder: 'descending' },
+    usd: { prop: 'minPriceUsd', defaultOrder: 'descending' },
+    tix: { prop: 'minPriceTix', defaultOrder: 'descending' },
+    elo: { prop: 'elo', defaultOrder: 'descending' },
+    pop: { prop: 'popularity', defaultOrder: 'descending' },
+    popularity: { prop: 'popularity', defaultOrder: 'descending' },
+    power: { prop: 'power', defaultOrder: 'descending' },
+    pow: { prop: 'power', defaultOrder: 'descending' },
+    toughness: { prop: 'toughness', defaultOrder: 'descending' },
+    tou: { prop: 'toughness', defaultOrder: 'descending' },
+    words: { prop: 'oracleTextWordCountMinusParen', defaultOrder: 'descending' },
+    wordcount: { prop: 'oracleTextWordCountMinusParen', defaultOrder: 'descending' },
+    rate: { prop: 'globalRatePercent', defaultOrder: 'descending' },
+    globalrate: { prop: 'globalRatePercent', defaultOrder: 'descending' },
+};
+
+const DIRECTION_ALIASES: Record<string, 'ascending' | 'descending'> = {
+    asc: 'ascending',
+    ascending: 'ascending',
+    desc: 'descending',
+    descending: 'descending',
+};
+
+function collectSortNodes(ast: QueryNode | null): { order?: string; direction?: string } {
+    if (!ast) return {};
+    switch (ast.type) {
+        case 'and':
+        case 'or': {
+            const left = collectSortNodes(ast.left);
+            const right = collectSortNodes(ast.right);
+            return { ...left, ...right };
+        }
+        case 'not':
+            return collectSortNodes(ast.child);
+        case 'condition':
+            if (ast.keyword === 'order') return { order: String(ast.value).toLowerCase() };
+            if (ast.keyword === 'direction') return { direction: String(ast.value).toLowerCase() };
+            return {};
+        default:
+            return {};
+    }
+}
+
+/**
+ * Extract sort directive from the AST (order: / dir: keywords).
+ * Returns null if no order: condition is present.
+ */
+export function extractSortDirective(ast: QueryNode | null): SortDirective | null {
+    const nodes = collectSortNodes(ast);
+    if (!nodes.order) return null;
+    const entry = ORDER_ALIASES[nodes.order];
+    if (!entry) return null;
+    const direction = nodes.direction ? (DIRECTION_ALIASES[nodes.direction] ?? entry.defaultOrder) : entry.defaultOrder;
+    return { prop: entry.prop, order: direction };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Rarity ordering for comparative filters (r>uncommon, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -153,10 +235,14 @@ function compareValues(actual: number | undefined | null, op: string, target: nu
 // String comparison helper (`:` = substring, `=` = exact)
 // ─────────────────────────────────────────────────────────────────────────────
 
+function stripDiacritics(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function compareStrings(actual: string | undefined | null, op: string, target: string): boolean {
     if (actual == null) return false;
-    const a = actual.toLowerCase();
-    const t = target.toLowerCase();
+    const a = stripDiacritics(actual.toLowerCase());
+    const t = stripDiacritics(target.toLowerCase());
     switch (op) {
         case ':':  return a.includes(t);
         case '=':  return a === t;
@@ -494,6 +580,11 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             // highlight: is a visual annotation; it never excludes rows from results
             return true;
 
+        // ── Sort directives (handled externally; never filter rows) ─────────────
+        case 'order':
+        case 'direction':
+            return true;
+
         // ── Global inclusion rate (CubeCobra frequency data, compared as %) ────
         case 'globalrate':
             return compareValues(row.globalRatePercent ?? null, op, numVal);
@@ -742,7 +833,7 @@ export function evaluateCard(ast: QueryNode | null, row: any, ctx: FilterContext
 
         case 'name':
             // Bare word — name substring search
-            return (row.name ?? '').toLowerCase().includes(String(ast.value).toLowerCase());
+            return stripDiacritics((row.name ?? '').toLowerCase()).includes(stripDiacritics(String(ast.value).toLowerCase()));
 
         case 'condition':
             return evaluateCondition(ast.keyword, ast.op, ast.value, row, ctx);

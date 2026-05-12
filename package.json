@@ -14,8 +14,7 @@
     "cubecobra-exports": "tsx download-cubecobra-exports.ts",
     "cubecobra-exports:update": "tsx download-cubecobra-exports.ts --update",
     "preload": "tsx preload-cube-data.ts",
-    "test": "vitest",
-    "nearley": "nearleyc src/util/cardFilters.ne -o src/util/cardFilters.generated.cjs"
+    "test": "vitest"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
@@ -27,12 +26,12 @@
     "mana-font": "^1.18.0",
     "marked": "^18.0.1",
     "moo": "^0.5.3",
+    "nearley": "^2.20.1",
     "vue": "^3.5.32",
     "vue-echarts": "^8.0.1"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/nearley": "^2.11.5",
     "@types/stream-json": "^1.7.8",
     "@vitejs/plugin-vue": "6.0.6",
     "@vue/test-utils": "^2.4.6",
@@ -40,7 +39,6 @@
     "eslint": "^10.2.0",
     "eslint-plugin-vue": "^10.9.0",
     "happy-dom": "^20.9.0",
-    "nearley": "^2.20.1",
     "sass": "^1.99.0",
     "stream-chain": "^3.6.1",
     "stream-json": "^2.1.0",

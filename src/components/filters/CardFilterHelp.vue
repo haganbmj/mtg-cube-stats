@@ -271,6 +271,17 @@ const FILTER_DOCS: FilterDoc[] = [
         description: 'Boolean flags. "not:" is the inverse of "is:".',
         examples: ['is:universesbeyond', 'not:supplemental', 'is:removal'],
     },
+    // ── Sort directives ─────────────────────────────────────────────────────────
+    {
+        keywords: ['order', 'sort'],
+        description: 'Sort results by a field. Overrides the interactive sort controls. Values: name, cmc, cubes, count, color, type, rarity, set, date, price, usd, tix, elo, pop, power, toughness, words, rate.',
+        examples: ['order:cmc', 'sort:name', 'order:elo'],
+    },
+    {
+        keywords: ['dir', 'direction'],
+        description: 'Sort direction. Use with order to control ascending/descending. If omitted, each field uses a sensible default.',
+        examples: ['dir:asc', 'dir:desc', 'direction:ascending'],
+    },
 ];
 </script>
 

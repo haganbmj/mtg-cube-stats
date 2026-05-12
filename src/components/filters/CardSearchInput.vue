@@ -26,7 +26,7 @@
             <div v-if="parseError" class="card-search-error">{{ parseError }}</div>
         </div>
 
-        <div v-if="hasCubes" class="card-search-cube-filter">
+        <div v-if="hasCubes" v-show="!props.collapseCubeFilter" class="card-search-cube-filter">
             <TristateSelect
                 :modelValue="cubeFilter"
                 @update:modelValue="$emit('update:cubeFilter', $event)"
@@ -67,6 +67,10 @@ const props = defineProps({
     cubeFilterMode: {
         type: String as () => 'filter' | 'highlight',
         default: 'filter',
+    },
+    collapseCubeFilter: {
+        type: Boolean,
+        default: false,
     },
 });
 

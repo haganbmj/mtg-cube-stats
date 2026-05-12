@@ -145,6 +145,7 @@
 
             <div class="overview-toolbar-actions">
                 <el-button
+                    v-if="!isMobile"
                     :disabled="Object.keys(props.loadedCubes).length === 0"
                     @click="props.clearCubes()"
                 >Remove All</el-button>
@@ -159,6 +160,11 @@
                     <template #dropdown>
                         <el-dropdown-menu>
                             <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                            <el-dropdown-item
+                                v-if="isMobile"
+                                :disabled="Object.keys(props.loadedCubes).length === 0"
+                                @click="props.clearCubes()"
+                            >Remove All</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
@@ -416,10 +422,13 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
-import { useDateFormat } from '@vueuse/core';
+import { useDateFormat, useWindowSize } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
+
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
 import StatCmpIndicator from '../components/StatCmpIndicator.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 
@@ -510,7 +519,7 @@ const config = bindStorage('cube-app-config', (v) => {
 
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
-const visualDisplayVisible = ref(false);
+const visualDisplayVisible = ref(isMobile.value);
 
 const addCubeForm = reactive({
     loading: false,

@@ -1,27 +1,31 @@
-// ESM wrapper around the nearley-generated grammar.
-// This file is manually maintained to match cardFilters.generated.cjs.
-// After running `npm run nearley`, paste the updated Lexer + ParserRules here.
+// Card filter grammar for the Nearley parser.
+// This is the source of truth — edit this file directly.
 import moo from 'moo';
-import type nearley from 'nearley';
+
+interface CompiledGrammar {
+    Lexer: moo.Lexer;
+    ParserRules: Array<{ name: string; symbols: unknown[]; postprocess?: (...args: any[]) => any }>;
+    ParserStart: string;
+}
 
 const lexer = moo.compile({
-    ws:          { match: /\s+/, lineBreaks: true },
+    ws:          { match: /[\s,]+/u, lineBreaks: true },
     lparen:      '(',
     rparen:      ')',
     op:          ['>=', '<=', '!=', '>', '<', '='],
     colon:       ':',
     minus:       '-',
-    dateString:  /[0-9]{4}-[0-9]{2}-[0-9]{2}/,
-    number:      /[0-9]+(?:\.[0-9]+)?/,
-    quotedString: { match: /"(?:[^"\\]|\\.)*"/, value: (s: string) => s.slice(1, -1) },
-    or_kw:       { match: /[oO][rR](?=\s|\(|$)/, value: () => 'or' },
-    and_kw:      { match: /[aA][nN][dD](?=\s|\(|$)/, value: () => 'and' },
-    bareword:    /[A-Za-z0-9_#'./*[\]-]+/,
+    dateString:  /[0-9]{4}-[0-9]{2}-[0-9]{2}/u,
+    number:      /[0-9]+(?:\.[0-9]+)?/u,
+    quotedString: { match: /"(?:[^"\\]|\\.)*"/u, value: (s: string) => s.slice(1, -1) },
+    or_kw:       { match: /[oO][rR](?=\s|\(|$)/u, value: () => 'or' },
+    and_kw:      { match: /[aA][nN][dD](?=\s|\(|$)/u, value: () => 'and' },
+    bareword:    /[\p{L}\p{N}_#'.\/\*\[\]\-]+/u,
 });
 
 function id(x: unknown[]) { return x[0]; }
 
-const grammar: nearley.CompiledRules = {
+const grammar: CompiledGrammar = {
     Lexer: lexer,
     ParserRules: [
         { name: 'query', symbols: ['_', 'terms', '_'], postprocess: ([, t]: unknown[]) => t },
