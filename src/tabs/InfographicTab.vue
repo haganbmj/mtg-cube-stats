@@ -62,7 +62,7 @@
                                 <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
                             </el-tooltip>
                             <div class="card-info">
-                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name }}</a>
+                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name.split('//')[0].trim() }}</a>
                                 <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
                             </div>
                         </div>
@@ -99,7 +99,7 @@
                                 <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
                             </el-tooltip>
                             <div class="card-info">
-                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name }}</a>
+                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name.split('//')[0].trim() }}</a>
                                 <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
                             </div>
                         </div>
@@ -809,7 +809,7 @@ const lowestRarityScoreCube = computed(() => {
                 white-space: nowrap;
 
                 &[href] {
-                    color: var(--el-color-primary);
+                    color: #ffffff;
                     text-decoration: none;
                     cursor: pointer;
 
