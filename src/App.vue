@@ -590,4 +590,12 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
         overflow: visible !important;
     }
 }
+
+@media (hover: none), (pointer: coarse) {
+    .el-popper.is-light,
+    .el-popper.is-dark,
+    .el-popper[role="tooltip"] {
+        display: none !important;
+    }
+}
 </style>
