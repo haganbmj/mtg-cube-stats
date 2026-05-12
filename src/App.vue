@@ -2,23 +2,19 @@
     <div class="common-layout">
         <el-container>
             <el-header>
-                <el-row :gutter="20">
-                    <el-col :span="16">
-                        <el-breadcrumb separator=" / ">
-                            <el-breadcrumb-item>
-                                <a href="https://griselbrand.com">griselbrand.com</a>
-                            </el-breadcrumb-item>
-                            <el-breadcrumb-item>Cube Comparison</el-breadcrumb-item>
-                        </el-breadcrumb>
-                    </el-col>
-                    <el-col :span="8">
-                        <div style="justify-content: flex-end; display: flex;">
-                            <a href="https://bsky.app/profile/griselbrand.com" target="_blank">Bluesky</a>
-                            <el-divider direction="vertical" />
-                            <a href="https://github.com/haganbmj/mtg-cube-stats" target="_blank">Github</a>
-                        </div>
-                    </el-col>
-                </el-row>
+                <div class="header-row">
+                    <el-breadcrumb separator=" / " class="header-breadcrumb">
+                        <el-breadcrumb-item>
+                            <a href="https://griselbrand.com">griselbrand.com</a>
+                        </el-breadcrumb-item>
+                        <el-breadcrumb-item class="header-page-title">Cube Comparison</el-breadcrumb-item>
+                    </el-breadcrumb>
+                    <div class="header-links">
+                        <a href="https://bsky.app/profile/griselbrand.com" target="_blank">Bluesky</a>
+                        <el-divider direction="vertical" />
+                        <a href="https://github.com/haganbmj/mtg-cube-stats" target="_blank">Github</a>
+                    </div>
+                </div>
             </el-header>
             <el-main>
                 <div id="contents">
@@ -482,6 +478,36 @@ html.dark .el-dropdown__popper {
         &:hover {
             color: var(--el-color-primary);
         }
+    }
+}
+
+.el-main {
+    padding-top: 5px;
+}
+
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.header-links {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .header-links {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    .header-page-title {
+        display: none;
     }
 }
 
