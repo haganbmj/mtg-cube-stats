@@ -39,7 +39,7 @@
                     </el-row>
                     <el-row class="details-tab">
                         <el-col :span="12" :xs="24">
-                            <el-descriptions title="Core" :column="1" :label-width="240" :border="true" size="default">
+                            <el-descriptions title="Core" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Total Number of Cards" placement="top" :hide-after="50"><span>Total Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ activeCube.stats?.totalCards ?? 0 }}
@@ -93,7 +93,7 @@
                         </el-col>
 
                         <el-col :span="12" :xs="24">
-                            <el-descriptions title="Card Counts" :column="1" :label-width="240" :border="true" size="default">
+                            <el-descriptions title="Card Counts" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Number of unique cards by oracle ID, as a percentage of the total" placement="top" :hide-after="50"><span>Unique Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(activeCube.stats?.totalUniqueCards, activeCube.stats?.totalCards) }}
@@ -156,7 +156,7 @@
                         </el-col>
 
                         <el-col :span="12" :xs="24">
-                            <el-descriptions title="Summary Stats" :column="1" :label-width="240" :border="true" size="default">
+                            <el-descriptions title="Summary Stats" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50"><span>Avg. Similarity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ formatPercentage(avgSimilarityScore, 1) }}
@@ -196,7 +196,7 @@
                         </el-col>
 
                         <el-col :span="12" :xs="24">
-                            <el-descriptions title="Characteristics" :column="1" :label-width="240" :border="true" size="default">
+                            <el-descriptions title="Characteristics" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
@@ -221,7 +221,7 @@
                         </el-col>
 
                         <el-col :span="12" :xs="24">
-                            <el-descriptions title="Pricing" :column="1" :label-width="240" :border="true" size="default">
+                            <el-descriptions title="Pricing" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
                                 <el-descriptions-item>
                                     <template #label><el-tooltip content="Total Minimum Price of the Cube in USD" placement="top" :hide-after="50"><span>Min Price (USD) <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
                                     ${{ (activeCube.stats?.totalMinPriceUsd ?? 0).toFixed(2) }}
@@ -379,7 +379,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
-import { useDateFormat } from '@vueuse/core';
+import { useDateFormat, useWindowSize } from '@vueuse/core';
 import { Loading, InfoFilled, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -432,6 +432,10 @@ const props = defineProps({
 });
 
 defineEmits(['update:visible']);
+
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
+const detailsLabelWidth = computed(() => isMobile.value ? '120' : '240');
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 

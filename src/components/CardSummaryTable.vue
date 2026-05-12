@@ -6,36 +6,43 @@
             :loadedCubes="loadedCubes"
             v-model:cubeFilter="activeCubeFilter"
             v-model:cubeFilterMode="activeCubeFilterMode"
+            :collapseCubeFilter="isMobile"
         />
-        <el-dropdown trigger="click" :hide-on-click="false">
-            <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
-            <template #dropdown>
-                <div class="all-cards-dropdown">
-                    <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
-                    <div class="all-cards-dropdown__label">Frequency Category</div>
-                    <el-select
-                        v-if="frequencyCategoryOptions.length > 0"
-                        v-model="config.frequencyCategory"
-                        size="small"
-                        style="width: 220px;"
-                        placeholder="Global Rate"
-                    >
-                        <el-option-group
-                            v-for="grp in groupedFrequencyOptions"
-                            :key="grp.label"
-                            :label="grp.label"
+        <div v-show="!isMobile" class="card-table-toolbar-secondary">
+            <el-dropdown trigger="click" :hide-on-click="false">
+                <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
+                <template #dropdown>
+                    <div class="all-cards-dropdown">
+                        <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
+                        <div class="all-cards-dropdown__label">Frequency Category</div>
+                        <el-select
+                            v-if="frequencyCategoryOptions.length > 0"
+                            v-model="config.frequencyCategory"
+                            size="small"
+                            style="width: 220px;"
+                            placeholder="Global Rate"
                         >
-                            <el-option
-                                v-for="opt in grp.options"
-                                :key="opt.value"
-                                :label="opt.label"
-                                :value="opt.value"
-                            />
-                        </el-option-group>
-                    </el-select>
-                </div>
-            </template>
-        </el-dropdown>
+                            <el-option-group
+                                v-for="grp in groupedFrequencyOptions"
+                                :key="grp.label"
+                                :label="grp.label"
+                            >
+                                <el-option
+                                    v-for="opt in grp.options"
+                                    :key="opt.value"
+                                    :label="opt.label"
+                                    :value="opt.value"
+                                />
+                            </el-option-group>
+                        </el-select>
+                    </div>
+                </template>
+            </el-dropdown>
+        </div>
+        <span v-if="isMobile" class="card-table-filter-toggle" @click="filtersExpanded = !filtersExpanded">
+            {{ filtersExpanded ? '▴ Filters' : '▾ Filters' }}
+        </span>
+        <span v-if="isMobile" style="flex: 1;"></span>
         <el-button-group>
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
@@ -52,43 +59,115 @@
         </el-dropdown>
     </div>
 
-    <div class="card-table-pagination-row">
-        <el-breadcrumb separator="·" class="filter-summary">
-            <el-breadcrumb-item>
-                <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
-                    <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
-                </el-tooltip>
-            </el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!isMobile">
-                <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
-                    <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
-                </el-tooltip>
-            </el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!isMobile">
-                <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
-                    <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
-                </el-tooltip>
-            </el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!isMobile && filteredStats.highlightedCubeCardCount !== null">
-                <el-tooltip content="Total matching cards summed across all highlighted cubes" placement="bottom" effect="light">
-                    <span>{{ filteredStats.highlightedCubeCardCount }} in highlighted</span>
-                </el-tooltip>
-            </el-breadcrumb-item>
-        </el-breadcrumb>
-        <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[25, 50, 100, 250]"
-            :pager-count="isMobile ? 3 : 5"
-            :layout="paginationLayout"
-            :total="filteredRows.length"
+    <div v-if="isMobile && filtersExpanded" class="card-table-mobile-filters">
+        <TristateSelect
+            v-if="Object.keys(loadedCubes).length > 0"
+            :modelValue="activeCubeFilter"
+            @update:modelValue="activeCubeFilter = $event"
+            :options="cubeOptions"
+            :showModeToggle="true"
+            :mode="activeCubeFilterMode"
+            @update:mode="activeCubeFilterMode = $event"
+            placeholder="Filter by cube..."
         />
+        <el-space wrap>
+            <el-dropdown trigger="click" :hide-on-click="false">
+                <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates">All Cards</el-button>
+                <template #dropdown>
+                    <div class="all-cards-dropdown">
+                        <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
+                        <div class="all-cards-dropdown__label">Frequency Category</div>
+                        <el-select
+                            v-if="frequencyCategoryOptions.length > 0"
+                            v-model="config.frequencyCategory"
+                            size="small"
+                            style="width: 220px;"
+                            placeholder="Global Rate"
+                        >
+                            <el-option-group
+                                v-for="grp in groupedFrequencyOptions"
+                                :key="grp.label"
+                                :label="grp.label"
+                            >
+                                <el-option
+                                    v-for="opt in grp.options"
+                                    :key="opt.value"
+                                    :label="opt.label"
+                                    :value="opt.value"
+                                />
+                            </el-option-group>
+                        </el-select>
+                    </div>
+                </template>
+            </el-dropdown>
+            <template v-if="visualDisplayVisible">
+                <el-divider direction="vertical" />
+                <span class="sort-label">Columns</span>
+                <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" style="width: 90px;" controls-position="right" />
+            </template>
+        </el-space>
+        <template v-if="visualDisplayVisible">
+            <el-space wrap>
+                <span class="sort-label">Sort by</span>
+                <el-select v-model="visualSortProp" size="small" style="width: 160px;" :disabled="!!querySortDirective">
+                    <el-option
+                        v-for="opt in visualSortOptions"
+                        :key="opt.value"
+                        :label="opt.label"
+                        :value="opt.value"
+                    />
+                </el-select>
+                <el-button size="small" @click="toggleVisualSortOrder" :disabled="!!querySortDirective">
+                    {{ visualSortOrder === 'ascending' ? '↑ Asc' : '↓ Desc' }}
+                </el-button>
+            </el-space>
+        </template>
     </div>
 
-    <el-row v-if="visualDisplayVisible" class="visual-sort-bar" align="middle">
+    <div class="card-table-pagination-row">
+        <template v-if="isMobile">
+            <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
+            <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+            <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
+        </template>
+        <template v-else>
+            <el-breadcrumb separator="·" class="filter-summary">
+                <el-breadcrumb-item>
+                    <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
+                        <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+                    </el-tooltip>
+                </el-breadcrumb-item>
+                <el-breadcrumb-item>
+                    <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
+                        <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
+                    </el-tooltip>
+                </el-breadcrumb-item>
+                <el-breadcrumb-item>
+                    <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
+                        <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
+                    </el-tooltip>
+                </el-breadcrumb-item>
+                <el-breadcrumb-item v-if="filteredStats.highlightedCubeCardCount !== null">
+                    <el-tooltip content="Total matching cards summed across all highlighted cubes" placement="bottom" effect="light">
+                        <span>{{ filteredStats.highlightedCubeCardCount }} in highlighted</span>
+                    </el-tooltip>
+                </el-breadcrumb-item>
+            </el-breadcrumb>
+            <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :page-sizes="[25, 50, 100, 250]"
+                :pager-count="5"
+                layout="->, prev, pager, next, sizes"
+                :total="filteredRows.length"
+            />
+        </template>
+    </div>
+
+    <el-row v-if="visualDisplayVisible && !isMobile" class="visual-sort-bar" align="middle">
         <el-space wrap>
             <span class="sort-label">Sort by</span>
-            <el-select v-model="visualSortProp" size="small" style="width: 160px;">
+            <el-select v-model="visualSortProp" size="small" style="width: 160px;" :disabled="!!querySortDirective">
                 <el-option
                     v-for="opt in visualSortOptions"
                     :key="opt.value"
@@ -96,7 +175,7 @@
                     :value="opt.value"
                 />
             </el-select>
-            <el-button size="small" @click="toggleVisualSortOrder">
+            <el-button size="small" @click="toggleVisualSortOrder" :disabled="!!querySortDirective">
                 {{ visualSortOrder === 'ascending' ? '↑ Ascending' : '↓ Descending' }}
             </el-button>
             <el-divider direction="vertical" />
@@ -342,12 +421,18 @@
         </template>
     </StickyTable>
 
+    <div v-if="isMobile" class="card-table-pagination-row">
+        <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
+        <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+        <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
+    </div>
     <el-pagination
+        v-else
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :page-sizes="[25, 50, 100, 250]"
         :pager-count="5"
-        :layout="paginationLayout"
+        layout="->, prev, pager, next, sizes"
         :total="filteredRows.length"
     />
 
@@ -423,6 +508,7 @@ import { capitalizeFirstLetter, rarityOrder, getRarityColor } from '../util/Help
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
+import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
@@ -449,11 +535,32 @@ const currentPage = ref(1);
 const pageSize = ref(50);
 const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
 const activeQuery = inject<Ref<string>>('cardTableQuery', ref(''));
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
+
 const activeCubeFilter = ref<Record<string, boolean | null>>({});
 const activeCubeFilterMode = ref<'filter' | 'highlight'>('filter');
+
+const cubeOptions = computed(() =>
+    Object.entries(props.loadedCubes)
+        .map(([key, cube]: [string, any]) => ({
+            label: cube.name,
+            value: key,
+            searchTerms: [
+                cube.name,
+                key,
+                cube.shortId,
+                cube.id,
+                cube.owner,
+            ].filter(Boolean).map((s: string) => s.toLowerCase()),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+);
+
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
-const visualDisplayVisible = ref(false);
+const visualDisplayVisible = ref(isMobile.value);
+const filtersExpanded = ref(false);
 
 const visualSortProp = computed({
     get: () => activeSort.value?.prop ?? 'cubeCount',
@@ -475,12 +582,7 @@ const toggleVisualSortOrder = () => {
     visualSortOrder.value = visualSortOrder.value === 'ascending' ? 'descending' : 'ascending';
 };
 
-const { width: windowWidth } = useWindowSize();
-const isMobile = computed(() => windowWidth.value <= 760);
-
-const paginationLayout = computed(() => {
-    return isMobile.value ? 'prev, pager, next' : '->, prev, pager, next, sizes';
-});
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize.value)));
 
 // --- Column visibility config ---
 const defaultVisibleColumns = [
@@ -506,6 +608,10 @@ const config = bindStorage('card-summary-table-config', (v) => {
         showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
+
+if (isMobile.value) {
+    config.value.visualColumnCount = 2;
+}
 
 const frequencyCategoryOptions = computed(() => {
     void frequencyDataReady.value; // reactive dependency
@@ -1048,14 +1154,55 @@ const filteredStats = computed(() => {
     min-width: 0;
 }
 
+.card-table-toolbar-secondary {
+    display: contents;
+}
+
+.card-table-filter-toggle {
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.card-table-filter-toggle:hover {
+    background: var(--el-fill-color);
+}
+
+.card-table-mobile-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .sort-label {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+    }
+}
+
 .card-table-pagination-row {
     display: flex;
     align-items: center;
     gap: 12px;
+    margin: 8px 0;
 
     .el-pagination {
         flex: 1;
         margin: 8px 0;
+    }
+
+    .mobile-page-info {
+        flex: 1;
+        text-align: center;
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        white-space: nowrap;
     }
 }
 
