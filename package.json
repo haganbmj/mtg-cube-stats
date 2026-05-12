@@ -36,7 +36,7 @@
     "@vitejs/plugin-vue": "6.0.6",
     "@vue/test-utils": "^2.4.6",
     "axios": "^1.16.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.3.0",
     "eslint-plugin-vue": "^10.9.0",
     "happy-dom": "^20.9.0",
     "sass": "^1.99.0",
