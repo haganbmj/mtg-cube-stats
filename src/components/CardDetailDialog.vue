@@ -144,6 +144,18 @@
                             </el-descriptions>
                         </el-col>
 
+                        <el-col v-if="frequencyDataReady" :span="12" :xs="24">
+                            <el-descriptions title="Global Inclusion Rate" :column="1" :label-width="150" :border="true" size="default">
+                                <el-descriptions-item v-for="cat in globalRateCategories" :key="cat.value" :label="cat.label">
+                                    <template v-if="cat.cardCount != null && cat.cubeCount">
+                                        <span>{{ ((cat.cardCount / cat.cubeCount) * 100).toFixed(1) }}%</span>
+                                        <span class="cell-secondary"> ({{ cat.cardCount.toLocaleString() }} / {{ cat.cubeCount.toLocaleString() }})</span>
+                                    </template>
+                                    <span v-else>N/A</span>
+                                </el-descriptions-item>
+                            </el-descriptions>
+                        </el-col>
+
                         <el-col :span="12" :xs="24">
                             <el-descriptions title="Pricing" :column="1" :label-width="150" :border="true" size="default">
                                 <el-descriptions-item label="Min Price (USD)">{{ activeCard.minPriceUsd != null ? `$${activeCard.minPriceUsd.toFixed(2)}` : 'N/A' }}</el-descriptions-item>
@@ -228,6 +240,7 @@ import { Link } from '@element-plus/icons-vue';
 import { capitalizeFirstLetter, getRarityColor } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import { getScryfallCards } from '../util/CubeFunctions';
+import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
 import type { Cube } from '../types';
 
 const props = defineProps({
@@ -313,6 +326,23 @@ const expandedCubeList = computed(() => {
         size: cube.cards.length,
         included: activeCard.value!.cubes.includes(key),
     })).sort((a, b) => a.name.localeCompare(b.name));
+});
+
+const GLOBAL_RATE_CATEGORIES = [
+    { label: 'All Cubes', value: 'total' },
+    { label: 'Peasant', value: 'broad:peasant' },
+    { label: 'Pauper', value: 'broad:pauper' },
+] as const;
+
+const globalRateCategories = computed(() => {
+    if (!activeCard.value?.oracleId) return [];
+    const oracleId = activeCard.value.oracleId;
+    return GLOBAL_RATE_CATEGORIES.map(cat => ({
+        label: cat.label,
+        value: cat.value,
+        cardCount: resolveCardCount(oracleId, cat.value),
+        cubeCount: resolveCubeCount(cat.value),
+    }));
 });
 
 const tagsMeta = [
