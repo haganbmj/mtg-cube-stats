@@ -346,9 +346,9 @@
                     />
                 </el-tab-pane>
 
-                <el-tab-pane label="Themes" :lazy="true">
+                <!-- <el-tab-pane label="Themes" :lazy="true">
                     <ArchetypeAnalysis :cubeCards="activeCubeCards" />
-                </el-tab-pane>
+                </el-tab-pane> -->
 
                 <el-tab-pane label="Sample Pack" :lazy="true">
                     <div class="sample-pack">

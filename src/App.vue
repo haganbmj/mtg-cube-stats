@@ -50,9 +50,9 @@
                             <StatisticsTab :loadedCubes="overviewTableData" />
                         </el-tab-pane>
 
-                        <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
+                        <!-- <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
-                        </el-tab-pane>
+                        </el-tab-pane> -->
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
                             <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
