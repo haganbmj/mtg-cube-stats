@@ -17,7 +17,6 @@ npm run dev        # Start development server
 - `npm run build` - Production build (outputs to `dist/`)
 - `npm run lint` / `npm run lint:fix` - ESLint checking/fixing
 - `npm run cards:update` - Force refresh Scryfall data when stale
-- `npm run nearley` - Recompile the card filter grammar (see README for details)
 - `npm test` - Vitest (test infrastructure ready, no tests yet)
 
 ## Static Deployment Model
