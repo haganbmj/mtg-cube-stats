@@ -7,6 +7,7 @@ import type { QueryNode } from './CardFilterParser';
 export interface FilterContext {
     loadedCubes: Record<string, any>;
     setDates?: Record<string, string>; // setCode (lowercase) -> ISO release date
+    resolvedCubeKeys?: Map<string, Set<string>>; // pre-resolved cube: target → matching cube keys
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -434,20 +435,15 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         // ── Cube membership (by cube name, key, or shortId) ───────────────────
         case 'cube': {
             const rowCubes: string[] = row.cubes ?? [];
-            const target = strVal.toLowerCase();
+            if (rowCubes.length === 0) return false;
 
-            // Match against cube keys held in row.cubes
-            if (rowCubes.some((c: string) => c.toLowerCase().includes(target))) return true;
+            // Use pre-resolved cube keys when available (O(1) per row)
+            const resolved = ctx.resolvedCubeKeys?.get(strVal);
+            if (resolved) return rowCubes.some(c => resolved.has(c));
 
-            // Also match against loaded cube names and shortId
-            for (const [key, cube] of Object.entries(ctx.loadedCubes)) {
-                const nameMatch = (cube as any).name?.toLowerCase().includes(target);
-                const keyMatch = key.toLowerCase().includes(target);
-                const shortIdMatch = (cube as any).shortId?.toLowerCase().includes(target);
-                if ((nameMatch || keyMatch || shortIdMatch) && rowCubes.includes(key)) return true;
-            }
-
-            return false;
+            // Fallback: resolve inline (used when ctx.resolvedCubeKeys not provided)
+            const matchingKeys = resolveCubeKeysByName(strVal, ctx);
+            return rowCubes.some(c => matchingKeys.has(c));
         }
 
         // ── Cube size (total card count) ───────────────────────────────────────
@@ -525,6 +521,47 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 // ─────────────────────────────────────────────────────────────────────────────
 // Highlight support — collect oracle IDs for highlight: conditions
 // ─────────────────────────────────────────────────────────────────────────────
+
+function resolveCubeKeysByName(value: string, ctx: FilterContext): Set<string> {
+    const target = value.toLowerCase();
+    const keys = new Set<string>();
+    for (const [key, cube] of Object.entries(ctx.loadedCubes)) {
+        const nameMatch = (cube as any).name?.toLowerCase().includes(target);
+        const keyMatch = key.toLowerCase().includes(target);
+        const shortIdMatch = (cube as any).shortId?.toLowerCase().includes(target);
+        if (nameMatch || keyMatch || shortIdMatch) keys.add(key);
+    }
+    return keys;
+}
+
+function collectCubeFilterValues(ast: QueryNode | null): string[] {
+    if (!ast) return [];
+    switch (ast.type) {
+        case 'and':
+        case 'or':
+            return [...collectCubeFilterValues(ast.left), ...collectCubeFilterValues(ast.right)];
+        case 'not':
+            return collectCubeFilterValues(ast.child);
+        case 'condition':
+            if (ast.keyword === 'cube') return [String(ast.value)];
+            return [];
+        default:
+            return [];
+    }
+}
+
+/**
+ * Pre-resolve all cube: filter targets in the AST to sets of matching cube keys.
+ * Call once before iterating rows, then pass the result via FilterContext.resolvedCubeKeys.
+ */
+export function preResolveCubeKeys(ast: QueryNode | null, ctx: FilterContext): Map<string, Set<string>> {
+    const values = collectCubeFilterValues(ast);
+    const map = new Map<string, Set<string>>();
+    for (const v of values) {
+        if (!map.has(v)) map.set(v, resolveCubeKeysByName(v, ctx));
+    }
+    return map;
+}
 
 function resolveHighlightCubeKeys(value: string, ctx: FilterContext): Set<string> {
     const target = value.toLowerCase();

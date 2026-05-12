@@ -424,7 +424,7 @@ import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes, preResolveCubeKeys } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
 import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
 
@@ -753,10 +753,11 @@ const highlightedOracleIds = computed<Set<string> | null>(() => {
             .filter(([, v]) => v === true)
             .map(([k]) => k);
         if (includedKeys.length > 0) {
+            const includedKeySet = new Set(includedKeys);
             dropdownSet = new Set<string>();
             for (const row of tableData.value as any[]) {
                 const rowCubes: string[] = row.cubes ?? [];
-                if (rowCubes.some(c => includedKeys.includes(c))) {
+                if (rowCubes.some(c => includedKeySet.has(c))) {
                     dropdownSet.add(row.oracleId);
                 }
             }
@@ -976,8 +977,9 @@ const filteredRows = computed(() => {
     }
 
     if (hasTextQuery) {
+        const ctx = { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates(), resolvedCubeKeys: preResolveCubeKeys(parsedQuery.value.ast, { loadedCubes: props.loadedCubes }) };
         rows = rows.filter(row =>
-            evaluateCard(parsedQuery.value.ast, row, { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates() }),
+            evaluateCard(parsedQuery.value.ast, row, ctx),
         );
     }
 
