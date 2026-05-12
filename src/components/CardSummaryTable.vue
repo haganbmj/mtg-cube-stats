@@ -424,7 +424,7 @@ import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes, preResolveCubeKeys } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
 import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
 
@@ -736,6 +736,8 @@ const applyTristateFilter = (
 
 const parsedQuery = computed(() => parseQuery(activeQuery.value));
 
+const querySortDirective = computed(() => extractSortDirective(parsedQuery.value.ast));
+
 const highlightedOracleIds = computed<Set<string> | null>(() => {
     // Build the query-based highlight set (highlight: keyword in text query)
     const querySet = parsedQuery.value.ast
@@ -932,11 +934,12 @@ const sortedRows = computed(() => {
         return 0;
     });
 
-    if (!activeSort.value || !activeSort.value.order) {
+    // Query-driven sort (order:) takes precedence over UI sort
+    const sort = querySortDirective.value ?? activeSort.value;
+
+    if (!sort || !sort.order) {
         return alphaSorted;
     }
-
-    const sort = activeSort.value;
     return alphaSorted.slice(0).sort((a, b) => {
         const sortKey = sort.prop;
         const dir = sort.order === 'ascending' ? 1 : -1;
