@@ -235,10 +235,14 @@ function compareValues(actual: number | undefined | null, op: string, target: nu
 // String comparison helper (`:` = substring, `=` = exact)
 // ─────────────────────────────────────────────────────────────────────────────
 
+function stripDiacritics(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function compareStrings(actual: string | undefined | null, op: string, target: string): boolean {
     if (actual == null) return false;
-    const a = actual.toLowerCase();
-    const t = target.toLowerCase();
+    const a = stripDiacritics(actual.toLowerCase());
+    const t = stripDiacritics(target.toLowerCase());
     switch (op) {
         case ':':  return a.includes(t);
         case '=':  return a === t;
@@ -829,7 +833,7 @@ export function evaluateCard(ast: QueryNode | null, row: any, ctx: FilterContext
 
         case 'name':
             // Bare word — name substring search
-            return (row.name ?? '').toLowerCase().includes(String(ast.value).toLowerCase());
+            return stripDiacritics((row.name ?? '').toLowerCase()).includes(stripDiacritics(String(ast.value).toLowerCase()));
 
         case 'condition':
             return evaluateCondition(ast.keyword, ast.op, ast.value, row, ctx);

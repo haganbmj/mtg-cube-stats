@@ -6,7 +6,7 @@ function id(x) { return x[0]; }
 const moo = require("moo");
 
 const lexer = moo.compile({
-    ws:          { match: /\s+/, lineBreaks: true },
+    ws:          { match: /[\s,]+/, lineBreaks: true },
     lparen:      "(",
     rparen:      ")",
     op:          [">=", "<=", "!=", ">", "<", "="],
@@ -17,7 +17,7 @@ const lexer = moo.compile({
     quotedString: { match: /"(?:[^"\\]|\\.)*"/, value: s => s.slice(1, -1) },
     or_kw:       { match: /[oO][rR](?=\s|\(|$)/, value: () => "or" },
     and_kw:      { match: /[aA][nN][dD](?=\s|\(|$)/, value: () => "and" },
-    bareword:    /[A-Za-z0-9_#'.\/\*\[\]\-]+/,
+    bareword:    /[\p{L}\p{N}_#'.\/\*\[\]\-]+/u,
 });
 var grammar = {
     Lexer: lexer,
@@ -41,9 +41,9 @@ var grammar = {
     {"name": "bareOrQuoted", "symbols": [(lexer.has("bareword") ? {type: "bareword"} : bareword)], "postprocess": ([t]) => t.value},
     {"name": "_", "symbols": []},
     {"name": "_", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": () => null},
-    {"name": "__", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": () => null},
+    {"name": "__", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": () => null}
 ]
-  , ParserStart: "query",
+  , ParserStart: "query"
 }
 if (typeof module !== 'undefined'&& typeof module.exports !== 'undefined') {
    module.exports = grammar;

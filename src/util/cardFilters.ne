@@ -2,7 +2,7 @@
 const moo = require("moo");
 
 const lexer = moo.compile({
-    ws:          { match: /\s+/, lineBreaks: true },
+    ws:          { match: /[\s,]+/, lineBreaks: true },
     lparen:      "(",
     rparen:      ")",
     op:          [">=", "<=", "!=", ">", "<", "="],
@@ -13,7 +13,7 @@ const lexer = moo.compile({
     quotedString: { match: /"(?:[^"\\]|\\.)*"/, value: s => s.slice(1, -1) },
     or_kw:       { match: /[oO][rR](?=\s|\(|$)/, value: () => "or" },
     and_kw:      { match: /[aA][nN][dD](?=\s|\(|$)/, value: () => "and" },
-    bareword:    /[A-Za-z0-9_#'.\/\*\[\]\-]+/,
+    bareword:    /[\p{L}\p{N}_#'.\/\*\[\]\-]+/u,
 });
 %}
 
