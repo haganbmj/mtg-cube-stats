@@ -1,44 +1,66 @@
 <template>
-    <div class="cube-list-view">
-        <div
-            v-for="col in columns"
-            :key="col.id"
-            class="cube-list-column"
-            :style="{ background: col.bodyBg }"
-        >
-            <div class="column-header" :style="{ background: col.headerBg }">
-                <span class="column-label">{{ col.label }}</span>
-                <span class="column-count">{{ col.cards.length }}</span>
+    <div class="cube-list-container">
+        <div class="cube-list-filter">
+            <CardSearchInput
+                class="card-table-search"
+                v-model="activeQuery"
+                :loaded-cubes="{}"
+                :collapse-cube-filter="true"
+            />
+            <el-button-group>
+                <el-button :icon="View" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Dim unmatched cards" />
+                <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
+            </el-button-group>
+        </div>
+        <div class="cube-list-filter-status">
+            <div class="cube-list-match-count">
+                <el-text size="small" type="info">Filtered to {{ matchingOracleIds ? `${matchingOracleIds.size} / ${props.cards.length}` : props.cards.length }} cards</el-text>
             </div>
-            <div class="column-body">
-                <div v-for="group in col.groups" :key="group.label" class="type-section">
-                    <div class="type-header">
-                        {{ group.label }}
-                        <span class="type-count">({{ group.cards.length }})</span>
-                    </div>
-                    <div
-                        v-for="(card, i) in group.cards"
-                        :key="`${card.oracleId}-${i}`"
-                        class="card-entry"
-                        :class="{ 'cmc-break': i > 0 && card.cmc !== group.cards[i - 1].cmc }"
-                    >
-                        <el-tooltip
-                            effect="light"
-                            placement="right"
-                            popper-class="card-tooltip"
-                            :show-after="50"
-                            :hide-after="50"
-                            :offset="8"
+        </div>
+        <div class="cube-list-view">
+            <div
+                v-for="col in columns"
+                :key="col.id"
+                class="cube-list-column"
+                :style="{ background: col.bodyBg }"
+            >
+                <div class="column-header" :style="{ background: col.headerBg }">
+                    <span class="column-label">{{ col.label }}</span>
+                    <span class="column-count">{{ col.matchCount !== null ? `${col.matchCount} / ` : '' }}{{ col.totalCount }}</span>
+                </div>
+                <div class="column-body">
+                    <div v-for="group in col.groups" :key="group.label" class="type-section">
+                        <div class="type-header">
+                            {{ group.label }}
+                            <span class="type-count">({{ group.cards.length }})</span>
+                        </div>
+                        <div
+                            v-for="(card, i) in group.cards"
+                            :key="`${card.oracleId}-${i}`"
+                            class="card-entry"
+                            :class="{
+                                'cmc-break': i > 0 && card.cmc !== group.cards[i - 1].cmc,
+                                'card-entry--dimmed': filterMode === 'dim' && matchingOracleIds && !matchingOracleIds.has(card.oracleId),
+                            }"
                         >
-                            <template #content>
-                                <el-image :src="card.urlFront" fit="contain" class="card-image" />
-                            </template>
-                            <el-link
-                                @click="openCardDetailDialog?.(card.oracleId)"
-                                underline="never"
-                                class="card-name"
-                            >{{ card.name }}</el-link>
-                        </el-tooltip>
+                            <el-tooltip
+                                effect="light"
+                                placement="right"
+                                popper-class="card-tooltip"
+                                :show-after="50"
+                                :hide-after="50"
+                                :offset="8"
+                            >
+                                <template #content>
+                                    <el-image :src="card.urlFront" fit="contain" class="card-image" />
+                                </template>
+                                <el-link
+                                    @click="openCardDetailDialog?.(card.oracleId)"
+                                    underline="never"
+                                    class="card-name"
+                                >{{ card.name }}</el-link>
+                            </el-tooltip>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -47,8 +69,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { ref, computed, inject } from 'vue';
 import type { CubeCard } from '../types';
+import CardSearchInput from './filters/CardSearchInput.vue';
+import { parseQuery } from '../util/CardFilterParser';
+import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
+import { bindStorage } from '../util/VueLocalStorage';
+import { View, Hide } from '@element-plus/icons-vue';
 
 const PRIMARY_TYPE_ORDER = ['Creature', 'Planeswalker', 'Instant', 'Sorcery', 'Artifact', 'Enchantment', 'Battle', 'Conspiracy', 'Land'];
 
@@ -132,6 +159,24 @@ const props = defineProps({
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
+const activeQuery = ref('');
+
+const filterMode = bindStorage('cube-list-filter-mode', (v) => {
+    return v === 'hide' ? 'hide' : 'dim';
+});
+
+const matchingOracleIds = computed<Set<string> | null>(() => {
+    const { ast } = parseQuery(activeQuery.value);
+    if (!ast) return null;
+    const ctx: FilterContext = { loadedCubes: {} };
+    const ids = new Set<string>();
+    for (const card of props.cards) {
+        const row = { ...card, effectiveColors: card.colors, effectiveColorIdentity: card.colorIdentity };
+        if (evaluateCard(ast, row, ctx)) ids.add(card.oracleId);
+    }
+    return ids;
+});
+
 function getColorColumnId(card: CubeCard): string {
     if (card.primaryType === 'Land') return 'L';
     const colors = card.colors ?? [];
@@ -147,12 +192,40 @@ function sortCards(a: CubeCard, b: CubeCard): number {
 }
 
 const columns = computed(() => {
+    // Total cards per column (unfiltered)
+    const totalCounts: Record<string, number> = {};
+    for (const def of COLOR_COLUMN_DEFS) {
+        totalCounts[def.id] = 0;
+    }
+    for (const card of props.cards) {
+        const colId = getColorColumnId(card);
+        totalCounts[colId] = (totalCounts[colId] ?? 0) + 1;
+    }
+
+    // Match counts per column
+    const matchCounts: Record<string, number> = {};
+    if (matchingOracleIds.value) {
+        for (const def of COLOR_COLUMN_DEFS) {
+            matchCounts[def.id] = 0;
+        }
+        for (const card of props.cards) {
+            if (matchingOracleIds.value.has(card.oracleId)) {
+                const colId = getColorColumnId(card);
+                matchCounts[colId] = (matchCounts[colId] ?? 0) + 1;
+            }
+        }
+    }
+
     const buckets: Record<string, CubeCard[]> = {};
     for (const def of COLOR_COLUMN_DEFS) {
         buckets[def.id] = [];
     }
 
-    for (const card of props.cards) {
+    const cardsToShow = (filterMode.value === 'hide' && matchingOracleIds.value)
+        ? props.cards.filter(c => matchingOracleIds.value!.has(c.oracleId))
+        : props.cards;
+
+    for (const card of cardsToShow) {
         const colId = getColorColumnId(card);
         (buckets[colId] ?? buckets['C']).push(card);
     }
@@ -215,12 +288,44 @@ const columns = computed(() => {
                 ];
             }
 
-            return { ...def, cards, groups };
+            return {
+                ...def,
+                cards,
+                groups,
+                totalCount: totalCounts[def.id],
+                matchCount: matchingOracleIds.value ? matchCounts[def.id] : null,
+            };
         });
 });
 </script>
 
 <style scoped>
+.cube-list-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.card-table-search {
+    flex: 1;
+    min-width: 0;
+}
+
+.cube-list-match-count {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.cube-list-filter-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
 .cube-list-view {
     display: flex;
     flex-direction: row;
@@ -292,6 +397,10 @@ const columns = computed(() => {
     padding-top: 0;
     margin-top: 0;
     border-top: 1px solid var(--el-border-color-extra-light);
+}
+
+.card-entry--dimmed {
+    opacity: 0.3;
 }
 
 .card-name {
