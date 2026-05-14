@@ -662,6 +662,11 @@ const tokensTabData = computed(() => {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
     padding: 8px 0;
+
+    @media (max-width: 760px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
 }
 
 .token-entry {
