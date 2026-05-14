@@ -221,8 +221,8 @@ const FILTER_DOCS: FilterDoc[] = [
     },
     {
         keywords: ['highlight'],
-        description: 'Visually highlights rows whose card appears in the matching cube. Does not filter out any cards — all rows remain visible, but non-matching rows are dimmed.',
-        examples: ['highlight:vintage', 'highlight:peasant'],
+        description: 'Visually highlights rows whose card appears in the matching cube. Does not filter out any cards — all rows remain visible, but non-matching rows are dimmed. Use -highlight: to invert — highlighting cards NOT in the cube.',
+        examples: ['highlight:vintage', '-highlight:peasant'],
     },
     {
         keywords: ['size', 'cubesize'],

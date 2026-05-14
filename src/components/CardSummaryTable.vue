@@ -860,12 +860,18 @@ const highlightedOracleIds = computed<Set<string> | null>(() => {
         const includedKeys = Object.entries(activeCubeFilter.value)
             .filter(([, v]) => v === true)
             .map(([k]) => k);
-        if (includedKeys.length > 0) {
+        const excludedKeys = Object.entries(activeCubeFilter.value)
+            .filter(([, v]) => v === false)
+            .map(([k]) => k);
+        if (includedKeys.length > 0 || excludedKeys.length > 0) {
             const includedKeySet = new Set(includedKeys);
+            const excludedKeySet = new Set(excludedKeys);
             dropdownSet = new Set<string>();
             for (const row of tableData.value as any[]) {
                 const rowCubes: string[] = row.cubes ?? [];
-                if (rowCubes.some(c => includedKeySet.has(c))) {
+                const inIncluded = includedKeySet.size === 0 || rowCubes.some(c => includedKeySet.has(c));
+                const notInExcluded = excludedKeySet.size === 0 || !rowCubes.some(c => excludedKeySet.has(c));
+                if (inIncluded && notInExcluded) {
                     dropdownSet.add(row.oracleId);
                 }
             }
