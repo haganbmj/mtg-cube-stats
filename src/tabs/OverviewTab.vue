@@ -188,7 +188,21 @@
                 class="overview-cube-tile"
                 @click="openCubeDetailDialog(row.id)"
             >
-                <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" />
+                <div class="cube-tile-thumbnail-wrapper">
+                    <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" />
+                    <div class="cube-tile-categories">
+                        <el-tag
+                            v-for="category in row.stats.assumedCategories"
+                            :key="category"
+                            size="small"
+                            effect="dark"
+                            :color="getCategoryTagColor(category)"
+                            disable-transitions
+                        >
+                            {{ category }}
+                        </el-tag>
+                    </div>
+                </div>
                 <div class="cube-tile-body">
                     <div class="cube-tile-name">{{ row.name }}</div>
                     <div class="cube-tile-owner">
@@ -207,18 +221,6 @@
                             <el-text size="small" tag="b">{{ (row.avgSimilarityScore * 100).toFixed(1) }}%</el-text>
                             <el-text size="small" type="info"> similarity</el-text>
                         </span>
-                    </div>
-                    <div v-if="row.stats.assumedCategories?.length" class="cube-tile-categories">
-                        <el-tag
-                            v-for="category in row.stats.assumedCategories"
-                            :key="category"
-                            size="small"
-                            type="info"
-                            :color="getCategoryTagColor(category)"
-                            disable-transitions
-                        >
-                            {{ category }}
-                        </el-tag>
                     </div>
                 </div>
             </div>
@@ -289,7 +291,7 @@
                     >
                         <el-tag
                             size="small"
-                            type="info"
+                            effect="dark"
                             :color="getCategoryTagColor(category)"
                             disable-transitions
                         >
@@ -931,11 +933,29 @@ const formatters = {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
+.cube-tile-thumbnail-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
 .cube-tile-thumbnail {
     width: 100%;
     aspect-ratio: 4 / 3;
     display: block;
     background-color: var(--el-fill-color);
+}
+
+.cube-tile-categories {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    padding: 16px 6px 4px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.55));
+    overflow: hidden;
+    flex-wrap: nowrap;
 }
 
 .cube-tile-body {
@@ -957,6 +977,16 @@ const formatters = {
 
 .cube-tile-owner {
     font-size: 12px;
+    color: var(--el-text-color-placeholder);
+
+    :deep(.el-link) {
+        color: var(--el-text-color-placeholder);
+        font-size: 12px;
+    }
+
+    :deep(.el-link:hover) {
+        color: var(--el-color-primary);
+    }
 }
 
 .cube-tile-stats {
@@ -972,12 +1002,7 @@ const formatters = {
     gap: 2px;
 }
 
-.cube-tile-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 2px;
-}
+
 
 :global(.overview-loading.el-loading-mask) {
     align-items: flex-start !important;

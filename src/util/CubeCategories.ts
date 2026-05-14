@@ -5,20 +5,20 @@ interface CategoryCardInput {
 }
 
 export const cubeCategories = [
-    { text: 'pauper', value: 'pauper', color: 'rgba(255, 165, 0, 0.2)', tooltip: 'All cards are commons.' },
-    { text: 'pauper+', value: 'pauper+', color: 'rgba(0, 255, 115, 0.2)', tooltip: 'All non-land cards are commons.' },
-    { text: 'pauper-ish', value: 'pauper-ish', color: 'rgba(95, 95, 235, 0.2)', tooltip: '≥92.5% of non-land cards are commons; no uncommon/rare lands.' },
-    { text: 'pauper+ish', value: 'pauper+ish', color: 'rgba(95, 235, 95, 0.2)', tooltip: '≥92.5% of non-land cards are commons; contains uncommon/rare lands.' },
-    { text: 'peasant', value: 'peasant', color: 'rgba(0, 128, 0, 0.2)', tooltip: 'All cards are common or uncommon.' },
-    { text: 'peasant+', value: 'peasant+', color: 'rgba(34, 145, 169, 0.2)', tooltip: 'All non-land cards are common or uncommon.' },
-    { text: 'peasant-ish', value: 'peasant-ish', color: 'rgba(128, 0, 128, 0.2)', tooltip: '≥92.5% of non-land cards are common or uncommon; no rare lands.' },
-    { text: 'peasant+ish', value: 'peasant+ish', color: 'rgba(128, 128, 0, 0.2)', tooltip: '≥92.5% of non-land cards are common or uncommon; contains rare lands.' },
-    { text: 'powered', value: 'powered', color: 'rgba(128, 0, 20, 0.2)', tooltip: 'Contains one or more pieces of the Power 9.' },
-    { text: 'desert', value: 'desert', color: 'rgba(169, 150, 35, 0.2)', tooltip: 'Contains more than 28% lands.' },
+    { text: 'pauper', value: 'pauper', color: '#4a3919', tooltip: 'All cards are commons.' },
+    { text: 'pauper+', value: 'pauper+', color: '#174b30', tooltip: 'All non-land cards are commons.' },
+    { text: 'pauper-ish', value: 'pauper-ish', color: '#2a2b42', tooltip: '≥92.5% of non-land cards are commons; no uncommon/rare lands.' },
+    { text: 'pauper+ish', value: 'pauper+ish', color: '#2a4726', tooltip: '≥92.5% of non-land cards are commons; contains uncommon/rare lands.' },
+    { text: 'peasant', value: 'peasant', color: '#173219', tooltip: 'All cards are common or uncommon.' },
+    { text: 'peasant+', value: 'peasant+', color: '#1e3534', tooltip: 'All non-land cards are common or uncommon.' },
+    { text: 'peasant-ish', value: 'peasant-ish', color: '#311832', tooltip: '≥92.5% of non-land cards are common or uncommon; no rare lands.' },
+    { text: 'peasant+ish', value: 'peasant+ish', color: '#313219', tooltip: '≥92.5% of non-land cards are common or uncommon; contains rare lands.' },
+    { text: 'powered', value: 'powered', color: '#31181d', tooltip: 'Contains one or more pieces of the Power 9.' },
+    { text: 'desert', value: 'desert', color: '#393620', tooltip: 'Contains more than 28% lands.' },
 ] as const;
 
 export const getCategoryTagColor = (category: string): string => {
-    return cubeCategories.find(c => c.value.toLowerCase() === category?.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+    return cubeCategories.find(c => c.value.toLowerCase() === category?.toLowerCase())?.color ?? '#505152';
 };
 
 export const getCategoryTooltip = (category: string): string => {

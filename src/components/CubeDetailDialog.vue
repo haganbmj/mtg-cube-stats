@@ -63,7 +63,7 @@
                                     >
                                         <el-tag
                                             size="default"
-                                            type="info"
+                                            effect="dark"
                                             :color="getCategoryTagColor(category)"
                                             style="margin-right: 0.25rem;"
                                             disable-transitions
