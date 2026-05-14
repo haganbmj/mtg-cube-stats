@@ -25,12 +25,13 @@
                         <el-tooltip
                             effect="light"
                             placement="right"
-                            :show-after="150"
+                            popper-class="card-tooltip"
+                            :show-after="50"
                             :hide-after="50"
                             :offset="8"
                         >
                             <template #content>
-                                <el-image :src="card.urlFront" fit="contain" style="width: 200px; border-radius: 4.75% / 3.5%;" />
+                                <el-image :src="card.urlFront" fit="contain" class="card-image" />
                             </template>
                             <el-link
                                 @click="openCardDetailDialog?.(card.oracleId)"

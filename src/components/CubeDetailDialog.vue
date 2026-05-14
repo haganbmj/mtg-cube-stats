@@ -321,10 +321,12 @@
                                         :key="card.oracleId"
                                         effect="light"
                                         placement="right"
-                                        :show-after="100"
+                                        popper-class="card-tooltip"
+                                        :show-after="50"
+                                        :hide-after="50"
                                     >
                                         <template #content>
-                                            <el-image :src="card.urlFront" fit="contain" :class="['card-image', card.setCode?.toLowerCase()]" style="width: 200px;" />
+                                            <el-image :src="card.urlFront" fit="contain" :class="['card-image', card.setCode?.toLowerCase()]" />
                                         </template>
                                         <el-link @click="openCardDetailDialog?.(card.oracleId)" class="token-source-name" underline="never">{{ card.name }}</el-link>
                                     </el-tooltip>

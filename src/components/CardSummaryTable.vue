@@ -238,7 +238,13 @@
             </template>
         </template>
         <template #cell-name="{ row }">
-            <el-tooltip placement="right" effect="light" popper-class="card-tooltip">
+            <el-tooltip
+                placement="right"
+                effect="light"
+                popper-class="card-tooltip"
+                :show-after="50"
+                :hide-after="50"
+            >
                 <template #content>
                     <el-image
                         :src="`${row.urlFront}`"
@@ -1322,16 +1328,7 @@ const filteredStats = computed(() => {
     }
 }
 
-.el-popper.card-tooltip {
-    padding: 6px 8px;
-    width: 250px;
-    height: 350px;
 
-    .card-image {
-        width: 100%;
-        height: auto;
-    }
-}
 
 .flex.justify-center {
     justify-content: center;
