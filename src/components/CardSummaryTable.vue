@@ -227,7 +227,7 @@
             Loading card data&hellip;
         </template>
         <template v-else-if="noCubesLoaded && !config.showAllCards" #empty>
-            No cubes loaded. Load a cube to see card statistics, or click <strong>All Cards</strong> to browse the full Scryfall database with global rates.
+            No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
         </template>
         <template #cell-globalRate="{ row }">
             <template v-if="row.globalRateCount == null">N/A</template>
