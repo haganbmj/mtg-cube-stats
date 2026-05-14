@@ -666,40 +666,57 @@ function resolveHighlightCubeKeys(value: string, ctx: FilterContext): Set<string
     return keys;
 }
 
-function collectHighlightCubeKeys(ast: QueryNode | null, ctx: FilterContext): Set<string> {
-    if (!ast) return new Set();
+interface HighlightCubeKeys {
+    positive: Set<string>;
+    negative: Set<string>;
+}
+
+function collectHighlightCubeKeys(ast: QueryNode | null, ctx: FilterContext, negated = false): HighlightCubeKeys {
+    const empty: HighlightCubeKeys = { positive: new Set(), negative: new Set() };
+    if (!ast) return empty;
     switch (ast.type) {
         case 'and':
         case 'or': {
-            const left = collectHighlightCubeKeys(ast.left, ctx);
-            const right = collectHighlightCubeKeys(ast.right, ctx);
-            return new Set([...left, ...right]);
+            const left = collectHighlightCubeKeys(ast.left, ctx, negated);
+            const right = collectHighlightCubeKeys(ast.right, ctx, negated);
+            return {
+                positive: new Set([...left.positive, ...right.positive]),
+                negative: new Set([...left.negative, ...right.negative]),
+            };
         }
         case 'not':
-            return new Set();
+            return collectHighlightCubeKeys(ast.child, ctx, !negated);
         case 'condition':
-            if (ast.keyword === 'highlight') return resolveHighlightCubeKeys(String(ast.value), ctx);
-            return new Set();
+            if (ast.keyword === 'highlight') {
+                const keys = resolveHighlightCubeKeys(String(ast.value), ctx);
+                return negated
+                    ? { positive: new Set(), negative: keys }
+                    : { positive: keys, negative: new Set() };
+            }
+            return empty;
         default:
-            return new Set();
+            return empty;
     }
 }
 
 /**
  * Returns the set of oracle IDs whose cube membership matches any highlight:
  * condition in the AST, or null if the query contains no highlight: terms.
+ * Supports negation: -highlight:cube highlights cards NOT in the cube.
  */
 export function computeHighlightedOracleIds(
     ast: QueryNode | null,
     rows: any[],
     ctx: FilterContext,
 ): Set<string> | null {
-    const cubeKeys = collectHighlightCubeKeys(ast, ctx);
-    if (cubeKeys.size === 0) return null;
+    const { positive, negative } = collectHighlightCubeKeys(ast, ctx);
+    if (positive.size === 0 && negative.size === 0) return null;
     const result = new Set<string>();
     for (const row of rows) {
         const rowCubes: string[] = row.cubes ?? [];
-        if (rowCubes.some(c => cubeKeys.has(c))) result.add(row.oracleId);
+        const inPositive = positive.size === 0 || rowCubes.some(c => positive.has(c));
+        const notInNegative = negative.size === 0 || !rowCubes.some(c => negative.has(c));
+        if (inPositive && notInNegative) result.add(row.oracleId);
     }
     return result;
 }
@@ -829,6 +846,8 @@ export function evaluateCard(ast: QueryNode | null, row: any, ctx: FilterContext
             return evaluateCard(ast.left, row, ctx) || evaluateCard(ast.right, row, ctx);
 
         case 'not':
+            // highlight: is visual-only — negation should not filter rows either
+            if (ast.child.type === 'condition' && ast.child.keyword === 'highlight') return true;
             return !evaluateCard(ast.child, row, ctx);
 
         case 'name':
