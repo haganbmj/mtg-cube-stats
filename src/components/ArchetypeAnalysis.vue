@@ -90,7 +90,7 @@
                                             :key="cardName"
                                             effect="dark"
                                             placement="top"
-                                            popper-class="card-image-tooltip"
+                                            popper-class="card-tooltip"
                                             :show-after="500"
                                         >
                                             <template #content>
@@ -336,12 +336,7 @@ const archetypeDensity = computed(() => {
     max-width: 250px;
 }
 
-.card-tooltip-image {
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-    display: block;
-}
+
 
 .card-name-fallback {
     padding: 8px;

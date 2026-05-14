@@ -158,7 +158,7 @@
                                             :key="highlightedCubeId ? cardInfo : cardInfo.name"
                                             effect="dark"
                                             placement="top"
-                                            popper-class="card-image-tooltip"
+                                            popper-class="card-tooltip"
                                             :show-after="500"
                                         >
                                             <template #content>
@@ -167,7 +167,7 @@
                                                         :src="highlightedCubeId ? getCardImageUrl(cardInfo) : getCommonCardImageUrl(cardInfo.name)"
                                                         fit="contain"
                                                         :alt="highlightedCubeId ? cardInfo : cardInfo.name"
-                                                        :class="'card-tooltip-image ' + (highlightedCubeId ? (getCardByName(cardInfo)?.setCode?.toLowerCase() || '') : (getCommonCardByName(cardInfo.name)?.setCode?.toLowerCase() || ''))"
+                                                        :class="'card-image ' + (highlightedCubeId ? (getCardByName(cardInfo)?.setCode?.toLowerCase() || '') : (getCommonCardByName(cardInfo.name)?.setCode?.toLowerCase() || ''))"
                                                         @error="handleImageError"
                                                     />
                                                 </div>
@@ -583,12 +583,7 @@ const getComparisonArrow = (archetypeName: string) => {
     max-width: 250px;
 }
 
-.card-tooltip-image {
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-    display: block;
-}
+
 
 .card-name-fallback {
     padding: 8px;

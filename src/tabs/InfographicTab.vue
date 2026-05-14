@@ -52,9 +52,9 @@
                             <el-tooltip
                                 placement="right"
                                 effect="light"
-                                :show-after="500"
                                 popper-class="card-tooltip"
-                                :hide-after="0"
+                                :show-after="50"
+                                :hide-after="50"
                             >
                                 <template #content>
                                     <img :src="card.urlFront" class="card-image" loading="lazy" />
@@ -83,9 +83,9 @@
                             <el-tooltip
                                 placement="right"
                                 effect="light"
-                                :show-after="500"
                                 popper-class="card-tooltip"
-                                :hide-after="0"
+                                :show-after="50"
+                                :hide-after="50"
                             >
                                 <template #content>
                                     <img :src="card.urlFront" class="card-image" loading="lazy" />
@@ -983,26 +983,6 @@ const lowestRarityScoreCube = computed(() => {
 
 <style lang="scss">
 .card-tooltip {
-    padding: 6px 8px !important;
-    width: 250px !important;
-    // height: 350px !important;
-    // min-height: 450px;
-
-    .card-image {
-        width: 100% !important;
-        height: auto !important;
-        border-radius: 4.75% / 3.5%;
-        flex-shrink: 0;
-
-        &.lea {
-            border-radius: 7% / 5.5%;
-
-            &:last-child {
-                margin-bottom: 0;
-            }
-        }
-    }
-
     .card-image.list-image {
         width: 40px;
         height: 56px;

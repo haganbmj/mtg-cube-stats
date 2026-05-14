@@ -599,3 +599,21 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
     }
 }
 </style>
+
+<style>
+.el-popper.card-tooltip {
+    padding: 6px 8px;
+    width: 250px;
+    height: 350px;
+}
+
+.el-popper.card-tooltip .card-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4.75% / 3.5%;
+}
+
+.el-popper.card-tooltip .card-image.lea {
+    border-radius: 7% / 5.5%;
+}
+</style>
