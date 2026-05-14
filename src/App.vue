@@ -616,4 +616,12 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 .el-popper.card-tooltip .card-image.lea {
     border-radius: 7% / 5.5%;
 }
+
+.el-descriptions__table.is-bordered tr:nth-child(even) .is-bordered-label {
+    background: var(--el-fill-color);
+}
+
+.el-descriptions__table.is-bordered tr:nth-child(even) .is-bordered-content {
+    background: var(--el-fill-color-lighter);
+}
 </style>

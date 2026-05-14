@@ -4,6 +4,7 @@
         style="width: 100%;"
         :max-height="maxHeight"
         :default-sort = "{prop: 'count', order: 'descending'}"
+        stripe
     >
         <el-table-column fixed type="index" label="#" width="50" />
         <el-table-column
