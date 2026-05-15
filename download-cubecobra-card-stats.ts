@@ -45,8 +45,7 @@ async function fetchPage(page: number): Promise<{ data: any[]; numResults: numbe
     headers: { 'User-Agent': 'mtg-cube-stats/0.1.0' },
     timeout: 30000,
   });
-  // success is boolean true, NOT string "true"
-  if (resp.data?.success !== true || !Array.isArray(resp.data.data)) {
+  if (resp.data?.success !== 'true' || !Array.isArray(resp.data.data)) {
     throw new Error(`Unexpected response on page ${page}: ${JSON.stringify(resp.data).slice(0, 200)}`);
   }
   return { data: resp.data.data, numResults: resp.data.numResults };

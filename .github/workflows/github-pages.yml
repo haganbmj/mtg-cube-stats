@@ -7,6 +7,7 @@ on:
   schedule:
     - cron: "0 13 * * *" # Daily at 13:00 UTC; Update preloads.
     - cron: "0 9 * * 1"  # Weekly on Monday at 09:00 UTC; Update Scryfall data.
+    - cron: "0 9 1 * *"  # Monthly on the 1st at 09:00 UTC; Update CubeCobra card stats.
   workflow_dispatch:
 
 concurrency:
@@ -16,7 +17,7 @@ concurrency:
 env:
   REFRESH_SCRYFALL: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1') || github.event_name == 'workflow_dispatch' }}
   REFRESH_PRELOADS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 13 * * *') || github.event_name == 'workflow_dispatch' }}
-  REFRESH_COBRA_CARDS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1') || github.event_name == 'workflow_dispatch' }}
+  REFRESH_COBRA_CARDS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 1 * *') || github.event_name == 'workflow_dispatch' }}
 
 jobs:
   build:

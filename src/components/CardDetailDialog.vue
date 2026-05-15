@@ -306,6 +306,7 @@ const activeCard = computed(() => {
     const fallbackStats = getCardStats(props.oracleId!);
     return {
         ...cardData,
+        oracleId: props.oracleId,
         setCode: cardData.setCode?.toUpperCase() ?? '',
         effectiveColors: (cardData.colorIdentity?.length === 0) ? ['C'] : (cardData.colorIdentity ?? []),
         cubes: cubeKeys,
