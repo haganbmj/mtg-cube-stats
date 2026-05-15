@@ -241,6 +241,7 @@ import { capitalizeFirstLetter, getRarityColor } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import { getScryfallCards } from '../util/CubeFunctions';
 import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
+import { getCardStats } from '../util/CubeCobraCardStats';
 import type { Cube } from '../types';
 
 const props = defineProps({
@@ -302,6 +303,7 @@ const activeCard = computed(() => {
         if (!cardData) return null;
     }
 
+    const fallbackStats = getCardStats(props.oracleId!);
     return {
         ...cardData,
         setCode: cardData.setCode?.toUpperCase() ?? '',
@@ -309,6 +311,8 @@ const activeCard = computed(() => {
         cubes: cubeKeys,
         cubeCount: cubeKeys.length,
         count: totalCount,
+        elo: cardData.elo ?? fallbackStats?.elo,
+        popularity: cardData.popularity ?? fallbackStats?.popularity,
     };
 });
 
