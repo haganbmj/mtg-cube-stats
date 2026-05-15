@@ -20,6 +20,32 @@
                     <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
                 </el-link>
             </div>
+            <div v-if="activeCube" class="cube-dialog-meta">
+                <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
+                <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
+                <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
+                <span class="cube-dialog-meta-item">
+                    Categories:
+                    <el-tooltip
+                        v-for="category in (activeCube.stats?.assumedCategories || [])"
+                        :key="category"
+                        :content="getCategoryTooltip(category)"
+                        placement="top"
+                        :hide-after="50"
+                    >
+                        <el-tag
+                            size="default"
+                            effect="dark"
+                            :color="getCategoryTagColor(category)"
+                            style="margin-left: 0.25rem;"
+                            disable-transitions
+                        >
+                            {{ category }}
+                        </el-tag>
+                    </el-tooltip>
+                    <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
+                </span>
+            </div>
             <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
         </template>
 
@@ -593,6 +619,26 @@ const tokensTabData = computed(() => {
 .cube-dialog-owner {
     font-size: 1rem;
     color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cube-dialog-meta-item strong {
+    color: var(--el-text-color-primary);
+    font-weight: 500;
 }
 
 .cube-dialog-brief {
