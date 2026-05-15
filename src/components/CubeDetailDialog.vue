@@ -53,7 +53,7 @@
             <el-tabs tab-position="top">
                 <el-tab-pane label="Details">
                     <el-row>
-                        <el-col :span="24" :xs="24">
+                        <el-col :span="24">
                             <div class="external-links">
                                 <el-space wrap>
                                     <el-button tag="a" :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank">CubeCobra</el-button>
@@ -368,7 +368,7 @@
                                 <span class="playability-tag" :class="activeCube.stats?.paperPlayable ? 'playable' : 'not-playable'">Paper</span>
                             </div>
                         </el-col>
-                        <el-col :span="24" :xs="24" class="fetched-at-row">
+                        <el-col :span="24" class="fetched-at-row">
                             <el-text tag="small" type="info">Data fetched: {{ formattedFetchedAt }}</el-text>
                         </el-col>
                     </el-row>
@@ -535,7 +535,6 @@ import KeywordTable from './KeywordTable.vue';
 import SetNameTable from './SetNameTable.vue';
 import StatCmpIndicator from './StatCmpIndicator.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
-import ArchetypeAnalysis from './ArchetypeAnalysis.vue';
 import CubeListView from './CubeListView.vue';
 
 const props = defineProps({
@@ -802,7 +801,7 @@ const tokensTabData = computed(() => {
 }
 
 .details-tab.el-row .el-col {
-    padding: 10px;
+    padding: 10px 0;
 }
 
 .fetched-at-row {
