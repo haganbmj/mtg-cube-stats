@@ -356,6 +356,18 @@
                                 </el-tooltip>
                             </div>
                         </el-col>
+                        <el-col :span="24" v-if="activeCube.stats?.graveyardOrderMatters">
+                            <div class="graveyard-warning">
+                                ⚠️ This cube contains cards that care about Graveyard Order
+                            </div>
+                        </el-col>
+                        <el-col :span="24">
+                            <div class="playability-row">
+                                <span class="playability-tag" :class="activeCube.stats?.arenaPlayable ? 'playable' : 'not-playable'">Arena</span>
+                                <span class="playability-tag" :class="activeCube.stats?.mtgoPlayable ? 'playable' : 'not-playable'">MTGO</span>
+                                <span class="playability-tag" :class="activeCube.stats?.paperPlayable ? 'playable' : 'not-playable'">Paper</span>
+                            </div>
+                        </el-col>
                         <el-col :span="24" :xs="24" class="fetched-at-row">
                             <el-text tag="small" type="info">Data fetched: {{ formattedFetchedAt }}</el-text>
                         </el-col>
@@ -929,5 +941,45 @@ const tokensTabData = computed(() => {
 .stat-secondary {
     font-size: 0.68rem;
     color: var(--el-text-color-placeholder);
+}
+
+.graveyard-warning {
+    background: rgba(230, 162, 60, 0.1);
+    border: 1px solid rgba(230, 162, 60, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    color: var(--el-color-warning);
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.playability-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 0;
+    margin-top: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.playability-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.playability-tag.playable {
+    background: rgba(103, 194, 58, 0.15);
+    color: #67c23a;
+}
+
+.playability-tag.not-playable {
+    background: rgba(245, 108, 108, 0.15);
+    color: #f56c6c;
 }
 </style>
