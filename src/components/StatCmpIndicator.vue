@@ -20,11 +20,12 @@ defineProps({
 
 <style scoped>
 .stat-cmp {
-    font-size: 0.7em;
-    margin-left: 3px;
+    font-size: 0.55em;
+    margin-left: 2px;
     cursor: default;
     user-select: none;
     vertical-align: middle;
+    opacity: 0.7;
 }
 
 .stat-cmp--high {
