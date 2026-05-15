@@ -64,121 +64,129 @@
                         </el-col>
                     </el-row>
                     <el-row class="details-tab">
-                        <el-col :span="12" :xs="24">
-                            <el-descriptions title="Core" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Total Number of Cards" placement="top" :hide-after="50"><span>Total Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ activeCube.stats?.totalCards ?? 0 }}
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Date when the contents or description of the cube was last modified" placement="top" :hide-after="50"><span>Last Modified <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formattedLastModified }}
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Number of users following the cube on CubeCobra" placement="top" :hide-after="50"><span>Followers <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ activeCube.followerCount ?? 0 }}
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" placement="top" :hide-after="50"><span>Categories <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    <el-tooltip
-                                        v-for="category in (activeCube.stats?.assumedCategories || [])"
-                                        :key="category"
-                                        :content="getCategoryTooltip(category)"
-                                        placement="top"
-                                        :hide-after="50"
-                                    >
-                                        <el-tag
-                                            size="default"
-                                            effect="dark"
-                                            :color="getCategoryTagColor(category)"
-                                            style="margin-right: 0.25rem;"
-                                            disable-transitions
-                                        >
-                                            {{ category }}
-                                        </el-tag>
-                                    </el-tooltip>
-                                    <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Whether the cube is playable on MTG Arena" placement="top" :hide-after="50"><span>Arena Playable <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    <el-tag :type="activeCube.stats?.arenaPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.arenaPlayable ? 'Yes' : 'No' }}</el-tag>
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Whether the cube is playable on MTGO" placement="top" :hide-after="50"><span>MTGO Playable <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    <el-tag :type="activeCube.stats?.mtgoPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.mtgoPlayable ? 'Yes' : 'No' }}</el-tag>
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" placement="top" :hide-after="50"><span>Paper Playable <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    <el-tag :type="activeCube.stats?.paperPlayable ? 'success' : 'danger'" size="default">{{ activeCube.stats?.paperPlayable ? 'Yes' : 'No' }}</el-tag>
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="This cube contains cards that care about Graveyard Order" placement="top" :hide-after="50"><span>Graveyard Order Matters <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    <el-tag :type="activeCube.stats?.graveyardOrderMatters ? 'warning' : 'info'" size="default">{{ activeCube.stats?.graveyardOrderMatters ? 'Yes' : 'No' }}</el-tag>
-                                </el-descriptions-item>
-                            </el-descriptions>
-                        </el-col>
-
-                        <el-col :span="12" :xs="24">
-                            <el-descriptions title="Card Counts" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Number of unique cards by oracle ID, as a percentage of the total" placement="top" :hide-after="50"><span>Unique Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.totalUniqueCards, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.totalUniqueCards ?? 0 }})</span>
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50"><span>New Cards <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.newCards ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.newCardRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50"><span>Lands <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.landCards, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.landCards ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.landRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards with 'Creature' in their Type Line" placement="top" :hide-after="50"><span>Creatures <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.creatureCards, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.creatureCards ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.creatureRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards tagged as 'removal' in Scryfall's Tagger" placement="top" :hide-after="50"><span>Removal <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.removal ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.removalRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards that Create one or more Tokens" placement="top" :hide-after="50"><span>Makes Tokens <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.cardCounts?.makesTokens, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.makesTokens ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.makesTokensRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50"><span>Unique Tokens <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ activeCube.stats?.uniqueTokenCount ?? 0 }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.uniqueTokenCount" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50"><span>Abnormal Layout <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.abnormalLayout ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.abnormalLayoutRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50"><span>Universes Beyond <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.universesBeyond ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.universesBeyondRatio" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50"><span>Supplemental Product <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
-                                    <span class="cell-secondary">({{ activeCube.stats?.cardCounts?.supplementalProduct ?? 0 }})</span>
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.supplementalProductRatio" />
-                                </el-descriptions-item>
-                            </el-descriptions>
+                        <el-col :span="24">
+                            <h4 class="stat-section-title">Card Counts</h4>
+                            <div class="stat-grid">
+                                <el-tooltip content="Number of unique cards by oracle ID, as a percentage of the total" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.totalUniqueCards, activeCube.stats?.totalCards) }}
+                                            </div>
+                                            <div class="stat-label">Unique Cards <span class="stat-secondary">({{ activeCube.stats?.totalUniqueCards ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.newCardRatio" />
+                                            </div>
+                                            <div class="stat-label">New Cards <span class="stat-secondary">({{ activeCube.stats?.newCards ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-land ms-2x stat-icon" style="color: #e6a23c;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.landCards, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.landRatio" />
+                                            </div>
+                                            <div class="stat-label">Lands <span class="stat-secondary">({{ activeCube.stats?.landCards ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards with 'Creature' in their Type Line" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-creature ms-2x stat-icon" style="color: #67c23a;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.creatureCards, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.creatureRatio" />
+                                            </div>
+                                            <div class="stat-label">Creatures <span class="stat-secondary">({{ activeCube.stats?.creatureCards ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards tagged as 'removal' in Scryfall's Tagger" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-instant ms-2x stat-icon" style="color: #f56c6c;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.removalRatio" />
+                                            </div>
+                                            <div class="stat-label">Removal <span class="stat-secondary">({{ activeCube.stats?.cardCounts?.removal ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards that Create one or more Tokens" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-token ms-2x stat-icon" style="color: #909399;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.cardCounts?.makesTokens, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.makesTokensRatio" />
+                                            </div>
+                                            <div class="stat-label">Makes Tokens <span class="stat-secondary">({{ activeCube.stats?.cardCounts?.makesTokens ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-token ms-2x stat-icon" style="color: #a3d977;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ activeCube.stats?.uniqueTokenCount ?? 0 }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.uniqueTokenCount" />
+                                            </div>
+                                            <div class="stat-label">Unique Tokens</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-dfc-front ms-2x stat-icon" style="color: #b4a7d6;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.abnormalLayoutRatio" />
+                                            </div>
+                                            <div class="stat-label">Abnormal Layout <span class="stat-secondary">({{ activeCube.stats?.cardCounts?.abnormalLayout ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.universesBeyondRatio" />
+                                            </div>
+                                            <div class="stat-label">Universes Beyond <span class="stat-secondary">({{ activeCube.stats?.cardCounts?.universesBeyond ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.supplementalProductRatio" />
+                                            </div>
+                                            <div class="stat-label">Supplemental Product <span class="stat-secondary">({{ activeCube.stats?.cardCounts?.supplementalProduct ?? 0 }})</span></div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                            </div>
                         </el-col>
 
                         <el-col :span="12" :xs="24">
@@ -783,5 +791,56 @@ const tokensTabData = computed(() => {
 
 .external-links a {
     text-decoration: none;
+}
+
+.stat-section-title {
+    color: var(--el-text-color-regular);
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.stat-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 200px;
+    min-width: 180px;
+}
+
+.stat-icon {
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.stat-icon-fallback {
+    opacity: 0.5;
+    color: var(--el-text-color-secondary);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--el-text-color-secondary);
+}
+
+.stat-secondary {
+    font-size: 0.68rem;
+    color: var(--el-text-color-placeholder);
 }
 </style>
