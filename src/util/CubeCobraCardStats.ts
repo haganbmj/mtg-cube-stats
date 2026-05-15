@@ -1,0 +1,30 @@
+import { ref } from 'vue';
+
+export interface CardStats {
+    elo: number;
+    popularity: number;
+    cubeCount: number;
+    pickCount: number;
+}
+
+let cardStatsMap: Record<string, CardStats> | null = null;
+
+/** Reactive flag — true once CubeCobra card stats have loaded. */
+export const cardStatsReady = ref(false);
+
+export async function initCardStats(): Promise<void> {
+    try {
+        const mod = await import('../../data/cubecobra-card-stats.json') as { default: Record<string, CardStats> };
+        cardStatsMap = mod.default;
+        cardStatsReady.value = true;
+        console.log(`Loaded CubeCobra card stats (${Object.keys(cardStatsMap).length} cards)`);
+    } catch {
+        console.warn('CubeCobra card stats not available — elo/popularity will require loaded cubes.');
+        cardStatsMap = null;
+    }
+}
+
+/** Look up CubeCobra stats for a card by oracle ID. Returns undefined if data not loaded or card not found. */
+export function getCardStats(oracleId: string): CardStats | undefined {
+    return cardStatsMap?.[oracleId];
+}

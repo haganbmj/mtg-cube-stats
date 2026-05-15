@@ -98,6 +98,7 @@ import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
 import { initFrequencyData } from './util/CubeCobraFrequency';
+import { initCardStats } from './util/CubeCobraCardStats';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme';
 import About from './components/About.vue';
@@ -394,6 +395,7 @@ onMounted(async () => {
     // Start data initialization in the background without blocking the UI
     ensureScryfallInitialized();
     initFrequencyData();
+    initCardStats();
 
     // Load cubes or a preset collection from URL query parameters (share links).
     // The URL watcher above keeps the address bar in sync from this point forward,
