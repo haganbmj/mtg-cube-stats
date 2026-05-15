@@ -41,7 +41,7 @@ function sleep(ms: number): Promise<void> {
 
 async function fetchPage(page: number): Promise<{ data: any[]; numResults: number }> {
   const resp = await axios.get(BASE_URL, {
-    params: { p: page, f: '-layout:art_series', s: 'Alphabetical', d: 'ascending', di: 'names' },
+    params: { p: page, f: '', s: 'Alphabetical', d: 'ascending', di: 'names' },
     headers: { 'User-Agent': 'mtg-cube-stats/0.1.0' },
     timeout: 30000,
   });
