@@ -519,6 +519,7 @@ import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
 import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
+import { getCardStats, cardStatsReady } from '../util/CubeCobraCardStats';
 
 const props = defineProps({
     loadedCubes: {
@@ -730,8 +731,8 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Power', visible: config.value.visibleColumns.includes('power') },
     { key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Toughness', visible: config.value.visibleColumns.includes('toughness') },
     { key: 'typeLine', prop: 'typeLine', label: 'Type', minWidth: '100px', maxWidth: '220px', showOverflowTooltip: true, sortable: true, tooltip: 'Type Line', visible: config.value.visibleColumns.includes('typeLine') },
-    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') && !noCubesLoaded.value },
-    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') && !noCubesLoaded.value },
+    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') && (!noCubesLoaded.value || cardStatsReady.value) },
+    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') && (!noCubesLoaded.value || cardStatsReady.value) },
     { key: 'tags', prop: 'tags', label: 'Tags', minWidth: '75px', visible: config.value.visibleColumns.includes('tags') },
     { key: 'minRarity', prop: 'minRarity', label: 'Min Rarity', minWidth: '75px', sortable: true, tooltip: 'Minimum rarity across all printings', visible: config.value.visibleColumns.includes('minRarity') },
     { key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '60px', sortable: true, visible: config.value.visibleColumns.includes('setCode') },
@@ -1039,6 +1040,19 @@ const tableData = computed(() => {
                     return (count / total) * 100;
                 })(),
             };
+        }
+    }
+
+    // Enrich with CubeCobra card stats where cube-sourced values are missing
+    if (cardStatsReady.value) {
+        for (const card of Object.values(allCards)) {
+            if (card.elo == null || card.popularity == null) {
+                const stats = getCardStats(card.oracleId);
+                if (stats) {
+                    if (card.elo == null) card.elo = stats.elo;
+                    if (card.popularity == null) card.popularity = stats.popularity;
+                }
+            }
         }
     }
 
