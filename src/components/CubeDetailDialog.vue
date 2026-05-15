@@ -189,82 +189,172 @@
                             </div>
                         </el-col>
 
-                        <el-col :span="12" :xs="24">
-                            <el-descriptions title="Summary Stats" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50"><span>Avg. Similarity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ formatPercentage(avgSimilarityScore, 1) }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.avgSimilarityScore" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50"><span>Avg. Mana Value <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averageNonLandCmc ?? 0).toFixed(2) }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageNonLandCmc" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average CubeCobra Card Elo Rating" placement="top" :hide-after="50"><span>Avg. Card Elo <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageElo" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50"><span>Avg. Card Popularity <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.averagePopularity" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50"><span>Rarity Score <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.blendedRarityScore" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Release Year of Cards in the Cube (± Standard Deviation)" placement="top" :hide-after="50"><span>Avg. Release Year <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }} (±{{ (activeCube.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageReleaseYear" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50"><span>Median Release Year <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} (±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.medianReleaseYear" />
-                                </el-descriptions-item>
-                            </el-descriptions>
+                        <el-col :span="24">
+                            <h4 class="stat-section-title">Summary Stats</h4>
+                            <div class="stat-grid">
+                                <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ formatPercentage(avgSimilarityScore, 1) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.avgSimilarityScore" />
+                                            </div>
+                                            <div class="stat-label">Avg. Similarity</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-c ms-2x stat-icon" style="color: #909399;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ (activeCube.stats?.averageNonLandCmc ?? 0).toFixed(2) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.averageNonLandCmc" />
+                                            </div>
+                                            <div class="stat-label">Avg. Mana Value</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Average CubeCobra Card Elo Rating" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.averageElo" />
+                                            </div>
+                                            <div class="stat-label">Avg. Card Elo</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.averagePopularity" />
+                                            </div>
+                                            <div class="stat-label">Avg. Card Popularity</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-rarity ms-2x stat-icon" style="color: #e6a23c;"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.blendedRarityScore" />
+                                            </div>
+                                            <div class="stat-label">Rarity Score</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Average Release Year of Cards in the Cube (± Standard Deviation)" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})</span>
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.averageReleaseYear" />
+                                            </div>
+                                            <div class="stat-label">Avg. Release Year</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})</span>
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.medianReleaseYear" />
+                                            </div>
+                                            <div class="stat-label">Median Release Year</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                            </div>
                         </el-col>
 
-                        <el-col :span="12" :xs="24">
-                            <el-descriptions title="Characteristics" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageWordCount" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50"><span>Avg. Word Count (Unique) <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.averageWordCountUnique" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Number of Unique Keywords" placement="top" :hide-after="50"><span>Keywords <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ activeCube.stats?.uniqueKeywords ?? 0 }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.uniqueKeywords" />
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Number of Unique Non-Evergreen Keywords" placement="top" :hide-after="50"><span>Non-Evergreen Keywords <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}
-                                    <StatCmpIndicator :comparison="activeCubeComparisons.uniqueNonEvergreenKeywords" />
-                                </el-descriptions-item>
-                            </el-descriptions>
+                        <el-col :span="24">
+                            <h4 class="stat-section-title">Characteristics</h4>
+                            <div class="stat-grid">
+                                <el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.averageWordCount" />
+                                            </div>
+                                            <div class="stat-label">Avg. Word Count</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.averageWordCountUnique" />
+                                            </div>
+                                            <div class="stat-label">Avg. Word Count (Unique)</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Number of Unique Keywords" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ activeCube.stats?.uniqueKeywords ?? 0 }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.uniqueKeywords" />
+                                            </div>
+                                            <div class="stat-label">Keywords</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Number of Unique Non-Evergreen Keywords" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.uniqueNonEvergreenKeywords" />
+                                            </div>
+                                            <div class="stat-label">Non-Evergreen Keywords</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                            </div>
                         </el-col>
 
-                        <el-col :span="12" :xs="24">
-                            <el-descriptions title="Pricing" :column="1" :label-width="detailsLabelWidth" :border="true" size="default">
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Total Minimum Price of the Cube in USD" placement="top" :hide-after="50"><span>Min Price (USD) <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    ${{ (activeCube.stats?.totalMinPriceUsd ?? 0).toFixed(2) }}
-                                </el-descriptions-item>
-                                <el-descriptions-item>
-                                    <template #label><el-tooltip content="Total Minimum Price of the Cube in MTGO Tix" placement="top" :hide-after="50"><span>Min Price (Tix) <el-icon><InfoFilled /></el-icon></span></el-tooltip></template>
-                                    {{ (activeCube.stats?.totalMinPriceTix ?? 0).toFixed(2) }}
-                                </el-descriptions-item>
-                            </el-descriptions>
+                        <el-col :span="24">
+                            <h4 class="stat-section-title">Pricing</h4>
+                            <div class="stat-grid">
+                                <el-tooltip content="Total Minimum Price of the Cube in USD" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">${{ (activeCube.stats?.totalMinPriceUsd ?? 0).toFixed(2) }}</div>
+                                            <div class="stat-label">Min Price (USD)</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                                <el-tooltip content="Total Minimum Price of the Cube in MTGO Tix" placement="top" :hide-after="50">
+                                    <div class="stat-item">
+                                        <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                        <div>
+                                            <div class="stat-value">{{ (activeCube.stats?.totalMinPriceTix ?? 0).toFixed(2) }}</div>
+                                            <div class="stat-label">Min Price (Tix)</div>
+                                        </div>
+                                    </div>
+                                </el-tooltip>
+                            </div>
                         </el-col>
                         <el-col :span="24" :xs="24" class="fetched-at-row">
                             <el-text tag="small" type="info">Data fetched: {{ formattedFetchedAt }}</el-text>
@@ -415,8 +505,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
-import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, InfoFilled, Link } from '@element-plus/icons-vue';
+import { useDateFormat } from '@vueuse/core';
+import { Loading, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
@@ -469,9 +559,6 @@ const props = defineProps({
 
 defineEmits(['update:visible']);
 
-const { width: windowWidth } = useWindowSize();
-const isMobile = computed(() => windowWidth.value <= 760);
-const detailsLabelWidth = computed(() => isMobile.value ? '120' : '240');
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
