@@ -13,6 +13,8 @@
     "cards:update": "tsx download-scryfall-cards.ts --update",
     "cubecobra-exports": "tsx download-cubecobra-exports.ts",
     "cubecobra-exports:update": "tsx download-cubecobra-exports.ts --update",
+    "cobra-cards": "tsx download-cubecobra-card-stats.ts",
+    "cobra-cards:update": "tsx download-cubecobra-card-stats.ts --update",
     "preload": "tsx preload-cube-data.ts",
     "test": "vitest"
   },
