@@ -624,4 +624,22 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 .el-descriptions__table.is-bordered tr:nth-child(even) .is-bordered-content {
     background: var(--el-fill-color-lighter);
 }
+
+@media (max-width: 760px) {
+    .el-dialog {
+        --el-dialog-width: 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        max-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .el-dialog .el-dialog__body {
+        overflow: auto;
+        flex: 1;
+        min-height: 0;
+    }
+}
 </style>
