@@ -1094,6 +1094,13 @@ const sortedRows = computed(() => {
             return a.name.localeCompare(b.name);
         }
 
+        // Push null/undefined values to the end regardless of sort direction
+        const aNull = a[sortKey] == null;
+        const bNull = b[sortKey] == null;
+        if (aNull && bNull) return a.name.localeCompare(b.name);
+        if (aNull) return 1;
+        if (bNull) return -1;
+
         if (a[sortKey] < b[sortKey]) return -1 * dir;
         if (a[sortKey] > b[sortKey]) return 1 * dir;
         // Secondary sort by name
