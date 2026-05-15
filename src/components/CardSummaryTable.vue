@@ -932,11 +932,11 @@ const exportToCsv = () => {
 
     const headers = [
         'Index', 'Name', 'Cubes', 'Total Count', 'Colors', 'Color Identity', 'Mana Value',
-        'Elo', 'Popularity', 'Type Line', 'Tags', 'Min Rarity',
+        'Elo', 'Popularity', 'Type Line', 'Min Rarity',
         'Set Code', 'Set Type', 'Layout', 'Release Date',
         'Min Price (USD)', 'Min Price (Tix)',
         'Word Count', 'Word Count (No Reminder)',
-        'Universes Beyond', 'Supplemental', 'Makes Tokens', 'Games',
+        'Universes Beyond', 'Supplemental', 'Makes Tokens',
         `Global Rate (${selectedFrequencyLabel.value})`,
     ].map(escapeCsvValue).join(',');
 
@@ -951,7 +951,6 @@ const exportToCsv = () => {
         row.elo ?? '',
         row.popularity ?? '',
         row.typeLine,
-        row.tags.join(', '),
         row.minRarity ?? '',
         row.setCode ?? '',
         row.setType ?? '',
@@ -964,7 +963,6 @@ const exportToCsv = () => {
         row.isUniversesBeyond ? 'Yes' : 'No',
         row.isSupplementalProduct ? 'Yes' : 'No',
         row.makesTokens ? 'Yes' : 'No',
-        (row.games ?? []).join(', '),
         row.globalRateCount ?? '',
     ].map(escapeCsvValue).join(','));
 
