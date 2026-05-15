@@ -76,7 +76,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
@@ -106,7 +106,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-instant ms-2x stat-icon" style="color: #f56c6c;"></i>
+                                    <i class="ms ms-ability-deathtouch ms-2x stat-icon" style="color: #f56c6c;"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
@@ -136,7 +136,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-dfc-front ms-2x stat-icon" style="color: #b4a7d6;"></i>
+                                    <i class="ms ms-counter-rad ms-2x stat-icon" style="color: #b4a7d6;"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
@@ -146,7 +146,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-watermark-transformers ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
@@ -156,7 +156,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-counter-goad ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
@@ -172,7 +172,7 @@
                             <h4 class="stat-section-title">Summary Stats</h4>
                             <div class="stat-grid">
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-counter-brick-print ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ formatPercentage(avgSimilarityScore, 1) }}
@@ -192,7 +192,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-ability-defender ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}
@@ -202,7 +202,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-watermark-wotc ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
@@ -222,7 +222,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-counter-time ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})</span>
@@ -232,7 +232,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-counter-time ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})</span>
@@ -248,7 +248,7 @@
                             <h4 class="stat-section-title">Characteristics</h4>
                             <div class="stat-grid">
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-counter-lore ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
@@ -258,7 +258,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-counter-lore ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
@@ -268,7 +268,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-ability-prototype ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ activeCube.stats?.uniqueKeywords ?? 0 }}
@@ -278,7 +278,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-ability-prototype ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">
                                             {{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}
@@ -294,7 +294,7 @@
                             <h4 class="stat-section-title">Pricing</h4>
                             <div class="stat-grid">
                                 <div class="stat-item">
-                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <i class="ms ms-watermark-mtg ms-2x stat-icon"></i>
                                     <div>
                                         <div class="stat-value">${{ (activeCube.stats?.totalMinPriceUsd ?? 0).toFixed(2) }}</div>
                                         <div class="stat-label">Min Price (USD)</div>
