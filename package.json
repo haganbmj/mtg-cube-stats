@@ -42,7 +42,7 @@
     "eslint-plugin-vue": "^10.9.0",
     "happy-dom": "^20.9.0",
     "sass": "^1.99.0",
-    "stream-chain": "^3.6.1",
+    "stream-chain": "^3.6.3",
     "stream-json": "^2.1.0",
     "tsx": "^4.19.2",
     "typescript-eslint": "^8.58.2",
