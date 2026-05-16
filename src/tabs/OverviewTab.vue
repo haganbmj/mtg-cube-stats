@@ -521,7 +521,7 @@ const config = bindStorage('cube-app-config', (v) => {
 
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
-const visualDisplayVisible = ref(isMobile.value);
+const visualDisplayVisible = bindStorage('overview-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
 
 const addCubeForm = reactive({
     loading: false,
