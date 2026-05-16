@@ -70,7 +70,7 @@
             @update:mode="activeCubeFilterMode = $event"
             placeholder="Filter by cube..."
         />
-        <el-space wrap>
+        <div class="mobile-filter-row">
             <el-dropdown trigger="click" :hide-on-click="false">
                 <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates">All Cards</el-button>
                 <template #dropdown>
@@ -101,15 +101,15 @@
                 </template>
             </el-dropdown>
             <template v-if="visualDisplayVisible">
-                <el-divider direction="vertical" />
+                <span style="flex: 1;"></span>
                 <span class="sort-label">Columns</span>
                 <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" style="width: 90px;" controls-position="right" />
             </template>
-        </el-space>
+        </div>
         <template v-if="visualDisplayVisible">
-            <el-space wrap>
+            <div class="mobile-filter-row">
                 <span class="sort-label">Sort by</span>
-                <el-select v-model="visualSortProp" size="small" style="width: 160px;" :disabled="!!querySortDirective">
+                <el-select v-model="visualSortProp" size="small" style="flex: 1;" :disabled="!!querySortDirective">
                     <el-option
                         v-for="opt in visualSortOptions"
                         :key="opt.value"
@@ -120,7 +120,7 @@
                 <el-button size="small" @click="toggleVisualSortOrder" :disabled="!!querySortDirective">
                     {{ visualSortOrder === 'ascending' ? '↑ Asc' : '↓ Desc' }}
                 </el-button>
-            </el-space>
+            </div>
         </template>
     </div>
 
@@ -1214,6 +1214,12 @@ const filteredStats = computed(() => {
     .sort-label {
         font-size: 13px;
         color: var(--el-text-color-secondary);
+    }
+
+    .mobile-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 }
 
