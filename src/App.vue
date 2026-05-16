@@ -594,9 +594,7 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
 }
 
 @media (hover: none), (pointer: coarse) {
-    .el-popper.is-light,
-    .el-popper.is-dark,
-    .el-popper[role="tooltip"] {
+    .el-popper[role="tooltip"]:not(:has(.el-select-dropdown)):not(:has(.el-dropdown-menu)):not(:has(.el-color-dropdown)) {
         display: none !important;
     }
 }
