@@ -597,12 +597,12 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
     }
 
     .el-tabs__nav-scroll {
-        overflow: visible !important;
+        width: max-content;
     }
 }
 
 @media (hover: none), (pointer: coarse) {
-    .el-popper[role="tooltip"]:not(:has(.el-select-dropdown)):not(:has(.el-dropdown-menu)):not(:has(.el-color-dropdown)) {
+    .el-popper[role="tooltip"]:not(:has(.el-select-dropdown)):not(:has(.el-dropdown-menu)):not(:has(.el-color-dropdown)):not(.el-popover) {
         display: none !important;
     }
 }

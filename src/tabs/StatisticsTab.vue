@@ -22,31 +22,31 @@
 
     <el-row id="charts" :gutter="10">
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <CubeCardCountHistogramChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <CubeCardCountHistogramChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <ReleaseYearDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <ReleaseYearDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <AvgCmcByColorBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <AvgCmcByColorBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <ManaValueDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <ManaValueDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <WordCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <WordCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <WordCountPopularityScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <WordCountPopularityScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-            <TokenCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" style="height: 500px;"/>
+            <TokenCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
         </el-col>
 
         <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
@@ -93,6 +93,6 @@ const highlightedCubeIds = ref<string[]>([]);
 
 <style lang="scss">
 #charts > .el-col {
-    height: 500px;
+    height: min(60vw, 500px);
 }
 </style>

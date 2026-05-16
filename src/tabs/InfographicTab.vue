@@ -47,7 +47,7 @@
                         <p class="subtitle">By number of cubes containing them</p>
                     </template>
                     <div class="card-list two-column">
-                        <div v-for="(card, index) in topPopularCards" :key="card.oracleId" class="card-item">
+                        <div v-for="(card, index) in topPopularCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || popularCardsExpanded">
                             <div class="card-rank">{{ index + 1 }}</div>
                             <el-tooltip
                                 placement="right"
@@ -66,6 +66,7 @@
                                 <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
                             </div>
                         </div>
+                        <a v-if="isMobile && !popularCardsExpanded && topPopularCards.length > 3" class="see-more-link" @click="popularCardsExpanded = true">see more</a>
                     </div>
                 </el-card>
             </el-col>
@@ -78,7 +79,7 @@
                         <p class="subtitle">By CubeCobra Elo rating</p>
                     </template>
                     <div class="card-list two-column">
-                        <div v-for="(card, index) in topLowEloCards" :key="card.oracleId" class="card-item">
+                        <div v-for="(card, index) in topLowEloCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || lowEloCardsExpanded">
                             <div class="card-rank">{{ index + 1 }}</div>
                             <el-tooltip
                                 placement="right"
@@ -103,6 +104,7 @@
                                 <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
                             </div>
                         </div>
+                        <a v-if="isMobile && !lowEloCardsExpanded && topLowEloCards.length > 3" class="see-more-link" @click="lowEloCardsExpanded = true">see more</a>
                     </div>
                 </el-card>
             </el-col>
@@ -349,13 +351,14 @@
                         <p class="subtitle">By total number of non-land cards across all cubes; original release only</p>
                     </template>
                     <div class="set-list two-column">
-                        <div v-for="(set, index) in topPopularSets" :key="set.setCode" class="set-item">
+                        <div v-for="(set, index) in topPopularSets" :key="set.setCode" class="set-item" v-show="!isMobile || index < 3 || popularSetsExpanded">
                             <div class="set-rank">{{ index + 1 }}</div>
                             <div class="set-info">
                                 <div class="set-name">{{ set.setName }}</div>
                                 <div class="set-stats">{{ set.cardCount.toLocaleString() }} cards</div>
                             </div>
                         </div>
+                        <a v-if="isMobile && !popularSetsExpanded && topPopularSets.length > 3" class="see-more-link" @click="popularSetsExpanded = true">see more</a>
                     </div>
                 </el-card>
             </el-col>
@@ -368,13 +371,14 @@
                         <p class="subtitle">By total occurrences across all cubes (excluding evergreen)</p>
                     </template>
                     <div class="keyword-list two-column">
-                        <div v-for="(keyword, index) in topPopularKeywords" :key="keyword.name" class="keyword-item">
+                        <div v-for="(keyword, index) in topPopularKeywords" :key="keyword.name" class="keyword-item" v-show="!isMobile || index < 3 || popularKeywordsExpanded">
                             <div class="keyword-rank">{{ index + 1 }}</div>
                             <div class="keyword-info">
                                 <div class="keyword-name">{{ keyword.name }}</div>
                                 <div class="keyword-stats">{{ keyword.count.toLocaleString() }} occurrences</div>
                             </div>
                         </div>
+                        <a v-if="isMobile && !popularKeywordsExpanded && topPopularKeywords.length > 3" class="see-more-link" @click="popularKeywordsExpanded = true">see more</a>
                     </div>
                 </el-card>
             </el-col>
@@ -385,8 +389,16 @@
 
 <script setup lang="ts">
 import { computed, ref, inject } from 'vue';
+import { useWindowSize } from '@vueuse/core';
 import { getSetName } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
+
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
+const popularCardsExpanded = ref(false);
+const lowEloCardsExpanded = ref(false);
+const popularSetsExpanded = ref(false);
+const popularKeywordsExpanded = ref(false);
 
 const props = defineProps({
     loadedCubes: {
@@ -915,6 +927,23 @@ const lowestRarityScoreCube = computed(() => {
     }
 }
 
+// Mobile responsiveness
+@media (max-width: 768px) {
+    .stats-cards {
+        row-gap: 16px;
+    }
+
+    .content-sections {
+        row-gap: 16px;
+    }
+
+    .card-list.two-column,
+    .set-list.two-column,
+    .keyword-list.two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
 .cube-stat {
     .cube-info-compact {
         display: flex;
@@ -1011,34 +1040,14 @@ const lowestRarityScoreCube = computed(() => {
         }
     }
 
-    // Mobile responsiveness for cube statistics
-    @media (max-width: 768px) {
-        .cube-info-compact {
-            flex-direction: column;
-            text-align: center;
+}
 
-            .cube-name {
-                margin-bottom: 4px;
-            }
-
-            .cube-stats {
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 8px;
-
-                .cube-stat {
-                    font-size: 0.85em;
-                }
-            }
-        }
-
-        .statistic-cards .el-row .el-col {
-            margin-bottom: 16px;
-        }
-
-        .card-list.two-column {
-            grid-template-columns: 1fr;
-        }
-    }
+.see-more-link {
+    display: block;
+    text-align: center;
+    padding: 8px 0;
+    color: var(--el-color-primary);
+    cursor: pointer;
+    font-size: 13px;
 }
 </style>
