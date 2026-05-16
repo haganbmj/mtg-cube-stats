@@ -10,21 +10,25 @@
     >
         <template #header>
             <div v-if="activeCube" class="cube-dialog-header">
-                <el-image :src="activeCube.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
-                    <span class="cube-dialog-name">{{ activeCube.name }}</span>
-                    <el-icon class="el-icon--right"><Link /></el-icon>
-                </el-link>
-                <span class="cube-dialog-separator"> &mdash; </span>
-                <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
-                    <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
-                </el-link>
+                <el-image :src="activeCube.thumbnail" fit="contain" class="cube-dialog-image" />
+                <div class="cube-dialog-title-block">
+                    <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
+                        <span class="cube-dialog-name">{{ activeCube.name }}</span>
+                        <el-icon class="el-icon--right"><Link /></el-icon>
+                    </el-link>
+                    <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
+                        <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
+                    </el-link>
+                </div>
             </div>
-            <div v-if="activeCube" class="cube-dialog-meta">
+        </template>
+
+        <template v-if="activeCube">
+            <div class="cube-dialog-meta">
                 <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
                 <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
                 <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
-                <span class="cube-dialog-meta-item">
+                <span class="cube-dialog-meta-item" v-if="(activeCube.stats?.assumedCategories || []).length">
                     Categories:
                     <el-tooltip
                         v-for="category in (activeCube.stats?.assumedCategories || [])"
@@ -42,13 +46,10 @@
                         >
                             {{ category }}
                         </el-tag>
-                        <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
-                    </el-tooltip></span>
+                    </el-tooltip>
+                </span>
             </div>
             <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
-        </template>
-
-        <template v-if="activeCube">
             <el-tabs tab-position="top">
                 <el-tab-pane label="Details">
                     <el-row class="details-tab">
@@ -337,7 +338,7 @@
                                             <div class="stat-value" :class="activeCube.stats?.arenaPlayable ? 'stat-value--positive' : 'stat-value--negative'">
                                                 Arena
                                             </div>
-                                            <div class="stat-label">Available</div>
+                                            <div class="stat-label">{{ activeCube.stats?.arenaPlayable ? 'Playable' : 'Not Playable' }}</div>
                                         </div>
                                     </el-tooltip>
                                 </div>
@@ -348,7 +349,7 @@
                                             <div class="stat-value" :class="activeCube.stats?.mtgoPlayable ? 'stat-value--positive' : 'stat-value--negative'">
                                                 MTGO
                                             </div>
-                                            <div class="stat-label">Available</div>
+                                            <div class="stat-label">{{ activeCube.stats?.mtgoPlayable ? 'Playable' : 'Not Playable' }}</div>
                                         </div>
                                     </el-tooltip>
                                 </div>
@@ -359,7 +360,7 @@
                                             <div class="stat-value" :class="activeCube.stats?.paperPlayable ? 'stat-value--positive' : 'stat-value--negative'">
                                                 Paper
                                             </div>
-                                            <div class="stat-label">Available</div>
+                                            <div class="stat-label">{{ activeCube.stats?.paperPlayable ? 'Playable' : 'Not Playable' }}</div>
                                         </div>
                                     </el-tooltip>
                                 </div>
@@ -723,8 +724,21 @@ const tokensTabData = computed(() => {
 .cube-dialog-header {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.cube-dialog-image {
+    width: 65px;
+    height: 50px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cube-dialog-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
 }
 
 .cube-dialog-name {
@@ -732,12 +746,8 @@ const tokensTabData = computed(() => {
     font-weight: 600;
 }
 
-.cube-dialog-separator {
-    color: var(--el-text-color-secondary);
-}
-
 .cube-dialog-owner {
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--el-text-color-secondary);
 }
 
@@ -745,7 +755,7 @@ const tokensTabData = computed(() => {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    margin-top: 4px;
+    margin-bottom: 8px;
     font-size: 0.8rem;
     color: var(--el-text-color-secondary);
 }
