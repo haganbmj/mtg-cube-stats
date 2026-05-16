@@ -235,7 +235,7 @@
             stripe
         >
             <template #cell-thumbnail="{ row }">
-                <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px;" />
+                <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px; border-radius: 8px;" />
                 <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
                     <el-icon><Delete /></el-icon>
                 </el-button>
@@ -936,6 +936,7 @@ const formatters = {
 .cube-tile-thumbnail-wrapper {
     position: relative;
     overflow: hidden;
+    border-radius: 8px 8px 0 0;
 }
 
 .cube-tile-thumbnail {

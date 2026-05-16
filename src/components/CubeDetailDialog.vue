@@ -10,21 +10,25 @@
     >
         <template #header>
             <div v-if="activeCube" class="cube-dialog-header">
-                <el-image :src="activeCube.thumbnail" fit="contain" style="width: 50px; height: 35px;" />
-                <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
-                    <span class="cube-dialog-name">{{ activeCube.name }}</span>
-                    <el-icon class="el-icon--right"><Link /></el-icon>
-                </el-link>
-                <span class="cube-dialog-separator"> &mdash; </span>
-                <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
-                    <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
-                </el-link>
+                <el-image :src="activeCube.thumbnail" fit="contain" class="cube-dialog-image" />
+                <div class="cube-dialog-title-block">
+                    <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
+                        <span class="cube-dialog-name">{{ activeCube.name }}</span>
+                        <el-icon class="el-icon--right"><Link /></el-icon>
+                    </el-link>
+                    <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
+                        <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
+                    </el-link>
+                </div>
             </div>
-            <div v-if="activeCube" class="cube-dialog-meta">
+        </template>
+
+        <template v-if="activeCube">
+            <div class="cube-dialog-meta">
                 <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
                 <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
                 <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
-                <span class="cube-dialog-meta-item">
+                <span class="cube-dialog-meta-item" v-if="(activeCube.stats?.assumedCategories || []).length">
                     Categories:
                     <el-tooltip
                         v-for="category in (activeCube.stats?.assumedCategories || [])"
@@ -42,13 +46,10 @@
                         >
                             {{ category }}
                         </el-tag>
-                        <span v-if="!(activeCube.stats?.assumedCategories || []).length">&mdash;</span>
-                    </el-tooltip></span>
+                    </el-tooltip>
+                </span>
             </div>
             <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
-        </template>
-
-        <template v-if="activeCube">
             <el-tabs tab-position="top">
                 <el-tab-pane label="Details">
                     <el-row class="details-tab">
@@ -327,17 +328,48 @@
                             </div>
                         </el-col>
 
+                        <el-col :span="24">
+                            <h4 class="stat-section-title">Playability</h4>
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <el-tooltip content="Whether the cube is playable on MTG Arena" placement="top" :hide-after="50">
+                                        <div>
+                                            <div class="stat-value" :class="activeCube.stats?.arenaPlayable ? 'stat-value--positive' : 'stat-value--negative'">
+                                                Arena
+                                            </div>
+                                            <div class="stat-label">{{ activeCube.stats?.arenaPlayable ? 'Playable' : 'Not Playable' }}</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <el-tooltip content="Whether the cube is playable on MTGO" placement="top" :hide-after="50">
+                                        <div>
+                                            <div class="stat-value" :class="activeCube.stats?.mtgoPlayable ? 'stat-value--positive' : 'stat-value--negative'">
+                                                MTGO
+                                            </div>
+                                            <div class="stat-label">{{ activeCube.stats?.mtgoPlayable ? 'Playable' : 'Not Playable' }}</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <el-tooltip content="Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" placement="top" :hide-after="50">
+                                        <div>
+                                            <div class="stat-value" :class="activeCube.stats?.paperPlayable ? 'stat-value--positive' : 'stat-value--negative'">
+                                                Paper
+                                            </div>
+                                            <div class="stat-label">{{ activeCube.stats?.paperPlayable ? 'Playable' : 'Not Playable' }}</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                            </div>
+                        </el-col>
+
                         <el-col :span="24" v-if="activeCube.stats?.graveyardOrderMatters">
                             <div class="graveyard-warning">
                                 ⚠️ This cube contains cards that care about Graveyard Order
-                            </div>
-                        </el-col>
-                        <el-col :span="24">
-                            <div>
-                                <span class="playability-label">Playable:</span>
-                                <span class="playability-tag" :class="activeCube.stats?.arenaPlayable ? 'playable' : 'not-playable'">Arena</span>
-                                <span class="playability-tag" :class="activeCube.stats?.mtgoPlayable ? 'playable' : 'not-playable'">MTGO</span>
-                                <span class="playability-tag" :class="activeCube.stats?.paperPlayable ? 'playable' : 'not-playable'">Paper</span>
                             </div>
                         </el-col>
                     </el-row>
@@ -692,8 +724,21 @@ const tokensTabData = computed(() => {
 .cube-dialog-header {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.cube-dialog-image {
+    width: 65px;
+    height: 50px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cube-dialog-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
 }
 
 .cube-dialog-name {
@@ -701,12 +746,8 @@ const tokensTabData = computed(() => {
     font-weight: 600;
 }
 
-.cube-dialog-separator {
-    color: var(--el-text-color-secondary);
-}
-
 .cube-dialog-owner {
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--el-text-color-secondary);
 }
 
@@ -714,7 +755,7 @@ const tokensTabData = computed(() => {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    margin-top: 4px;
+    margin-bottom: 8px;
     font-size: 0.8rem;
     color: var(--el-text-color-secondary);
 }
@@ -936,38 +977,11 @@ const tokensTabData = computed(() => {
     gap: 8px;
 }
 
-.playability-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 0;
-    margin-top: 16px;
-    border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.playability-label {
-    font-size: 0.8rem;
-    color: var(--el-text-color-secondary);
-    font-weight: 500;
-    margin-right: 4px;
-}
-
-.playability-tag {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.playability-tag.playable {
-    background: rgba(103, 194, 58, 0.15);
+.stat-value--positive {
     color: #67c23a;
 }
 
-.playability-tag.not-playable {
-    background: rgba(245, 108, 108, 0.15);
+.stat-value--negative {
     color: #f56c6c;
 }
 </style>
