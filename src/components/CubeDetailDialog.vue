@@ -327,17 +327,48 @@
                             </div>
                         </el-col>
 
+                        <el-col :span="24">
+                            <h4 class="stat-section-title">Playability</h4>
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <el-tooltip content="Whether the cube is playable on MTG Arena" placement="top" :hide-after="50">
+                                        <div>
+                                            <div class="stat-value" :class="activeCube.stats?.arenaPlayable ? 'stat-value--positive' : 'stat-value--negative'">
+                                                Arena
+                                            </div>
+                                            <div class="stat-label">Available</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <el-tooltip content="Whether the cube is playable on MTGO" placement="top" :hide-after="50">
+                                        <div>
+                                            <div class="stat-value" :class="activeCube.stats?.mtgoPlayable ? 'stat-value--positive' : 'stat-value--negative'">
+                                                MTGO
+                                            </div>
+                                            <div class="stat-label">Available</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
+                                    <el-tooltip content="Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" placement="top" :hide-after="50">
+                                        <div>
+                                            <div class="stat-value" :class="activeCube.stats?.paperPlayable ? 'stat-value--positive' : 'stat-value--negative'">
+                                                Paper
+                                            </div>
+                                            <div class="stat-label">Available</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                            </div>
+                        </el-col>
+
                         <el-col :span="24" v-if="activeCube.stats?.graveyardOrderMatters">
                             <div class="graveyard-warning">
                                 ⚠️ This cube contains cards that care about Graveyard Order
-                            </div>
-                        </el-col>
-                        <el-col :span="24">
-                            <div>
-                                <span class="playability-label">Playable:</span>
-                                <span class="playability-tag" :class="activeCube.stats?.arenaPlayable ? 'playable' : 'not-playable'">Arena</span>
-                                <span class="playability-tag" :class="activeCube.stats?.mtgoPlayable ? 'playable' : 'not-playable'">MTGO</span>
-                                <span class="playability-tag" :class="activeCube.stats?.paperPlayable ? 'playable' : 'not-playable'">Paper</span>
                             </div>
                         </el-col>
                     </el-row>
@@ -936,38 +967,11 @@ const tokensTabData = computed(() => {
     gap: 8px;
 }
 
-.playability-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 0;
-    margin-top: 16px;
-    border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.playability-label {
-    font-size: 0.8rem;
-    color: var(--el-text-color-secondary);
-    font-weight: 500;
-    margin-right: 4px;
-}
-
-.playability-tag {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.playability-tag.playable {
-    background: rgba(103, 194, 58, 0.15);
+.stat-value--positive {
     color: #67c23a;
 }
 
-.playability-tag.not-playable {
-    background: rgba(245, 108, 108, 0.15);
+.stat-value--negative {
     color: #f56c6c;
 }
 </style>
