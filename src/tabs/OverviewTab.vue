@@ -949,7 +949,7 @@ const formatters = {
 .cube-tile-thumbnail-wrapper {
     position: relative;
     overflow: hidden;
-    border-radius: 8px 8px 0 0;
+    border-radius: 4px 4px 0 0;
 }
 
 .cube-tile-thumbnail {
@@ -1029,12 +1029,13 @@ const formatters = {
     .cube-tile-thumbnail-wrapper {
         width: 80px;
         flex-shrink: 0;
-        border-radius: 8px 0 0 8px;
+        border-radius: 4px 0 0 4px;
     }
 
     .cube-tile-thumbnail {
         height: 100%;
-        max-height: 64px;
+        /* max-height: 64px; */
+        max-height: 100%;
         aspect-ratio: unset;
     }
 
