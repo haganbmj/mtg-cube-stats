@@ -597,28 +597,26 @@ const defaultVisibleColumns = [
     'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
+const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
+
 const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
-    visualColumnCount: 6,
+    visualColumnCount: defaultVisualColumnCount.value,
     frequencyCategory: 'total',
     showAllCards: false,
 };
 
 const config = bindStorage('card-summary-table-config', (v) => {
     if (v == undefined || v === null) {
-        return { ...defaultConfig };
+        return { ...defaultConfig, visualColumnCount: defaultVisualColumnCount.value };
     }
     return {
         visibleColumns: (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[],
-        visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : 6,
+        visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : defaultVisualColumnCount.value,
         frequencyCategory: typeof v.frequencyCategory === 'string' ? v.frequencyCategory : 'total',
         showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
-
-if (isMobile.value) {
-    config.value.visualColumnCount = 2;
-}
 
 const frequencyCategoryOptions = computed(() => {
     void frequencyDataReady.value; // reactive dependency
