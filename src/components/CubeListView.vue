@@ -8,7 +8,7 @@
                 :collapse-cube-filter="true"
             />
             <el-button-group>
-                <el-button :icon="View" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Dim unmatched cards" />
+                <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
                 <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
             </el-button-group>
         </div>
@@ -75,7 +75,7 @@ import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
-import { View, Hide } from '@element-plus/icons-vue';
+import { View, Hide, BrushFilled } from '@element-plus/icons-vue';
 
 const PRIMARY_TYPE_ORDER = ['Creature', 'Planeswalker', 'Instant', 'Sorcery', 'Artifact', 'Enchantment', 'Battle', 'Conspiracy', 'Land'];
 
