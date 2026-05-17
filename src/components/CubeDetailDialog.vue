@@ -523,7 +523,7 @@
             </el-tabs>
         </template>
 
-        <template #footer>
+        <template v-if="!isMobile" #footer>
             <el-button @click="$emit('update:visible', false)">Close</el-button>
         </template>
     </el-dialog>
@@ -531,7 +531,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
-import { useDateFormat } from '@vueuse/core';
+import { useDateFormat, useWindowSize } from '@vueuse/core';
 import { Loading, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -584,6 +584,8 @@ const props = defineProps({
 
 defineEmits(['update:visible']);
 
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
@@ -983,4 +985,5 @@ const tokensTabData = computed(() => {
 .stat-value--negative {
     color: #f56c6c;
 }
+
 </style>
