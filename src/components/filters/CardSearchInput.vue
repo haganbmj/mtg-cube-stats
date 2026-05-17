@@ -154,6 +154,10 @@ function onClear() {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
 
+:deep(.el-input__clear) {
+    order: -1;
+}
+
 @media (max-width: 600px) {
     .card-search-input-wrapper {
         flex-basis: 100%;
