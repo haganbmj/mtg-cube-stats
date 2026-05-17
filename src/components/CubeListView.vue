@@ -162,7 +162,7 @@ const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailD
 const activeQuery = ref('');
 
 const filterMode = bindStorage('cube-list-filter-mode', (v) => {
-    return v === 'hide' ? 'hide' : 'dim';
+    return v === 'dim' ? 'dim' : 'hide';
 });
 
 const matchingOracleIds = computed<Set<string> | null>(() => {
