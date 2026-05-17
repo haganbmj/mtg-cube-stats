@@ -437,11 +437,11 @@
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`">
-                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
+                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Sets (${Object.keys(activeCube.stats?.setCodeDistribution || {}).length})`">
-                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
+                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" :lazy="true">
@@ -494,7 +494,6 @@
                         :loadedCubes="overviewTableData"
                         :cubeId="activeCube.id"
                         :cubeClick="true"
-                        :maxHeight="600"
                         @cube-click="switchCube"
                     />
                 </el-tab-pane>
