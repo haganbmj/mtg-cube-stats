@@ -2,7 +2,6 @@
     <el-table
         :data="keywords"
         style="width: 100%;"
-        :max-height="maxHeight"
         :default-sort = "{prop: 'count', order: 'descending'}"
         stripe
     >
@@ -52,10 +51,6 @@ const props = defineProps({
     totalCards: {
         type: Number,
         required: true,
-    },
-    maxHeight: {
-        type: Number,
-        default: 425,
     },
 });
 

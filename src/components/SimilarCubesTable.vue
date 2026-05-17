@@ -2,7 +2,6 @@
     <el-table
         :data="tableData"
         style="width: 100%;"
-        :max-height="maxHeight"
         :default-sort = "{prop: 'score', order: 'descending'}"
         stripe
     >
@@ -61,10 +60,6 @@ const props = defineProps({
     cubeClick: {
         type: Boolean,
         default: false,
-    },
-    maxHeight: {
-        type: Number,
-        default: 425,
     },
 });
 

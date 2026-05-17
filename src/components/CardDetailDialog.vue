@@ -227,7 +227,7 @@
             </el-row>
         </template>
 
-        <template #footer>
+        <template v-if="!isMobile" #footer>
             <el-button @click="$emit('update:visible', false)">Close</el-button>
         </template>
     </el-dialog>
@@ -236,6 +236,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
 import type { Ref } from 'vue';
+import { useWindowSize } from '@vueuse/core';
 import { Link } from '@element-plus/icons-vue';
 import { capitalizeFirstLetter, getRarityColor } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
@@ -264,6 +265,9 @@ const props = defineProps({
 });
 
 defineEmits(['update:visible']);
+
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog', () => {});
 
@@ -404,4 +408,5 @@ const getGameTagColor = (game: string) => {
     font-size: 1em;
     vertical-align: middle;
 }
+
 </style>

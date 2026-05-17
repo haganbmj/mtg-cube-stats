@@ -437,11 +437,11 @@
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`">
-                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
+                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Sets (${Object.keys(activeCube.stats?.setCodeDistribution || {}).length})`">
-                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" :maxHeight="600" />
+                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" :lazy="true">
@@ -494,7 +494,6 @@
                         :loadedCubes="overviewTableData"
                         :cubeId="activeCube.id"
                         :cubeClick="true"
-                        :maxHeight="600"
                         @cube-click="switchCube"
                     />
                 </el-tab-pane>
@@ -524,7 +523,7 @@
             </el-tabs>
         </template>
 
-        <template #footer>
+        <template v-if="!isMobile" #footer>
             <el-button @click="$emit('update:visible', false)">Close</el-button>
         </template>
     </el-dialog>
@@ -532,7 +531,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
-import { useDateFormat } from '@vueuse/core';
+import { useDateFormat, useWindowSize } from '@vueuse/core';
 import { Loading, Link } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -585,6 +584,8 @@ const props = defineProps({
 
 defineEmits(['update:visible']);
 
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
@@ -984,4 +985,5 @@ const tokensTabData = computed(() => {
 .stat-value--negative {
     color: #f56c6c;
 }
+
 </style>
