@@ -311,7 +311,7 @@
                                     <i class="ms ms-ability-forage ms-2x stat-icon"></i>
                                     <el-tooltip content="Total Minimum Price of the Cube in USD" placement="top" :hide-after="50">
                                         <div>
-                                            <div class="stat-value">${{ (activeCube.stats?.totalMinPriceUsd ?? 0).toFixed(2) }}</div>
+                                            <div class="stat-value">${{ formatPrice(activeCube.stats?.totalMinPriceUsd ?? 0) }}</div>
                                             <div class="stat-label">Min Price (USD)</div>
                                         </div>
                                     </el-tooltip>
@@ -320,7 +320,7 @@
                                     <i class="ms ms-ability-forage ms-2x stat-icon"></i>
                                     <el-tooltip content="Total Minimum Price of the Cube in MTGO Tix" placement="top" :hide-after="50">
                                         <div>
-                                            <div class="stat-value">{{ (activeCube.stats?.totalMinPriceTix ?? 0).toFixed(2) }}</div>
+                                            <div class="stat-value">{{ formatPrice(activeCube.stats?.totalMinPriceTix ?? 0) }}</div>
                                             <div class="stat-label">Min Price (Tix)</div>
                                         </div>
                                     </el-tooltip>
@@ -537,6 +537,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
 import type { ScryfallToken } from '../types/scryfall';
+import { formatPrice } from '../util/HelperFunctions';
 import { getTokens } from '../util/CubeFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';

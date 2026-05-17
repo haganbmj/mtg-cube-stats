@@ -158,8 +158,8 @@
 
                         <el-col :span="12" :xs="24">
                             <el-descriptions title="Pricing" :column="1" :label-width="150" :border="true" size="default">
-                                <el-descriptions-item label="Min Price (USD)">{{ activeCard.minPriceUsd != null ? `$${activeCard.minPriceUsd.toFixed(2)}` : 'N/A' }}</el-descriptions-item>
-                                <el-descriptions-item label="Min Price (Tix)">{{ activeCard.minPriceTix != null ? activeCard.minPriceTix.toFixed(2) : 'N/A' }}</el-descriptions-item>
+                                <el-descriptions-item label="Min Price (USD)">{{ activeCard.minPriceUsd != null ? `$${formatPrice(activeCard.minPriceUsd)}` : 'N/A' }}</el-descriptions-item>
+                                <el-descriptions-item label="Min Price (Tix)">{{ activeCard.minPriceTix != null ? formatPrice(activeCard.minPriceTix) : 'N/A' }}</el-descriptions-item>
                             </el-descriptions>
                         </el-col>
 
@@ -238,7 +238,7 @@ import { computed, inject, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { Link } from '@element-plus/icons-vue';
-import { capitalizeFirstLetter, getRarityColor } from '../util/HelperFunctions';
+import { capitalizeFirstLetter, getRarityColor, formatPrice } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import { getScryfallCards } from '../util/CubeFunctions';
 import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';

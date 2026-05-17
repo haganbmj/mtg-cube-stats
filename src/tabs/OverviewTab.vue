@@ -421,7 +421,7 @@
 import { ref, reactive, computed, inject } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getNestedProp, castInensitiveSort } from '../util/HelperFunctions';
+import { getNestedProp, castInensitiveSort, formatPrice } from '../util/HelperFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
@@ -736,7 +736,8 @@ const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending
 
 // --- Formatter helpers ---
 const fmtFixed2 = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2);
-const fmtPriceUsd = (prop: string) => (row: any) => '$' + (getNestedProp(row, prop) ?? 0).toFixed(2);
+const fmtPriceUsd = (prop: string) => (row: any) => '$' + formatPrice(getNestedProp(row, prop) ?? 0);
+const fmtPriceTix = (prop: string) => (row: any) => formatPrice(getNestedProp(row, prop) ?? 0);
 const fmtPopularity = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2) + ' %';
 const fmtPercentage = (prop: string) => (row: any) => ((getNestedProp(row, prop) ?? 0) * 100).toFixed(2) + '%';
 const fmtDate = (prop: string) => (row: any) => {
@@ -758,7 +759,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'paperPlayable', prop: 'stats.paperPlayable', label: 'Paper', minWidth: '65px', tooltip: 'Paper Playable — no digital-only printings or custom cards', visible: config.value.visibleColumns.includes('stats.paperPlayable') },
     { key: 'assumedCategories', prop: 'stats.assumedCategories', label: 'Categories', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.assumedCategories') },
     { key: 'totalMinPriceUsd', prop: 'stats.totalMinPriceUsd', label: 'Price (USD)', minWidth: '80px', sortable: true, formatter: fmtPriceUsd('stats.totalMinPriceUsd'), tooltip: 'Total minimum price of the cube in USD', visible: config.value.visibleColumns.includes('stats.totalMinPriceUsd') },
-    { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Price (Tix)', minWidth: '80px', sortable: true, formatter: fmtFixed2('stats.totalMinPriceTix'), tooltip: 'Total minimum price of the cube in MTGO Tix', visible: config.value.visibleColumns.includes('stats.totalMinPriceTix') },
+    { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Price (Tix)', minWidth: '80px', sortable: true, formatter: fmtPriceTix('stats.totalMinPriceTix'), tooltip: 'Total minimum price of the cube in MTGO Tix', visible: config.value.visibleColumns.includes('stats.totalMinPriceTix') },
     { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Year', minWidth: '85px', sortable: true, tooltip: 'Average release year of cards in the cube (± Standard Deviation)', visible: config.value.visibleColumns.includes('stats.averageReleaseYear') },
     { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Med. Year', minWidth: '85px', sortable: true, tooltip: 'Median release year of cards in the cube (± Median Absolute Deviation)', visible: config.value.visibleColumns.includes('stats.medianReleaseYear') },
     { key: 'totalCards', prop: 'stats.totalCards', label: 'Cards', minWidth: '65px', sortable: true, tooltip: 'Total number of cards', visible: config.value.visibleColumns.includes('stats.totalCards') },
