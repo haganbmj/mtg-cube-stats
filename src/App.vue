@@ -66,9 +66,8 @@
                     <template v-for="(entry, index) in navigationStack" :key="entry.key">
                         <CubeDetailDialog
                             v-if="entry.type === 'cube'"
-                            v-show="index === navigationStack.length - 1"
                             :visible="true"
-                            :modal="index === navigationStack.length - 1"
+                            :modal="true"
                             :cubeRow="getCubeRow(entry.id)"
                             :cubeCards="getCubeCards(entry.id)"
                             :similarityMatrix="similarityMatrix"
@@ -79,9 +78,8 @@
                         />
                         <CardDetailDialog
                             v-if="entry.type === 'card'"
-                            v-show="index === navigationStack.length - 1"
                             :visible="true"
-                            :modal="index === navigationStack.length - 1"
+                            :modal="true"
                             :oracleId="entry.oracleId"
                             :loadedCubes="loadedCubes"
                             :overviewTableData="overviewTableData"
