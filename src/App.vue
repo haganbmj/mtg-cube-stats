@@ -63,22 +63,31 @@
                         </el-tab-pane>
                     </el-tabs>
 
-                    <CubeDetailDialog
-                        v-model:visible="cubeDetailDialogVisible"
-                        :cubeRow="cubeDetailDialogRow"
-                        :cubeCards="cubeDetailDialogCards"
-                        :similarityMatrix="similarityMatrix"
-                        :overviewTableData="overviewTableData"
-                        :loadedCubes="loadedCubes"
-                        :peerStats="peerStats"
-                    />
-
-                    <CardDetailDialog
-                        v-model:visible="cardDetailDialogVisible"
-                        :oracleId="cardDetailDialogOracleId"
-                        :loadedCubes="loadedCubes"
-                        :overviewTableData="overviewTableData"
-                    />
+                    <template v-for="(entry, index) in navigationStack" :key="entry.key">
+                        <CubeDetailDialog
+                            v-if="entry.type === 'cube'"
+                            v-show="index === navigationStack.length - 1"
+                            :visible="true"
+                            :modal="index === navigationStack.length - 1"
+                            :cubeRow="getCubeRow(entry.id)"
+                            :cubeCards="getCubeCards(entry.id)"
+                            :similarityMatrix="similarityMatrix"
+                            :overviewTableData="overviewTableData"
+                            :loadedCubes="loadedCubes"
+                            :peerStats="peerStats"
+                            @close="popDetail"
+                        />
+                        <CardDetailDialog
+                            v-if="entry.type === 'card'"
+                            v-show="index === navigationStack.length - 1"
+                            :visible="true"
+                            :modal="index === navigationStack.length - 1"
+                            :oracleId="entry.oracleId"
+                            :loadedCubes="loadedCubes"
+                            :overviewTableData="overviewTableData"
+                            @close="popDetail"
+                        />
+                    </template>
                 </div>
             </el-main>
             <el-footer>
@@ -92,7 +101,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, provide, onMounted, nextTick } from 'vue';
-import { useBackDismiss } from './util/useBackDismiss';
+import { useDetailNavigation } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
 import { presetCollections } from './presets';
 import { bindStorage } from './util/VueLocalStorage';
@@ -165,36 +174,20 @@ watch(
 
 const activeTab = ref('overview');
 
-const cubeDetailDialogId = ref(null);
-const cubeDetailDialogVisible = computed({
-    get: () => cubeDetailDialogId.value !== null,
-    set: (val) => { if (!val) cubeDetailDialogId.value = null; },
-});
-const cubeDetailDialogRow = computed(() => {
-    if (!cubeDetailDialogId.value) return null;
-    return overviewTableData.value.find(c => c.id === cubeDetailDialogId.value) || null;
-});
-const cubeDetailDialogCards = computed(() => {
-    if (!cubeDetailDialogId.value) return [];
-    return loadedCubes.value[cubeDetailDialogId.value]?.cards || [];
-});
-const openCubeDetailDialog = (cubeId) => {
-    cubeDetailDialogId.value = cubeId;
+const { stack: navigationStack, push: pushDetail, pop: popDetail } = useDetailNavigation();
+
+const getCubeRow = (cubeId: string) => {
+    return overviewTableData.value.find(c => c.id === cubeId) || null;
 };
+const getCubeCards = (cubeId: string) => {
+    return loadedCubes.value[cubeId]?.cards || [];
+};
+
+const openCubeDetailDialog = (cubeId: string) => pushDetail({ type: 'cube', id: cubeId });
+const openCardDetailDialog = (oracleId: string) => pushDetail({ type: 'card', oracleId });
+
 provide('openCubeDetailDialog', openCubeDetailDialog);
-
-const cardDetailDialogOracleId = ref(null);
-const cardDetailDialogVisible = computed({
-    get: () => cardDetailDialogOracleId.value !== null,
-    set: (val) => { if (!val) cardDetailDialogOracleId.value = null; },
-});
-const openCardDetailDialog = (oracleId) => {
-    cardDetailDialogOracleId.value = oracleId;
-};
 provide('openCardDetailDialog', openCardDetailDialog);
-
-useBackDismiss(cubeDetailDialogVisible, () => { cubeDetailDialogId.value = null; });
-useBackDismiss(cardDetailDialogVisible, () => { cardDetailDialogOracleId.value = null; });
 
 const cardTableQuery = ref('');
 provide('cardTableQuery', cardTableQuery);

@@ -5,9 +5,7 @@ export type DetailEntry =
     | { type: 'cube'; id: string }
     | { type: 'card'; oracleId: string };
 
-export interface DetailEntryWithKey extends DetailEntry {
-    key: string;
-}
+export type DetailEntryWithKey = DetailEntry & { key: string };
 
 let counter = 0;
 
