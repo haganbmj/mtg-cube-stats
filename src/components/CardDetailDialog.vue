@@ -1,12 +1,12 @@
 <template>
     <el-dialog
         :model-value="visible"
-        @update:model-value="$emit('update:visible', $event)"
+        :modal="modal"
         width="90%"
         style="max-width: 1200px;"
         top="5vh"
         align-center
-        destroy-on-close
+        :before-close="() => $emit('close')"
     >
         <template #header>
             <div v-if="activeCard" class="card-dialog-header">
@@ -228,7 +228,7 @@
         </template>
 
         <template v-if="!isMobile" #footer>
-            <el-button @click="$emit('update:visible', false)">Close</el-button>
+            <el-button @click="$emit('close')">Close</el-button>
         </template>
     </el-dialog>
 </template>
@@ -250,6 +250,10 @@ const props = defineProps({
         type: Boolean,
         required: true,
     },
+    modal: {
+        type: Boolean,
+        default: true,
+    },
     oracleId: {
         type: String as () => string | null,
         default: null,
@@ -264,7 +268,7 @@ const props = defineProps({
     },
 });
 
-defineEmits(['update:visible']);
+defineEmits(['close']);
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
