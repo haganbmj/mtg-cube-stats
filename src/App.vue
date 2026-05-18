@@ -512,6 +512,10 @@ html.dark .el-dropdown__popper {
     }
 }
 
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
     font-family: Inter,Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,微软雅黑,Arial,sans-serif;
     font-weight: 350;
