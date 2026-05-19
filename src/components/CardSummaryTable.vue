@@ -124,7 +124,7 @@
         </template>
     </div>
 
-    <div class="card-table-pagination-row">
+    <div ref="cardResultsTop" class="card-table-pagination-row">
         <template v-if="isMobile">
             <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
             <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
@@ -504,7 +504,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, watch, reactive } from 'vue';
+import { ref, computed, inject, watch, reactive, useTemplateRef, nextTick } from 'vue';
 import type { Ref } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { Menu, Grid, List } from '@element-plus/icons-vue';
@@ -538,8 +538,16 @@ const props = defineProps({
 
 const openCardDetailDialog = inject<(id: string) => void>('openCardDetailDialog');
 
+const cardResultsTop = useTemplateRef<HTMLElement>('cardResultsTop');
+
 const currentPage = ref(1);
 const pageSize = ref(50);
+
+watch(currentPage, () => {
+    nextTick(() => {
+        cardResultsTop.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+});
 const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
 const activeQuery = inject<Ref<string>>('cardTableQuery', ref(''));
 const { width: windowWidth } = useWindowSize();
