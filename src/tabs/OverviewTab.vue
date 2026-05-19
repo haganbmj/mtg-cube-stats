@@ -181,9 +181,6 @@
 
         <div v-if="cubeSearchVisible" class="overview-search-row">
             <CubeSearchInput v-model="cubeSearchQuery" />
-            <span v-if="cubeSearchQuery.trim()" class="overview-search-count">
-                {{ filteredData.length }} / {{ (props.overviewTableData as any[]).length }} Cubes
-            </span>
         </div>
 
         <div v-if="props.loadingProgress?.active" class="overview-progress">
@@ -851,17 +848,7 @@ const formatters = {
 
 <style scoped>
 .overview-search-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
     margin-bottom: 10px;
-}
-
-.overview-search-count {
-    flex: 0 0 auto;
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
-    white-space: nowrap;
 }
 
 .overview-toolbar {
