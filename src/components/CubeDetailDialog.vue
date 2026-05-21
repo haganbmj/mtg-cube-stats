@@ -493,8 +493,6 @@
                         :similarityMatrix="similarityMatrix"
                         :loadedCubes="overviewTableData"
                         :cubeId="activeCube.id"
-                        :cubeClick="true"
-                        @cube-click="switchCube"
                     />
                 </el-tab-pane>
 
@@ -611,11 +609,6 @@ const activeCubeCards = computed(() => {
     if (!activeCubeId.value) return props.cubeCards;
     return props.loadedCubes[activeCubeId.value]?.cards || props.cubeCards;
 });
-
-const switchCube = (cubeId: string) => {
-    activeCubeId.value = cubeId;
-    samplePackSeed.value = Date.now();
-};
 
 const avgSimilarityScore = computed(() => {
     if (!activeCube.value) return 0;

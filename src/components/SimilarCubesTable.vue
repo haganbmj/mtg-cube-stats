@@ -14,8 +14,7 @@
         >
             <template #default="{ row }">
                 <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
-                    <el-link v-if="cubeClick" @click="$emit('cube-click', row.id)">{{ row.name }}</el-link>
-                    <el-link v-else :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
+                    <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
                 </el-tooltip>
             </template>
         </el-table-column>
@@ -38,6 +37,15 @@
             min-width="80"
             sortable
         />
+        <el-table-column
+            label="Compare"
+            width="90"
+            align="center"
+        >
+            <template #default="{ row }">
+                <el-button size="small" @click="navigateToComparison?.(props.cubeId, row.id)">Compare</el-button>
+            </template>
+        </el-table-column>
     </el-table>
 </template>
 
@@ -57,15 +65,10 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    cubeClick: {
-        type: Boolean,
-        default: false,
-    },
 });
 
-defineEmits(['cube-click']);
-
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
+const navigateToComparison = inject<(cubeAId: string, cubeBId: string) => void>('navigateToComparison');
 
 const tableData = computed(() => {
     return mostSimilarCubes(props.cubeId);

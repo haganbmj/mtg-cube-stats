@@ -125,6 +125,10 @@ const props = defineProps({
         type: Function as unknown as () => (cubeId: string) => Promise<void>,
         required: true,
     },
+    comparePair: {
+        type: Object as () => { cubeAId: string; cubeBId: string } | null,
+        default: null,
+    },
 });
 
 const cubeAId = ref<string>('');
@@ -138,6 +142,14 @@ watch(() => Object.keys(props.loadedCubes), (keys) => {
     if (!cubeAId.value && keys.length >= 1) cubeAId.value = keys[0];
     if (!cubeBId.value && keys.length >= 2) cubeBId.value = keys[1];
 }, { immediate: true });
+
+// Watch for external navigation to comparison
+watch(() => props.comparePair, (pair) => {
+    if (pair) {
+        cubeAId.value = pair.cubeAId;
+        cubeBId.value = pair.cubeBId;
+    }
+});
 
 const onCubeSelect = async (value: string, side: 'A' | 'B') => {
     if (props.loadedCubes[value]) return;
