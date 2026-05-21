@@ -40,6 +40,10 @@
             </div>
         </div>
 
+        <div v-if="loading" class="comparison-loading">
+            <el-text type="info">Loading cube...</el-text>
+        </div>
+
         <template v-if="cubeA && cubeB">
             <div class="comparison-headers">
                 <div class="cube-header">
@@ -133,12 +137,18 @@ const props = defineProps({
 
 const cubeAId = ref<string>('');
 const cubeBId = ref<string>('');
-
+const loading = ref(false);
 const cubeA = computed(() => cubeAId.value ? props.loadedCubes[cubeAId.value] ?? null : null);
 const cubeB = computed(() => cubeBId.value ? props.loadedCubes[cubeBId.value] ?? null : null);
 
 // Default to first two cubes when loadedCubes changes
 watch(() => Object.keys(props.loadedCubes), (keys) => {
+    if (cubeAId.value && !props.loadedCubes[cubeAId.value]) {
+        cubeAId.value = keys.find(k => k !== cubeBId.value) ?? '';
+    }
+    if (cubeBId.value && !props.loadedCubes[cubeBId.value]) {
+        cubeBId.value = keys.find(k => k !== cubeAId.value) ?? '';
+    }
     if (!cubeAId.value && keys.length >= 1) cubeAId.value = keys[0];
     if (!cubeBId.value && keys.length >= 2) cubeBId.value = keys[1];
 }, { immediate: true });
@@ -153,15 +163,32 @@ watch(() => props.comparePair, (pair) => {
 
 const onCubeSelect = async (value: string, side: 'A' | 'B') => {
     if (props.loadedCubes[value]) return;
-    // Value is not a known key — try loading it as a CubeCobra ID
-    await props.addCube(value);
-    // Find the loaded cube by id or shortId
-    const found = Object.entries(props.loadedCubes).find(
-        ([, cube]) => cube.id === value || cube.shortId === value,
+    // Extract the cube ID from the input the same way addCube does
+    const input = value.split('?')[0].trim();
+    const match = input.match(/([^\/]+)\/?$/);
+    const id = match ? match[1] : value;
+    // Check if already loaded under a different key
+    const existing = Object.entries(props.loadedCubes).find(
+        ([, cube]) => cube.id === id || cube.shortId === id,
     );
-    if (found) {
-        if (side === 'A') cubeAId.value = found[0];
-        else cubeBId.value = found[0];
+    if (existing) {
+        if (side === 'A') cubeAId.value = existing[0];
+        else cubeBId.value = existing[0];
+        return;
+    }
+    // Load the cube
+    loading.value = true;
+    try {
+        await props.addCube(value);
+        const found = Object.entries(props.loadedCubes).find(
+            ([, cube]) => cube.id === id || cube.shortId === id,
+        );
+        if (found) {
+            if (side === 'A') cubeAId.value = found[0];
+            else cubeBId.value = found[0];
+        }
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -255,6 +282,11 @@ const formatDate = (dateStr: string) => {
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
+}
+
+.comparison-loading {
+    padding: 24px 0;
+    text-align: center;
 }
 
 .cube-selector {
