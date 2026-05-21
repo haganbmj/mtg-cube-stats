@@ -285,6 +285,10 @@ const formatDate = (dateStr: string) => {
 
 .cube-header-info {
     min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 8px;
 }
 
 .cube-header-name {
@@ -298,6 +302,7 @@ const formatDate = (dateStr: string) => {
 }
 
 .cube-header-meta {
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
