@@ -33,7 +33,8 @@
 
             <!-- Type group rows within this color -->
             <template v-for="typeLabel in getUnionTypeLabels(colorDef.id)" :key="`${colorDef.id}-${typeLabel}`">
-                <div class="comparison-row type-row" :style="{ background: colorDef.bodyBg }">
+                <!-- Type header row -->
+                <div class="comparison-row type-header-row" :style="{ background: colorDef.bodyBg }">
                     <div class="comparison-cell">
                         <div
                             class="type-header"
@@ -45,22 +46,6 @@
                                 / {{ getGroupTotal(props.cubeA.cards, colorDef.id, typeLabel) }})
                             </span>
                         </div>
-                        <div
-                            v-for="(card, i) in getGroupCards(groupedA, colorDef.id, typeLabel)"
-                            :key="`a-${card.oracleId}-${i}`"
-                            class="card-entry"
-                            :class="{
-                                'cmc-break': i > 0 && card.cmc !== getGroupCards(groupedA, colorDef.id, typeLabel)[i - 1].cmc,
-                                'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
-                            }"
-                        >
-                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
-                                <template #content>
-                                    <el-image :src="card.urlFront" fit="contain" class="card-image" />
-                                </template>
-                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
-                            </el-tooltip>
-                        </div>
                     </div>
                     <div class="comparison-cell">
                         <div
@@ -71,22 +56,6 @@
                             <span class="type-count">
                                 ({{ getGroupCards(groupedBoth, colorDef.id, typeLabel).length }})
                             </span>
-                        </div>
-                        <div
-                            v-for="(card, i) in getGroupCards(groupedBoth, colorDef.id, typeLabel)"
-                            :key="`both-${card.oracleId}-${i}`"
-                            class="card-entry"
-                            :class="{
-                                'cmc-break': i > 0 && card.cmc !== getGroupCards(groupedBoth, colorDef.id, typeLabel)[i - 1].cmc,
-                                'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
-                            }"
-                        >
-                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
-                                <template #content>
-                                    <el-image :src="card.urlFront" fit="contain" class="card-image" />
-                                </template>
-                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
-                            </el-tooltip>
                         </div>
                     </div>
                     <div class="comparison-cell">
@@ -100,12 +69,57 @@
                                 / {{ getGroupTotal(props.cubeB.cards, colorDef.id, typeLabel) }})
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- CMC sub-rows -->
+                <div
+                    v-for="(cmc, cmcIdx) in getUnionCmcValues(colorDef.id, typeLabel)"
+                    :key="`${colorDef.id}-${typeLabel}-cmc-${cmc}`"
+                    class="comparison-row cmc-row"
+                    :class="{ 'cmc-break': cmcIdx > 0 }"
+                    :style="{ background: colorDef.bodyBg }"
+                >
+                    <div class="comparison-cell">
                         <div
-                            v-for="(card, i) in getGroupCards(groupedB, colorDef.id, typeLabel)"
+                            v-for="(card, i) in getCardsAtCmc(groupedA, colorDef.id, typeLabel, cmc)"
+                            :key="`a-${card.oracleId}-${i}`"
+                            class="card-entry"
+                            :class="{
+                                'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
+                            }"
+                        >
+                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
+                                <template #content>
+                                    <el-image :src="card.urlFront" fit="contain" class="card-image" />
+                                </template>
+                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
+                            </el-tooltip>
+                        </div>
+                    </div>
+                    <div class="comparison-cell">
+                        <div
+                            v-for="(card, i) in getCardsAtCmc(groupedBoth, colorDef.id, typeLabel, cmc)"
+                            :key="`both-${card.oracleId}-${i}`"
+                            class="card-entry"
+                            :class="{
+                                'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
+                            }"
+                        >
+                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
+                                <template #content>
+                                    <el-image :src="card.urlFront" fit="contain" class="card-image" />
+                                </template>
+                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
+                            </el-tooltip>
+                        </div>
+                    </div>
+                    <div class="comparison-cell">
+                        <div
+                            v-for="(card, i) in getCardsAtCmc(groupedB, colorDef.id, typeLabel, cmc)"
                             :key="`b-${card.oracleId}-${i}`"
                             class="card-entry"
                             :class="{
-                                'cmc-break': i > 0 && card.cmc !== getGroupCards(groupedB, colorDef.id, typeLabel)[i - 1].cmc,
                                 'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
                             }"
                         >
@@ -232,6 +246,22 @@ function getGroupCards(grouped: ColorColumn[], colorId: string, typeLabel: strin
     return group?.cards ?? [];
 }
 
+// Union of CMC values for a given color+type across all three groups
+function getUnionCmcValues(colorId: string, typeLabel: string): number[] {
+    const cmcSet = new Set<number>();
+    for (const grouped of [groupedA.value, groupedBoth.value, groupedB.value]) {
+        for (const card of getGroupCards(grouped, colorId, typeLabel)) {
+            cmcSet.add(card.cmc ?? 0);
+        }
+    }
+    return [...cmcSet].sort((a, b) => a - b);
+}
+
+// Get cards at a specific CMC within a color+type group
+function getCardsAtCmc(grouped: ColorColumn[], colorId: string, typeLabel: string, cmc: number): CubeCard[] {
+    return getGroupCards(grouped, colorId, typeLabel).filter(c => (c.cmc ?? 0) === cmc);
+}
+
 // Count cards in a grouped array for a color
 function getColumnColorCount(grouped: ColorColumn[], colorId: string): number {
     const col = findColumn(grouped, colorId);
@@ -345,8 +375,8 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 }
 
 .cmc-break {
-    padding-top: 0;
-    margin-top: 0;
+    margin-top: 2px;
+    padding-top: 2px;
     border-top: 1px solid var(--el-border-color-extra-light);
 }
 
