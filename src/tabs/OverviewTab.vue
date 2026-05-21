@@ -155,6 +155,14 @@
                     <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
                 </el-button-group>
 
+                <el-button
+                    :icon="Search"
+                    :type="cubeSearchVisible ? 'primary' : ''"
+                    @click="cubeSearchVisible = !cubeSearchVisible"
+                    title="Search/Filter Cubes"
+                    circle
+                />
+
                 <el-dropdown trigger="click">
                     <el-button :icon="Menu" circle />
                     <template #dropdown>
@@ -169,6 +177,10 @@
                     </template>
                 </el-dropdown>
             </div>
+        </div>
+
+        <div v-if="cubeSearchVisible" class="overview-search-row">
+            <CubeSearchInput v-model="cubeSearchQuery" />
         </div>
 
         <div v-if="props.loadingProgress?.active" class="overview-progress">
@@ -425,9 +437,13 @@ import { getNestedProp, castInensitiveSort, formatPrice } from '../util/HelperFu
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Search } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
+import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
+import { parseQuery } from '../util/CardFilterParser';
+import { evaluateCubeFilter } from '../util/CubeFilterEvaluator';
+import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
@@ -784,9 +800,25 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.supplementalProduct'), tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },
 ]);
 
-// --- Sorted data ---
+// --- Filtered + sorted data ---
+const cubeSearchVisible = bindStorage<boolean>('cube-search-visible', v => v === true);
+const cubeSearchQuery = ref('');
+const parsedCubeQuery = computed(() => parseQuery(cubeSearchQuery.value));
+
+const filteredData = computed(() => {
+    const data = props.overviewTableData as any[];
+    const hasQuery = !!cubeSearchQuery.value.trim() && !!parsedCubeQuery.value.ast;
+    if (!hasQuery) return data;
+
+    return data.filter(cube => {
+        const cards = props.loadedCubes[cube.id]?.cards || [];
+        const ctx: CubeFilterContext = { cards };
+        return evaluateCubeFilter(parsedCubeQuery.value.ast, cube, ctx);
+    });
+});
+
 const sortedData = computed(() => {
-    const data = [...(props.overviewTableData as any[])];
+    const data = [...filteredData.value];
     if (!activeSort.value || !activeSort.value.order) {
         return data.sort((a, b) => castInensitiveSort(a.name, b.name));
     }
@@ -815,6 +847,10 @@ const formatters = {
 </script>
 
 <style scoped>
+.overview-search-row {
+    margin-bottom: 10px;
+}
+
 .overview-toolbar {
     display: flex;
     flex-wrap: wrap;
