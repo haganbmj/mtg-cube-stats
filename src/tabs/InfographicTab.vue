@@ -121,7 +121,7 @@
                         <div class="cube-info-compact">
                             <img :src="mostUniqueCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(mostUniqueCube.id)">{{ mostUniqueCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${mostUniqueCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostUniqueCube.id)">{{ mostUniqueCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${mostUniqueCube.owner}`" target="_blank" rel="noopener">{{ mostUniqueCube.owner }}</a></p>
                                 <div class="stat-highlight">
                                     <span>Avg Similarity: {{ (mostUniqueCube.avgSimilarity * 100).toFixed(2) }}%</span>
@@ -142,7 +142,7 @@
                         <div class="cube-info-compact">
                             <img :src="mostCurrentYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(mostCurrentYearCube.id)">{{ mostCurrentYearCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${mostCurrentYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostCurrentYearCube.id)">{{ mostCurrentYearCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${mostCurrentYearCube.owner}`" target="_blank" rel="noopener">{{ mostCurrentYearCube.owner }}</a></p>
                                 <div class="stat-highlight">{{ mostCurrentYearCube.currentYearCards }} cards ({{ ((mostCurrentYearCube.currentYearCards / mostCurrentYearCube.stats.totalCards) * 100).toFixed(2) }}%)</div>
                             </div>
@@ -161,7 +161,7 @@
                         <div class="cube-info-compact">
                             <img :src="newestAvgYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(newestAvgYearCube.id)">{{ newestAvgYearCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${newestAvgYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(newestAvgYearCube.id)">{{ newestAvgYearCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${newestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ newestAvgYearCube.owner }}</a></p>
                                 <div class="stat-highlight">Median Year: {{ Math.round(newestAvgYearCube.stats.medianReleaseYear) }} (±{{ newestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
                             </div>
@@ -180,7 +180,7 @@
                         <div class="cube-info-compact">
                             <img :src="oldestAvgYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(oldestAvgYearCube.id)">{{ oldestAvgYearCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${oldestAvgYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(oldestAvgYearCube.id)">{{ oldestAvgYearCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${oldestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ oldestAvgYearCube.owner }}</a></p>
                                 <div class="stat-highlight">Median Year: {{ Math.round(oldestAvgYearCube.stats.medianReleaseYear) }} (±{{ oldestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
                             </div>
@@ -199,7 +199,7 @@
                         <div class="cube-info-compact">
                             <img :src="mostUniversesBeyondCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(mostUniversesBeyondCube.id)">{{ mostUniversesBeyondCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${mostUniversesBeyondCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostUniversesBeyondCube.id)">{{ mostUniversesBeyondCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${mostUniversesBeyondCube.owner}`" target="_blank" rel="noopener">{{ mostUniversesBeyondCube.owner }}</a></p>
                                 <div class="stat-highlight">{{ mostUniversesBeyondCube.stats.cardCounts.universesBeyond }} cards ({{ ((mostUniversesBeyondCube.stats.cardCounts.universesBeyond / mostUniversesBeyondCube.stats.totalCards) * 100).toFixed(1) }}%)</div>
                             </div>
@@ -218,7 +218,7 @@
                         <div class="cube-info-compact">
                             <img :src="mostSupplementalProductCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(mostSupplementalProductCube.id)">{{ mostSupplementalProductCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${mostSupplementalProductCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostSupplementalProductCube.id)">{{ mostSupplementalProductCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${mostSupplementalProductCube.owner}`" target="_blank" rel="noopener">{{ mostSupplementalProductCube.owner }}</a></p>
                                 <div class="stat-highlight">{{ mostSupplementalProductCube.stats.cardCounts.supplementalProduct }} cards ({{ ((mostSupplementalProductCube.stats.cardCounts.supplementalProduct / mostSupplementalProductCube.stats.totalCards) * 100).toFixed(1) }}%)</div>
                             </div>
@@ -237,7 +237,7 @@
                         <div class="cube-info-compact">
                             <img :src="highestAvgPopularityCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
                             <div class="cube-details-compact">
-                                <h4><a href="#" @click.prevent="openCubeDetailDialog(highestAvgPopularityCube.id)">{{ highestAvgPopularityCube.name }}</a></h4>
+                                <h4><a :href="`https://cubecobra.com/cube/list/${highestAvgPopularityCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(highestAvgPopularityCube.id)">{{ highestAvgPopularityCube.name }}</a></h4>
                                 <p>by <a :href="`https://cubecobra.com/user/view/${highestAvgPopularityCube.owner}`" target="_blank" rel="noopener">{{ highestAvgPopularityCube.owner }}</a></p>
                                 <div class="stat-highlight">Avg Popularity: {{ highestAvgPopularityCube.stats.averagePopularity.toFixed(2) }}%</div>
                             </div>
