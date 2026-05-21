@@ -13,9 +13,17 @@
             sortable
         >
             <template #default="{ row }">
-                <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
-                    <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
-                </el-tooltip>
+                <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="owner"
+            label="Owner"
+            min-width="120"
+            sortable
+        >
+            <template #default="{ row }">
+                <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
             </template>
         </el-table-column>
         <el-table-column
@@ -39,7 +47,7 @@
         />
         <el-table-column
             label="Compare"
-            width="90"
+            min-width="100"
             align="center"
         >
             <template #default="{ row }">
@@ -88,6 +96,7 @@ const mostSimilarCubes = (cubeId: string) => {
                 intersection: entry[1].insersectionSize,
                 name: otherCube?.name || 'Unknown',
                 owner: otherCube?.owner || 'Unknown',
+                ownerId: otherCube?.ownerId || '',
                 size: otherCube?.stats?.totalCards || 0,
             };
         });
