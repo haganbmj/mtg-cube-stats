@@ -76,79 +76,16 @@ import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
 import { View, Hide, BrushFilled } from '@element-plus/icons-vue';
-
-const PRIMARY_TYPE_ORDER = ['Creature', 'Planeswalker', 'Instant', 'Sorcery', 'Artifact', 'Enchantment', 'Battle', 'Conspiracy', 'Land'];
-
-const WUBRG = ['W', 'U', 'B', 'R', 'G'];
-
-// Canonical color combination names (key = colors sorted in WUBRG order)
-const COLOR_COMBO_NAMES: Record<string, string> = {
-    '':      'Colorless',
-    'W':     'White',
-    'U':     'Blue',
-    'B':     'Black',
-    'R':     'Red',
-    'G':     'Green',
-    // Ally pairs
-    'WU':    'Azorius',  'UB': 'Dimir',    'BR': 'Rakdos',  'RG': 'Gruul',   'WG': 'Selesnya',
-    // Enemy pairs
-    'WB':    'Orzhov',   'UR': 'Izzet',    'BG': 'Golgari', 'WR': 'Boros',   'UG': 'Simic',
-    // Shards of Alara
-    'WUG':   'Bant',     'WUB': 'Esper',   'UBR': 'Grixis', 'BRG': 'Jund',   'WRG': 'Naya',
-    // Khans of Tarkir
-    'WBG':   'Abzan',    'UBG': 'Sultai',  'URG': 'Temur',  'WUR': 'Jeskai', 'WBR': 'Mardu',
-    // Four-color
-    'WUBR':  'Artifice', 'UBRG': 'Chaos',  'WBRG': 'Aggression', 'WURG': 'Altruism', 'WUBG': 'Growth',
-    // Five-color
-    'WUBRG': 'Five Color',
-};
-
-// Ordering for color combo groups within M and L columns
-const COLOR_COMBO_ORDER = [
-    '',
-    'W', 'U', 'B', 'R', 'G',
-    // Ally pairs
-    'WU', 'UB', 'BR', 'RG', 'WG',
-    // Enemy pairs
-    'WB', 'UR', 'BG', 'WR', 'UG',
-    // Shards of Alara
-    'WUG', 'WUB', 'UBR', 'BRG', 'WRG',
-    // Khans of Tarkir
-    'WBG', 'UBG', 'URG', 'WUR', 'WBR',
-    // Four-color
-    'WUBR', 'UBRG', 'WBRG', 'WURG', 'WUBG',
-    // Five-color
-    'WUBRG',
-];
-
-function sortedColorKey(colors: string[]): string {
-    return [...colors]
-        .filter(c => WUBRG.includes(c))
-        .sort((a, b) => WUBRG.indexOf(a) - WUBRG.indexOf(b))
-        .join('');
-}
-
-function colorComboLabel(colors: string[]): string {
-    const key = sortedColorKey(colors);
-    return COLOR_COMBO_NAMES[key] ?? (key || 'Colorless');
-}
-
-function colorComboSortKey(colors: string[]): number {
-    const key = sortedColorKey(colors);
-    const idx = COLOR_COMBO_ORDER.indexOf(key);
-    return idx === -1 ? COLOR_COMBO_ORDER.length : idx;
-}
-
-const COLOR_COLUMN_DEFS = [
-    { id: 'W', label: 'White',        bodyBg: 'rgba(255, 248, 220, 0.05)', headerBg: 'rgba(255, 248, 220, 0.12)' },
-    { id: 'U', label: 'Blue',         bodyBg: 'rgba(30,  100, 200, 0.08)', headerBg: 'rgba(30,  100, 200, 0.18)' },
-    { id: 'B', label: 'Black',        bodyBg: 'rgba(100,  80, 130, 0.10)', headerBg: 'rgba(100,  80, 130, 0.22)' },
-    { id: 'R', label: 'Red',          bodyBg: 'rgba(200,  50,  30, 0.08)', headerBg: 'rgba(200,  50,  30, 0.18)' },
-    { id: 'G', label: 'Green',        bodyBg: 'rgba(30,  140,  60, 0.08)', headerBg: 'rgba(30,  140,  60, 0.18)' },
-    { id: 'M', label: 'Multicolored', bodyBg: 'rgba(210, 160,  20, 0.08)', headerBg: 'rgba(210, 160,  20, 0.18)' },
-    { id: 'C', label: 'Colorless',    bodyBg: 'rgba(160, 150, 140, 0.08)', headerBg: 'rgba(160, 150, 140, 0.18)' },
-    { id: 'L', label: 'Lands',        bodyBg: 'rgba(110,  75,  40, 0.10)', headerBg: 'rgba(110,  75,  40, 0.22)' },
-] as const;
+import {
+    PRIMARY_TYPE_ORDER,
+    COLOR_COMBO_NAMES,
+    COLOR_COMBO_ORDER,
+    COLOR_COLUMN_DEFS,
+    colorComboLabel,
+    colorComboSortKey,
+    getColorColumnId,
+    sortCards
+} from '../util/CardGrouping';
 
 const props = defineProps({
     cards: {
@@ -176,20 +113,6 @@ const matchingOracleIds = computed<Set<string> | null>(() => {
     }
     return ids;
 });
-
-function getColorColumnId(card: CubeCard): string {
-    if (card.primaryType === 'Land') return 'L';
-    const colors = card.colors ?? [];
-    if (colors.length > 1) return 'M';
-    if (colors.length === 0) return 'C';
-    return colors[0];
-}
-
-function sortCards(a: CubeCard, b: CubeCard): number {
-    const cmcDiff = (a.cmc ?? 0) - (b.cmc ?? 0);
-    if (cmcDiff !== 0) return cmcDiff;
-    return (a.name ?? '').localeCompare(b.name ?? '');
-}
 
 const columns = computed(() => {
     // Total cards per column (unfiltered)
