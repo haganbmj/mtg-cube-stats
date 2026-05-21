@@ -333,7 +333,7 @@ const columns = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
-    display: block;
+    width: fit-content;
     cursor: pointer;
     color: var(--el-text-color-regular);
 
