@@ -45,9 +45,8 @@
                 <div class="cube-header">
                     <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="contain" class="cube-header-image" />
                     <div class="cube-header-info">
-                        <el-link :href="`https://cubecobra.com/cube/list/${cubeA.id}`" target="_blank" type="default" underline="never">
+                        <el-link :href="`https://cubecobra.com/cube/list/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
                             <span class="cube-header-name">{{ cubeA.name }}</span>
-                            <el-icon class="el-icon--right"><Link /></el-icon>
                         </el-link>
                         <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
                             <span class="cube-header-owner">{{ cubeA.owner }}</span>
@@ -63,9 +62,8 @@
                 <div class="cube-header">
                     <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="contain" class="cube-header-image" />
                     <div class="cube-header-info">
-                        <el-link :href="`https://cubecobra.com/cube/list/${cubeB.id}`" target="_blank" type="default" underline="never">
+                        <el-link :href="`https://cubecobra.com/cube/list/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
                             <span class="cube-header-name">{{ cubeB.name }}</span>
-                            <el-icon class="el-icon--right"><Link /></el-icon>
                         </el-link>
                         <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
                             <span class="cube-header-owner">{{ cubeB.owner }}</span>
@@ -107,14 +105,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, inject } from 'vue';
 import type { Cube, CubeCard } from '../types';
 import CubeComparisonView from '../components/CubeComparisonView.vue';
 import CardSearchInput from '../components/filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
-import { Sort, Hide, BrushFilled, Link } from '@element-plus/icons-vue';
+import { Sort, Hide, BrushFilled } from '@element-plus/icons-vue';
+
+const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
 
 const props = defineProps({
     loadedCubes: {

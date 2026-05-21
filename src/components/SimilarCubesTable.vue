@@ -15,7 +15,7 @@
             <template #default="{ row }">
                 <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
                     <el-link v-if="cubeClick" @click="$emit('cube-click', row.id)">{{ row.name }}</el-link>
-                    <el-link v-else :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
+                    <el-link v-else :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
                 </el-tooltip>
             </template>
         </el-table-column>
@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 
 const props = defineProps({
     similarityMatrix: {
@@ -64,6 +64,8 @@ const props = defineProps({
 });
 
 defineEmits(['cube-click']);
+
+const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
 
 const tableData = computed(() => {
     return mostSimilarCubes(props.cubeId);
