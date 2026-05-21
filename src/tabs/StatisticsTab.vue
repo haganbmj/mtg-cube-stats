@@ -1,4 +1,5 @@
 <template>
+    <div class="statistics-tab">
     <el-row>
         <el-col :span="24">
             <el-form-item label="Highlight:" style="width: 100%;">
@@ -57,6 +58,7 @@
             <ReleaseYearDistributionChart :loadedCubes="loadedCubes" />
         </el-col> -->
     </el-row>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -92,6 +94,11 @@ const highlightedCubeIds = ref<string[]>([]);
 </script>
 
 <style lang="scss">
+.statistics-tab {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
 #charts > .el-col {
     height: min(60vw, 500px);
 }

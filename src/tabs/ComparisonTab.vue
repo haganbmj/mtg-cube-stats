@@ -245,6 +245,8 @@ const formatDate = (dateStr: string) => {
 
 <style scoped>
 .comparison-tab {
+    max-width: 1500px;
+    margin: 0 auto;
     width: 100%;
 }
 

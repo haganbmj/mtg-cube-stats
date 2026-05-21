@@ -729,6 +729,8 @@ const lowestRarityScoreCube = computed(() => {
 
 <style lang="scss" scoped>
 .infographic {
+    max-width: 1500px;
+    margin: 0 auto;
     padding: 20px 0;
 }
 
