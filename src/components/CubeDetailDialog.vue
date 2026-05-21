@@ -890,6 +890,7 @@ const tokensTabData = computed(() => {
 .token-sources {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 2px;
     margin-top: 4px;
 }

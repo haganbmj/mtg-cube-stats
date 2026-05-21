@@ -1329,7 +1329,8 @@ const filteredStats = computed(() => {
 
 .name-cell-truncate {
     display: block;
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
