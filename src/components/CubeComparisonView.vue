@@ -14,9 +14,9 @@
         </div>
 
         <!-- Color sections -->
-        <template v-for="colorDef in unionColors" :key="colorDef.id">
+        <div v-for="colorDef in unionColors" :key="colorDef.id" class="color-section">
             <!-- Color header row -->
-            <div class="comparison-row color-header" :style="{ background: colorDef.headerBg }">
+            <div class="comparison-row color-header" :style="{ backgroundImage: `linear-gradient(${colorDef.headerBg}, ${colorDef.headerBg}), linear-gradient(var(--el-bg-color), var(--el-bg-color))` }">
                 <div class="comparison-cell">
                     {{ colorDef.label }}
                     <span class="color-count">({{ getColumnColorCount(groupedA, colorDef.id) }} / {{ getColorTotal(props.cubeA.cards, colorDef.id) }})</span>
@@ -133,7 +133,7 @@
                     </div>
                 </div>
             </template>
-        </template>
+        </div>
     </div>
 </template>
 
@@ -313,7 +313,11 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 .column-headers {
     font-weight: 600;
     font-size: 13px;
-    margin-bottom: 4px;
+    padding-bottom: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--el-bg-color);
 }
 
 .header-a {
@@ -333,8 +337,13 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 .color-header {
     font-weight: 600;
     font-size: 13px;
-    margin-top: 8px;
+    margin-top: 0;
+    padding-top: 8px;
     border-radius: 4px;
+    position: sticky;
+    top: 28px;
+    z-index: 9;
+    background-clip: content-box, padding-box;
 }
 
 .color-count {

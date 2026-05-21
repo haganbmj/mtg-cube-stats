@@ -493,6 +493,11 @@ html.dark .el-dropdown__popper {
 
 .el-main {
     padding-top: 5px;
+    overflow: visible;
+}
+
+.el-tabs__content {
+    overflow: visible;
 }
 
 .header-row {
