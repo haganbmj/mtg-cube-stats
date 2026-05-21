@@ -251,7 +251,7 @@ const categoryData = [
 
 <style scoped lang="scss">
 .about-page {
-    max-width: 1200px;
+    max-width: 1500px;
     margin: 0 auto;
     line-height: 1.6;
 

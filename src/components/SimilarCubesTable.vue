@@ -13,10 +13,17 @@
             sortable
         >
             <template #default="{ row }">
-                <el-tooltip :content="`Owner: ${row.owner}`" placement="top" :hide-after="50">
-                    <el-link v-if="cubeClick" @click="$emit('cube-click', row.id)">{{ row.name }}</el-link>
-                    <el-link v-else :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank">{{ row.name }}</el-link>
-                </el-tooltip>
+                <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
+            </template>
+        </el-table-column>
+        <el-table-column
+            prop="owner"
+            label="Owner"
+            min-width="120"
+            sortable
+        >
+            <template #default="{ row }">
+                <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
             </template>
         </el-table-column>
         <el-table-column
@@ -38,11 +45,20 @@
             min-width="80"
             sortable
         />
+        <el-table-column
+            label="Compare"
+            min-width="100"
+            align="center"
+        >
+            <template #default="{ row }">
+                <el-button size="small" @click="navigateToComparison?.(props.cubeId, row.id)">Compare</el-button>
+            </template>
+        </el-table-column>
     </el-table>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 
 const props = defineProps({
     similarityMatrix: {
@@ -57,13 +73,10 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    cubeClick: {
-        type: Boolean,
-        default: false,
-    },
 });
 
-defineEmits(['cube-click']);
+const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
+const navigateToComparison = inject<(cubeAId: string, cubeBId: string) => void>('navigateToComparison');
 
 const tableData = computed(() => {
     return mostSimilarCubes(props.cubeId);
@@ -83,6 +96,7 @@ const mostSimilarCubes = (cubeId: string) => {
                 intersection: entry[1].insersectionSize,
                 name: otherCube?.name || 'Unknown',
                 owner: otherCube?.owner || 'Unknown',
+                ownerId: otherCube?.ownerId || '',
                 size: otherCube?.stats?.totalCards || 0,
             };
         });

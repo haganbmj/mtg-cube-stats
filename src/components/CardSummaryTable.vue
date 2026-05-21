@@ -244,6 +244,7 @@
                 popper-class="card-tooltip"
                 :show-after="50"
                 :hide-after="50"
+                :offset="16"
             >
                 <template #content>
                     <el-image
@@ -1329,7 +1330,8 @@ const filteredStats = computed(() => {
 
 .name-cell-truncate {
     display: block;
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

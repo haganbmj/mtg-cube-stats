@@ -54,6 +54,10 @@
                             <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane> -->
 
+                        <el-tab-pane label="Compare" name="compare" :lazy="true" :disabled="Object.keys(loadedCubes).length < 2">
+                            <ComparisonTab :loadedCubes="loadedCubes" :addCube="addCube" :comparePair="comparePair" />
+                        </el-tab-pane>
+
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
                             <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane>
@@ -63,7 +67,7 @@
                         </el-tab-pane>
                     </el-tabs>
 
-                    <template v-for="(entry, index) in navigationStack" :key="entry.key">
+                    <template v-for="(entry) in navigationStack" :key="entry.key">
                         <CubeDetailDialog
                             v-if="entry.type === 'cube'"
                             :visible="true"
@@ -120,6 +124,7 @@ import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
+import ComparisonTab from './tabs/ComparisonTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
@@ -172,7 +177,7 @@ watch(
 
 const activeTab = ref('overview');
 
-const { stack: navigationStack, push: pushDetail, pop: popDetail } = useDetailNavigation();
+const { stack: navigationStack, push: pushDetail, pop: popDetail, closeAll: closeAllDialogs } = useDetailNavigation();
 
 const getCubeRow = (cubeId: string) => {
     return overviewTableData.value.find(c => c.id === cubeId) || null;
@@ -186,6 +191,14 @@ const openCardDetailDialog = (oracleId: string) => pushDetail({ type: 'card', or
 
 provide('openCubeDetailDialog', openCubeDetailDialog);
 provide('openCardDetailDialog', openCardDetailDialog);
+
+const comparePair = ref<{ cubeAId: string; cubeBId: string } | null>(null);
+const navigateToComparison = (cubeAId: string, cubeBId: string) => {
+    closeAllDialogs();
+    comparePair.value = { cubeAId, cubeBId };
+    activeTab.value = 'compare';
+};
+provide('navigateToComparison', navigateToComparison);
 
 const cardTableQuery = ref('');
 provide('cardTableQuery', cardTableQuery);
@@ -480,6 +493,11 @@ html.dark .el-dropdown__popper {
 
 .el-main {
     padding-top: 5px;
+    overflow: visible;
+}
+
+.el-tabs__content {
+    overflow: visible;
 }
 
 .header-row {

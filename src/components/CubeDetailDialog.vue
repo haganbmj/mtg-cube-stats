@@ -476,6 +476,7 @@
                                         popper-class="card-tooltip"
                                         :show-after="50"
                                         :hide-after="50"
+                                        :offset="16"
                                     >
                                         <template #content>
                                             <el-image :src="card.urlFront" fit="contain" :class="['card-image', card.setCode?.toLowerCase()]" />
@@ -493,8 +494,6 @@
                         :similarityMatrix="similarityMatrix"
                         :loadedCubes="overviewTableData"
                         :cubeId="activeCube.id"
-                        :cubeClick="true"
-                        @cube-click="switchCube"
                     />
                 </el-tab-pane>
 
@@ -611,11 +610,6 @@ const activeCubeCards = computed(() => {
     if (!activeCubeId.value) return props.cubeCards;
     return props.loadedCubes[activeCubeId.value]?.cards || props.cubeCards;
 });
-
-const switchCube = (cubeId: string) => {
-    activeCubeId.value = cubeId;
-    samplePackSeed.value = Date.now();
-};
 
 const avgSimilarityScore = computed(() => {
     if (!activeCube.value) return 0;
@@ -897,6 +891,7 @@ const tokensTabData = computed(() => {
 .token-sources {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 2px;
     margin-top: 4px;
 }
