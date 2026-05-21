@@ -375,7 +375,6 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 }
 
 .cmc-break {
-    margin-top: 2px;
     padding-top: 2px;
     border-top: 1px solid var(--el-border-color-extra-light);
 }
@@ -390,8 +389,9 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
     width: fit-content;
+    max-width: 100%;
+    justify-content: flex-start;
     cursor: pointer;
     color: var(--el-text-color-regular);
 

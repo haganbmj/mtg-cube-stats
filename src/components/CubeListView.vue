@@ -332,8 +332,9 @@ const columns = computed(() => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
     width: fit-content;
+    max-width: 100%;
+    justify-content: flex-start;
     cursor: pointer;
     color: var(--el-text-color-regular);
 
