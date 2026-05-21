@@ -92,6 +92,7 @@
                                             placement="top"
                                             popper-class="card-tooltip"
                                             :show-after="500"
+                                            :offset="16"
                                         >
                                             <template #content>
                                                 <div class="card-tooltip-content">

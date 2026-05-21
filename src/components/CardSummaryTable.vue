@@ -244,6 +244,7 @@
                 popper-class="card-tooltip"
                 :show-after="50"
                 :hide-after="50"
+                :offset="16"
             >
                 <template #content>
                     <el-image

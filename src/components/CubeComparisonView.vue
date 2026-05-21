@@ -54,7 +54,7 @@
                                 'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
                             }"
                         >
-                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="8">
+                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
                                 <template #content>
                                     <el-image :src="card.urlFront" fit="contain" class="card-image" />
                                 </template>
@@ -81,7 +81,7 @@
                                 'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
                             }"
                         >
-                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="8">
+                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
                                 <template #content>
                                     <el-image :src="card.urlFront" fit="contain" class="card-image" />
                                 </template>
@@ -109,7 +109,7 @@
                                 'card-entry--dimmed': props.filterMode === 'dim' && props.matchingOracleIds && !props.matchingOracleIds.has(card.oracleId),
                             }"
                         >
-                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="8">
+                            <el-tooltip effect="light" placement="right" popper-class="card-tooltip" :show-after="50" :hide-after="50" :offset="16">
                                 <template #content>
                                     <el-image :src="card.urlFront" fit="contain" class="card-image" />
                                 </template>
