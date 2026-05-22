@@ -47,7 +47,7 @@
         <template v-if="cubeA && cubeB">
             <div class="comparison-headers">
                 <div class="cube-header">
-                    <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="contain" class="cube-header-image" />
+                    <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
                     <div class="cube-header-info">
                         <el-link :href="`https://cubecobra.com/cube/list/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
                             <span class="cube-header-name">{{ cubeA.name }}</span>
@@ -64,7 +64,7 @@
                     </div>
                 </div>
                 <div class="cube-header">
-                    <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="contain" class="cube-header-image" />
+                    <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
                     <div class="cube-header-info">
                         <el-link :href="`https://cubecobra.com/cube/list/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
                             <span class="cube-header-name">{{ cubeB.name }}</span>
@@ -313,7 +313,8 @@ const formatDate = (dateStr: string) => {
 .cube-header-image {
     width: 60px;
     height: 60px;
-    border-radius: 4px;
+    border-radius: 8px;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
@@ -339,10 +340,9 @@ const formatDate = (dateStr: string) => {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 4px 12px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    margin-top: 4px;
 }
 
 .comparison-filter {
@@ -356,5 +356,22 @@ const formatDate = (dateStr: string) => {
 .card-table-search {
     flex: 1;
     min-width: 0;
+}
+
+@media (max-width: 760px) {
+    .cube-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cube-header-info {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .cube-header-meta {
+        width: auto;
+    }
 }
 </style>

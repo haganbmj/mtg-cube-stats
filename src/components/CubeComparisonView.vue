@@ -3,13 +3,16 @@
         <!-- Column headers -->
         <div class="comparison-row column-headers">
             <div class="comparison-cell header-a">
-                Only in {{ props.cubeA.name }} ({{ filteredOnlyA.length }} / {{ props.cubeA.cards.length }})
+                <span class="header-label">Only in {{ props.cubeA.name }}</span>
+                <span class="header-count">({{ filteredOnlyA.length }} / {{ props.cubeA.cards.length }})</span>
             </div>
             <div class="comparison-cell header-both">
-                In Both Cubes ({{ filteredBoth.length }})
+                <span class="header-label">In Both Cubes</span>
+                <span class="header-count">({{ filteredBoth.length }})</span>
             </div>
             <div class="comparison-cell header-b">
-                Only in {{ props.cubeB.name }} ({{ filteredOnlyB.length }} / {{ props.cubeB.cards.length }})
+                <span class="header-label">Only in {{ props.cubeB.name }}</span>
+                <span class="header-count">({{ filteredOnlyB.length }} / {{ props.cubeB.cards.length }})</span>
             </div>
         </div>
 
@@ -18,15 +21,15 @@
             <!-- Color header row -->
             <div class="comparison-row color-header" :style="{ backgroundImage: `linear-gradient(${colorDef.headerBg}, ${colorDef.headerBg}), linear-gradient(var(--el-bg-color), var(--el-bg-color))` }">
                 <div class="comparison-cell">
-                    {{ colorDef.label }}
+                    <span class="color-label">{{ colorDef.label }}</span>
                     <span class="color-count">({{ getColumnColorCount(groupedA, colorDef.id) }} / {{ getColorTotal(props.cubeA.cards, colorDef.id) }})</span>
                 </div>
                 <div class="comparison-cell">
-                    {{ colorDef.label }}
+                    <span class="color-label">{{ colorDef.label }}</span>
                     <span class="color-count">({{ getColumnColorCount(groupedBoth, colorDef.id) }})</span>
                 </div>
                 <div class="comparison-cell">
-                    {{ colorDef.label }}
+                    <span class="color-label">{{ colorDef.label }}</span>
                     <span class="color-count">({{ getColumnColorCount(groupedB, colorDef.id) }} / {{ getColorTotal(props.cubeB.cards, colorDef.id) }})</span>
                 </div>
             </div>
@@ -320,6 +323,12 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
     background: var(--el-bg-color);
 }
 
+.column-headers .comparison-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 6px;
+}
+
 .header-a {
     background: rgba(210, 130, 40, 0.15);
     border-radius: 4px 0 0 4px;
@@ -344,6 +353,13 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
     top: 28px;
     z-index: 9;
     background-clip: content-box, padding-box;
+}
+
+.color-header .comparison-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 6px;
 }
 
 .color-count {
@@ -406,6 +422,34 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 
     &:hover {
         color: var(--el-color-primary);
+    }
+}
+
+@media (max-width: 760px) {
+    .column-headers .comparison-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header-count {
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--el-text-color-secondary);
+    }
+
+    .color-header {
+        top: 46px;
+    }
+
+    .color-header .comparison-cell {
+        flex-direction: column;
+    }
+
+    .type-header {
+        flex-direction: column;
+        gap: 0;
     }
 }
 </style>
