@@ -612,6 +612,16 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
     .el-tabs__nav-scroll {
         width: max-content;
     }
+
+    .el-header {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .el-main {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
 }
 
 @media (hover: none), (pointer: coarse) {
