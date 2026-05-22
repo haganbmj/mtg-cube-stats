@@ -23,7 +23,7 @@
     "@vueuse/core": "^14.2.1",
     "dompurify": "^3.4.2",
     "echarts": "^6.0.0",
-    "element-plus": "^2.13.7",
+    "element-plus": "^2.14.0",
     "katex": "^0.16.45",
     "mana-font": "^1.18.0",
     "marked": "^18.0.3",
