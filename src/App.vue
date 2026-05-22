@@ -54,7 +54,7 @@
                             <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane> -->
 
-                        <el-tab-pane label="Compare" name="compare" :lazy="true" :disabled="Object.keys(loadedCubes).length < 2">
+                        <el-tab-pane label="Compare" name="compare" :lazy="true">
                             <ComparisonTab :loadedCubes="loadedCubes" :addCube="addCube" :comparePair="comparePair" />
                         </el-tab-pane>
 
