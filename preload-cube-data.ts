@@ -37,7 +37,7 @@ const batches: Batch[] = [
     {
         name: 'peasant',
         staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
-        shardCount: 3,
+        shardCount: 4,
         cubes: [
             // Combination of Peasant Discord + a few others that I follow.
             '5d5f69612af66a30f9bb9b10', // haganbmj - The Ham Sandwich
