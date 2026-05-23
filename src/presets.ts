@@ -12,6 +12,5 @@ export const presetCollections: PresetCollection[] = [
     { name: 'wotc', label: 'WotC MTGO/Arena' },
     { name: 'cubecobra-top100', label: 'CubeCobra Top 100' },
     { name: 'peasant', label: 'Peasant Cubes' },
-    { name: 'shoebox-2026', label: 'Shoebox 2026' },
-    { name: 'saltbox-2026', label: 'Salt Box 2026' },
+    { name: 'boston-cube-party-2026', label: 'Boston Cube Party 2026' },
 ];

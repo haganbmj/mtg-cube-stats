@@ -142,7 +142,7 @@ const batches: Batch[] = [
     },
     {
         name: 'shoebox-2026',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        staleThreshold: undefined,
         shardCount: 2,
         cubes: [
             '5fc9e578bada5f7f15feb582', // aquaone - aquaone powered
@@ -169,7 +169,7 @@ const batches: Batch[] = [
     },
     {
         name: 'saltbox-2026',
-        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        staleThreshold: undefined,
         shardCount: 2,
         cubes: [
             'dafb7624-8329-4ac7-af2f-7ad80f94b038', // frogirl - The Wetlands
@@ -359,6 +359,64 @@ const batches: Batch[] = [
             'd369ae9c-f042-4f19-8073-886de27c88ec', // Way Too Hybrid
             '6189e6d28b06db101e4b5bb8', // Welcome to Theros Cube
             'dd921b61-7e3e-4d0c-9f2b-68b879a6110f', // Worship the Gods! A Theros Odyssey
+        ],
+    },
+    {
+        name: 'boston-cube-party-2026',
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 3,
+        cubes: [
+            '549acfea-4793-41ca-b171-b7ae89a9903b', // A Brooding Saga
+            '1efd75a8-91de-498c-b3ee-24df7bde3a38', // Alternate History Powered Cube
+            '87f695d4-ca23-4827-b4d2-b3db65c7fe35', // BARTIFACT - Boston Cube Party Edition
+            '61454789685c83106293be3c', // Bodleian Cube
+            '6c3eb882-71dc-4052-80f8-3a4483b33b53', // Boston Cube
+            '623220f59876560fe936f3b9', // Budget Synergy Cube
+            '5d39ce4b8472c42aab0b61c2', // Bun Magic Cube
+            'e71197e7-2a49-4cbc-b985-22051958995f', // Camelot Cube
+            '40c33b63-bd39-40bf-96f0-5685218e85ac', // Choose Your Own Adventure (CYOA)
+            'a34bdf4b-e7d6-43e8-a026-c3484aff59cd', // COGWORK COMBO
+            'b67c9d5e-5cf5-46f6-bb3d-58a014df6a1a', // Companion Cube
+            '9a388b76-1eee-4fff-ad25-5d261fe9784a', // Dan Schneider Mysterybox Cube
+            '633ccb11d002cd2761ed4f25', // Defender of the Polyverse
+            '50d29893-1696-494d-86f1-d48615d160bd', // Delver Cube
+            '68d9dfb8-2e06-4735-a4aa-535255e66c15', // Disaster Movie Cube, Convention Edition
+            'db24a13c-fb9e-4ab8-832d-476cf304fd02', // Domain Cube
+            'f294ca48-7807-47e4-804d-7aa339216ae8', // Doubleton Synergy
+            '7d4445ef-271b-4865-b0f7-9fae52409876', // Etherium Landscape
+            '5ee84f3e7c9901100bc212d1', // Fifteen Card Highlander
+            'acf0bb88-6a3d-4990-af63-026e8e5f3caf', // Game Zones Cube
+            '1732d8d0-6803-4d60-8680-3a8e0f05a664', // GUT
+            '60597338dc67391048e071cc', // History of Pioneer Draft
+            '27227872-7676-4df8-bc04-4c32ddc7924d', // Hoopin
+            '68c09094-c473-47cd-893b-e9d8a3d66fbe', // I Loot The Body
+            '63e44d4ef4f93b0f6cd5ea94', // Ian's Proliferate Cube
+            '54b83fc2-a2a9-4f51-8719-6f4be010a758', // Jeskai Powered Cube
+            '6bbd325f-98f2-4968-8976-0aef6303dcb5', // Khans of Tarkoria
+            'a7754fee-e00c-4c85-b683-d85ee2c1ce0f', // Kolosaio
+            'e7f9707d-3c85-4741-9825-63e43a9e41e3', // Limited Masters: Tournament Edition
+            '9b29671c-3e89-430f-b943-46160e93c735', // MEDIUM CUBE 3.1
+            'a92f4bd1-b3d5-4469-8577-905041301dc4', // Midwinter
+            '839c4979-e2ca-4434-865a-601efd2ce526', // Neon House of Drift
+            '5ecd517c4022a8067a285177', // Sci-Fi Cube
+            '90a39cf4-6278-40f1-b345-48a248635394', // Sky and Sea Cube
+            '66a046f0-d853-4588-9c23-77c4ea262039', // Strixhaven Study Abroad
+            '7a5a3fb0-c461-4d31-9e5d-2c91c4c2c9ef', // Hot Girl Summer (Baddie Cube)
+            '5f089f4fda10250fbdd5c160', // The Blink Cube
+            '636be1066c3ec60f6637f150', // The Cascade Cube
+            '02771e17-5ec3-49ce-b718-91ebb8048b17', // the dollhouse
+            '629004baa478db0ff2c963ff', // The G.O.A.T. Peasant Cube
+            '4dd752c0-1bc1-43af-bbae-9226f554afda', // The Great Aurora
+            'f907f0a5-8e95-474a-a879-6cced27aaeb3', // The Middle School
+            '5d617ac6c2a85f3b75fe95a4', // The Pauper Cube
+            '636e940b282cc10f6a181e75', // The Penrose Cube
+            'e2f39081-b6f3-4b96-a1f4-890379d68a4d', // The Perilous Seas
+            '3e9e0765-8ee4-4528-8f8c-8fd9657bec19', // The Shepherd Cube
+            '924cd58d-5c8e-4442-b71d-593c6def420d', // The Venn Cube
+            '077a945b-f5b0-403c-8900-27bfda429257', // The Vintage Cube Retirement Home
+            '5d39e7f38472c42aab0b73d6', // Tiny Leaders
+            '624673d179f27d1008cbf702', // UMA+ Cube
+            '6158155be62adc101e305eb6', // Zonal Synergy Cube
         ],
     },
 ];
