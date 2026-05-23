@@ -39,7 +39,7 @@
     "@vue/test-utils": "^2.4.10",
     "axios": "^1.16.0",
     "eslint": "^10.3.0",
-    "eslint-plugin-vue": "^10.9.0",
+    "eslint-plugin-vue": "^10.9.1",
     "happy-dom": "^20.9.0",
     "sass": "^1.99.0",
     "stream-chain": "^3.6.3",
