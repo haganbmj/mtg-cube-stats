@@ -138,6 +138,7 @@ const batches: Batch[] = [
             '8cf14ff3-b9fa-486e-9faf-ce37c1a8ccb1', // emielboven - Emiel's Peasant Cube
             '5dc657d5930245513fdff287', // campervanbeethoven - Uncommon Cube
             'cccf5f35-7800-4135-a52d-1678d9dec978', // Minty - Minty 360 Peasant Cube
+            '3f208867-323a-46c9-9fd2-97a9fdfe7100', // nomadmtg - The Limitless Peasant Cube
         ],
     },
     {
