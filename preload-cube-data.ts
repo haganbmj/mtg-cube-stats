@@ -467,6 +467,9 @@ for (const batch of batches) {
         if (fs.existsSync(`./preloads/cubes/${cubeId}.json`)) {
             let skip = false;
 
+            const stats = fs.statSync(`./preloads/cubes/${cubeId}.json`);
+            const fileAge = Date.now() - stats.mtimeMs;
+
             if (
                 // If we're running in a CI Context, evaluate whether this is an execution that should evaluate Refreshes.
                 refresh.toLowerCase() !== 'true'
@@ -476,15 +479,15 @@ for (const batch of batches) {
                 skip = true;
             } else if (
                 // If we're in a refresh run, use date-based sharding to spread fetches across days.
+                // Override shard policy if file is more than 4 weeks old.
                 isCI
                 && batch.shardCount !== undefined
                 && index % batch.shardCount !== shardIndex % batch.shardCount
+                && fileAge <= 1000 * 60 * 60 * 24 * 28
             ) {
                 console.log(`[${cubeId}] Skipping due to sharding policy...`);
                 skip = true;
             }
-
-            const stats = fs.statSync(`./preloads/cubes/${cubeId}.json`);
 
             if (stats.size === 0 || (!skip && batch.staleThreshold && stats.mtimeMs <= batch.staleThreshold)) {
                 console.log(`[${cubeId}] Local copy is stale or empty, fetching...`);
