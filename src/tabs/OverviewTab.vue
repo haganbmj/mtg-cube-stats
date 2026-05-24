@@ -433,7 +433,7 @@
 import { ref, reactive, computed, inject } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getNestedProp, castInensitiveSort, formatPrice } from '../util/HelperFunctions';
+import { getNestedProp, castInensitiveSort, formatPrice, normalizeSortName } from '../util/HelperFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
@@ -733,7 +733,7 @@ const columnOptions = ref([
 
 const sortMethods = {
     caseInsensitiveName: (a: any, b: any) => {
-        return castInensitiveSort(a.name, b.name);
+        return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
     },
     caseInsensitiveOwner: (a: any, b: any) => {
         return castInensitiveSort(a.owner, b.owner);
@@ -820,7 +820,7 @@ const filteredData = computed(() => {
 const sortedData = computed(() => {
     const data = [...filteredData.value];
     if (!activeSort.value || !activeSort.value.order) {
-        return data.sort((a, b) => castInensitiveSort(a.name, b.name));
+        return data.sort((a, b) => castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name)));
     }
 
     const sortProp = activeSort.value.prop;

@@ -40,6 +40,14 @@ export function castInensitiveSort(a: any, b: any): number {
     return 0;
 }
 
+export function normalizeSortName(str: string): string {
+    return str
+        .trim()
+        .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/["""'''«»‹›]/g, '')
+        .replace(/^(a|an|the)\s+/i, '');
+}
+
 export function formatPrice(value: number): string {
     return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
