@@ -1,4 +1,6 @@
-# mtg-cube-stats
+# [cube.griselbrand.com](https://cube.griselbrand.com)
+
+A tool for analyzing and comparing MTG Cubes from CubeCobra. Originally created to help me figure out what I wanted to draft at CubeCon 2025.
 
 ## Development Setup
 
