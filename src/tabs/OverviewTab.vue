@@ -1065,6 +1065,7 @@ const formatters = {
 
     .cube-tile-thumbnail-wrapper {
         width: 80px;
+        max-height: 80px;
         flex-shrink: 0;
         border-radius: 4px 0 0 4px;
     }
