@@ -666,12 +666,12 @@ function resolveHighlightCubeKeys(value: string, ctx: FilterContext): Set<string
     return keys;
 }
 
-interface HighlightCubeKeys {
+export interface HighlightCubeKeys {
     positive: Set<string>;
     negative: Set<string>;
 }
 
-function collectHighlightCubeKeys(ast: QueryNode | null, ctx: FilterContext, negated = false): HighlightCubeKeys {
+export function collectHighlightCubeKeys(ast: QueryNode | null, ctx: FilterContext, negated = false): HighlightCubeKeys {
     const empty: HighlightCubeKeys = { positive: new Set(), negative: new Set() };
     if (!ast) return empty;
     switch (ast.type) {
