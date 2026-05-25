@@ -148,8 +148,8 @@
                     </el-tooltip>
                 </el-breadcrumb-item>
                 <el-breadcrumb-item v-if="filteredStats.highlightedCubeCardCount !== null">
-                    <el-tooltip content="Total matching cards summed across all highlighted cubes" placement="bottom" effect="light">
-                        <span>{{ filteredStats.highlightedCubeCardCount }} in highlighted</span>
+                    <el-tooltip :content="filteredStats.highlightedNormalizedAvg !== null ? `Total matching cards in the highlighted cube; normalized average shows expected count if other cubes were scaled to this cube's size` : `Total matching cards summed across all highlighted cubes`" placement="bottom" effect="light">
+                        <span>{{ filteredStats.highlightedCubeCardCount }} highlighted<template v-if="filteredStats.highlightedNormalizedAvg !== null"> (avg {{ filteredStats.highlightedNormalizedAvg.toFixed(1) }})</template></span>
                     </el-tooltip>
                 </el-breadcrumb-item>
             </el-breadcrumb>
@@ -517,7 +517,7 @@ import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard, computeHighlightedOracleIds, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
+import { evaluateCard, computeHighlightedOracleIds, collectHighlightCubeKeys, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
 import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
 import { getCardStats, cardStatsReady } from '../util/CubeCobraCardStats';
@@ -1164,11 +1164,77 @@ const filteredStats = computed(() => {
     const highlightedKeys = activeCubeFilterMode.value === 'highlight'
         ? Object.entries(activeCubeFilter.value).filter(([, v]) => v === true).map(([k]) => k)
         : [];
-    const highlightedCubeCardCount = highlightedKeys.length > 0
-        ? highlightedKeys.reduce((sum: number, key: string) => sum + (cubeMatchCounts[key] ?? 0), 0)
-        : null;
+    const negativeHighlightedKeys = activeCubeFilterMode.value === 'highlight'
+        ? Object.entries(activeCubeFilter.value).filter(([, v]) => v === false).map(([k]) => k)
+        : [];
 
-    return { cubesWithMatch, avgPerCube, cubeCount, highlightedCubeCardCount };
+    // Also collect highlight cube keys from the text query
+    if (parsedQuery.value.ast) {
+        const ctx = { loadedCubes: props.loadedCubes, setDates: getSetReleaseDates() };
+        const { positive, negative } = collectHighlightCubeKeys(parsedQuery.value.ast, ctx);
+        for (const k of positive) {
+            if (!highlightedKeys.includes(k)) highlightedKeys.push(k);
+        }
+        for (const k of negative) {
+            if (!negativeHighlightedKeys.includes(k)) negativeHighlightedKeys.push(k);
+        }
+    }
+
+    let highlightedCubeCardCount: number | null = null;
+    let highlightedNormalizedAvg: number | null = null;
+
+    if (highlightedKeys.length > 0 || negativeHighlightedKeys.length > 0) {
+        // Count matching cards in positive cubes
+        const positiveCount = highlightedKeys.reduce((sum: number, key: string) => sum + (cubeMatchCounts[key] ?? 0), 0);
+
+        if (negativeHighlightedKeys.length > 0 && highlightedKeys.length > 0) {
+            // Subtract cards that are in the intersection (in both positive and negative cubes)
+            const positiveOracleIds = new Set<string>();
+            for (const key of highlightedKeys) {
+                if (!props.loadedCubes[key]) continue;
+                for (const c of props.loadedCubes[key].cards) {
+                    if (filteredOracleIds.has(c.oracleId)) positiveOracleIds.add(c.oracleId);
+                }
+            }
+            let intersectionCount = 0;
+            for (const key of negativeHighlightedKeys) {
+                if (!props.loadedCubes[key]) continue;
+                for (const c of props.loadedCubes[key].cards) {
+                    if (positiveOracleIds.has(c.oracleId)) {
+                        intersectionCount++;
+                        positiveOracleIds.delete(c.oracleId); // count each card only once
+                    }
+                }
+            }
+            highlightedCubeCardCount = positiveCount - intersectionCount;
+        } else if (highlightedKeys.length > 0) {
+            highlightedCubeCardCount = positiveCount;
+        } else {
+            // Only negative highlights — show the count from those cubes
+            highlightedCubeCardCount = negativeHighlightedKeys.reduce((sum: number, key: string) => sum + (cubeMatchCounts[key] ?? 0), 0);
+        }
+
+        // Normalized average: only when exactly 1 net positive cube is highlighted
+        const netPositiveKeys = highlightedKeys.filter(k => !negativeHighlightedKeys.includes(k));
+        if (netPositiveKeys.length === 1) {
+            const hlKey = netPositiveKeys[0];
+            const hlCubeSize = props.loadedCubes[hlKey]?.cards?.length ?? 0;
+            if (hlCubeSize > 0 && matchingCounts.length > 0) {
+                let normalizedSum = 0;
+                let normalizedCount = 0;
+                for (const key of candidateKeys) {
+                    if (cubeMatchCounts[key] === 0) continue;
+                    const cubeSize = props.loadedCubes[key]?.cards?.length ?? 0;
+                    if (cubeSize === 0) continue;
+                    normalizedSum += cubeMatchCounts[key] * (hlCubeSize / cubeSize);
+                    normalizedCount++;
+                }
+                highlightedNormalizedAvg = normalizedCount > 0 ? normalizedSum / normalizedCount : null;
+            }
+        }
+    }
+
+    return { cubesWithMatch, avgPerCube, cubeCount, highlightedCubeCardCount, highlightedNormalizedAvg };
 });
 </script>
 
