@@ -238,7 +238,7 @@ import { computed, inject, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { Link } from '@element-plus/icons-vue';
-import { capitalizeFirstLetter, getRarityColor, formatPrice } from '../util/HelperFunctions';
+import { capitalizeFirstLetter, getRarityColor, formatPrice, normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import { getScryfallCards } from '../util/CubeFunctions';
 import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
@@ -338,7 +338,7 @@ const expandedCubeList = computed(() => {
         owner: cube.owner,
         size: cube.cards.length,
         included: activeCard.value!.cubes.includes(key),
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    })).sort((a, b) => castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name)));
 });
 
 const GLOBAL_RATE_CATEGORIES = [
