@@ -194,6 +194,7 @@
         </div>
 
         <div class="overview-sort-row">
+            <label class="sort-label">Sort</label>
             <el-select v-model="sortProp" style="width: 200px;">
                 <el-option
                     v-for="opt in overviewSortProperties"
@@ -202,11 +203,11 @@
                     :value="opt.prop"
                 />
             </el-select>
-            <el-button-group>
-                <el-button :type="sortDirection === 'auto' ? 'primary' : ''" @click="sortDirection = 'auto'">Auto</el-button>
-                <el-button :type="sortDirection === 'ascending' ? 'primary' : ''" @click="sortDirection = 'ascending'">Asc</el-button>
-                <el-button :type="sortDirection === 'descending' ? 'primary' : ''" @click="sortDirection = 'descending'">Desc</el-button>
-            </el-button-group>
+            <el-select v-model="sortDirection" style="width: 100px;">
+                <el-option label="Auto" value="auto" />
+                <el-option label="Asc" value="ascending" />
+                <el-option label="Desc" value="descending" />
+            </el-select>
         </div>
 
         <div v-if="visualDisplayVisible" class="overview-cube-grid">
@@ -877,6 +878,12 @@ const formatters = {
     align-items: center;
     gap: 8px;
     margin: 8px 0;
+}
+
+.sort-label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
 }
 
 .overview-search-row {

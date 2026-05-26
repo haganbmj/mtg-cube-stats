@@ -9,7 +9,7 @@ export interface SortProperty {
 
 export const cardSortProperties: SortProperty[] = [
     { prop: 'name', label: 'Name', autoDirection: 'ascending' },
-    { prop: 'cubeCount', label: 'Number of Cubes', autoDirection: 'descending' },
+    { prop: 'cubeCount', label: 'Cube Count', autoDirection: 'descending' },
     { prop: 'globalRatePercent', label: 'Global Inclusion Rate', autoDirection: 'descending' },
     { prop: 'cmc', label: 'Mana Value', autoDirection: 'ascending' },
     { prop: 'releaseDate', label: 'Release Date', autoDirection: 'descending' },

@@ -39,10 +39,6 @@
                 </template>
             </el-dropdown>
         </div>
-        <span v-if="isMobile" class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
-            {{ viewExpanded ? '▴ View' : '▾ View' }}
-        </span>
-        <span v-if="isMobile" style="flex: 1;"></span>
         <el-button-group v-show="!isMobile">
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
@@ -130,22 +126,22 @@
         </div>
     </div>
 
+    <div v-if="isMobile" class="card-table-card-count">
+        <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+    </div>
+
     <div ref="cardResultsTop" class="card-table-sort-row">
         <template v-if="isMobile">
             <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
-            <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+            <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
+                {{ viewExpanded ? '▴ View' : '▾ View' }}
+            </span>
             <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
         </template>
         <template v-else>
-            <el-pagination
-                v-model:current-page="currentPage"
-                :pager-count="5"
-                layout="prev, pager, next"
-                :total="filteredRows.length"
-                :page-size="pageSize"
-            />
             <div class="card-table-sort-controls">
-                <el-select v-model="sortProp" style="width: 200px;" :disabled="!!querySortDirective">
+                <label class="sort-label">Sort</label>
+                <el-select v-model="sortProp" style="width: 180px;" :disabled="!!querySortDirective">
                     <el-option
                         v-for="opt in cardSortProperties"
                         :key="opt.prop"
@@ -153,15 +149,23 @@
                         :value="opt.prop"
                     />
                 </el-select>
-                <el-button-group>
-                    <el-button :type="sortDirection === 'auto' ? 'primary' : ''" @click="sortDirection = 'auto'" :disabled="!!querySortDirective">Auto</el-button>
-                    <el-button :type="sortDirection === 'ascending' ? 'primary' : ''" @click="sortDirection = 'ascending'" :disabled="!!querySortDirective">Asc</el-button>
-                    <el-button :type="sortDirection === 'descending' ? 'primary' : ''" @click="sortDirection = 'descending'" :disabled="!!querySortDirective">Desc</el-button>
-                </el-button-group>
+                <el-select v-model="sortDirection" style="width: 100px;" :disabled="!!querySortDirective">
+                    <el-option label="Auto" value="auto" />
+                    <el-option label="Asc" value="ascending" />
+                    <el-option label="Desc" value="descending" />
+                </el-select>
                 <template v-if="visualDisplayVisible">
+                    <label class="sort-label">Columns</label>
                     <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" style="width: 90px;" controls-position="right" />
                 </template>
             </div>
+            <el-pagination
+                v-model:current-page="currentPage"
+                :pager-count="5"
+                layout="prev, pager, next"
+                :total="filteredRows.length"
+                :page-size="pageSize"
+            />
         </template>
     </div>
 
@@ -442,11 +446,14 @@
 
     <div v-if="isMobile && filteredRows.length > pageSize" class="card-table-pagination-row">
         <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
-        <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+        <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
+            {{ viewExpanded ? '▴ View' : '▾ View' }}
+        </span>
         <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
     </div>
     <el-pagination
         v-else-if="!isMobile && filteredRows.length > pageSize"
+        class="card-table-bottom-pagination"
         v-model:current-page="currentPage"
         :pager-count="5"
         layout="->, prev, pager, next"
@@ -622,10 +629,6 @@ const displayModeValue = computed({
     set: (val: string) => { visualDisplayVisible.value = val === 'grid'; },
 });
 
-watch(() => config.value.visualColumnCount, () => {
-    currentPage.value = 1;
-});
-
 watch(visualDisplayVisible, () => {
     currentPage.value = 1;
 });
@@ -657,6 +660,10 @@ const config = bindStorage('card-summary-table-config', (v) => {
         frequencyCategory: typeof v.frequencyCategory === 'string' ? v.frequencyCategory : 'total',
         showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
+});
+
+watch(() => config.value.visualColumnCount, () => {
+    currentPage.value = 1;
 });
 
 const frequencyCategoryOptions = computed(() => {
@@ -1306,10 +1313,6 @@ const filteredStats = computed(() => {
     gap: 12px;
     margin: 8px 0;
 
-    .el-pagination {
-        flex: 1;
-    }
-
     .mobile-page-info {
         flex: 1;
         text-align: center;
@@ -1323,6 +1326,13 @@ const filteredStats = computed(() => {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex: 1;
+}
+
+.sort-label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
 }
 
 .card-table-filter-summary {
@@ -1390,9 +1400,8 @@ const filteredStats = computed(() => {
     opacity: 0.4;
 }
 
-.el-pagination {
+.card-table-bottom-pagination {
     margin: 16px 0;
-    text-align: right;
 }
 
 .card-image {
