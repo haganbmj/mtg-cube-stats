@@ -63,6 +63,40 @@
                 The <strong>cube dropdown</strong> next to the search box lets you include or exclude specific loaded cubes using a point-and-click interface.
                 You can also filter by cube name in the text query using <code>cube:&lt;name&gt;</code>.
             </p>
+
+            <h4 class="help-section-title">Sorting</h4>
+            <p>
+                Use <code>order:</code> (or <code>sort:</code>) to sort results by a field,
+                overriding the interactive sort controls. Use <code>dir:</code> (or <code>direction:</code>)
+                to set ascending or descending. If omitted, each field uses a sensible default.
+            </p>
+            <p>
+                <strong>General:</strong>
+                <code>name</code>, <code>cmc</code>, <code>color</code>, <code>type</code>,
+                <code>rarity</code>, <code>set</code>, <code>date</code>
+            </p>
+            <p>
+                <strong>Stats:</strong>
+                <code>cubes</code>, <code>count</code>, <code>elo</code>, <code>pop</code>,
+                <code>price</code>/<code>usd</code>, <code>tix</code>, <code>power</code>,
+                <code>toughness</code>, <code>words</code>
+            </p>
+            <p>
+                <strong>Global Rate:</strong>
+                <code>rate</code>/<code>gr</code>, <code>gr-pauper</code>, <code>gr-peasant</code>,
+                <code>gr-powered</code>, <code>gr-desert</code>, <code>gr-uncategorized</code>
+            </p>
+            <p>
+                <strong>Direction values:</strong> <code>asc</code> / <code>ascending</code>,
+                <code>desc</code> / <code>descending</code>
+            </p>
+            <p>
+                <strong>Examples:</strong>
+                <code>order:cmc dir:desc</code>&nbsp;&nbsp;
+                <code>sort:elo</code>&nbsp;&nbsp;
+                <code>order:gr-pauper</code>&nbsp;&nbsp;
+                <code>t:creature order:power dir:asc</code>
+            </p>
         </div>
     </el-dialog>
 </template>

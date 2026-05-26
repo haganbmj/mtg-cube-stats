@@ -17,6 +17,8 @@ export interface FilterContext {
 export interface SortDirective {
     prop: string;
     order: 'ascending' | 'descending';
+    hasOrder: boolean;
+    hasDirection: boolean;
 }
 
 const ORDER_ALIASES: Record<string, { prop: string; defaultOrder: 'ascending' | 'descending' }> = {
@@ -92,15 +94,17 @@ function collectSortNodes(ast: QueryNode | null): { order?: string; direction?: 
 
 /**
  * Extract sort directive from the AST (order: / dir: keywords).
- * Returns null if no order: condition is present.
+ * Returns null if neither order: nor direction: condition is present.
  */
 export function extractSortDirective(ast: QueryNode | null): SortDirective | null {
     const nodes = collectSortNodes(ast);
-    if (!nodes.order) return null;
-    const entry = ORDER_ALIASES[nodes.order];
-    if (!entry) return null;
-    const direction = nodes.direction ? (DIRECTION_ALIASES[nodes.direction] ?? entry.defaultOrder) : entry.defaultOrder;
-    return { prop: entry.prop, order: direction };
+    if (!nodes.order && !nodes.direction) return null;
+    const entry = nodes.order ? ORDER_ALIASES[nodes.order] : null;
+    if (nodes.order && !entry) return null;
+    const prop = entry?.prop ?? '';
+    const defaultOrder = entry?.defaultOrder ?? 'ascending';
+    const direction = nodes.direction ? (DIRECTION_ALIASES[nodes.direction] ?? defaultOrder) : defaultOrder;
+    return { prop, order: direction, hasOrder: !!nodes.order, hasDirection: !!nodes.direction };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

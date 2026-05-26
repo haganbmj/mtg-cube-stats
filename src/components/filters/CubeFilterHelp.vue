@@ -47,6 +47,31 @@
                 Keywords like <code>creatures</code>, <code>lands</code>, <code>removal</code>, color keywords, etc. compare against the <em>percentage</em> of total cards (or non-land cards for colors).
                 For example, <code>creatures>=40</code> means "40% or more of cards are creatures."
             </p>
+
+            <h4 class="help-section-title">Sorting</h4>
+            <p>
+                Use <code>order:</code> (or <code>sort:</code>) to sort cubes by a field,
+                overriding the dropdown sort controls. Use <code>dir:</code> (or <code>direction:</code>)
+                to set ascending or descending. If omitted, each field uses a sensible default.
+            </p>
+            <p>
+                <strong>Available sort values:</strong>
+                <code>name</code>, <code>owner</code>, <code>size</code>, <code>similarity</code>,
+                <code>new</code>, <code>modified</code>, <code>followers</code>, <code>avgcmc</code>,
+                <code>keywords</code>, <code>tokens</code>, <code>ub</code>, <code>sp</code>,
+                <code>elo</code>, <code>median</code>/<code>year</code>, <code>price</code>,
+                <code>tix</code>, <code>words</code>, <code>removal</code>
+            </p>
+            <p>
+                <strong>Direction values:</strong> <code>asc</code> / <code>ascending</code>,
+                <code>desc</code> / <code>descending</code>
+            </p>
+            <p>
+                <strong>Examples:</strong>
+                <code>order:size dir:desc</code>&nbsp;&nbsp;
+                <code>sort:similarity</code>&nbsp;&nbsp;
+                <code>category:peasant order:elo</code>
+            </p>
         </div>
     </el-dialog>
 </template>
@@ -219,6 +244,17 @@ const FILTER_DOCS: FilterDoc[] = [
         keywords: ['card'],
         description: 'Cube contains a card by name. ":" for substring match, "=" for exact name.',
         examples: ['card:bolt', 'card="lightning bolt"', '-card:counterspell'],
+    },
+    // ── Sort directives ─────────────────────────────────────────────────────────
+    {
+        keywords: ['order', 'sort'],
+        description: 'Sort results by a field. Overrides the interactive sort controls. Values: name, owner, size, similarity, new, modified, followers, avgcmc, keywords, tokens, ub, sp, elo, median/year, price, tix, words, removal.',
+        examples: ['order:size', 'sort:similarity', 'order:modified'],
+    },
+    {
+        keywords: ['dir', 'direction'],
+        description: 'Sort direction. Use with order: to control ascending/descending. If omitted, each field uses a sensible default.',
+        examples: ['dir:asc', 'dir:desc', 'direction:ascending'],
     },
 ];
 </script>

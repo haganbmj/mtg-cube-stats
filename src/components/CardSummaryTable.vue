@@ -35,12 +35,12 @@
         </template>
         <template v-else>
             <div class="card-table-sort-controls">
-                <el-select v-model="showAllCardsValue" style="width: 150px;">
+                <el-select v-model="showAllCardsValue" style="width: 180px;">
                     <el-option label="Only in Loaded Cubes" value="off" />
                     <el-option label="All Cards" value="on" />
                 </el-select>
                 <label class="sort-label">Sorted by</label>
-                <el-select v-model="sortProp" style="width: 150px;" :disabled="!!querySortDirective">
+                <el-select v-model="sortProp" style="width: 150px;" :disabled="!!querySortDirective?.hasOrder">
                     <el-option
                         v-for="opt in cardSortProperties"
                         :key="opt.prop"
@@ -48,7 +48,7 @@
                         :value="opt.prop"
                     />
                 </el-select>
-                <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!querySortDirective">
+                <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!querySortDirective?.hasDirection">
                     <el-option label="Auto" value="auto" />
                     <el-option label="Asc" value="ascending" />
                     <el-option label="Desc" value="descending" />
@@ -100,7 +100,7 @@
         </div>
         <div class="mobile-filter-row">
             <span class="mobile-filter-label">Sorted by</span>
-            <el-select v-model="sortProp" size="small" class="mobile-filter-control" :disabled="!!querySortDirective">
+            <el-select v-model="sortProp" size="small" class="mobile-filter-control" :disabled="!!querySortDirective?.hasOrder">
                 <el-option
                     v-for="opt in cardSortProperties"
                     :key="opt.prop"
@@ -111,7 +111,7 @@
         </div>
         <div class="mobile-filter-row">
             <span class="mobile-filter-label">Sort direction</span>
-            <el-select v-model="sortDirection" size="small" class="mobile-filter-control" :disabled="!!querySortDirective">
+            <el-select v-model="sortDirection" size="small" class="mobile-filter-control" :disabled="!!querySortDirective?.hasDirection">
                 <el-option label="Auto" value="auto" />
                 <el-option label="Asc" value="ascending" />
                 <el-option label="Desc" value="descending" />
@@ -534,14 +534,14 @@ watch(sortProp, () => {
 });
 
 const resolvedSortDirection = computed(() => {
-    if (querySortDirective.value) {
+    if (querySortDirective.value?.hasDirection) {
         return querySortDirective.value.order;
     }
     return resolveDirection(sortDirection.value, sortProp.value, cardSortProperties);
 });
 
 const resolvedSortProp = computed(() => {
-    if (querySortDirective.value) {
+    if (querySortDirective.value?.hasOrder) {
         return querySortDirective.value.prop;
     }
     return sortProp.value;

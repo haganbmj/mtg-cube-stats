@@ -195,7 +195,7 @@
 
         <div class="overview-sort-row">
             <label class="sort-label">Sorted by</label>
-            <el-select v-model="sortProp" style="width: 150px;">
+            <el-select v-model="sortProp" style="width: 150px;" :disabled="!!queryCubeSortDirective?.hasOrder">
                 <el-option
                     v-for="opt in overviewSortProperties"
                     :key="opt.prop"
@@ -203,7 +203,7 @@
                     :value="opt.prop"
                 />
             </el-select>
-            <el-select v-model="sortDirection" style="width: 80px;">
+            <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!queryCubeSortDirective?.hasDirection">
                 <el-option label="Auto" value="auto" />
                 <el-option label="Asc" value="ascending" />
                 <el-option label="Desc" value="descending" />
@@ -459,7 +459,7 @@ import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCubeFilter } from '../util/CubeFilterEvaluator';
+import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 
 const { width: windowWidth } = useWindowSize();
@@ -756,9 +756,12 @@ watch(sortProp, () => {
     sortDirection.value = 'auto';
 });
 
-const resolvedSortDirection = computed(() =>
-    resolveDirection(sortDirection.value, sortProp.value, overviewSortProperties),
-);
+const resolvedSortDirection = computed(() => {
+    if (queryCubeSortDirective.value?.hasDirection) {
+        return queryCubeSortDirective.value.order;
+    }
+    return resolveDirection(sortDirection.value, sortProp.value, overviewSortProperties);
+});
 
 // --- Formatter helpers ---
 const fmtFixed2 = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2);
@@ -814,6 +817,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
 const cubeSearchVisible = bindStorage<boolean>('cube-search-visible', v => v === true);
 const cubeSearchQuery = ref('');
 const parsedCubeQuery = computed(() => parseQuery(cubeSearchQuery.value));
+const queryCubeSortDirective = computed(() => extractCubeSortDirective(parsedCubeQuery.value.ast));
 
 const filteredData = computed(() => {
     const data = props.overviewTableData as any[];
@@ -829,7 +833,7 @@ const filteredData = computed(() => {
 
 const sortedData = computed(() => {
     const data = [...filteredData.value];
-    const prop = sortProp.value;
+    const prop = queryCubeSortDirective.value?.hasOrder ? queryCubeSortDirective.value.prop : sortProp.value;
     const dir = resolvedSortDirection.value === 'ascending' ? 1 : -1;
 
     return data.sort((a, b) => {
