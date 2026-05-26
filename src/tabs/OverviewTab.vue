@@ -17,7 +17,7 @@
                 <el-row :gutter="10">
                     <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
                         <el-checkbox
-                            :label="item.value"
+                            :value="item.value"
                         >
                             {{ item.label }}
                             <el-tooltip
