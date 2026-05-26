@@ -160,6 +160,7 @@ const clearEntry = (key: string) => {
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  width: 100%;
   min-height: 32px;
   padding: 2px 8px;
   border: 1px solid var(--el-border-color);

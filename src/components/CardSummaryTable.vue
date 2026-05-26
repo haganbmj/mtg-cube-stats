@@ -55,92 +55,17 @@
         </el-dropdown>
     </div>
 
-    <div v-if="isMobile && viewExpanded" class="card-table-mobile-filters">
-        <TristateSelect
-            v-if="Object.keys(loadedCubes).length > 0"
-            :modelValue="activeCubeFilter"
-            @update:modelValue="activeCubeFilter = $event"
-            :options="cubeOptions"
-            :showModeToggle="true"
-            :mode="activeCubeFilterMode"
-            @update:mode="activeCubeFilterMode = $event"
-            placeholder="Filter by cube..."
-        />
-        <div class="mobile-filter-row">
-            <el-dropdown trigger="click" :hide-on-click="false">
-                <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates">All Cards</el-button>
-                <template #dropdown>
-                    <div class="all-cards-dropdown">
-                        <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
-                        <div class="all-cards-dropdown__label">Frequency Category</div>
-                        <el-select
-                            v-if="frequencyCategoryOptions.length > 0"
-                            v-model="config.frequencyCategory"
-                            size="small"
-                            style="width: 220px;"
-                            placeholder="Global Rate"
-                        >
-                            <el-option-group
-                                v-for="grp in groupedFrequencyOptions"
-                                :key="grp.label"
-                                :label="grp.label"
-                            >
-                                <el-option
-                                    v-for="opt in grp.options"
-                                    :key="opt.value"
-                                    :label="opt.label"
-                                    :value="opt.value"
-                                />
-                            </el-option-group>
-                        </el-select>
-                    </div>
-                </template>
-            </el-dropdown>
-        </div>
-        <div class="mobile-filter-row">
-            <span class="sort-label">Display</span>
-            <el-select v-model="displayModeValue" size="small" style="width: 100px;">
-                <el-option label="Grid" value="grid" />
-                <el-option label="Table" value="table" />
-            </el-select>
-        </div>
-        <div class="mobile-filter-row">
-            <span class="sort-label">Sort by</span>
-            <el-select v-model="sortProp" size="small" style="flex: 1;" :disabled="!!querySortDirective">
-                <el-option
-                    v-for="opt in cardSortProperties"
-                    :key="opt.prop"
-                    :label="opt.label"
-                    :value="opt.prop"
-                />
-            </el-select>
-            <el-button-group size="small">
-                <el-button :type="sortDirection === 'auto' ? 'primary' : ''" @click="sortDirection = 'auto'" :disabled="!!querySortDirective">Auto</el-button>
-                <el-button :type="sortDirection === 'ascending' ? 'primary' : ''" @click="sortDirection = 'ascending'" :disabled="!!querySortDirective">Asc</el-button>
-                <el-button :type="sortDirection === 'descending' ? 'primary' : ''" @click="sortDirection = 'descending'" :disabled="!!querySortDirective">Desc</el-button>
-            </el-button-group>
-        </div>
-        <div v-if="visualDisplayVisible" class="mobile-filter-row">
-            <span class="sort-label">Columns</span>
-            <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" style="width: 90px;" controls-position="right" />
-        </div>
-    </div>
-
-    <div v-if="isMobile" class="card-table-card-count">
-        <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
-    </div>
-
     <div ref="cardResultsTop" class="card-table-sort-row">
         <template v-if="isMobile">
             <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
             <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
-                {{ viewExpanded ? '▴ View' : '▾ View' }}
+                {{ viewExpanded ? '▴ Options' : '▾ Options' }}
             </span>
             <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
         </template>
         <template v-else>
             <div class="card-table-sort-controls">
-                <label class="sort-label">Sort</label>
+                <label class="sort-label">Sorted by</label>
                 <el-select v-model="sortProp" style="width: 180px;" :disabled="!!querySortDirective">
                     <el-option
                         v-for="opt in cardSortProperties"
@@ -167,6 +92,81 @@
                 :page-size="pageSize"
             />
         </template>
+    </div>
+
+    <div v-if="isMobile && viewExpanded" class="card-table-mobile-filters">
+        <div v-if="Object.keys(loadedCubes).length > 0" class="mobile-filter-row">
+            <span class="mobile-filter-label">Cubes</span>
+            <div class="mobile-filter-control">
+                <TristateSelect
+                    :modelValue="activeCubeFilter"
+                    @update:modelValue="activeCubeFilter = $event"
+                    :options="cubeOptions"
+                    :showModeToggle="true"
+                    :mode="activeCubeFilterMode"
+                    @update:mode="activeCubeFilterMode = $event"
+                    placeholder="Filter by cube..."
+                />
+            </div>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">All Cards</span>
+            <el-select v-model="showAllCardsValue" size="small" class="mobile-filter-control">
+                <el-option label="Only in Loaded Cubes" value="off" />
+                <el-option label="Show All Cards" value="on" />
+            </el-select>
+        </div>
+        <div v-if="config.showAllCards && frequencyCategoryOptions.length > 0" class="mobile-filter-row">
+            <span class="mobile-filter-label">Frequency</span>
+            <el-select v-model="config.frequencyCategory" size="small" class="mobile-filter-control">
+                <el-option-group
+                    v-for="grp in groupedFrequencyOptions"
+                    :key="grp.label"
+                    :label="grp.label"
+                >
+                    <el-option
+                        v-for="opt in grp.options"
+                        :key="opt.value"
+                        :label="opt.label"
+                        :value="opt.value"
+                    />
+                </el-option-group>
+            </el-select>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">Display</span>
+            <el-select v-model="displayModeValue" size="small" class="mobile-filter-control">
+                <el-option label="Images" value="grid" />
+                <el-option label="Table" value="table" />
+            </el-select>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">Sorted by</span>
+            <el-select v-model="sortProp" size="small" class="mobile-filter-control" :disabled="!!querySortDirective">
+                <el-option
+                    v-for="opt in cardSortProperties"
+                    :key="opt.prop"
+                    :label="opt.label"
+                    :value="opt.prop"
+                />
+            </el-select>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">Sort direction</span>
+            <el-select v-model="sortDirection" size="small" class="mobile-filter-control" :disabled="!!querySortDirective">
+                <el-option label="Auto" value="auto" />
+                <el-option label="Asc" value="ascending" />
+                <el-option label="Desc" value="descending" />
+            </el-select>
+        </div>
+        <div v-if="visualDisplayVisible" class="mobile-filter-row">
+            <span class="mobile-filter-label">Columns</span>
+            <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" class="mobile-filter-control" controls-position="right" />
+        </div>
+    </div>
+
+    <div v-if="isMobile" class="card-table-card-count">
+        <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
     </div>
 
     <div v-if="!isMobile" class="card-table-filter-summary">
@@ -627,6 +627,11 @@ const resolvedSortProp = computed(() => {
 const displayModeValue = computed({
     get: () => visualDisplayVisible.value ? 'grid' : 'table',
     set: (val: string) => { visualDisplayVisible.value = val === 'grid'; },
+});
+
+const showAllCardsValue = computed({
+    get: () => config.value.showAllCards ? 'on' : 'off',
+    set: (val: string) => { config.value.showAllCards = val === 'on'; },
 });
 
 watch(visualDisplayVisible, () => {
@@ -1252,16 +1257,10 @@ const filteredStats = computed(() => {
 <style lang="scss">
 .card-table-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
     margin-bottom: 4px;
-
-    @media (max-width: 600px) {
-        .card-table-search {
-            flex-basis: 100%;
-        }
-    }
 }
 
 .card-table-search {
@@ -1295,9 +1294,17 @@ const filteredStats = computed(() => {
     gap: 8px;
     margin-bottom: 8px;
 
-    .sort-label {
+    .mobile-filter-label {
         font-size: 13px;
         color: var(--el-text-color-secondary);
+        width: 35%;
+        flex-shrink: 0;
+        text-align: right;
+    }
+
+    .mobile-filter-control {
+        width: 50%;
+        flex-shrink: 0;
     }
 
     .mobile-filter-row {
@@ -1310,16 +1317,16 @@ const filteredStats = computed(() => {
 .card-table-sort-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     margin: 8px 0;
+}
 
-    .mobile-page-info {
-        flex: 1;
-        text-align: center;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-        white-space: nowrap;
-    }
+.card-table-card-count {
+    text-align: center;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    margin: 16px 0;
 }
 
 .card-table-sort-controls {
@@ -1336,22 +1343,15 @@ const filteredStats = computed(() => {
 }
 
 .card-table-filter-summary {
-    margin: 4px 0 8px;
+    margin: 16px 0;
 }
 
 .card-table-pagination-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    margin: 8px 0;
-
-    .mobile-page-info {
-        flex: 1;
-        text-align: center;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-        white-space: nowrap;
-    }
+    margin: 16px 0;
 }
 
 .visual-card-grid {
