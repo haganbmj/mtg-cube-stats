@@ -33,11 +33,9 @@ export function capitalizeFirstLetter(str: string): string {
 }
 
 export function castInensitiveSort(a: any, b: any): number {
-    const aStr = (a ?? '').toString().toLowerCase();
-    const bStr = (b ?? '').toString().toLowerCase();
-    if (aStr < bStr) return -1;
-    if (aStr > bStr) return 1;
-    return 0;
+    const aStr = (a ?? '').toString().normalize('NFKD');
+    const bStr = (b ?? '').toString().normalize('NFKD');
+    return aStr.localeCompare(bStr, undefined, { sensitivity: 'base' });
 }
 
 export function normalizeSortName(str: string): string {
