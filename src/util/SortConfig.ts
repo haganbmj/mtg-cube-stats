@@ -31,8 +31,15 @@ export const overviewSortProperties: SortProperty[] = [
     { prop: 'stats.totalCards', label: 'Card Count', autoDirection: 'descending' },
     { prop: 'avgSimilarityScore', label: 'Similarity', autoDirection: 'descending' },
     { prop: 'stats.newCards', label: 'New Cards', autoDirection: 'descending' },
+    { prop: 'lastModified', label: 'Modified Date', autoDirection: 'descending' },
+    { prop: 'followerCount', label: 'Followers', autoDirection: 'descending' },
     { prop: 'stats.averageNonLandCmc', label: 'Avg Mana Value', autoDirection: 'ascending' },
     { prop: 'stats.averageWordCount', label: 'Avg Word Count', autoDirection: 'ascending' },
+    { prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-Evergreen Keywords', autoDirection: 'descending' },
+    { prop: 'stats.cardCounts.makesTokens', label: 'Makes Tokens', autoDirection: 'descending' },
+    { prop: 'stats.medianReleaseYear', label: 'Median Release Year', autoDirection: 'descending' },
+    { prop: 'stats.cardCounts.universesBeyond', label: 'Universes Beyond', autoDirection: 'descending' },
+    { prop: 'stats.cardCounts.supplementalProduct', label: 'Supplemental Product', autoDirection: 'descending' },
 ];
 
 export function resolveDirection(direction: SortDirection, prop: string, properties: SortProperty[]): 'ascending' | 'descending' {

@@ -833,8 +833,8 @@ const sortedData = computed(() => {
     const dir = resolvedSortDirection.value === 'ascending' ? 1 : -1;
 
     return data.sort((a, b) => {
-        // Use ratioSort for newCards
-        if (prop === 'stats.newCards') {
+        // Use ratioSort for newCards and cardCounts ratios
+        if (prop === 'stats.newCards' || prop.startsWith('stats.cardCounts.')) {
             const aRatio = getNestedProp(a, prop) / a.stats.totalCards;
             const bRatio = getNestedProp(b, prop) / b.stats.totalCards;
             if (aRatio !== bRatio) return (aRatio - bRatio) * dir;
