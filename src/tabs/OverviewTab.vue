@@ -86,7 +86,28 @@
         :element-loading-text="loadingText"
         element-loading-custom-class="overview-loading"
     >
-        <div class="overview-toolbar">
+        <div class="overview-toolbar-row-1">
+            <div class="overview-search-input">
+                <CubeSearchInput v-model="cubeSearchQuery" />
+            </div>
+            <div class="overview-toolbar-actions">
+                <el-select v-if="!isMobile" v-model="displayModeValue" style="width: 110px;">
+                    <el-option label="Grid" value="grid" />
+                    <el-option label="Table" value="table" />
+                </el-select>
+
+                <el-dropdown trigger="click">
+                    <el-button :icon="Menu" circle />
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+        </div>
+
+        <div class="overview-toolbar-row-2">
             <form class="overview-add-form" @submit.prevent="submitAddCubeForm">
                 <el-select
                     class="overview-collection-select"
@@ -143,44 +164,57 @@
                 </div>
             </form>
 
-            <div class="overview-toolbar-actions">
-                <el-button
-                    v-if="!isMobile"
-                    :disabled="Object.keys(props.loadedCubes).length === 0"
-                    @click="props.clearCubes()"
-                >Remove All</el-button>
-
-                <el-button-group>
-                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
-                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
-                </el-button-group>
-
-                <el-button
-                    :icon="Search"
-                    :type="cubeSearchVisible ? 'primary' : ''"
-                    @click="cubeSearchVisible = !cubeSearchVisible"
-                    title="Search/Filter Cubes"
-                    circle
-                />
-
-                <el-dropdown trigger="click">
-                    <el-button :icon="Menu" circle />
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
-                            <el-dropdown-item
-                                v-if="isMobile"
-                                :disabled="Object.keys(props.loadedCubes).length === 0"
-                                @click="props.clearCubes()"
-                            >Remove All</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
+            <div v-if="!isMobile" class="overview-sort-row">
+                <label class="sort-label">Sorted by</label>
+                <el-select v-model="sortProp" style="width: 150px;" :disabled="!!queryCubeSortDirective?.hasOrder">
+                    <el-option
+                        v-for="opt in overviewSortProperties"
+                        :key="opt.prop"
+                        :label="opt.label"
+                        :value="opt.prop"
+                    />
+                </el-select>
+                <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!queryCubeSortDirective?.hasDirection">
+                    <el-option label="Auto" value="auto" />
+                    <el-option label="Asc" value="ascending" />
+                    <el-option label="Desc" value="descending" />
+                </el-select>
             </div>
         </div>
 
-        <div v-if="cubeSearchVisible" class="overview-search-row">
-            <CubeSearchInput v-model="cubeSearchQuery" />
+        <div v-if="isMobile" class="card-table-sort-row">
+            <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
+                {{ viewExpanded ? '▴ Options' : '▾ Options' }}
+            </span>
+        </div>
+
+        <div v-if="isMobile && viewExpanded" class="card-table-mobile-filters">
+            <div class="mobile-filter-row">
+                <span class="mobile-filter-label">Display</span>
+                <el-select v-model="displayModeValue" size="small" class="mobile-filter-control">
+                    <el-option label="Grid" value="grid" />
+                    <el-option label="Table" value="table" />
+                </el-select>
+            </div>
+            <div class="mobile-filter-row">
+                <span class="mobile-filter-label">Sorted by</span>
+                <el-select v-model="sortProp" size="small" class="mobile-filter-control" :disabled="!!queryCubeSortDirective?.hasOrder">
+                    <el-option
+                        v-for="opt in overviewSortProperties"
+                        :key="opt.prop"
+                        :label="opt.label"
+                        :value="opt.prop"
+                    />
+                </el-select>
+            </div>
+            <div class="mobile-filter-row">
+                <span class="mobile-filter-label">Direction</span>
+                <el-select v-model="sortDirection" size="small" class="mobile-filter-control" :disabled="!!queryCubeSortDirective?.hasDirection">
+                    <el-option label="Auto" value="auto" />
+                    <el-option label="Asc" value="ascending" />
+                    <el-option label="Desc" value="descending" />
+                </el-select>
+            </div>
         </div>
 
         <div v-if="props.loadingProgress?.active" class="overview-progress">
@@ -191,23 +225,6 @@
                 :duration="10"
                 :format="() => `${props.loadingProgress.loaded} / ${props.loadingProgress.total}`"
             />
-        </div>
-
-        <div class="overview-sort-row">
-            <label class="sort-label">Sorted by</label>
-            <el-select v-model="sortProp" style="width: 150px;" :disabled="!!queryCubeSortDirective?.hasOrder">
-                <el-option
-                    v-for="opt in overviewSortProperties"
-                    :key="opt.prop"
-                    :label="opt.label"
-                    :value="opt.prop"
-                />
-            </el-select>
-            <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!queryCubeSortDirective?.hasDirection">
-                <el-option label="Auto" value="auto" />
-                <el-option label="Asc" value="ascending" />
-                <el-option label="Desc" value="descending" />
-            </el-select>
         </div>
 
         <div v-if="visualDisplayVisible" class="overview-cube-grid">
@@ -441,6 +458,15 @@
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp((row.stats?.uniqueNonEvergreenKeywords ?? 0) / row.stats.totalCards, 'uniqueNonEvergreenKeywords')" />
             </template>
         </StickyTable>
+
+        <div v-if="Object.keys(props.loadedCubes).length > 0" class="overview-remove-all">
+            <el-button
+                type="danger"
+                plain
+                :disabled="Object.keys(props.loadedCubes).length === 0"
+                @click="props.clearCubes()"
+            >Remove All Cubes</el-button>
+        </div>
     </div>
 </template>
 
@@ -454,7 +480,7 @@ import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Search } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
@@ -555,6 +581,10 @@ const config = bindStorage('cube-app-config', (v) => {
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 const visualDisplayVisible = bindStorage('overview-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
+const displayModeValue = computed({
+    get: () => visualDisplayVisible.value ? 'grid' : 'table',
+    set: (val: string) => { visualDisplayVisible.value = val === 'grid'; },
+});
 
 const addCubeForm = reactive({
     loading: false,
@@ -814,7 +844,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
 ]);
 
 // --- Filtered + sorted data ---
-const cubeSearchVisible = bindStorage<boolean>('cube-search-visible', v => v === true);
+const viewExpanded = ref(false);
 const cubeSearchQuery = ref('');
 const parsedCubeQuery = computed(() => parseQuery(cubeSearchQuery.value));
 const queryCubeSortDirective = computed(() => extractCubeSortDirective(parsedCubeQuery.value.ast));
@@ -877,11 +907,38 @@ const formatters = {
 </script>
 
 <style scoped>
+.overview-toolbar-row-1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.overview-search-input {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.overview-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.overview-toolbar-row-2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
 .overview-sort-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 8px 0;
+    margin-left: auto;
 }
 
 .sort-label {
@@ -890,15 +947,56 @@ const formatters = {
     white-space: nowrap;
 }
 
-.overview-search-row {
-    margin-bottom: 10px;
+.card-table-sort-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
 }
 
-.overview-toolbar {
+.card-table-filter-toggle {
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.card-table-filter-toggle:hover {
+    background: var(--el-fill-color);
+}
+
+.card-table-mobile-filters {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .mobile-filter-label {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        width: 35%;
+        flex-shrink: 0;
+        text-align: right;
+    }
+
+    .mobile-filter-control {
+        width: 50%;
+        flex-shrink: 0;
+    }
+
+    .mobile-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+.overview-search-row {
     margin-bottom: 10px;
 }
 
@@ -929,14 +1027,6 @@ const formatters = {
     flex: 1 1 200px;
 }
 
-.overview-toolbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-    margin-left: auto;
-}
-
 @media (max-width: 600px) {
     .overview-add-form {
         display: contents;
@@ -954,10 +1044,6 @@ const formatters = {
 
     .overview-or-divider {
         display: none;
-    }
-
-    .overview-toolbar-actions {
-        margin-left: 0;
     }
 }
 
@@ -990,6 +1076,14 @@ const formatters = {
 
 .overview-progress {
     margin-bottom: 8px;
+}
+
+.overview-remove-all {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .column-group-header {
