@@ -194,8 +194,8 @@
         </div>
 
         <div class="overview-sort-row">
-            <label class="sort-label">Sort</label>
-            <el-select v-model="sortProp" style="width: 200px;">
+            <label class="sort-label">Sorted by</label>
+            <el-select v-model="sortProp" style="width: 150px;">
                 <el-option
                     v-for="opt in overviewSortProperties"
                     :key="opt.prop"
@@ -203,7 +203,7 @@
                     :value="opt.prop"
                 />
             </el-select>
-            <el-select v-model="sortDirection" style="width: 100px;">
+            <el-select v-model="sortDirection" style="width: 80px;">
                 <el-option label="Auto" value="auto" />
                 <el-option label="Asc" value="ascending" />
                 <el-option label="Desc" value="descending" />

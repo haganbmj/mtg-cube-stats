@@ -48,8 +48,19 @@ const ORDER_ALIASES: Record<string, { prop: string; defaultOrder: 'ascending' | 
     tou: { prop: 'toughness', defaultOrder: 'descending' },
     words: { prop: 'oracleTextWordCountMinusParen', defaultOrder: 'descending' },
     wordcount: { prop: 'oracleTextWordCountMinusParen', defaultOrder: 'descending' },
-    rate: { prop: 'globalRatePercent', defaultOrder: 'descending' },
-    globalrate: { prop: 'globalRatePercent', defaultOrder: 'descending' },
+    rate: { prop: 'globalRatePercent_total', defaultOrder: 'descending' },
+    globalrate: { prop: 'globalRatePercent_total', defaultOrder: 'descending' },
+    gr: { prop: 'globalRatePercent_total', defaultOrder: 'descending' },
+    'gr-pauper': { prop: 'globalRatePercent_broad_pauper', defaultOrder: 'descending' },
+    'global-rate-pauper': { prop: 'globalRatePercent_broad_pauper', defaultOrder: 'descending' },
+    'gr-peasant': { prop: 'globalRatePercent_broad_peasant', defaultOrder: 'descending' },
+    'global-rate-peasant': { prop: 'globalRatePercent_broad_peasant', defaultOrder: 'descending' },
+    'gr-powered': { prop: 'globalRatePercent_powered', defaultOrder: 'descending' },
+    'global-rate-powered': { prop: 'globalRatePercent_powered', defaultOrder: 'descending' },
+    'gr-desert': { prop: 'globalRatePercent_desert', defaultOrder: 'descending' },
+    'global-rate-desert': { prop: 'globalRatePercent_desert', defaultOrder: 'descending' },
+    'gr-uncategorized': { prop: 'globalRatePercent_uncategorized', defaultOrder: 'descending' },
+    'global-rate-uncategorized': { prop: 'globalRatePercent_uncategorized', defaultOrder: 'descending' },
 };
 
 const DIRECTION_ALIASES: Record<string, 'ascending' | 'descending'> = {
@@ -587,7 +598,7 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         // ── Global inclusion rate (CubeCobra frequency data, compared as %) ────
         case 'globalrate':
-            return compareValues(row.globalRatePercent ?? null, op, numVal);
+            return compareValues(row.globalRatePercent_total ?? null, op, numVal);
 
         // ── Boolean flags ──────────────────────────────────────────────────────
         case 'is': {

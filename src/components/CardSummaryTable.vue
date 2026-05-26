@@ -35,31 +35,12 @@
         </template>
         <template v-else>
             <div class="card-table-sort-controls">
-                <el-select v-model="showAllCardsValue" style="width: 190px;">
+                <el-select v-model="showAllCardsValue" style="width: 150px;">
                     <el-option label="Only in Loaded Cubes" value="off" />
-                    <el-option label="Show All Cards" value="on" />
-                </el-select>
-                <el-select
-                    v-if="config.showAllCards && frequencyCategoryOptions.length > 0"
-                    v-model="config.frequencyCategory"
-                    style="width: 180px;"
-                    placeholder="Frequency"
-                >
-                    <el-option-group
-                        v-for="grp in groupedFrequencyOptions"
-                        :key="grp.label"
-                        :label="grp.label"
-                    >
-                        <el-option
-                            v-for="opt in grp.options"
-                            :key="opt.value"
-                            :label="opt.label"
-                            :value="opt.value"
-                        />
-                    </el-option-group>
+                    <el-option label="All Cards" value="on" />
                 </el-select>
                 <label class="sort-label">Sorted by</label>
-                <el-select v-model="sortProp" style="width: 180px;" :disabled="!!querySortDirective">
+                <el-select v-model="sortProp" style="width: 150px;" :disabled="!!querySortDirective">
                     <el-option
                         v-for="opt in cardSortProperties"
                         :key="opt.prop"
@@ -67,7 +48,7 @@
                         :value="opt.prop"
                     />
                 </el-select>
-                <el-select v-model="sortDirection" style="width: 100px;" :disabled="!!querySortDirective">
+                <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!querySortDirective">
                     <el-option label="Auto" value="auto" />
                     <el-option label="Asc" value="ascending" />
                     <el-option label="Desc" value="descending" />
@@ -106,26 +87,10 @@
             <span class="mobile-filter-label">All Cards</span>
             <el-select v-model="showAllCardsValue" size="small" class="mobile-filter-control">
                 <el-option label="Only in Loaded Cubes" value="off" />
-                <el-option label="Show All Cards" value="on" />
+                <el-option label="All Cards" value="on" />
             </el-select>
         </div>
-        <div v-if="config.showAllCards && frequencyCategoryOptions.length > 0" class="mobile-filter-row">
-            <span class="mobile-filter-label">Frequency</span>
-            <el-select v-model="config.frequencyCategory" size="small" class="mobile-filter-control">
-                <el-option-group
-                    v-for="grp in groupedFrequencyOptions"
-                    :key="grp.label"
-                    :label="grp.label"
-                >
-                    <el-option
-                        v-for="opt in grp.options"
-                        :key="opt.value"
-                        :label="opt.label"
-                        :value="opt.value"
-                    />
-                </el-option-group>
-            </el-select>
-        </div>
+
         <div class="mobile-filter-row">
             <span class="mobile-filter-label">Display</span>
             <el-select v-model="displayModeValue" size="small" class="mobile-filter-control">
@@ -217,7 +182,7 @@
             >
                 <el-text size="small" truncated>{{ card.name }}</el-text>
                 <el-tag v-if="Object.keys(loadedCubes).length <= 1" type="info" size="small" style="margin-left: 6px;">
-                    {{ card.globalRatePercent != null ? card.globalRatePercent.toFixed(1) + '%' : 'N/A' }}
+                    {{ card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' }}
                 </el-tag>
                 <el-tag v-else type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>
@@ -237,14 +202,6 @@
         </template>
         <template v-else-if="noCubesLoaded && !config.showAllCards" #empty>
             No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
-        </template>
-        <template #cell-globalRate="{ row }">
-            <template v-if="row.globalRateCount == null">N/A</template>
-            <template v-else-if="!selectedFrequencyCubeCount">{{ row.globalRateCount.toLocaleString() }}</template>
-            <template v-else>
-                <el-text class="cell-primary">{{ ((row.globalRateCount / selectedFrequencyCubeCount) * 100).toFixed(1) }}%</el-text>
-                <el-text class="cell-secondary">({{ row.globalRateCount.toLocaleString() }})</el-text>
-            </template>
         </template>
         <template #cell-name="{ row }">
             <el-tooltip
@@ -473,35 +430,8 @@
             </div>
             <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
                 <el-row :gutter="10">
-                    <el-col :span="item.value === 'globalRate' ? 24 : 12" :xs="24" v-for="item in group.options" :key="item.value">
-                        <template v-if="item.value === 'globalRate'">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <el-checkbox :value="item.value">
-                                    {{ item.label }}
-                                </el-checkbox>
-                                <el-select
-                                    v-if="frequencyCategoryOptions.length > 0"
-                                    v-model="config.frequencyCategory"
-                                    size="small"
-                                    style="flex: 1; min-width: 120px; max-width: 200px;"
-                                    placeholder="Global Rate"
-                                >
-                                    <el-option-group
-                                        v-for="grp in groupedFrequencyOptions"
-                                        :key="grp.label"
-                                        :label="grp.label"
-                                    >
-                                        <el-option
-                                            v-for="opt in grp.options"
-                                            :key="opt.value"
-                                            :label="opt.label"
-                                            :value="opt.value"
-                                        />
-                                    </el-option-group>
-                                </el-select>
-                            </div>
-                        </template>
-                        <el-checkbox v-else :value="item.value">
+                    <el-col :span="12" :xs="24" v-for="item in group.options" :key="item.value">
+                        <el-checkbox :value="item.value">
                             {{ item.label }}
                         </el-checkbox>
                     </el-col>
@@ -532,7 +462,7 @@ import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, collectHighlightCubeKeys, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
-import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
+import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates } from '../util/CubeCobraFrequency';
 import { getCardStats, cardStatsReady } from '../util/CubeCobraCardStats';
 
 const props = defineProps({
@@ -635,7 +565,7 @@ const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.lengt
 
 // --- Column visibility config ---
 const defaultVisibleColumns = [
-    'cubeCount', 'globalRate', 'effectiveColors', 'cmc', 'typeLine', 'tags',
+    'cubeCount', 'globalRate_total', 'effectiveColors', 'cmc', 'typeLine', 'tags',
     'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
@@ -644,7 +574,6 @@ const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
 const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
     visualColumnCount: defaultVisualColumnCount.value,
-    frequencyCategory: 'total',
     showAllCards: false,
 };
 
@@ -652,10 +581,15 @@ const config = bindStorage('card-summary-table-config', (v) => {
     if (v == undefined || v === null) {
         return { ...defaultConfig, visualColumnCount: defaultVisualColumnCount.value };
     }
+    let cols = (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[];
+    // Migrate legacy single globalRate column to new split columns
+    if (cols.includes('globalRate')) {
+        cols = cols.filter(c => c !== 'globalRate');
+        cols.push('globalRate_total');
+    }
     return {
-        visibleColumns: (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[],
+        visibleColumns: cols,
         visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : defaultVisualColumnCount.value,
-        frequencyCategory: typeof v.frequencyCategory === 'string' ? v.frequencyCategory : 'total',
         showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
@@ -663,33 +597,6 @@ const config = bindStorage('card-summary-table-config', (v) => {
 watch(() => config.value.visualColumnCount, () => {
     currentPage.value = 1;
 });
-
-const frequencyCategoryOptions = computed(() => {
-    void frequencyDataReady.value; // reactive dependency
-    return getFrequencyCategoryOptions();
-});
-
-const groupedFrequencyOptions = computed(() => {
-    const opts = frequencyCategoryOptions.value;
-    const ungrouped = opts.filter(o => !o.group);
-    const groups = new Map<string, typeof opts>();
-    for (const o of opts) {
-        if (!o.group) continue;
-        if (!groups.has(o.group)) groups.set(o.group, []);
-        groups.get(o.group)!.push(o);
-    }
-    const result: { label: string; options: typeof opts }[] = [];
-    if (ungrouped.length > 0) result.push({ label: 'General', options: ungrouped });
-    for (const [label, options] of groups) result.push({ label, options });
-    return result;
-});
-
-const selectedFrequencyLabel = computed(() => {
-    const opt = frequencyCategoryOptions.value.find(o => o.value === config.value.frequencyCategory);
-    return opt?.label ?? 'Global';
-});
-
-const selectedFrequencyCubeCount = computed(() => resolveCubeCount(config.value.frequencyCategory));
 
 const noCubesLoaded = computed(() => Object.keys(props.loadedCubes).length === 0);
 
@@ -717,7 +624,6 @@ const columnOptions = ref([
         options: [
             { value: 'cubeCount', label: 'Cubes' },
             { value: 'count', label: 'Total Count' },
-            { value: 'globalRate', label: 'Global Inclusion Rate' },
             { value: 'effectiveColors', label: 'Colors' },
             { value: 'effectiveColorIdentity', label: 'Color Identity' },
             { value: 'cmc', label: 'Mana Value' },
@@ -729,6 +635,13 @@ const columnOptions = ref([
             { value: 'tags', label: 'Tags' },
             { value: 'minRarity', label: 'Min Rarity' },
         ],
+    },
+    {
+        label: 'Global Rates',
+        options: FREQUENCY_COLUMNS.map(col => ({
+            value: col.columnKey,
+            label: col.label,
+        })),
     },
     {
         label: 'Set & Release',
@@ -766,9 +679,16 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true },
     { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', visible: config.value.visibleColumns.includes('cubeCount') && !noCubesLoaded.value },
     { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') && !noCubesLoaded.value },
-    { key: 'globalRate', prop: 'globalRatePercent', label: selectedFrequencyLabel.value, minWidth: '100px', align: 'center', tooltip: selectedFrequencyCubeCount.value
-        ? `Inclusion rate across CubeCobra — ${selectedFrequencyLabel.value} (${selectedFrequencyCubeCount.value.toLocaleString()} cubes)`
-        : `Inclusion count across CubeCobra (${selectedFrequencyLabel.value})`, visible: config.value.visibleColumns.includes('globalRate') },
+    ...FREQUENCY_COLUMNS.map(col => ({
+        key: col.columnKey,
+        prop: col.propKey,
+        label: col.label,
+        minWidth: '90px',
+        align: 'center' as const,
+        tooltip: `CubeCobra inclusion rate — ${col.label} (${resolveCubeCount(col.categoryValue)?.toLocaleString() ?? '?'} cubes)`,
+        visible: config.value.visibleColumns.includes(col.columnKey),
+        formatter: (row: any) => row[col.propKey] != null ? `${row[col.propKey].toFixed(1)}%` : 'N/A',
+    })),
     { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
     { key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'Color ID', minWidth: '75px', align: 'center', tooltip: 'Color Identity', visible: config.value.visibleColumns.includes('effectiveColorIdentity') },
     { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
@@ -953,6 +873,8 @@ const exportToCsv = () => {
         return stringValue;
     };
 
+    const visibleRateColumns = FREQUENCY_COLUMNS.filter(col => config.value.visibleColumns.includes(col.columnKey));
+
     const headers = [
         'Index', 'Name', 'Cubes', 'Total Count', 'Colors', 'Color Identity', 'Mana Value',
         'Elo', 'Popularity', 'Type Line', 'Min Rarity',
@@ -960,7 +882,7 @@ const exportToCsv = () => {
         'Min Price (USD)', 'Min Price (Tix)',
         'Word Count', 'Word Count (No Reminder)',
         'Universes Beyond', 'Supplemental', 'Makes Tokens',
-        `Global Rate (${selectedFrequencyLabel.value})`,
+        ...visibleRateColumns.map(col => `Global Rate (${col.label})`),
     ].map(escapeCsvValue).join(',');
 
     const csvRows = filteredRows.value.map(row => [
@@ -986,7 +908,7 @@ const exportToCsv = () => {
         row.isUniversesBeyond ? 'Yes' : 'No',
         row.isSupplementalProduct ? 'Yes' : 'No',
         row.makesTokens ? 'Yes' : 'No',
-        row.globalRateCount ?? '',
+        ...visibleRateColumns.map(col => row[col.propKey] != null ? `${row[col.propKey].toFixed(1)}%` : ''),
     ].map(escapeCsvValue).join(','));
 
     const csvContent = [headers, ...csvRows].join('\n');
@@ -1017,13 +939,7 @@ const tableData = computed(() => {
                     count: 0,
                     cubes: [],
                     cubeCount: 0,
-                    globalRateCount: resolveCardCount(card.oracleId, config.value.frequencyCategory),
-                    globalRatePercent: (() => {
-                        const count = resolveCardCount(card.oracleId, config.value.frequencyCategory);
-                        const total = resolveCubeCount(config.value.frequencyCategory);
-                        if (count == null || !total) return null;
-                        return (count / total) * 100;
-                    })(),
+                    ...resolveAllRates(card.oracleId),
                 };
             }
             acc[card.oracleId].count += 1;
@@ -1053,13 +969,7 @@ const tableData = computed(() => {
                 cubeCount: 0,
                 elo: undefined,
                 popularity: undefined,
-                globalRateCount: resolveCardCount(oracleId, config.value.frequencyCategory),
-                globalRatePercent: (() => {
-                    const count = resolveCardCount(oracleId, config.value.frequencyCategory);
-                    const total = resolveCubeCount(config.value.frequencyCategory);
-                    if (count == null || !total) return null;
-                    return (count / total) * 100;
-                })(),
+                ...resolveAllRates(oracleId),
             };
         }
     }
