@@ -185,6 +185,14 @@
     </el-row>
 
     <div v-if="visualDisplayVisible" class="visual-card-grid" v-loading="!scryfallReady" :style="{ gridTemplateColumns: `repeat(${config.visualColumnCount}, 1fr)` }">
+        <div v-if="scryfallReady && visibleRows.length === 0" class="visual-card-grid__empty">
+            <template v-if="noCubesLoaded && !config.showAllCards">
+                No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
+            </template>
+            <template v-else>
+                No matching cards found.
+            </template>
+        </div>
         <div
             v-for="card in visibleRows"
             :key="card.oracleId"
@@ -1328,6 +1336,17 @@ const filteredStats = computed(() => {
 .visual-card-grid {
     display: grid;
     gap: 12px;
+}
+
+.visual-card-grid__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--el-text-color-secondary);
+
+    .el-link {
+        vertical-align: top;
+    }
 }
 
 .visual-card-item {
