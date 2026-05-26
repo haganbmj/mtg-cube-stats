@@ -91,10 +91,10 @@
                 <CubeSearchInput v-model="cubeSearchQuery" />
             </div>
             <div class="overview-toolbar-actions">
-                <el-select v-if="!isMobile" v-model="displayModeValue" style="width: 110px;">
-                    <el-option label="Grid" value="grid" />
-                    <el-option label="Table" value="table" />
-                </el-select>
+                <el-button-group v-if="!isMobile">
+                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
+                </el-button-group>
 
                 <el-dropdown trigger="click">
                     <el-button :icon="Menu" circle />
@@ -228,6 +228,9 @@
         </div>
 
         <div v-if="visualDisplayVisible" class="overview-cube-grid">
+            <div v-if="sortedData.length === 0" class="overview-cube-grid__empty">
+                No cubes loaded.
+            </div>
             <div
                 v-for="row in sortedData"
                 :key="row.id"
@@ -480,7 +483,7 @@ import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
@@ -1103,6 +1106,13 @@ const formatters = {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
     padding: 4px 0;
+}
+
+.overview-cube-grid__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--el-text-color-secondary);
 }
 
 .overview-cube-tile {
