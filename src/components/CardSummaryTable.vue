@@ -8,37 +8,7 @@
             v-model:cubeFilterMode="activeCubeFilterMode"
             :collapseCubeFilter="isMobile"
         />
-        <div v-show="!isMobile" class="card-table-toolbar-secondary">
-            <el-dropdown trigger="click" :hide-on-click="false">
-                <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
-                <template #dropdown>
-                    <div class="all-cards-dropdown">
-                        <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
-                        <div class="all-cards-dropdown__label">Frequency Category</div>
-                        <el-select
-                            v-if="frequencyCategoryOptions.length > 0"
-                            v-model="config.frequencyCategory"
-                            size="small"
-                            style="width: 220px;"
-                            placeholder="Global Rate"
-                        >
-                            <el-option-group
-                                v-for="grp in groupedFrequencyOptions"
-                                :key="grp.label"
-                                :label="grp.label"
-                            >
-                                <el-option
-                                    v-for="opt in grp.options"
-                                    :key="opt.value"
-                                    :label="opt.label"
-                                    :value="opt.value"
-                                />
-                            </el-option-group>
-                        </el-select>
-                    </div>
-                </template>
-            </el-dropdown>
-        </div>
+
         <el-button-group v-show="!isMobile">
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
@@ -65,6 +35,29 @@
         </template>
         <template v-else>
             <div class="card-table-sort-controls">
+                <el-select v-model="showAllCardsValue" style="width: 190px;">
+                    <el-option label="Only in Loaded Cubes" value="off" />
+                    <el-option label="Show All Cards" value="on" />
+                </el-select>
+                <el-select
+                    v-if="config.showAllCards && frequencyCategoryOptions.length > 0"
+                    v-model="config.frequencyCategory"
+                    style="width: 180px;"
+                    placeholder="Frequency"
+                >
+                    <el-option-group
+                        v-for="grp in groupedFrequencyOptions"
+                        :key="grp.label"
+                        :label="grp.label"
+                    >
+                        <el-option
+                            v-for="opt in grp.options"
+                            :key="opt.value"
+                            :label="opt.label"
+                            :value="opt.value"
+                        />
+                    </el-option-group>
+                </el-select>
                 <label class="sort-label">Sorted by</label>
                 <el-select v-model="sortProp" style="width: 180px;" :disabled="!!querySortDirective">
                     <el-option
