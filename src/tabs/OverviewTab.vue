@@ -1014,8 +1014,8 @@ const formatters = {
 }
 
 .overview-collection-select {
-    flex: 1 1 200px;
-    min-width: 200px;
+    flex: 1 1 140px;
+    min-width: 140px;
 }
 
 .overview-or-divider {

@@ -1243,6 +1243,8 @@ const filteredStats = computed(() => {
     font-size: 13px;
     color: var(--el-text-color-regular);
     white-space: nowrap;
+
+    margin-left: 8px;
 }
 
 .card-table-filter-summary {
