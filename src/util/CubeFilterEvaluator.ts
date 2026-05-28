@@ -77,10 +77,99 @@ const CUBE_KEYWORD_ALIASES: Record<string, string> = {
     in: 'game',
     // Card containment
     card: 'card',
+    // Sort order
+    order: 'order',
+    sort: 'order',
+    // Sort direction
+    dir: 'direction',
+    direction: 'direction',
 };
 
 function normalizeCubeKeyword(raw: string): string {
     return CUBE_KEYWORD_ALIASES[raw.toLowerCase()] ?? raw.toLowerCase();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sort directive extraction from AST (order: / direction: keywords)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface CubeSortDirective {
+    prop: string;
+    order: 'ascending' | 'descending';
+    hasOrder: boolean;
+    hasDirection: boolean;
+}
+
+const CUBE_ORDER_ALIASES: Record<string, { prop: string; defaultOrder: 'ascending' | 'descending' }> = {
+    name: { prop: 'name', defaultOrder: 'ascending' },
+    owner: { prop: 'owner', defaultOrder: 'ascending' },
+    size: { prop: 'stats.totalCards', defaultOrder: 'descending' },
+    cards: { prop: 'stats.totalCards', defaultOrder: 'descending' },
+    similarity: { prop: 'avgSimilarityScore', defaultOrder: 'descending' },
+    sim: { prop: 'avgSimilarityScore', defaultOrder: 'descending' },
+    new: { prop: 'stats.newCards', defaultOrder: 'descending' },
+    modified: { prop: 'lastModified', defaultOrder: 'descending' },
+    date: { prop: 'lastModified', defaultOrder: 'descending' },
+    followers: { prop: 'followerCount', defaultOrder: 'descending' },
+    avgcmc: { prop: 'stats.averageNonLandCmc', defaultOrder: 'ascending' },
+    cmc: { prop: 'stats.averageNonLandCmc', defaultOrder: 'ascending' },
+    keywords: { prop: 'stats.uniqueNonEvergreenKeywords', defaultOrder: 'descending' },
+    kw: { prop: 'stats.uniqueNonEvergreenKeywords', defaultOrder: 'descending' },
+    tokens: { prop: 'stats.cardCounts.makesTokens', defaultOrder: 'descending' },
+    ub: { prop: 'stats.cardCounts.universesBeyond', defaultOrder: 'descending' },
+    sp: { prop: 'stats.cardCounts.supplementalProduct', defaultOrder: 'descending' },
+    elo: { prop: 'stats.averageElo', defaultOrder: 'descending' },
+    median: { prop: 'stats.medianReleaseYear', defaultOrder: 'descending' },
+    year: { prop: 'stats.medianReleaseYear', defaultOrder: 'descending' },
+    price: { prop: 'stats.totalMinPriceUsd', defaultOrder: 'descending' },
+    usd: { prop: 'stats.totalMinPriceUsd', defaultOrder: 'descending' },
+    tix: { prop: 'stats.totalMinPriceTix', defaultOrder: 'descending' },
+    words: { prop: 'stats.averageWordCount', defaultOrder: 'ascending' },
+    removal: { prop: 'stats.cardCounts.removal', defaultOrder: 'descending' },
+};
+
+const CUBE_DIRECTION_ALIASES: Record<string, 'ascending' | 'descending'> = {
+    asc: 'ascending',
+    ascending: 'ascending',
+    desc: 'descending',
+    descending: 'descending',
+};
+
+function collectCubeSortNodes(ast: QueryNode | null): { order?: string; direction?: string } {
+    if (!ast) return {};
+    switch (ast.type) {
+        case 'and':
+        case 'or': {
+            const left = collectCubeSortNodes(ast.left);
+            const right = collectCubeSortNodes(ast.right);
+            return { ...left, ...right };
+        }
+        case 'not':
+            return collectCubeSortNodes(ast.child);
+        case 'condition': {
+            const normalized = normalizeCubeKeyword(ast.keyword);
+            if (normalized === 'order') return { order: String(ast.value).toLowerCase() };
+            if (normalized === 'direction') return { direction: String(ast.value).toLowerCase() };
+            return {};
+        }
+        default:
+            return {};
+    }
+}
+
+/**
+ * Extract sort directive from the AST (order: / dir: keywords).
+ * Returns null if neither order: nor direction: condition is present.
+ */
+export function extractCubeSortDirective(ast: QueryNode | null): CubeSortDirective | null {
+    const nodes = collectCubeSortNodes(ast);
+    if (!nodes.order && !nodes.direction) return null;
+    const entry = nodes.order ? CUBE_ORDER_ALIASES[nodes.order] : null;
+    if (nodes.order && !entry) return null;
+    const prop = entry?.prop ?? '';
+    const defaultOrder = entry?.defaultOrder ?? 'ascending';
+    const direction = nodes.direction ? (CUBE_DIRECTION_ALIASES[nodes.direction] ?? defaultOrder) : defaultOrder;
+    return { prop, order: direction, hasOrder: !!nodes.order, hasDirection: !!nodes.direction };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -252,6 +341,11 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             // : operator = substring match
             return ctx.cards.some(card => card.name?.toLowerCase().includes(cardName.toLowerCase()));
         }
+
+        // ── Sort directives (handled externally; never filter rows) ──
+        case 'order':
+        case 'direction':
+            return true;
 
         default:
             return false;

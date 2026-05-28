@@ -8,42 +8,8 @@
             v-model:cubeFilterMode="activeCubeFilterMode"
             :collapseCubeFilter="isMobile"
         />
-        <div v-show="!isMobile" class="card-table-toolbar-secondary">
-            <el-dropdown trigger="click" :hide-on-click="false">
-                <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates, independent of loaded cubes">All Cards</el-button>
-                <template #dropdown>
-                    <div class="all-cards-dropdown">
-                        <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
-                        <div class="all-cards-dropdown__label">Frequency Category</div>
-                        <el-select
-                            v-if="frequencyCategoryOptions.length > 0"
-                            v-model="config.frequencyCategory"
-                            size="small"
-                            style="width: 220px;"
-                            placeholder="Global Rate"
-                        >
-                            <el-option-group
-                                v-for="grp in groupedFrequencyOptions"
-                                :key="grp.label"
-                                :label="grp.label"
-                            >
-                                <el-option
-                                    v-for="opt in grp.options"
-                                    :key="opt.value"
-                                    :label="opt.label"
-                                    :value="opt.value"
-                                />
-                            </el-option-group>
-                        </el-select>
-                    </div>
-                </template>
-            </el-dropdown>
-        </div>
-        <span v-if="isMobile" class="card-table-filter-toggle" @click="filtersExpanded = !filtersExpanded">
-            {{ filtersExpanded ? '▴ Filters' : '▾ Filters' }}
-        </span>
-        <span v-if="isMobile" style="flex: 1;"></span>
-        <el-button-group>
+
+        <el-button-group v-show="!isMobile">
             <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
             <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
         </el-button-group>
@@ -59,132 +25,142 @@
         </el-dropdown>
     </div>
 
-    <div v-if="isMobile && filtersExpanded" class="card-table-mobile-filters">
-        <TristateSelect
-            v-if="Object.keys(loadedCubes).length > 0"
-            :modelValue="activeCubeFilter"
-            @update:modelValue="activeCubeFilter = $event"
-            :options="cubeOptions"
-            :showModeToggle="true"
-            :mode="activeCubeFilterMode"
-            @update:mode="activeCubeFilterMode = $event"
-            placeholder="Filter by cube..."
-        />
-        <div class="mobile-filter-row">
-            <el-dropdown trigger="click" :hide-on-click="false">
-                <el-button :type="config.showAllCards ? 'primary' : ''" title="Show all Scryfall cards with global rates">All Cards</el-button>
-                <template #dropdown>
-                    <div class="all-cards-dropdown">
-                        <el-checkbox v-model="config.showAllCards" class="all-cards-dropdown__toggle">Show All Cards</el-checkbox>
-                        <div class="all-cards-dropdown__label">Frequency Category</div>
-                        <el-select
-                            v-if="frequencyCategoryOptions.length > 0"
-                            v-model="config.frequencyCategory"
-                            size="small"
-                            style="width: 220px;"
-                            placeholder="Global Rate"
-                        >
-                            <el-option-group
-                                v-for="grp in groupedFrequencyOptions"
-                                :key="grp.label"
-                                :label="grp.label"
-                            >
-                                <el-option
-                                    v-for="opt in grp.options"
-                                    :key="opt.value"
-                                    :label="opt.label"
-                                    :value="opt.value"
-                                />
-                            </el-option-group>
-                        </el-select>
-                    </div>
-                </template>
-            </el-dropdown>
-            <template v-if="visualDisplayVisible">
-                <span style="flex: 1;"></span>
-                <span class="sort-label">Columns</span>
-                <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" style="width: 90px;" controls-position="right" />
-            </template>
-        </div>
-        <template v-if="visualDisplayVisible">
-            <div class="mobile-filter-row">
-                <span class="sort-label">Sort by</span>
-                <el-select v-model="visualSortProp" size="small" style="flex: 1;" :disabled="!!querySortDirective">
-                    <el-option
-                        v-for="opt in visualSortOptions"
-                        :key="opt.value"
-                        :label="opt.label"
-                        :value="opt.value"
-                    />
-                </el-select>
-                <el-button size="small" @click="toggleVisualSortOrder" :disabled="!!querySortDirective">
-                    {{ visualSortOrder === 'ascending' ? '↑ Asc' : '↓ Desc' }}
-                </el-button>
-            </div>
-        </template>
-    </div>
-
-    <div ref="cardResultsTop" class="card-table-pagination-row">
+    <div ref="cardResultsTop" class="card-table-sort-row">
         <template v-if="isMobile">
             <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
-            <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+            <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
+                {{ viewExpanded ? '▴ Options' : '▾ Options' }}
+            </span>
             <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
         </template>
         <template v-else>
-            <el-breadcrumb separator="·" class="filter-summary">
-                <el-breadcrumb-item>
-                    <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
-                        <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
-                    </el-tooltip>
-                </el-breadcrumb-item>
-                <el-breadcrumb-item>
-                    <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
-                        <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
-                    </el-tooltip>
-                </el-breadcrumb-item>
-                <el-breadcrumb-item>
-                    <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
-                        <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
-                    </el-tooltip>
-                </el-breadcrumb-item>
-                <el-breadcrumb-item v-if="filteredStats.highlightedCubeCardCount !== null">
-                    <el-tooltip :content="filteredStats.highlightedNormalizedAvg !== null ? `Total matching cards in the highlighted cube; normalized average shows expected count if other cubes were scaled to this cube's size` : `Total matching cards summed across all highlighted cubes`" placement="bottom" effect="light">
-                        <span>{{ filteredStats.highlightedCubeCardCount }} highlighted<template v-if="filteredStats.highlightedNormalizedAvg !== null"> (avg {{ filteredStats.highlightedNormalizedAvg.toFixed(1) }})</template></span>
-                    </el-tooltip>
-                </el-breadcrumb-item>
-            </el-breadcrumb>
+            <div class="card-table-sort-controls">
+                <el-select v-model="showAllCardsValue" style="width: 180px;">
+                    <el-option label="Only in Loaded Cubes" value="off" />
+                    <el-option label="All Cards" value="on" />
+                </el-select>
+                <label class="sort-label">Sorted by</label>
+                <el-select v-model="sortProp" style="width: 150px;" :disabled="!!querySortDirective?.hasOrder">
+                    <el-option
+                        v-for="opt in cardSortProperties"
+                        :key="opt.prop"
+                        :label="opt.label"
+                        :value="opt.prop"
+                    />
+                </el-select>
+                <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!querySortDirective?.hasDirection">
+                    <el-option label="Auto" value="auto" />
+                    <el-option label="Asc" value="ascending" />
+                    <el-option label="Desc" value="descending" />
+                </el-select>
+                <template v-if="visualDisplayVisible">
+                    <label class="sort-label">Columns</label>
+                    <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" style="width: 90px;" controls-position="right" />
+                </template>
+            </div>
             <el-pagination
                 v-model:current-page="currentPage"
-                v-model:page-size="pageSize"
-                :page-sizes="[25, 50, 100, 250]"
                 :pager-count="5"
-                layout="->, prev, pager, next, sizes"
+                layout="prev, pager, next"
                 :total="filteredRows.length"
+                :page-size="pageSize"
             />
         </template>
     </div>
 
-    <el-row v-if="visualDisplayVisible && !isMobile" class="visual-sort-bar" align="middle">
-        <el-space wrap>
-            <span class="sort-label">Sort by</span>
-            <el-select v-model="visualSortProp" size="small" style="width: 160px;" :disabled="!!querySortDirective">
+    <div v-if="isMobile && viewExpanded" class="card-table-mobile-filters">
+        <div v-if="Object.keys(loadedCubes).length > 0" class="mobile-filter-row">
+            <span class="mobile-filter-label">Cubes</span>
+            <div class="mobile-filter-control">
+                <TristateSelect
+                    :modelValue="activeCubeFilter"
+                    @update:modelValue="activeCubeFilter = $event"
+                    :options="cubeOptions"
+                    :showModeToggle="true"
+                    :mode="activeCubeFilterMode"
+                    @update:mode="activeCubeFilterMode = $event"
+                    placeholder="Filter by cube..."
+                />
+            </div>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">All Cards</span>
+            <el-select v-model="showAllCardsValue" size="small" class="mobile-filter-control">
+                <el-option label="Only in Loaded Cubes" value="off" />
+                <el-option label="All Cards" value="on" />
+            </el-select>
+        </div>
+
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">Display</span>
+            <el-select v-model="displayModeValue" size="small" class="mobile-filter-control">
+                <el-option label="Images" value="grid" />
+                <el-option label="Table" value="table" />
+            </el-select>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">Sorted by</span>
+            <el-select v-model="sortProp" size="small" class="mobile-filter-control" :disabled="!!querySortDirective?.hasOrder">
                 <el-option
-                    v-for="opt in visualSortOptions"
-                    :key="opt.value"
+                    v-for="opt in cardSortProperties"
+                    :key="opt.prop"
                     :label="opt.label"
-                    :value="opt.value"
+                    :value="opt.prop"
                 />
             </el-select>
-            <el-button size="small" @click="toggleVisualSortOrder" :disabled="!!querySortDirective">
-                {{ visualSortOrder === 'ascending' ? '↑ Ascending' : '↓ Descending' }}
-            </el-button>
-            <el-divider direction="vertical" />
-            <span class="sort-label">Columns</span>
-            <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" style="width: 90px;" controls-position="right" />
-        </el-space>
-    </el-row>
+        </div>
+        <div class="mobile-filter-row">
+            <span class="mobile-filter-label">Sort direction</span>
+            <el-select v-model="sortDirection" size="small" class="mobile-filter-control" :disabled="!!querySortDirective?.hasDirection">
+                <el-option label="Auto" value="auto" />
+                <el-option label="Asc" value="ascending" />
+                <el-option label="Desc" value="descending" />
+            </el-select>
+        </div>
+        <div v-if="visualDisplayVisible" class="mobile-filter-row">
+            <span class="mobile-filter-label">Columns</span>
+            <el-input-number v-model="config.visualColumnCount" :min="1" :max="20" :step="1" size="small" class="mobile-filter-control" controls-position="right" />
+        </div>
+    </div>
+
+    <div v-if="isMobile" class="card-table-card-count">
+        <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+    </div>
+
+    <div v-if="!isMobile" class="card-table-filter-summary">
+        <el-breadcrumb separator="·" class="filter-summary">
+            <el-breadcrumb-item>
+                <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item>
+                <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item>
+                <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
+                    <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item v-if="filteredStats.highlightedCubeCardCount !== null">
+                <el-tooltip :content="filteredStats.highlightedNormalizedAvg !== null ? `Total matching cards in the highlighted cube; normalized average shows expected count if other cubes were scaled to this cube's size` : `Total matching cards summed across all highlighted cubes`" placement="bottom" effect="light">
+                    <span>{{ filteredStats.highlightedCubeCardCount }} highlighted<template v-if="filteredStats.highlightedNormalizedAvg !== null"> (avg {{ filteredStats.highlightedNormalizedAvg.toFixed(1) }})</template></span>
+                </el-tooltip>
+            </el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
 
     <div v-if="visualDisplayVisible" class="visual-card-grid" v-loading="!scryfallReady" :style="{ gridTemplateColumns: `repeat(${config.visualColumnCount}, 1fr)` }">
+        <div v-if="scryfallReady && visibleRows.length === 0" class="visual-card-grid__empty">
+            <template v-if="noCubesLoaded && !config.showAllCards">
+                No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
+            </template>
+            <template v-else>
+                No matching cards found.
+            </template>
+        </div>
         <div
             v-for="card in visibleRows"
             :key="card.oracleId"
@@ -206,7 +182,7 @@
             >
                 <el-text size="small" truncated>{{ card.name }}</el-text>
                 <el-tag v-if="Object.keys(loadedCubes).length <= 1" type="info" size="small" style="margin-left: 6px;">
-                    {{ card.globalRatePercent != null ? card.globalRatePercent.toFixed(1) + '%' : 'N/A' }}
+                    {{ card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' }}
                 </el-tag>
                 <el-tag v-else type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
             </div>
@@ -217,8 +193,6 @@
         v-else
         :data="visibleRows"
         :columns="tableColumns"
-        :default-sort="{ prop: 'cubeCount', order: 'descending' }"
-        @sort-change="onSortChange"
         :rowClassFn="rowClassFn"
         v-loading="!scryfallReady"
         stripe
@@ -228,14 +202,6 @@
         </template>
         <template v-else-if="noCubesLoaded && !config.showAllCards" #empty>
             No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
-        </template>
-        <template #cell-globalRate="{ row }">
-            <template v-if="row.globalRateCount == null">N/A</template>
-            <template v-else-if="!selectedFrequencyCubeCount">{{ row.globalRateCount.toLocaleString() }}</template>
-            <template v-else>
-                <el-text class="cell-primary">{{ ((row.globalRateCount / selectedFrequencyCubeCount) * 100).toFixed(1) }}%</el-text>
-                <el-text class="cell-secondary">({{ row.globalRateCount.toLocaleString() }})</el-text>
-            </template>
         </template>
         <template #cell-name="{ row }">
             <el-tooltip
@@ -428,19 +394,21 @@
         </template>
     </StickyTable>
 
-    <div v-if="isMobile" class="card-table-pagination-row">
+    <div v-if="isMobile && filteredRows.length > pageSize" class="card-table-pagination-row">
         <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
-        <span class="mobile-page-info">{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
+        <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
+            {{ viewExpanded ? '▴ View' : '▾ View' }}
+        </span>
         <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
     </div>
     <el-pagination
-        v-else
+        v-else-if="!isMobile && filteredRows.length > pageSize"
+        class="card-table-bottom-pagination"
         v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[25, 50, 100, 250]"
         :pager-count="5"
-        layout="->, prev, pager, next, sizes"
+        layout="->, prev, pager, next"
         :total="filteredRows.length"
+        :page-size="pageSize"
     />
 
 
@@ -462,35 +430,8 @@
             </div>
             <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
                 <el-row :gutter="10">
-                    <el-col :span="item.value === 'globalRate' ? 24 : 12" :xs="24" v-for="item in group.options" :key="item.value">
-                        <template v-if="item.value === 'globalRate'">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <el-checkbox :value="item.value">
-                                    {{ item.label }}
-                                </el-checkbox>
-                                <el-select
-                                    v-if="frequencyCategoryOptions.length > 0"
-                                    v-model="config.frequencyCategory"
-                                    size="small"
-                                    style="flex: 1; min-width: 120px; max-width: 200px;"
-                                    placeholder="Global Rate"
-                                >
-                                    <el-option-group
-                                        v-for="grp in groupedFrequencyOptions"
-                                        :key="grp.label"
-                                        :label="grp.label"
-                                    >
-                                        <el-option
-                                            v-for="opt in grp.options"
-                                            :key="opt.value"
-                                            :label="opt.label"
-                                            :value="opt.value"
-                                        />
-                                    </el-option-group>
-                                </el-select>
-                            </div>
-                        </template>
-                        <el-checkbox v-else :value="item.value">
+                    <el-col :span="12" :xs="24" v-for="item in group.options" :key="item.value">
+                        <el-checkbox :value="item.value">
                             {{ item.label }}
                         </el-checkbox>
                     </el-col>
@@ -511,7 +452,9 @@ import { useWindowSize } from '@vueuse/core';
 import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useBackDismiss } from '../util/useBackDismiss';
-import { capitalizeFirstLetter, rarityOrder, getRarityColor, formatPrice } from '../util/HelperFunctions';
+import { capitalizeFirstLetter, rarityOrder, getRarityColor, formatPrice, normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
+import { cardSortProperties, resolveDirection } from '../util/SortConfig';
+import type { SortDirection } from '../util/SortConfig';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 import CardSearchInput from './filters/CardSearchInput.vue';
@@ -519,7 +462,7 @@ import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, collectHighlightCubeKeys, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
-import { getFrequencyCategoryOptions, resolveCardCount, resolveCubeCount, frequencyDataReady } from '../util/CubeCobraFrequency';
+import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates } from '../util/CubeCobraFrequency';
 import { getCardStats, cardStatsReady } from '../util/CubeCobraCardStats';
 
 const props = defineProps({
@@ -542,14 +485,18 @@ const openCardDetailDialog = inject<(id: string) => void>('openCardDetailDialog'
 const cardResultsTop = useTemplateRef<HTMLElement>('cardResultsTop');
 
 const currentPage = ref(1);
-const pageSize = ref(50);
+const pageSize = computed(() => {
+    if (!visualDisplayVisible.value) return 50;
+    const cols = config.value.visualColumnCount;
+    const target = Math.max(60, cols * 10);
+    return Math.ceil(target / cols) * cols;
+});
 
 watch(currentPage, () => {
     nextTick(() => {
         cardResultsTop.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 });
-const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null } | null>({ prop: 'cubeCount', order: 'descending' });
 const activeQuery = inject<Ref<string>>('cardTableQuery', ref(''));
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
@@ -576,33 +523,49 @@ const cubeOptions = computed(() =>
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 const visualDisplayVisible = bindStorage('card-table-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
-const filtersExpanded = ref(false);
+const viewExpanded = ref(false);
 
-const visualSortProp = computed({
-    get: () => activeSort.value?.prop ?? 'cubeCount',
-    set: (val: string) => {
-        activeSort.value = { prop: val, order: activeSort.value?.order ?? 'descending' };
-        currentPage.value = 1;
-    },
+const sortProp = ref('cubeCount');
+const sortDirection = ref<SortDirection>('auto');
+
+watch(sortProp, () => {
+    sortDirection.value = 'auto';
+    currentPage.value = 1;
 });
 
-const visualSortOrder = computed({
-    get: () => activeSort.value?.order ?? 'descending',
-    set: (val: 'ascending' | 'descending') => {
-        activeSort.value = { prop: activeSort.value?.prop ?? 'cubeCount', order: val };
-        currentPage.value = 1;
-    },
+const resolvedSortDirection = computed(() => {
+    if (querySortDirective.value?.hasDirection) {
+        return querySortDirective.value.order;
+    }
+    return resolveDirection(sortDirection.value, sortProp.value, cardSortProperties);
 });
 
-const toggleVisualSortOrder = () => {
-    visualSortOrder.value = visualSortOrder.value === 'ascending' ? 'descending' : 'ascending';
-};
+const resolvedSortProp = computed(() => {
+    if (querySortDirective.value?.hasOrder) {
+        return querySortDirective.value.prop;
+    }
+    return sortProp.value;
+});
+
+const displayModeValue = computed({
+    get: () => visualDisplayVisible.value ? 'grid' : 'table',
+    set: (val: string) => { visualDisplayVisible.value = val === 'grid'; },
+});
+
+const showAllCardsValue = computed({
+    get: () => config.value.showAllCards ? 'on' : 'off',
+    set: (val: string) => { config.value.showAllCards = val === 'on'; },
+});
+
+watch(visualDisplayVisible, () => {
+    currentPage.value = 1;
+});
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize.value)));
 
 // --- Column visibility config ---
 const defaultVisibleColumns = [
-    'cubeCount', 'globalRate', 'effectiveColors', 'cmc', 'typeLine', 'tags',
+    'cubeCount', 'globalRate_total', 'effectiveColors', 'cmc', 'typeLine', 'tags',
     'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
@@ -611,7 +574,6 @@ const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
 const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
     visualColumnCount: defaultVisualColumnCount.value,
-    frequencyCategory: 'total',
     showAllCards: false,
 };
 
@@ -619,40 +581,22 @@ const config = bindStorage('card-summary-table-config', (v) => {
     if (v == undefined || v === null) {
         return { ...defaultConfig, visualColumnCount: defaultVisualColumnCount.value };
     }
+    let cols = (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[];
+    // Migrate legacy single globalRate column to new split columns
+    if (cols.includes('globalRate')) {
+        cols = cols.filter(c => c !== 'globalRate');
+        cols.push('globalRate_total');
+    }
     return {
-        visibleColumns: (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[],
+        visibleColumns: cols,
         visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : defaultVisualColumnCount.value,
-        frequencyCategory: typeof v.frequencyCategory === 'string' ? v.frequencyCategory : 'total',
         showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
 
-const frequencyCategoryOptions = computed(() => {
-    void frequencyDataReady.value; // reactive dependency
-    return getFrequencyCategoryOptions();
+watch(() => config.value.visualColumnCount, () => {
+    currentPage.value = 1;
 });
-
-const groupedFrequencyOptions = computed(() => {
-    const opts = frequencyCategoryOptions.value;
-    const ungrouped = opts.filter(o => !o.group);
-    const groups = new Map<string, typeof opts>();
-    for (const o of opts) {
-        if (!o.group) continue;
-        if (!groups.has(o.group)) groups.set(o.group, []);
-        groups.get(o.group)!.push(o);
-    }
-    const result: { label: string; options: typeof opts }[] = [];
-    if (ungrouped.length > 0) result.push({ label: 'General', options: ungrouped });
-    for (const [label, options] of groups) result.push({ label, options });
-    return result;
-});
-
-const selectedFrequencyLabel = computed(() => {
-    const opt = frequencyCategoryOptions.value.find(o => o.value === config.value.frequencyCategory);
-    return opt?.label ?? 'Global';
-});
-
-const selectedFrequencyCubeCount = computed(() => resolveCubeCount(config.value.frequencyCategory));
 
 const noCubesLoaded = computed(() => Object.keys(props.loadedCubes).length === 0);
 
@@ -680,7 +624,6 @@ const columnOptions = ref([
         options: [
             { value: 'cubeCount', label: 'Cubes' },
             { value: 'count', label: 'Total Count' },
-            { value: 'globalRate', label: 'Global Inclusion Rate' },
             { value: 'effectiveColors', label: 'Colors' },
             { value: 'effectiveColorIdentity', label: 'Color Identity' },
             { value: 'cmc', label: 'Mana Value' },
@@ -692,6 +635,13 @@ const columnOptions = ref([
             { value: 'tags', label: 'Tags' },
             { value: 'minRarity', label: 'Min Rarity' },
         ],
+    },
+    {
+        label: 'Global Rates',
+        options: FREQUENCY_COLUMNS.map(col => ({
+            value: col.columnKey,
+            label: col.label,
+        })),
     },
     {
         label: 'Set & Release',
@@ -726,51 +676,42 @@ const columnOptions = ref([
 // --- Table column definitions ---
 const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'index', prop: 'index', label: '#', width: '50px' },
-    { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
-    { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') && !noCubesLoaded.value },
-    { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') && !noCubesLoaded.value },
-    { key: 'globalRate', prop: 'globalRatePercent', label: selectedFrequencyLabel.value, minWidth: '100px', align: 'center', sortable: true, tooltip: selectedFrequencyCubeCount.value
-        ? `Inclusion rate across CubeCobra — ${selectedFrequencyLabel.value} (${selectedFrequencyCubeCount.value.toLocaleString()} cubes)`
-        : `Inclusion count across CubeCobra (${selectedFrequencyLabel.value})`, visible: config.value.visibleColumns.includes('globalRate') },
+    { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true },
+    { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', visible: config.value.visibleColumns.includes('cubeCount') && !noCubesLoaded.value },
+    { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') && !noCubesLoaded.value },
+    ...FREQUENCY_COLUMNS.map(col => ({
+        key: col.columnKey,
+        prop: col.propKey,
+        label: col.label,
+        minWidth: '90px',
+        align: 'center' as const,
+        tooltip: `CubeCobra inclusion rate — ${col.label} (${resolveCubeCount(col.categoryValue)?.toLocaleString() ?? '?'} cubes)`,
+        visible: config.value.visibleColumns.includes(col.columnKey),
+        formatter: (row: any) => row[col.propKey] != null ? `${row[col.propKey].toFixed(1)}%` : 'N/A',
+    })),
     { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
     { key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'Color ID', minWidth: '75px', align: 'center', tooltip: 'Color Identity', visible: config.value.visibleColumns.includes('effectiveColorIdentity') },
-    { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', sortable: true, tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
-    { key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Power', visible: config.value.visibleColumns.includes('power') },
-    { key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Toughness', visible: config.value.visibleColumns.includes('toughness') },
-    { key: 'typeLine', prop: 'typeLine', label: 'Type', minWidth: '100px', maxWidth: '220px', showOverflowTooltip: true, sortable: true, tooltip: 'Type Line', visible: config.value.visibleColumns.includes('typeLine') },
-    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') && (!noCubesLoaded.value || cardStatsReady.value) },
-    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') && (!noCubesLoaded.value || cardStatsReady.value) },
+    { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
+    { key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', tooltip: 'Power', visible: config.value.visibleColumns.includes('power') },
+    { key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', tooltip: 'Toughness', visible: config.value.visibleColumns.includes('toughness') },
+    { key: 'typeLine', prop: 'typeLine', label: 'Type', minWidth: '100px', maxWidth: '220px', showOverflowTooltip: true, tooltip: 'Type Line', visible: config.value.visibleColumns.includes('typeLine') },
+    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') && (!noCubesLoaded.value || cardStatsReady.value) },
+    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') && (!noCubesLoaded.value || cardStatsReady.value) },
     { key: 'tags', prop: 'tags', label: 'Tags', minWidth: '75px', visible: config.value.visibleColumns.includes('tags') },
-    { key: 'minRarity', prop: 'minRarity', label: 'Min Rarity', minWidth: '75px', sortable: true, tooltip: 'Minimum rarity across all printings', visible: config.value.visibleColumns.includes('minRarity') },
-    { key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '60px', sortable: true, visible: config.value.visibleColumns.includes('setCode') },
-    { key: 'setType', prop: 'setType', label: 'Set Type', minWidth: '90px', maxWidth: '130px', showOverflowTooltip: true, sortable: true, visible: config.value.visibleColumns.includes('setType') },
-    { key: 'layout', prop: 'layout', label: 'Layout', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('layout') },
-    { key: 'releaseDate', prop: 'releaseDate', label: 'Released', minWidth: '90px', sortable: true, tooltip: 'Release Date', visible: config.value.visibleColumns.includes('releaseDate') },
-    { key: 'minPriceUsd', prop: 'minPriceUsd', label: 'Price (USD)', minWidth: '75px', sortable: true, formatter: (row: any) => row.minPriceUsd != null ? `$${formatPrice(row.minPriceUsd)}` : 'N/A', tooltip: 'Minimum price in USD across all printings', visible: config.value.visibleColumns.includes('minPriceUsd') },
-    { key: 'minPriceTix', prop: 'minPriceTix', label: 'Price (Tix)', minWidth: '75px', sortable: true, formatter: (row: any) => row.minPriceTix != null ? formatPrice(row.minPriceTix) : 'N/A', tooltip: 'Minimum price in MTGO Tix across all printings', visible: config.value.visibleColumns.includes('minPriceTix') },
-    { key: 'oracleTextWordCount', prop: 'oracleTextWordCount', label: 'Words', minWidth: '65px', align: 'center', sortable: true, tooltip: 'Oracle Text Word Count (including Reminder Text)', visible: config.value.visibleColumns.includes('oracleTextWordCount') },
-    { key: 'oracleTextWordCountMinusParen', prop: 'oracleTextWordCountMinusParen', label: 'Words*', minWidth: '65px', align: 'center', sortable: true, tooltip: 'Oracle Text Word Count (excluding Reminder Text)', visible: config.value.visibleColumns.includes('oracleTextWordCountMinusParen') },
+    { key: 'minRarity', prop: 'minRarity', label: 'Min Rarity', minWidth: '75px', tooltip: 'Minimum rarity across all printings', visible: config.value.visibleColumns.includes('minRarity') },
+    { key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '60px', visible: config.value.visibleColumns.includes('setCode') },
+    { key: 'setType', prop: 'setType', label: 'Set Type', minWidth: '90px', maxWidth: '130px', showOverflowTooltip: true, visible: config.value.visibleColumns.includes('setType') },
+    { key: 'layout', prop: 'layout', label: 'Layout', minWidth: '75px', visible: config.value.visibleColumns.includes('layout') },
+    { key: 'releaseDate', prop: 'releaseDate', label: 'Released', minWidth: '90px', tooltip: 'Release Date', visible: config.value.visibleColumns.includes('releaseDate') },
+    { key: 'minPriceUsd', prop: 'minPriceUsd', label: 'Price (USD)', minWidth: '75px', formatter: (row: any) => row.minPriceUsd != null ? `$${formatPrice(row.minPriceUsd)}` : 'N/A', tooltip: 'Minimum price in USD across all printings', visible: config.value.visibleColumns.includes('minPriceUsd') },
+    { key: 'minPriceTix', prop: 'minPriceTix', label: 'Price (Tix)', minWidth: '75px', formatter: (row: any) => row.minPriceTix != null ? formatPrice(row.minPriceTix) : 'N/A', tooltip: 'Minimum price in MTGO Tix across all printings', visible: config.value.visibleColumns.includes('minPriceTix') },
+    { key: 'oracleTextWordCount', prop: 'oracleTextWordCount', label: 'Words', minWidth: '65px', align: 'center', tooltip: 'Oracle Text Word Count (including Reminder Text)', visible: config.value.visibleColumns.includes('oracleTextWordCount') },
+    { key: 'oracleTextWordCountMinusParen', prop: 'oracleTextWordCountMinusParen', label: 'Words*', minWidth: '65px', align: 'center', tooltip: 'Oracle Text Word Count (excluding Reminder Text)', visible: config.value.visibleColumns.includes('oracleTextWordCountMinusParen') },
     { key: 'isUniversesBeyond', prop: 'isUniversesBeyond', label: 'UB', minWidth: '50px', align: 'center', tooltip: 'Universes Beyond — originally from a non-Magic IP product', visible: config.value.visibleColumns.includes('isUniversesBeyond') },
     { key: 'isSupplementalProduct', prop: 'isSupplementalProduct', label: 'Supp.', minWidth: '55px', align: 'center', tooltip: 'Supplemental Product — originally from a supplemental product (includes Portal)', visible: config.value.visibleColumns.includes('isSupplementalProduct') },
     { key: 'makesTokens', prop: 'makesTokens', label: 'Tokens', minWidth: '65px', align: 'center', tooltip: 'Makes one or more Tokens', visible: config.value.visibleColumns.includes('makesTokens') },
     { key: 'games', prop: 'games', label: 'Games', minWidth: '75px', visible: config.value.visibleColumns.includes('games') },
 ]);
-
-const visualSortOptions = computed(() => {
-    return tableColumns.value
-        .filter(col => col.sortable && col.visible !== false && col.prop != null)
-        .map(col => ({ label: col.label, value: col.prop as string }));
-});
-
-// Reset sort prop if the sorted column is hidden
-watch(visualSortOptions, (options) => {
-    if (!options.some(o => o.value === activeSort.value?.prop)) {
-        const first = options[0];
-        if (first) {
-            activeSort.value = { prop: first.value, order: activeSort.value?.order ?? 'descending' };
-        }
-    }
-});
 
 // --- Tag / game display helpers ---
 const tagsMeta = [
@@ -921,11 +862,6 @@ watch(() => Object.keys(props.loadedCubes), (cubeKeys) => {
     }
 });
 
-const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
-    activeSort.value = sortInfo;
-    currentPage.value = 1;
-};
-
 // --- CSV Export ---
 const exportToCsv = () => {
     const escapeCsvValue = (value: unknown) => {
@@ -937,6 +873,8 @@ const exportToCsv = () => {
         return stringValue;
     };
 
+    const visibleRateColumns = FREQUENCY_COLUMNS.filter(col => config.value.visibleColumns.includes(col.columnKey));
+
     const headers = [
         'Index', 'Name', 'Cubes', 'Total Count', 'Colors', 'Color Identity', 'Mana Value',
         'Elo', 'Popularity', 'Type Line', 'Min Rarity',
@@ -944,7 +882,7 @@ const exportToCsv = () => {
         'Min Price (USD)', 'Min Price (Tix)',
         'Word Count', 'Word Count (No Reminder)',
         'Universes Beyond', 'Supplemental', 'Makes Tokens',
-        `Global Rate (${selectedFrequencyLabel.value})`,
+        ...visibleRateColumns.map(col => `Global Rate (${col.label})`),
     ].map(escapeCsvValue).join(',');
 
     const csvRows = filteredRows.value.map(row => [
@@ -970,7 +908,7 @@ const exportToCsv = () => {
         row.isUniversesBeyond ? 'Yes' : 'No',
         row.isSupplementalProduct ? 'Yes' : 'No',
         row.makesTokens ? 'Yes' : 'No',
-        row.globalRateCount ?? '',
+        ...visibleRateColumns.map(col => row[col.propKey] != null ? `${row[col.propKey].toFixed(1)}%` : ''),
     ].map(escapeCsvValue).join(','));
 
     const csvContent = [headers, ...csvRows].join('\n');
@@ -1001,13 +939,7 @@ const tableData = computed(() => {
                     count: 0,
                     cubes: [],
                     cubeCount: 0,
-                    globalRateCount: resolveCardCount(card.oracleId, config.value.frequencyCategory),
-                    globalRatePercent: (() => {
-                        const count = resolveCardCount(card.oracleId, config.value.frequencyCategory);
-                        const total = resolveCubeCount(config.value.frequencyCategory);
-                        if (count == null || !total) return null;
-                        return (count / total) * 100;
-                    })(),
+                    ...resolveAllRates(card.oracleId),
                 };
             }
             acc[card.oracleId].count += 1;
@@ -1037,13 +969,7 @@ const tableData = computed(() => {
                 cubeCount: 0,
                 elo: undefined,
                 popularity: undefined,
-                globalRateCount: resolveCardCount(oracleId, config.value.frequencyCategory),
-                globalRatePercent: (() => {
-                    const count = resolveCardCount(oracleId, config.value.frequencyCategory);
-                    const total = resolveCubeCount(config.value.frequencyCategory);
-                    if (count == null || !total) return null;
-                    return (count / total) * 100;
-                })(),
+                ...resolveAllRates(oracleId),
             };
         }
     }
@@ -1065,51 +991,44 @@ const tableData = computed(() => {
 });
 
 const sortedRows = computed(() => {
-    const alphaSorted = tableData.value.slice(0).sort((a, b) => {
-        if (a['name'] < b['name']) return -1;
-        if (a['name'] > b['name']) return 1;
-        return 0;
-    });
+    const alphaSorted = tableData.value.slice(0).sort((a, b) =>
+        castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name)),
+    );
 
-    // Query-driven sort (order:) takes precedence over UI sort
-    const sort = querySortDirective.value ?? activeSort.value;
+    const prop = resolvedSortProp.value;
+    const dir = resolvedSortDirection.value === 'ascending' ? 1 : -1;
 
-    if (!sort || !sort.order) {
-        return alphaSorted;
-    }
     return alphaSorted.slice(0).sort((a, b) => {
-        const sortKey = sort.prop;
-        const dir = sort.order === 'ascending' ? 1 : -1;
+        const sortKey = prop;
 
         // Rarity sorting with defined ordering
         if (sortKey === 'minRarity') {
             const aVal = rarityOrder[a.minRarity] ?? -1;
             const bVal = rarityOrder[b.minRarity] ?? -1;
             if (aVal !== bVal) return (aVal - bVal) * dir;
-            return a.name.localeCompare(b.name);
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
         }
 
-        // Power/toughness: parse numerically, non-numeric values (*, 1+*) sort last
+        // Power/toughness: parse numerically, non-numeric values sort last
         if (sortKey === 'power' || sortKey === 'toughness') {
-            const aVal = parseFloat(a[sortKey]) ?? -1;
-            const bVal = parseFloat(b[sortKey]) ?? -1;
+            const aVal = parseFloat(a[sortKey]);
+            const bVal = parseFloat(b[sortKey]);
             const aNum = isNaN(aVal) ? -1 : aVal;
             const bNum = isNaN(bVal) ? -1 : bVal;
             if (aNum !== bNum) return (aNum - bNum) * dir;
-            return a.name.localeCompare(b.name);
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
         }
 
         // Push null/undefined values to the end regardless of sort direction
         const aNull = a[sortKey] == null;
         const bNull = b[sortKey] == null;
-        if (aNull && bNull) return a.name.localeCompare(b.name);
+        if (aNull && bNull) return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
         if (aNull) return 1;
         if (bNull) return -1;
 
         if (a[sortKey] < b[sortKey]) return -1 * dir;
         if (a[sortKey] > b[sortKey]) return 1 * dir;
-        // Secondary sort by name
-        return a.name.localeCompare(b.name);
+        return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
     });
 });
 
@@ -1241,16 +1160,10 @@ const filteredStats = computed(() => {
 <style lang="scss">
 .card-table-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
     margin-bottom: 4px;
-
-    @media (max-width: 600px) {
-        .card-table-search {
-            flex-basis: 100%;
-        }
-    }
 }
 
 .card-table-search {
@@ -1284,9 +1197,17 @@ const filteredStats = computed(() => {
     gap: 8px;
     margin-bottom: 8px;
 
-    .sort-label {
+    .mobile-filter-label {
         font-size: 13px;
         color: var(--el-text-color-secondary);
+        width: 35%;
+        flex-shrink: 0;
+        text-align: right;
+    }
+
+    .mobile-filter-control {
+        width: 50%;
+        flex-shrink: 0;
     }
 
     .mobile-filter-row {
@@ -1296,38 +1217,62 @@ const filteredStats = computed(() => {
     }
 }
 
+.card-table-sort-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.card-table-card-count {
+    text-align: center;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    margin: 16px 0;
+}
+
+.card-table-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.sort-label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+
+    margin-left: 8px;
+}
+
+.card-table-filter-summary {
+    margin: 16px 0;
+}
+
 .card-table-pagination-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    margin: 8px 0;
-
-    .el-pagination {
-        flex: 1;
-        margin: 8px 0;
-    }
-
-    .mobile-page-info {
-        flex: 1;
-        text-align: center;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-        white-space: nowrap;
-    }
-}
-
-.visual-sort-bar {
-    margin: 12px 0 8px;
-
-    .sort-label {
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-    }
+    margin: 16px 0;
 }
 
 .visual-card-grid {
     display: grid;
     gap: 12px;
+}
+
+.visual-card-grid__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--el-text-color-secondary);
+
+    .el-link {
+        vertical-align: top;
+    }
 }
 
 .visual-card-item {
@@ -1360,9 +1305,8 @@ const filteredStats = computed(() => {
     opacity: 0.4;
 }
 
-.el-pagination {
+.card-table-bottom-pagination {
     margin: 16px 0;
-    text-align: right;
 }
 
 .card-image {

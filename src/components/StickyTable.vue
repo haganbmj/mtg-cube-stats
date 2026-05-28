@@ -427,5 +427,9 @@ const toggleExpand = (rowIndex: number) => {
     text-align: center;
     padding: 20px;
     color: var(--el-text-color-secondary);
+
+    .el-link {
+        vertical-align: top;
+    }
 }
 </style>

@@ -17,7 +17,7 @@
                 <el-row :gutter="10">
                     <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
                         <el-checkbox
-                            :label="item.value"
+                            :value="item.value"
                         >
                             {{ item.label }}
                             <el-tooltip
@@ -86,7 +86,28 @@
         :element-loading-text="loadingText"
         element-loading-custom-class="overview-loading"
     >
-        <div class="overview-toolbar">
+        <div class="overview-toolbar-row-1">
+            <div class="overview-search-input">
+                <CubeSearchInput v-model="cubeSearchQuery" />
+            </div>
+            <div class="overview-toolbar-actions">
+                <el-button-group v-if="!isMobile">
+                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
+                </el-button-group>
+
+                <el-dropdown trigger="click">
+                    <el-button :icon="Menu" circle />
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+        </div>
+
+        <div class="overview-toolbar-row-2">
             <form class="overview-add-form" @submit.prevent="submitAddCubeForm">
                 <el-select
                     class="overview-collection-select"
@@ -143,44 +164,57 @@
                 </div>
             </form>
 
-            <div class="overview-toolbar-actions">
-                <el-button
-                    v-if="!isMobile"
-                    :disabled="Object.keys(props.loadedCubes).length === 0"
-                    @click="props.clearCubes()"
-                >Remove All</el-button>
-
-                <el-button-group>
-                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
-                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="Table Display" />
-                </el-button-group>
-
-                <el-button
-                    :icon="Search"
-                    :type="cubeSearchVisible ? 'primary' : ''"
-                    @click="cubeSearchVisible = !cubeSearchVisible"
-                    title="Search/Filter Cubes"
-                    circle
-                />
-
-                <el-dropdown trigger="click">
-                    <el-button :icon="Menu" circle />
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
-                            <el-dropdown-item
-                                v-if="isMobile"
-                                :disabled="Object.keys(props.loadedCubes).length === 0"
-                                @click="props.clearCubes()"
-                            >Remove All</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
+            <div v-if="!isMobile" class="overview-sort-row">
+                <label class="sort-label">Sorted by</label>
+                <el-select v-model="sortProp" style="width: 150px;" :disabled="!!queryCubeSortDirective?.hasOrder">
+                    <el-option
+                        v-for="opt in overviewSortProperties"
+                        :key="opt.prop"
+                        :label="opt.label"
+                        :value="opt.prop"
+                    />
+                </el-select>
+                <el-select v-model="sortDirection" style="width: 80px;" :disabled="!!queryCubeSortDirective?.hasDirection">
+                    <el-option label="Auto" value="auto" />
+                    <el-option label="Asc" value="ascending" />
+                    <el-option label="Desc" value="descending" />
+                </el-select>
             </div>
         </div>
 
-        <div v-if="cubeSearchVisible" class="overview-search-row">
-            <CubeSearchInput v-model="cubeSearchQuery" />
+        <div v-if="isMobile" class="card-table-sort-row">
+            <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
+                {{ viewExpanded ? '▴ Options' : '▾ Options' }}
+            </span>
+        </div>
+
+        <div v-if="isMobile && viewExpanded" class="card-table-mobile-filters">
+            <div class="mobile-filter-row">
+                <span class="mobile-filter-label">Display</span>
+                <el-select v-model="displayModeValue" size="small" class="mobile-filter-control">
+                    <el-option label="Grid" value="grid" />
+                    <el-option label="Table" value="table" />
+                </el-select>
+            </div>
+            <div class="mobile-filter-row">
+                <span class="mobile-filter-label">Sorted by</span>
+                <el-select v-model="sortProp" size="small" class="mobile-filter-control" :disabled="!!queryCubeSortDirective?.hasOrder">
+                    <el-option
+                        v-for="opt in overviewSortProperties"
+                        :key="opt.prop"
+                        :label="opt.label"
+                        :value="opt.prop"
+                    />
+                </el-select>
+            </div>
+            <div class="mobile-filter-row">
+                <span class="mobile-filter-label">Direction</span>
+                <el-select v-model="sortDirection" size="small" class="mobile-filter-control" :disabled="!!queryCubeSortDirective?.hasDirection">
+                    <el-option label="Auto" value="auto" />
+                    <el-option label="Asc" value="ascending" />
+                    <el-option label="Desc" value="descending" />
+                </el-select>
+            </div>
         </div>
 
         <div v-if="props.loadingProgress?.active" class="overview-progress">
@@ -194,6 +228,9 @@
         </div>
 
         <div v-if="visualDisplayVisible" class="overview-cube-grid">
+            <div v-if="sortedData.length === 0" class="overview-cube-grid__empty">
+                No cubes loaded.
+            </div>
             <div
                 v-for="row in sortedData"
                 :key="row.id"
@@ -242,8 +279,6 @@
             v-else
             :data="sortedData"
             :columns="tableColumns"
-            :default-sort="{ prop: 'name', order: 'ascending' }"
-            @sort-change="onSortChange"
             stripe
         >
             <template #cell-thumbnail="{ row }">
@@ -426,23 +461,34 @@
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp((row.stats?.uniqueNonEvergreenKeywords ?? 0) / row.stats.totalCards, 'uniqueNonEvergreenKeywords')" />
             </template>
         </StickyTable>
+
+        <div v-if="Object.keys(props.loadedCubes).length > 0" class="overview-remove-all">
+            <el-button
+                type="danger"
+                plain
+                :disabled="Object.keys(props.loadedCubes).length === 0"
+                @click="props.clearCubes()"
+            >Remove All Cubes</el-button>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, inject } from 'vue';
+import { ref, reactive, computed, inject, watch } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort, formatPrice, normalizeSortName } from '../util/HelperFunctions';
+import { overviewSortProperties, resolveDirection } from '../util/SortConfig';
+import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Search } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCubeFilter } from '../util/CubeFilterEvaluator';
+import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 
 const { width: windowWidth } = useWindowSize();
@@ -538,6 +584,10 @@ const config = bindStorage('cube-app-config', (v) => {
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 const visualDisplayVisible = bindStorage('overview-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
+const displayModeValue = computed({
+    get: () => visualDisplayVisible.value ? 'grid' : 'table',
+    set: (val: string) => { visualDisplayVisible.value = val === 'grid'; },
+});
 
 const addCubeForm = reactive({
     loading: false,
@@ -731,24 +781,20 @@ const columnOptions = ref([
     },
 ]);
 
-const sortMethods = {
-    caseInsensitiveName: (a: any, b: any) => {
-        return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
-    },
-    caseInsensitiveOwner: (a: any, b: any) => {
-        return castInensitiveSort(a.owner, b.owner);
-    },
-    ratioSort: (propPath: string) => (a: any, b: any) => {
-        return (getNestedProp(a, propPath) / a.stats.totalCards) - (getNestedProp(b, propPath) / b.stats.totalCards);
-    },
-};
-
 // --- Sort state ---
-const activeSort = ref<{ prop: string; order: 'ascending' | 'descending' | null }>({ prop: 'name', order: 'ascending' });
+const sortProp = ref('name');
+const sortDirection = ref<SortDirection>('auto');
 
-const onSortChange = (sortInfo: { prop: string; order: 'ascending' | 'descending' | null }) => {
-    activeSort.value = sortInfo;
-};
+watch(sortProp, () => {
+    sortDirection.value = 'auto';
+});
+
+const resolvedSortDirection = computed(() => {
+    if (queryCubeSortDirective.value?.hasDirection) {
+        return queryCubeSortDirective.value.order;
+    }
+    return resolveDirection(sortDirection.value, sortProp.value, overviewSortProperties);
+});
 
 // --- Formatter helpers ---
 const fmtFixed2 = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2);
@@ -766,44 +812,45 @@ const fmtDate = (prop: string) => (row: any) => {
 const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'thumbnail', label: '', width: '75px' },
     { key: 'rowNumber', label: '#', width: '50px', visible: config.value.visibleColumns.includes('rowNumber') },
-    { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true, sortMethod: sortMethods.caseInsensitiveName, visible: config.value.visibleColumns.includes('name') },
-    { key: 'owner', prop: 'owner', label: 'Owner', minWidth: '90px', maxWidth: '160px', showOverflowTooltip: true, sortable: true, sortMethod: sortMethods.caseInsensitiveOwner, visible: config.value.visibleColumns.includes('owner') },
-    { key: 'lastModified', prop: 'lastModified', label: 'Modified', minWidth: '90px', sortable: true, formatter: fmtDate('lastModified'), tooltip: 'Date the cube was last modified', visible: config.value.visibleColumns.includes('lastModified') },
-    { key: 'followerCount', prop: 'followerCount', label: 'Followers', minWidth: '80px', sortable: true, visible: config.value.visibleColumns.includes('followerCount') },
+    { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, visible: config.value.visibleColumns.includes('name') },
+    { key: 'owner', prop: 'owner', label: 'Owner', minWidth: '90px', maxWidth: '160px', showOverflowTooltip: true, visible: config.value.visibleColumns.includes('owner') },
+    { key: 'lastModified', prop: 'lastModified', label: 'Modified', minWidth: '90px', formatter: fmtDate('lastModified'), tooltip: 'Date the cube was last modified', visible: config.value.visibleColumns.includes('lastModified') },
+    { key: 'followerCount', prop: 'followerCount', label: 'Followers', minWidth: '80px', visible: config.value.visibleColumns.includes('followerCount') },
     { key: 'arenaPlayable', prop: 'stats.arenaPlayable', label: 'Arena', minWidth: '65px', tooltip: 'Arena Playable — all cards available on MTG Arena', visible: config.value.visibleColumns.includes('stats.arenaPlayable') },
     { key: 'mtgoPlayable', prop: 'stats.mtgoPlayable', label: 'MTGO', minWidth: '65px', tooltip: 'MTGO Playable — all cards available on Magic Online', visible: config.value.visibleColumns.includes('stats.mtgoPlayable') },
     { key: 'paperPlayable', prop: 'stats.paperPlayable', label: 'Paper', minWidth: '65px', tooltip: 'Paper Playable — no digital-only printings or custom cards', visible: config.value.visibleColumns.includes('stats.paperPlayable') },
     { key: 'assumedCategories', prop: 'stats.assumedCategories', label: 'Categories', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.assumedCategories') },
-    { key: 'totalMinPriceUsd', prop: 'stats.totalMinPriceUsd', label: 'Price (USD)', minWidth: '80px', sortable: true, formatter: fmtPriceUsd('stats.totalMinPriceUsd'), tooltip: 'Total minimum price of the cube in USD', visible: config.value.visibleColumns.includes('stats.totalMinPriceUsd') },
-    { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Price (Tix)', minWidth: '80px', sortable: true, formatter: fmtPriceTix('stats.totalMinPriceTix'), tooltip: 'Total minimum price of the cube in MTGO Tix', visible: config.value.visibleColumns.includes('stats.totalMinPriceTix') },
-    { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Year', minWidth: '85px', sortable: true, tooltip: 'Average release year of cards in the cube (± Standard Deviation)', visible: config.value.visibleColumns.includes('stats.averageReleaseYear') },
-    { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Med. Year', minWidth: '85px', sortable: true, tooltip: 'Median release year of cards in the cube (± Median Absolute Deviation)', visible: config.value.visibleColumns.includes('stats.medianReleaseYear') },
-    { key: 'totalCards', prop: 'stats.totalCards', label: 'Cards', minWidth: '65px', sortable: true, tooltip: 'Total number of cards', visible: config.value.visibleColumns.includes('stats.totalCards') },
-    { key: 'totalUniqueCards', prop: 'stats.totalUniqueCards', label: 'Unique', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.totalUniqueCards'), tooltip: 'Number of unique cards by oracle ID', visible: config.value.visibleColumns.includes('stats.totalUniqueCards') },
-    { key: 'newCards', prop: 'stats.newCards', label: 'New', minWidth: '65px', sortable: true, sortMethod: sortMethods.ratioSort('stats.newCards'), tooltip: 'Cards Released in the Last 12 Months', visible: config.value.visibleColumns.includes('stats.newCards') },
-    { key: 'landCards', prop: 'stats.landCards', label: 'Lands', minWidth: '65px', sortable: true, sortMethod: sortMethods.ratioSort('stats.landCards'), visible: config.value.visibleColumns.includes('stats.landCards') },
-    { key: 'creatureCards', prop: 'stats.creatureCards', label: 'Creatures', minWidth: '75px', sortable: true, sortMethod: sortMethods.ratioSort('stats.creatureCards'), visible: config.value.visibleColumns.includes('stats.creatureCards') },
-    { key: 'avgSimilarityScore', prop: 'avgSimilarityScore', label: 'Similarity', minWidth: '75px', sortable: true, formatter: fmtPercentage('avgSimilarityScore'), tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes', visible: config.value.visibleColumns.includes('avgSimilarityScore') },
-    { key: 'averageNonLandCmc', prop: 'stats.averageNonLandCmc', label: 'Avg. MV', minWidth: '70px', sortable: true, formatter: fmtFixed2('stats.averageNonLandCmc'), tooltip: 'Average Mana Value of Non-Land Cards', visible: config.value.visibleColumns.includes('stats.averageNonLandCmc') },
-    { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '70px', sortable: true, formatter: fmtFixed2('stats.averageElo'), tooltip: 'Average CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('stats.averageElo') },
-    { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Pop.', minWidth: '70px', sortable: true, formatter: fmtPopularity('stats.averagePopularity'), tooltip: 'Average CubeCobra Card Popularity %', visible: config.value.visibleColumns.includes('stats.averagePopularity') },
-    { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', sortable: true, formatter: fmtFixed2('stats.blendedRarityScore'), tooltip: 'Blended Rarity Score — minimum rarity per card, C=0.333, U=0.666, R=1.000, M=1.200', visible: config.value.visibleColumns.includes('stats.blendedRarityScore') },
-    { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Words', minWidth: '75px', sortable: true, formatter: fmtFixed2('stats.averageWordCount'), tooltip: 'Average Oracle Text Word Count (excluding Reminder Text)', visible: config.value.visibleColumns.includes('stats.averageWordCount') },
-    { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Words*', minWidth: '80px', sortable: true, formatter: fmtFixed2('stats.averageWordCountUnique'), tooltip: 'Average Oracle Text Word Count of Unique Cards (excluding Reminder Text)', visible: config.value.visibleColumns.includes('stats.averageWordCountUnique') },
-    { key: 'uniqueKeywords', prop: 'stats.uniqueKeywords', label: 'Keywords', minWidth: '75px', sortable: true, tooltip: 'Number of unique keywords', visible: config.value.visibleColumns.includes('stats.uniqueKeywords') },
-    { key: 'uniqueNonEvergreenKeywords', prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-EG KW', minWidth: '80px', sortable: true, tooltip: 'Number of unique non-evergreen keywords', visible: config.value.visibleColumns.includes('stats.uniqueNonEvergreenKeywords') },
-    { key: 'abnormalLayout', prop: 'stats.cardCounts.abnormalLayout', label: 'Abn. Layout', minWidth: '80px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.abnormalLayout'), tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)', visible: config.value.visibleColumns.includes('stats.cardCounts.abnormalLayout') },
-    { key: 'makesTokens', prop: 'stats.cardCounts.makesTokens', label: 'Tokens', minWidth: '65px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.makesTokens'), tooltip: 'Cards that create one or more tokens', visible: config.value.visibleColumns.includes('stats.cardCounts.makesTokens') },
-    { key: 'uniqueTokenCount', prop: 'stats.uniqueTokenCount', label: 'Uniq. Tokens', minWidth: '80px', sortable: true, tooltip: 'Number of unique tokens produced by cards in the cube', visible: config.value.visibleColumns.includes('stats.uniqueTokenCount') },
-    { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '70px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.removal'), tooltip: "Cards tagged as 'removal' in Scryfall's Tagger", visible: config.value.visibleColumns.includes('stats.cardCounts.removal') },
-    { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'UB', minWidth: '55px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.universesBeyond'), tooltip: 'Universes Beyond — cards originally from non-Magic IP products (includes Standard sets)', visible: config.value.visibleColumns.includes('stats.cardCounts.universesBeyond') },
-    { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, sortMethod: sortMethods.ratioSort('stats.cardCounts.supplementalProduct'), tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },
+    { key: 'totalMinPriceUsd', prop: 'stats.totalMinPriceUsd', label: 'Price (USD)', minWidth: '80px', formatter: fmtPriceUsd('stats.totalMinPriceUsd'), tooltip: 'Total minimum price of the cube in USD', visible: config.value.visibleColumns.includes('stats.totalMinPriceUsd') },
+    { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Price (Tix)', minWidth: '80px', formatter: fmtPriceTix('stats.totalMinPriceTix'), tooltip: 'Total minimum price of the cube in MTGO Tix', visible: config.value.visibleColumns.includes('stats.totalMinPriceTix') },
+    { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Year', minWidth: '85px', tooltip: 'Average release year of cards in the cube (± Standard Deviation)', visible: config.value.visibleColumns.includes('stats.averageReleaseYear') },
+    { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Med. Year', minWidth: '85px', tooltip: 'Median release year of cards in the cube (± Median Absolute Deviation)', visible: config.value.visibleColumns.includes('stats.medianReleaseYear') },
+    { key: 'totalCards', prop: 'stats.totalCards', label: 'Cards', minWidth: '65px', tooltip: 'Total number of cards', visible: config.value.visibleColumns.includes('stats.totalCards') },
+    { key: 'totalUniqueCards', prop: 'stats.totalUniqueCards', label: 'Unique', minWidth: '75px', tooltip: 'Number of unique cards by oracle ID', visible: config.value.visibleColumns.includes('stats.totalUniqueCards') },
+    { key: 'newCards', prop: 'stats.newCards', label: 'New', minWidth: '65px', tooltip: 'Cards Released in the Last 12 Months', visible: config.value.visibleColumns.includes('stats.newCards') },
+    { key: 'landCards', prop: 'stats.landCards', label: 'Lands', minWidth: '65px', visible: config.value.visibleColumns.includes('stats.landCards') },
+    { key: 'creatureCards', prop: 'stats.creatureCards', label: 'Creatures', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.creatureCards') },
+    { key: 'avgSimilarityScore', prop: 'avgSimilarityScore', label: 'Similarity', minWidth: '75px', formatter: fmtPercentage('avgSimilarityScore'), tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes', visible: config.value.visibleColumns.includes('avgSimilarityScore') },
+    { key: 'averageNonLandCmc', prop: 'stats.averageNonLandCmc', label: 'Avg. MV', minWidth: '70px', formatter: fmtFixed2('stats.averageNonLandCmc'), tooltip: 'Average Mana Value of Non-Land Cards', visible: config.value.visibleColumns.includes('stats.averageNonLandCmc') },
+    { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '70px', formatter: fmtFixed2('stats.averageElo'), tooltip: 'Average CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('stats.averageElo') },
+    { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Pop.', minWidth: '70px', formatter: fmtPopularity('stats.averagePopularity'), tooltip: 'Average CubeCobra Card Popularity %', visible: config.value.visibleColumns.includes('stats.averagePopularity') },
+    { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', formatter: fmtFixed2('stats.blendedRarityScore'), tooltip: 'Blended Rarity Score — minimum rarity per card, C=0.333, U=0.666, R=1.000, M=1.200', visible: config.value.visibleColumns.includes('stats.blendedRarityScore') },
+    { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Words', minWidth: '75px', formatter: fmtFixed2('stats.averageWordCount'), tooltip: 'Average Oracle Text Word Count (excluding Reminder Text)', visible: config.value.visibleColumns.includes('stats.averageWordCount') },
+    { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Words*', minWidth: '80px', formatter: fmtFixed2('stats.averageWordCountUnique'), tooltip: 'Average Oracle Text Word Count of Unique Cards (excluding Reminder Text)', visible: config.value.visibleColumns.includes('stats.averageWordCountUnique') },
+    { key: 'uniqueKeywords', prop: 'stats.uniqueKeywords', label: 'Keywords', minWidth: '75px', tooltip: 'Number of unique keywords', visible: config.value.visibleColumns.includes('stats.uniqueKeywords') },
+    { key: 'uniqueNonEvergreenKeywords', prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-EG KW', minWidth: '80px', tooltip: 'Number of unique non-evergreen keywords', visible: config.value.visibleColumns.includes('stats.uniqueNonEvergreenKeywords') },
+    { key: 'abnormalLayout', prop: 'stats.cardCounts.abnormalLayout', label: 'Abn. Layout', minWidth: '80px', tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)', visible: config.value.visibleColumns.includes('stats.cardCounts.abnormalLayout') },
+    { key: 'makesTokens', prop: 'stats.cardCounts.makesTokens', label: 'Tokens', minWidth: '65px', tooltip: 'Cards that create one or more tokens', visible: config.value.visibleColumns.includes('stats.cardCounts.makesTokens') },
+    { key: 'uniqueTokenCount', prop: 'stats.uniqueTokenCount', label: 'Uniq. Tokens', minWidth: '80px', tooltip: 'Number of unique tokens produced by cards in the cube', visible: config.value.visibleColumns.includes('stats.uniqueTokenCount') },
+    { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '70px', tooltip: "Cards tagged as 'removal' in Scryfall's Tagger", visible: config.value.visibleColumns.includes('stats.cardCounts.removal') },
+    { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'UB', minWidth: '55px', tooltip: 'Universes Beyond — cards originally from non-Magic IP products (includes Standard sets)', visible: config.value.visibleColumns.includes('stats.cardCounts.universesBeyond') },
+    { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },
 ]);
 
 // --- Filtered + sorted data ---
-const cubeSearchVisible = bindStorage<boolean>('cube-search-visible', v => v === true);
+const viewExpanded = ref(false);
 const cubeSearchQuery = ref('');
 const parsedCubeQuery = computed(() => parseQuery(cubeSearchQuery.value));
+const queryCubeSortDirective = computed(() => extractCubeSortDirective(parsedCubeQuery.value.ast));
 
 const filteredData = computed(() => {
     const data = props.overviewTableData as any[];
@@ -819,23 +866,39 @@ const filteredData = computed(() => {
 
 const sortedData = computed(() => {
     const data = [...filteredData.value];
-    if (!activeSort.value || !activeSort.value.order) {
-        return data.sort((a, b) => castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name)));
-    }
-
-    const sortProp = activeSort.value.prop;
-    const dir = activeSort.value.order === 'ascending' ? 1 : -1;
-    const col = tableColumns.value.find(c => (c.sortKey ?? c.prop ?? c.key) === sortProp);
+    const prop = queryCubeSortDirective.value?.hasOrder ? queryCubeSortDirective.value.prop : sortProp.value;
+    const dir = resolvedSortDirection.value === 'ascending' ? 1 : -1;
 
     return data.sort((a, b) => {
-        if (col?.sortMethod) {
-            return col.sortMethod(a, b) * dir;
+        // Use ratioSort for newCards and cardCounts ratios
+        if (prop === 'stats.newCards' || prop.startsWith('stats.cardCounts.')) {
+            const aRatio = getNestedProp(a, prop) / a.stats.totalCards;
+            const bRatio = getNestedProp(b, prop) / b.stats.totalCards;
+            if (aRatio !== bRatio) return (aRatio - bRatio) * dir;
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
         }
-        const aVal = getNestedProp(a, sortProp);
-        const bVal = getNestedProp(b, sortProp);
+
+        // Name and owner use NFKD localeCompare
+        if (prop === 'name') {
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name)) * dir;
+        }
+        if (prop === 'owner') {
+            const ownerCmp = castInensitiveSort(a.owner, b.owner) * dir;
+            if (ownerCmp !== 0) return ownerCmp;
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
+        }
+
+        // Generic numeric sort
+        const aVal = getNestedProp(a, prop);
+        const bVal = getNestedProp(b, prop);
+        const aNull = aVal == null;
+        const bNull = bVal == null;
+        if (aNull && bNull) return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
+        if (aNull) return 1;
+        if (bNull) return -1;
         if (aVal < bVal) return -1 * dir;
         if (aVal > bVal) return 1 * dir;
-        return 0;
+        return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
     });
 });
 
@@ -847,15 +910,96 @@ const formatters = {
 </script>
 
 <style scoped>
-.overview-search-row {
+.overview-toolbar-row-1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
-.overview-toolbar {
+.overview-search-input {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.overview-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.overview-toolbar-row-2 {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
+    margin-bottom: 10px;
+}
+
+.overview-sort-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.sort-label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+}
+
+.card-table-sort-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+.card-table-filter-toggle {
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.card-table-filter-toggle:hover {
+    background: var(--el-fill-color);
+}
+
+.card-table-mobile-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .mobile-filter-label {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        width: 35%;
+        flex-shrink: 0;
+        text-align: right;
+    }
+
+    .mobile-filter-control {
+        width: 50%;
+        flex-shrink: 0;
+    }
+
+    .mobile-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+.overview-search-row {
     margin-bottom: 10px;
 }
 
@@ -870,8 +1014,8 @@ const formatters = {
 }
 
 .overview-collection-select {
-    flex: 1 1 200px;
-    min-width: 200px;
+    flex: 1 1 140px;
+    min-width: 140px;
 }
 
 .overview-or-divider {
@@ -884,14 +1028,6 @@ const formatters = {
     align-items: center;
     gap: 8px;
     flex: 1 1 200px;
-}
-
-.overview-toolbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-    margin-left: auto;
 }
 
 @media (max-width: 600px) {
@@ -911,10 +1047,6 @@ const formatters = {
 
     .overview-or-divider {
         display: none;
-    }
-
-    .overview-toolbar-actions {
-        margin-left: 0;
     }
 }
 
@@ -949,6 +1081,14 @@ const formatters = {
     margin-bottom: 8px;
 }
 
+.overview-remove-all {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
+}
+
 .column-group-header {
     background-color: var(--el-fill-color);
     border-radius: var(--el-border-radius-base);
@@ -966,6 +1106,13 @@ const formatters = {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
     padding: 4px 0;
+}
+
+.overview-cube-grid__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--el-text-color-secondary);
 }
 
 .overview-cube-tile {

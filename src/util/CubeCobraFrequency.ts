@@ -109,3 +109,51 @@ export function resolveCubeCount(categoryValue: string): number | null {
 
     return frequencyData.cubeCount[categoryValue] ?? 0;
 }
+
+// ---------------------------------------------------------------------------
+// Frequency column registry — single source of truth for per-category columns
+// ---------------------------------------------------------------------------
+
+export interface FrequencyColumnDef {
+    /** The value passed to resolveCardCount / resolveCubeCount (e.g. 'total', 'broad:pauper') */
+    categoryValue: string;
+    /** The key used on the enriched row data property (e.g. 'globalRatePercent_total') */
+    propKey: string;
+    /** The key used in tableColumns / visibleColumns config (e.g. 'globalRate_total') */
+    columnKey: string;
+    /** Display label in column header and Customize Columns */
+    label: string;
+    /** Group label in Customize Columns */
+    group: 'Broad Groups' | 'Exact Categories';
+}
+
+export const FREQUENCY_COLUMNS: FrequencyColumnDef[] = [
+    { categoryValue: 'total', propKey: 'globalRatePercent_total', columnKey: 'globalRate_total', label: 'All Cubes', group: 'Broad Groups' },
+    { categoryValue: 'broad:pauper', propKey: 'globalRatePercent_broad_pauper', columnKey: 'globalRate_broad_pauper', label: 'Pauper (all)', group: 'Broad Groups' },
+    { categoryValue: 'broad:peasant', propKey: 'globalRatePercent_broad_peasant', columnKey: 'globalRate_broad_peasant', label: 'Peasant (all)', group: 'Broad Groups' },
+    { categoryValue: 'uncategorized', propKey: 'globalRatePercent_uncategorized', columnKey: 'globalRate_uncategorized', label: 'Uncategorized', group: 'Exact Categories' },
+    { categoryValue: 'powered', propKey: 'globalRatePercent_powered', columnKey: 'globalRate_powered', label: 'Powered', group: 'Exact Categories' },
+    { categoryValue: 'desert', propKey: 'globalRatePercent_desert', columnKey: 'globalRate_desert', label: 'Desert', group: 'Exact Categories' },
+    { categoryValue: 'pauper', propKey: 'globalRatePercent_pauper', columnKey: 'globalRate_pauper', label: 'Pauper', group: 'Exact Categories' },
+    { categoryValue: 'pauper+', propKey: 'globalRatePercent_pauper_plus', columnKey: 'globalRate_pauper_plus', label: 'Pauper+', group: 'Exact Categories' },
+    { categoryValue: 'pauper-ish', propKey: 'globalRatePercent_pauper_ish', columnKey: 'globalRate_pauper_ish', label: 'Pauper-ish', group: 'Exact Categories' },
+    { categoryValue: 'pauper+ish', propKey: 'globalRatePercent_pauper_plus_ish', columnKey: 'globalRate_pauper_plus_ish', label: 'Pauper+ish', group: 'Exact Categories' },
+    { categoryValue: 'peasant', propKey: 'globalRatePercent_peasant', columnKey: 'globalRate_peasant', label: 'Peasant', group: 'Exact Categories' },
+    { categoryValue: 'peasant+', propKey: 'globalRatePercent_peasant_plus', columnKey: 'globalRate_peasant_plus', label: 'Peasant+', group: 'Exact Categories' },
+    { categoryValue: 'peasant-ish', propKey: 'globalRatePercent_peasant_ish', columnKey: 'globalRate_peasant_ish', label: 'Peasant-ish', group: 'Exact Categories' },
+    { categoryValue: 'peasant+ish', propKey: 'globalRatePercent_peasant_plus_ish', columnKey: 'globalRate_peasant_plus_ish', label: 'Peasant+ish', group: 'Exact Categories' },
+];
+
+/**
+ * Resolve all rate percentages for a card (one per FREQUENCY_COLUMNS entry).
+ * Returns a flat object with propKey → percentage (or null).
+ */
+export function resolveAllRates(oracleId: string): Record<string, number | null> {
+    const result: Record<string, number | null> = {};
+    for (const col of FREQUENCY_COLUMNS) {
+        const count = resolveCardCount(oracleId, col.categoryValue);
+        const total = resolveCubeCount(col.categoryValue);
+        result[col.propKey] = (count == null || !total) ? null : (count / total) * 100;
+    }
+    return result;
+}
