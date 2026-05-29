@@ -451,6 +451,7 @@ const batches: Batch[] = [
             '077a945b-f5b0-403c-8900-27bfda429257', // The Vintage Cube Retirement Home
             'f78dab79-4c6d-4da7-9834-85c7eed380a8', // Vistas Unventured
             'bd9bfd7d-12a1-4442-9b20-5ffee6e8d7ce', // World Championship Museum (96-04)
+            '37475a24-8f7d-448e-b562-1404e42f390d', // THE FLOOR IS LAVA
         ],
     }
 ];
