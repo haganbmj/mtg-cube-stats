@@ -13,4 +13,5 @@ export const presetCollections: PresetCollection[] = [
     { name: 'cubecobra-top100', label: 'CubeCobra Top 100' },
     { name: 'peasant', label: 'Peasant Cubes' },
     { name: 'boston-cube-party-2026', label: 'Boston Cube Party 2026' },
+    { name: 'cubecon2026', label: 'CubeCon 2026' },
 ];

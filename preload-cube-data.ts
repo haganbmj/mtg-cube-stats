@@ -420,6 +420,38 @@ const batches: Batch[] = [
             '6158155be62adc101e305eb6', // Zonal Synergy Cube
         ],
     },
+    {
+        name: 'cubecon2026',
+        staleThreshold: Date.now() - (1000 * 60 * 60 * 24 * 1), // 1 day
+        shardCount: 4,
+        cubes: [
+            'a45a04cd-9b52-42b9-a602-b7f857c1aa36', // A Brooding Saga: Cubecon 2026
+            '43684f97-93c5-4ef3-95e8-8a8095859232', // The Absolute Junk Cube (Abzan)
+            'b6ce3845-d40c-4b34-9352-d003dde0e670', // Alpha Reimagined
+            '1efd75a8-91de-498c-b3ee-24df7bde3a38', // Alternate History Powered Cube
+            '015d501b-a03f-4767-9c7e-5ba667433644', // The Bearclaw Changeling Cube
+            'dd8976ec-160b-4bfe-af4f-24e71976967a', // Breaking the Oath Cube
+            '6400c8c11b98ce50ca72c39f', // The Chicago Cube
+            'a053a34d-2aca-41bf-902b-63f57872c20b', // The Circle of Life
+            'c70058e4-01f4-42b1-aba1-24cb653ab9ee', // The CORESIR Cube
+            '6413e9038d5d8938753c40ac', // Echoes of Creation
+            '17fa4f29-ad19-4eb4-94cf-525d2697f082', // Enchanted Evening
+            '37475a24-8f7d-448e-b562-1404e42f390d', // THE FLOOR IS LAVA
+            '5a1d3ff2-3eec-40c0-849c-e19de60305ae', // Innistrad to Eldritch Moon 2011-2016 Golden Age Standard Cube
+            'aefb5841-8654-48fc-9b02-ba5062a651cd', // The Mardube
+            '6122a60ae66c4a105041808a', // Old Border Foil Cube
+            '2f166be5-e08e-4223-8883-4782471f58b4', // Omnipresent Impostors
+            '302c8800-db4d-473f-b6ed-2dd3467ffa8e', // Options Cube
+            '6003518eeaf0061046b4c9ae', // The Peasant+ Cube
+            '620aae27d364780ff32bb6ae', // The Pioneer Showcase
+            '5d3ed83247586d63776acbf6', // Sammich's Peasant Cube
+            'e47b3c84-4bdd-464c-8bfd-203643389b0f', // The Six Drop Cube
+            '63322a647545331a605f8df1', // Spicy Ramen Cube
+            '5d8171de91139f32f85d1200', // Unplayables Cube
+            '077a945b-f5b0-403c-8900-27bfda429257', // The Vintage Cube Retirement Home
+            'f78dab79-4c6d-4da7-9834-85c7eed380a8', // Vistas Unventured
+        ],
+    }
 ];
 
 // --- Resolve dynamic cube ID lists ---
