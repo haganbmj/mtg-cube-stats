@@ -9,15 +9,28 @@ on:
     - cron: "0 9 * * 1"  # Weekly on Monday at 09:00 UTC; Update Scryfall data.
     - cron: "0 9 1 * *"  # Monthly on the 1st at 09:00 UTC; Update CubeCobra card stats.
   workflow_dispatch:
+    inputs:
+      refresh_scryfall:
+        description: "Refresh Scryfall card data"
+        type: boolean
+        default: false
+      refresh_preloads:
+        description: "Refresh cube preloads from CubeCobra"
+        type: boolean
+        default: false
+      refresh_cobra_cards:
+        description: "Refresh CubeCobra card stats"
+        type: boolean
+        default: false
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 env:
-  REFRESH_SCRYFALL: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1') || github.event_name == 'workflow_dispatch' }}
-  REFRESH_PRELOADS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 13 * * *') || github.event_name == 'workflow_dispatch' }}
-  REFRESH_COBRA_CARDS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 1 * *') || github.event_name == 'workflow_dispatch' }}
+  REFRESH_SCRYFALL: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1') || (github.event_name == 'workflow_dispatch' && inputs.refresh_scryfall) }}
+  REFRESH_PRELOADS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 13 * * *') || (github.event_name == 'workflow_dispatch' && inputs.refresh_preloads) }}
+  REFRESH_COBRA_CARDS: ${{ (github.event_name == 'schedule' && github.event.schedule == '0 9 1 * *') || (github.event_name == 'workflow_dispatch' && inputs.refresh_cobra_cards) }}
 
 jobs:
   build:
