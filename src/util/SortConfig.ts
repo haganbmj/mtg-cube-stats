@@ -20,7 +20,7 @@ export const cardSortProperties: SortProperty[] = [
     { prop: 'popularity', label: 'Popularity', autoDirection: 'descending' },
     { prop: 'minPriceUsd', label: 'Price (USD)', autoDirection: 'descending' },
     { prop: 'minPriceTix', label: 'Price (Tix)', autoDirection: 'descending' },
-    { prop: 'oracleTextWordCountMinusParen', label: 'Word Count', autoDirection: 'ascending' },
+    { prop: 'oracleTextWordCountMinusParen', label: 'Word Count', autoDirection: 'descending' },
     { prop: 'power', label: 'Power', autoDirection: 'ascending' },
     { prop: 'toughness', label: 'Toughness', autoDirection: 'ascending' },
 ];
