@@ -180,11 +180,8 @@
                     'visual-card-label--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId),
                 }"
             >
-                <el-text size="small" truncated>{{ card.name }}</el-text>
-                <el-tag v-if="Object.keys(loadedCubes).length <= 1" type="info" size="small" style="margin-left: 6px;">
-                    {{ card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' }}
-                </el-tag>
-                <el-tag v-else type="info" size="small" style="margin-left: 6px;">{{ card.cubeCount }}</el-tag>
+                <!-- <el-text size="small" truncated>{{ card.name }}</el-text> -->
+                <el-tag type="info" size="small" style="margin-left: 6px;">{{ getVisualCardTag(card).label }}: {{ getVisualCardTag(card).value }}</el-tag>
             </div>
         </div>
     </div>
@@ -546,6 +543,45 @@ const resolvedSortProp = computed(() => {
     }
     return sortProp.value;
 });
+
+const derivableFromImageSorts = new Set(['name', 'cmc', 'releaseDate', 'minRarity', 'power', 'toughness']);
+
+function getVisualCardTag(card: any): { label: string; value: string } {
+    const prop = resolvedSortProp.value;
+
+    if (derivableFromImageSorts.has(prop)) {
+        if (Object.keys(props.loadedCubes).length <= 1) {
+            return { label: 'Global Rate', value: card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' };
+        }
+        return { label: 'Cube Count', value: String(card.cubeCount ?? 'N/A') };
+    }
+
+    switch (prop) {
+        case 'cubeCount':
+            return { label: 'Cube Count', value: String(card.cubeCount ?? 'N/A') };
+        case 'globalRatePercent_total':
+            return { label: 'Global Rate', value: card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' };
+        case 'globalRatePercent_broad_pauper':
+            return { label: 'Global Rate (Pauper)', value: card.globalRatePercent_broad_pauper != null ? card.globalRatePercent_broad_pauper.toFixed(1) + '%' : 'N/A' };
+        case 'globalRatePercent_broad_peasant':
+            return { label: 'Global Rate (Peasant)', value: card.globalRatePercent_broad_peasant != null ? card.globalRatePercent_broad_peasant.toFixed(1) + '%' : 'N/A' };
+        case 'elo':
+            return { label: 'Elo', value: card.elo != null ? String(Math.round(card.elo)) : 'N/A' };
+        case 'popularity':
+            return { label: 'Popularity', value: card.popularity != null ? card.popularity.toFixed(1) + '%' : 'N/A' };
+        case 'minPriceUsd':
+            return { label: 'Price', value: card.minPriceUsd != null ? '$' + Number(card.minPriceUsd).toFixed(2) : 'N/A' };
+        case 'minPriceTix':
+            return { label: 'Price', value: card.minPriceTix != null ? Number(card.minPriceTix).toFixed(1) + ' Tix' : 'N/A' };
+        case 'oracleTextWordCountMinusParen':
+            return { label: 'Word Count', value: card.oracleTextWordCountMinusParen != null ? String(card.oracleTextWordCountMinusParen) : 'N/A' };
+        default:
+            if (Object.keys(props.loadedCubes).length <= 1) {
+                return { label: 'Global Rate', value: card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' };
+            }
+            return { label: 'Cube Count', value: String(card.cubeCount ?? 'N/A') };
+    }
+}
 
 const displayModeValue = computed({
     get: () => visualDisplayVisible.value ? 'grid' : 'table',
