@@ -253,7 +253,10 @@
                     </div>
                 </div>
                 <div class="cube-tile-body">
-                    <div class="cube-tile-name">{{ row.name }}</div>
+                    <div class="cube-tile-name">
+                        <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
+                        {{ row.name }}
+                    </div>
                     <div class="cube-tile-owner">
                         <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank" @click.stop>{{ row.owner }}</el-link>
                     </div>
@@ -296,6 +299,7 @@
             </template>
 
             <template #cell-name="{ row }">
+                <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
                 <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
             </template>
 
@@ -478,7 +482,7 @@ import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
@@ -606,6 +610,7 @@ const loadingProgressPercent = computed(() => {
 });
 
 const openCubeDetailDialog = inject('openCubeDetailDialog');
+const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;

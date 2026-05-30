@@ -386,7 +386,20 @@
                             </div>
                         </el-col>
                         <el-col :span="24" class="fetched-at-row">
-                            <el-text tag="small" type="info">Data fetched: {{ formattedFetchedAt }}</el-text>
+                            <el-text tag="small" type="info">
+                                Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
+                            </el-text>
+                            <el-button
+                                :icon="Refresh"
+                                size="small"
+                                text
+                                :loading="isRefreshing"
+                                :disabled="isRefreshing"
+                                @click="handleRefresh"
+                                style="margin-left: 8px;"
+                            >
+                                Refresh
+                            </el-button>
                         </el-col>
                     </el-row>
                 </el-tab-pane>
@@ -531,9 +544,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, inject } from 'vue';
+import { ref, computed, watch, inject, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh } from '@element-plus/icons-vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
@@ -594,6 +607,20 @@ const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
+const refreshCube = inject<(id: string) => Promise<void>>('refreshCube');
+const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
+
+const isRefreshing = computed(() => {
+    const id = activeCube.value?.id;
+    if (!id) return false;
+    return refreshingCubeIds.value.has(id);
+});
+
+const handleRefresh = async () => {
+    const id = activeCube.value?.id;
+    if (!id || !refreshCube) return;
+    await refreshCube(id);
+};
 
 const activeCubeId = ref<string | null>(null);
 
