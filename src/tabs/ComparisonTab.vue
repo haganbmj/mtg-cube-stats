@@ -1,109 +1,121 @@
 <template>
     <div class="comparison-tab">
-        <div class="comparison-selectors">
-            <div class="cube-selector">
-                <el-select
-                    v-model="cubeAId"
-                    filterable
-                    allow-create
-                    default-first-option
-                    placeholder="Select Cube A"
-                    @change="(v: string) => onCubeSelect(v, 'A')"
-                    style="width: 100%;"
-                >
-                    <el-option
-                        v-for="(cube, id) in loadedCubes"
-                        :key="id"
-                        :label="cube.name"
-                        :value="id"
-                    />
-                </el-select>
-            </div>
-            <el-button :icon="Sort" @click="swapCubes" title="Swap cubes" />
-            <div class="cube-selector">
-                <el-select
-                    v-model="cubeBId"
-                    filterable
-                    allow-create
-                    default-first-option
-                    placeholder="Select Cube B"
-                    @change="(v: string) => onCubeSelect(v, 'B')"
-                    style="width: 100%;"
-                >
-                    <el-option
-                        v-for="(cube, id) in loadedCubes"
-                        :key="id"
-                        :label="cube.name"
-                        :value="id"
-                    />
-                </el-select>
-            </div>
-        </div>
-
-        <div v-if="loading" class="comparison-loading">
-            <el-text type="info">Loading cube...</el-text>
-        </div>
-
-        <template v-if="cubeA && cubeB">
-            <div class="comparison-headers">
-                <div class="cube-header">
-                    <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
-                    <div class="cube-header-info">
-                        <el-link :href="`https://cubecobra.com/cube/list/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
-                            <span class="cube-header-name">{{ cubeA.name }}</span>
-                        </el-link>
-                        <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
-                            <span class="cube-header-owner">{{ cubeA.owner }}</span>
-                        </el-link>
-                        <div class="cube-header-meta">
-                            <span>Cards: <strong>{{ cubeA.stats?.totalCards ?? cubeA.cards.length }}</strong></span>
-                            <span>Avg CMC: <strong>{{ cubeA.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
-                            <span>Avg Elo: <strong>{{ cubeA.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                            <span v-if="cubeA.lastModified">Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="cube-header">
-                    <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
-                    <div class="cube-header-info">
-                        <el-link :href="`https://cubecobra.com/cube/list/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
-                            <span class="cube-header-name">{{ cubeB.name }}</span>
-                        </el-link>
-                        <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
-                            <span class="cube-header-owner">{{ cubeB.owner }}</span>
-                        </el-link>
-                        <div class="cube-header-meta">
-                            <span>Cards: <strong>{{ cubeB.stats?.totalCards ?? cubeB.cards.length }}</strong></span>
-                            <span>Avg CMC: <strong>{{ cubeB.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
-                            <span>Avg Elo: <strong>{{ cubeB.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                            <span v-if="cubeB.lastModified">Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="comparison-filter">
-                <CardSearchInput
-                    class="card-table-search"
-                    v-model="activeQuery"
-                    :loaded-cubes="{}"
-                    :collapse-cube-filter="true"
-                />
-                <el-button-group>
-                    <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
-                    <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
-                </el-button-group>
-            </div>
-
-            <CubeComparisonView
-                :only-a="onlyA"
-                :both="both"
-                :only-b="onlyB"
-                :cube-a="cubeA"
-                :cube-b="cubeB"
-                :matching-oracle-ids="matchingOracleIds"
-                :filter-mode="filterMode"
+        <!-- Loading state -->
+        <div v-if="props.loadingProgress?.active" style="padding: 40px; text-align: center;">
+            <el-text type="info" style="display: block; margin-bottom: 12px;">Loading cubes...</el-text>
+            <el-progress
+                :percentage="props.loadingProgress.total > 0 ? Math.round((props.loadingProgress.loaded / props.loadingProgress.total) * 100) : 0"
+                :format="() => `${props.loadingProgress!.loaded} / ${props.loadingProgress!.total}`"
             />
+        </div>
+
+        <!-- Normal content -->
+        <template v-else>
+            <div class="comparison-selectors">
+                <div class="cube-selector">
+                    <el-select
+                        v-model="cubeAId"
+                        filterable
+                        allow-create
+                        default-first-option
+                        placeholder="Select Cube A"
+                        @change="(v: string) => onCubeSelect(v, 'A')"
+                        style="width: 100%;"
+                    >
+                        <el-option
+                            v-for="(cube, id) in loadedCubes"
+                            :key="id"
+                            :label="cube.name"
+                            :value="id"
+                        />
+                    </el-select>
+                </div>
+                <el-button :icon="Sort" @click="swapCubes" title="Swap cubes" />
+                <div class="cube-selector">
+                    <el-select
+                        v-model="cubeBId"
+                        filterable
+                        allow-create
+                        default-first-option
+                        placeholder="Select Cube B"
+                        @change="(v: string) => onCubeSelect(v, 'B')"
+                        style="width: 100%;"
+                    >
+                        <el-option
+                            v-for="(cube, id) in loadedCubes"
+                            :key="id"
+                            :label="cube.name"
+                            :value="id"
+                        />
+                    </el-select>
+                </div>
+            </div>
+
+            <div v-if="loading" class="comparison-loading">
+                <el-text type="info">Loading cube...</el-text>
+            </div>
+
+            <template v-if="cubeA && cubeB">
+                <div class="comparison-headers">
+                    <div class="cube-header">
+                        <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
+                        <div class="cube-header-info">
+                            <el-link :href="`https://cubecobra.com/cube/list/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
+                                <span class="cube-header-name">{{ cubeA.name }}</span>
+                            </el-link>
+                            <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
+                                <span class="cube-header-owner">{{ cubeA.owner }}</span>
+                            </el-link>
+                            <div class="cube-header-meta">
+                                <span>Cards: <strong>{{ cubeA.stats?.totalCards ?? cubeA.cards.length }}</strong></span>
+                                <span>Avg CMC: <strong>{{ cubeA.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
+                                <span>Avg Elo: <strong>{{ cubeA.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
+                                <span v-if="cubeA.lastModified">Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cube-header">
+                        <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
+                        <div class="cube-header-info">
+                            <el-link :href="`https://cubecobra.com/cube/list/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
+                                <span class="cube-header-name">{{ cubeB.name }}</span>
+                            </el-link>
+                            <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
+                                <span class="cube-header-owner">{{ cubeB.owner }}</span>
+                            </el-link>
+                            <div class="cube-header-meta">
+                                <span>Cards: <strong>{{ cubeB.stats?.totalCards ?? cubeB.cards.length }}</strong></span>
+                                <span>Avg CMC: <strong>{{ cubeB.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
+                                <span>Avg Elo: <strong>{{ cubeB.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
+                                <span v-if="cubeB.lastModified">Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-filter">
+                    <CardSearchInput
+                        class="card-table-search"
+                        v-model="activeQuery"
+                        :loaded-cubes="{}"
+                        :collapse-cube-filter="true"
+                    />
+                    <el-button-group>
+                        <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
+                        <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
+                    </el-button-group>
+                </div>
+
+                <CubeComparisonView
+                    :only-a="onlyA"
+                    :both="both"
+                    :only-b="onlyB"
+                    :cube-a="cubeA"
+                    :cube-b="cubeB"
+                    :matching-oracle-ids="matchingOracleIds"
+                    :filter-mode="filterMode"
+                />
+            </template>
         </template>
     </div>
 </template>
@@ -120,6 +132,10 @@ import { Sort, Hide, BrushFilled } from '@element-plus/icons-vue';
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
 
+const emit = defineEmits<{
+    'update:comparePair': [pair: { cubeAId: string; cubeBId: string } | null];
+}>();
+
 const props = defineProps({
     loadedCubes: {
         type: Object as () => Record<string, Cube>,
@@ -131,6 +147,10 @@ const props = defineProps({
     },
     comparePair: {
         type: Object as () => { cubeAId: string; cubeBId: string } | null,
+        default: null,
+    },
+    loadingProgress: {
+        type: Object as () => { active: boolean; loaded: number; total: number } | null,
         default: null,
     },
 });
@@ -158,6 +178,15 @@ watch(() => props.comparePair, (pair) => {
     if (pair) {
         cubeAId.value = pair.cubeAId;
         cubeBId.value = pair.cubeBId;
+    }
+});
+
+// Emit selection changes back to parent for URL sync
+watch([cubeAId, cubeBId], ([a, b]) => {
+    if (a && b) {
+        emit('update:comparePair', { cubeAId: a, cubeBId: b });
+    } else {
+        emit('update:comparePair', null);
     }
 });
 

@@ -1,63 +1,80 @@
 <template>
     <div class="statistics-tab">
-        <el-row>
-            <el-col :span="24">
-                <el-form-item label="Highlight:" style="width: 100%;">
-                    <el-select
-                        v-model="highlightedCubeIds"
-                        multiple
-                        collapse-tags
-                        label="Highlighted Cubes"
-                        placeholder="Select Cubes"
-                    >
-                        <el-option
-                            v-for="item in cubeIds"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        />
-                    </el-select>
-                </el-form-item>
-            </el-col>
-        </el-row>
+        <!-- Loading state -->
+        <div v-if="props.loadingProgress?.active" style="padding: 40px; text-align: center;">
+            <el-text type="info" style="display: block; margin-bottom: 12px;">Loading cubes...</el-text>
+            <el-progress
+                :percentage="props.loadingProgress.total > 0 ? Math.round((props.loadingProgress.loaded / props.loadingProgress.total) * 100) : 0"
+                :format="() => `${props.loadingProgress!.loaded} / ${props.loadingProgress!.total}`"
+            />
+        </div>
 
-        <el-row id="charts" :gutter="10">
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <CubeCardCountHistogramChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+        <!-- Empty state -->
+        <div v-else-if="Object.values(props.loadedCubes).length === 0" style="padding: 40px; text-align: center;">
+            <el-text type="info">Load cubes from the Overview tab to view statistics.</el-text>
+        </div>
 
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <ReleaseYearDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+        <!-- Normal content -->
+        <template v-else>
+            <el-row>
+                <el-col :span="24">
+                    <el-form-item label="Highlight:" style="width: 100%;">
+                        <el-select
+                            v-model="highlightedCubeIds"
+                            multiple
+                            collapse-tags
+                            label="Highlighted Cubes"
+                            placeholder="Select Cubes"
+                        >
+                            <el-option
+                                v-for="item in cubeIds"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                            />
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
 
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <AvgCmcByColorBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+            <el-row id="charts" :gutter="10">
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <CubeCardCountHistogramChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
 
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <ManaValueDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <ReleaseYearDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
 
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <WordCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <AvgCmcByColorBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
 
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <WordCountPopularityScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <ManaValueDistributionBoxPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
 
-            <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
-                <TokenCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
-            </el-col>
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <WordCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
 
-        <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <WordCountPopularityScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
+
+                <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                    <TokenCountScatterPlotChart :loadedCubes="loadedCubes" :highlighted="highlightedCubeIds" />
+                </el-col>
+
+                <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
             <CategoryTable :loadedCubes="loadedCubes" />
         </el-col> -->
 
-        <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
+                <!-- <el-col :span="12" :xs="24" :sm="24" :md="12" :lg="12">
             <ReleaseYearDistributionChart :loadedCubes="loadedCubes" />
         </el-col> -->
-        </el-row>
+            </el-row>
+        </template>
     </div>
 </template>
 
@@ -77,6 +94,10 @@ const props = defineProps({
     loadedCubes: {
         type: Object,
         required: true,
+    },
+    loadingProgress: {
+        type: Object as () => { active: boolean; loaded: number; total: number } | null,
+        default: null,
     },
 });
 

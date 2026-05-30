@@ -1,34 +1,50 @@
 <template>
     <div class="infographic">
-        <el-row :gutter="20" class="stats-cards">
-            <!-- Basic Stats -->
-            <el-col :span="6" :xs="12" :sm="8" :md="6">
-                <el-card class="stat-card">
-                    <div class="stat-number">{{ totalCubes.toLocaleString() }}</div>
-                    <div class="stat-label">Total Cubes</div>
-                </el-card>
-            </el-col>
+        <!-- Loading state -->
+        <div v-if="props.loadingProgress?.active" style="padding: 40px; text-align: center;">
+            <el-text type="info" style="display: block; margin-bottom: 12px;">Loading cubes...</el-text>
+            <el-progress
+                :percentage="props.loadingProgress.total > 0 ? Math.round((props.loadingProgress.loaded / props.loadingProgress.total) * 100) : 0"
+                :format="() => `${props.loadingProgress!.loaded} / ${props.loadingProgress!.total}`"
+            />
+        </div>
 
-            <el-col :span="6" :xs="12" :sm="8" :md="6">
-                <el-card class="stat-card">
-                    <div class="stat-number">{{ totalCards.toLocaleString() }}</div>
-                    <div class="stat-label">Total Cards</div>
-                </el-card>
-            </el-col>
+        <!-- Empty state -->
+        <div v-else-if="Object.keys(props.loadedCubes).length === 0" style="padding: 40px; text-align: center;">
+            <el-text type="info">Load cubes from the Overview tab to view the infographic.</el-text>
+        </div>
 
-            <el-col :span="6" :xs="12" :sm="8" :md="6">
-                <el-card class="stat-card">
-                    <div class="stat-number">{{ totalUniqueCards.toLocaleString() }}</div>
-                    <div class="stat-label">Unique Cards</div>
-                </el-card>
-            </el-col>
+        <!-- Normal content -->
+        <template v-else>
+            <el-row :gutter="20" class="stats-cards">
+                <!-- Basic Stats -->
+                <el-col :span="6" :xs="12" :sm="8" :md="6">
+                    <el-card class="stat-card">
+                        <div class="stat-number">{{ totalCubes.toLocaleString() }}</div>
+                        <div class="stat-label">Total Cubes</div>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="6" :xs="12" :sm="8" :md="6">
-                <el-card class="stat-card">
-                    <div class="stat-number">{{ uniqueOnlyCards.toLocaleString() }}</div>
-                    <div class="stat-label">Cards in Only 1 Cube</div>
-                </el-card>
-            </el-col>
+                <el-col :span="6" :xs="12" :sm="8" :md="6">
+                    <el-card class="stat-card">
+                        <div class="stat-number">{{ totalCards.toLocaleString() }}</div>
+                        <div class="stat-label">Total Cards</div>
+                    </el-card>
+                </el-col>
+
+                <el-col :span="6" :xs="12" :sm="8" :md="6">
+                    <el-card class="stat-card">
+                        <div class="stat-number">{{ totalUniqueCards.toLocaleString() }}</div>
+                        <div class="stat-label">Unique Cards</div>
+                    </el-card>
+                </el-col>
+
+                <el-col :span="6" :xs="12" :sm="8" :md="6">
+                    <el-card class="stat-card">
+                        <div class="stat-number">{{ uniqueOnlyCards.toLocaleString() }}</div>
+                        <div class="stat-label">Cards in Only 1 Cube</div>
+                    </el-card>
+                </el-col>
 
             <!-- <el-col :span="6" :xs="12" :sm="8" :md="6">
                 <el-card class="stat-card">
@@ -36,357 +52,358 @@
                     <div class="stat-label">Avg Cards per Cube</div>
                 </el-card>
             </el-col> -->
-        </el-row>
+            </el-row>
 
-        <el-row :gutter="20" class="content-sections">
-            <!-- Top 10 Popular Cards -->
-            <el-col :span="12" :xs="24">
-                <el-card class="content-card">
-                    <template #header>
-                        <h3>Most Popular Non-Land Cards</h3>
-                        <p class="subtitle">By number of cubes containing them</p>
-                    </template>
-                    <div class="card-list two-column">
-                        <div v-for="(card, index) in topPopularCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || popularCardsExpanded">
-                            <div class="card-rank">{{ index + 1 }}</div>
-                            <el-tooltip
-                                placement="right"
-                                effect="light"
-                                popper-class="card-tooltip"
-                                :show-after="50"
-                                :hide-after="50"
-                                :enterable="false"
-                                :offset="16"
-                            >
-                                <template #content>
-                                    <img :src="card.urlFront" class="card-image" loading="lazy" />
-                                </template>
-                                <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
-                            </el-tooltip>
-                            <div class="card-info">
-                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name.split('//')[0].trim() }}</a>
-                                <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
+            <el-row :gutter="20" class="content-sections">
+                <!-- Top 10 Popular Cards -->
+                <el-col :span="12" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>Most Popular Non-Land Cards</h3>
+                            <p class="subtitle">By number of cubes containing them</p>
+                        </template>
+                        <div class="card-list two-column">
+                            <div v-for="(card, index) in topPopularCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || popularCardsExpanded">
+                                <div class="card-rank">{{ index + 1 }}</div>
+                                <el-tooltip
+                                    placement="right"
+                                    effect="light"
+                                    popper-class="card-tooltip"
+                                    :show-after="50"
+                                    :hide-after="50"
+                                    :enterable="false"
+                                    :offset="16"
+                                >
+                                    <template #content>
+                                        <img :src="card.urlFront" class="card-image" loading="lazy" />
+                                    </template>
+                                    <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
+                                </el-tooltip>
+                                <div class="card-info">
+                                    <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name.split('//')[0].trim() }}</a>
+                                    <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
+                                </div>
                             </div>
+                            <a v-if="isMobile && !popularCardsExpanded && topPopularCards.length > 3" class="see-more-link" @click="popularCardsExpanded = true">see more</a>
                         </div>
-                        <a v-if="isMobile && !popularCardsExpanded && topPopularCards.length > 3" class="see-more-link" @click="popularCardsExpanded = true">see more</a>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <!-- Top 10 Lowest Elo Cards -->
-            <el-col :span="12" :xs="24">
-                <el-card class="content-card">
-                    <template #header>
-                        <h3>Lowest Elo Cards</h3>
-                        <p class="subtitle">By CubeCobra Elo rating</p>
-                    </template>
-                    <div class="card-list two-column">
-                        <div v-for="(card, index) in topLowEloCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || lowEloCardsExpanded">
-                            <div class="card-rank">{{ index + 1 }}</div>
-                            <el-tooltip
-                                placement="right"
-                                effect="light"
-                                popper-class="card-tooltip"
-                                :show-after="50"
-                                :hide-after="50"
-                                :enterable="false"
-                                :offset="16"
-                            >
-                                <template #content>
-                                    <img :src="card.urlFront" class="card-image" loading="lazy" />
+                <!-- Top 10 Lowest Elo Cards -->
+                <el-col :span="12" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>Lowest Elo Cards</h3>
+                            <p class="subtitle">By CubeCobra Elo rating</p>
+                        </template>
+                        <div class="card-list two-column">
+                            <div v-for="(card, index) in topLowEloCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || lowEloCardsExpanded">
+                                <div class="card-rank">{{ index + 1 }}</div>
+                                <el-tooltip
+                                    placement="right"
+                                    effect="light"
+                                    popper-class="card-tooltip"
+                                    :show-after="50"
+                                    :hide-after="50"
+                                    :enterable="false"
+                                    :offset="16"
+                                >
+                                    <template #content>
+                                        <img :src="card.urlFront" class="card-image" loading="lazy" />
                                     <!-- <div class="cube-list">
                                         <strong>Found in cubes:</strong>
                                         <div v-for="cube in card.containingCubes" :key="cube.id" class="cube-name">
                                             {{ cube.name }} ({{ cube.owner }})
                                         </div>
                                     </div> -->
-                                </template>
-                                <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
-                            </el-tooltip>
-                            <div class="card-info">
-                                <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name.split('//')[0].trim() }}</a>
-                                <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
+                                    </template>
+                                    <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
+                                </el-tooltip>
+                                <div class="card-info">
+                                    <a href="#" class="card-name" @click.prevent="openCardDetailDialog(card.oracleId)">{{ card.name.split('//')[0].trim() }}</a>
+                                    <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
+                                </div>
                             </div>
+                            <a v-if="isMobile && !lowEloCardsExpanded && topLowEloCards.length > 3" class="see-more-link" @click="lowEloCardsExpanded = true">see more</a>
                         </div>
-                        <a v-if="isMobile && !lowEloCardsExpanded && topLowEloCards.length > 3" class="see-more-link" @click="lowEloCardsExpanded = true">see more</a>
-                    </div>
-                </el-card>
-            </el-col>
-        </el-row>
+                    </el-card>
+                </el-col>
+            </el-row>
 
-        <el-row :gutter="20" class="content-sections" style="row-gap: 20px;">
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="mostUniqueCube">
-                    <template #header>
-                        <h3>Most Unusual</h3>
-                        <p class="subtitle">Cube with least cosine similarity to others</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="mostUniqueCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${mostUniqueCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostUniqueCube.id)">{{ mostUniqueCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${mostUniqueCube.owner}`" target="_blank" rel="noopener">{{ mostUniqueCube.owner }}</a></p>
-                                <div class="stat-highlight">
-                                    <span>Avg Similarity: {{ (mostUniqueCube.avgSimilarity * 100).toFixed(2) }}%</span>
+            <el-row :gutter="20" class="content-sections" style="row-gap: 20px;">
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostUniqueCube">
+                        <template #header>
+                            <h3>Most Unusual</h3>
+                            <p class="subtitle">Cube with least cosine similarity to others</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostUniqueCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${mostUniqueCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostUniqueCube.id)">{{ mostUniqueCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostUniqueCube.owner}`" target="_blank" rel="noopener">{{ mostUniqueCube.owner }}</a></p>
+                                    <div class="stat-highlight">
+                                        <span>Avg Similarity: {{ (mostUniqueCube.avgSimilarity * 100).toFixed(2) }}%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="mostCurrentYearCube">
-                    <template #header>
-                        <h3>Most New Stuff</h3>
-                        <p class="subtitle">Cube with most cards from {{ currentYear }}</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="mostCurrentYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${mostCurrentYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostCurrentYearCube.id)">{{ mostCurrentYearCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${mostCurrentYearCube.owner}`" target="_blank" rel="noopener">{{ mostCurrentYearCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ mostCurrentYearCube.currentYearCards }} cards ({{ ((mostCurrentYearCube.currentYearCards / mostCurrentYearCube.stats.totalCards) * 100).toFixed(2) }}%)</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostCurrentYearCube">
+                        <template #header>
+                            <h3>Most New Stuff</h3>
+                            <p class="subtitle">Cube with most cards from {{ currentYear }}</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostCurrentYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${mostCurrentYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostCurrentYearCube.id)">{{ mostCurrentYearCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostCurrentYearCube.owner}`" target="_blank" rel="noopener">{{ mostCurrentYearCube.owner }}</a></p>
+                                    <div class="stat-highlight">{{ mostCurrentYearCube.currentYearCards }} cards ({{ ((mostCurrentYearCube.currentYearCards / mostCurrentYearCube.stats.totalCards) * 100).toFixed(2) }}%)</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="newestAvgYearCube">
-                    <template #header>
-                        <h3>Zoomer Friendly</h3>
-                        <p class="subtitle">Cube with newest median release year</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="newestAvgYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${newestAvgYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(newestAvgYearCube.id)">{{ newestAvgYearCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${newestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ newestAvgYearCube.owner }}</a></p>
-                                <div class="stat-highlight">Median Year: {{ Math.round(newestAvgYearCube.stats.medianReleaseYear) }} (±{{ newestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="newestAvgYearCube">
+                        <template #header>
+                            <h3>Zoomer Friendly</h3>
+                            <p class="subtitle">Cube with newest median release year</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="newestAvgYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${newestAvgYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(newestAvgYearCube.id)">{{ newestAvgYearCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${newestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ newestAvgYearCube.owner }}</a></p>
+                                    <div class="stat-highlight">Median Year: {{ Math.round(newestAvgYearCube.stats.medianReleaseYear) }} (±{{ newestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="oldestAvgYearCube">
-                    <template #header>
-                        <h3>Boomer Magic</h3>
-                        <p class="subtitle">Cube with oldest median release year</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="oldestAvgYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${oldestAvgYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(oldestAvgYearCube.id)">{{ oldestAvgYearCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${oldestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ oldestAvgYearCube.owner }}</a></p>
-                                <div class="stat-highlight">Median Year: {{ Math.round(oldestAvgYearCube.stats.medianReleaseYear) }} (±{{ oldestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="oldestAvgYearCube">
+                        <template #header>
+                            <h3>Boomer Magic</h3>
+                            <p class="subtitle">Cube with oldest median release year</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="oldestAvgYearCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${oldestAvgYearCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(oldestAvgYearCube.id)">{{ oldestAvgYearCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${oldestAvgYearCube.owner}`" target="_blank" rel="noopener">{{ oldestAvgYearCube.owner }}</a></p>
+                                    <div class="stat-highlight">Median Year: {{ Math.round(oldestAvgYearCube.stats.medianReleaseYear) }} (±{{ oldestAvgYearCube.stats.medianReleaseYearMAD?.toFixed(1) || '0' }})</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="mostUniversesBeyondCube">
-                    <template #header>
-                        <h3>Most Universes Beyond</h3>
-                        <p class="subtitle">Cube with most cards originally from UB</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="mostUniversesBeyondCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${mostUniversesBeyondCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostUniversesBeyondCube.id)">{{ mostUniversesBeyondCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${mostUniversesBeyondCube.owner}`" target="_blank" rel="noopener">{{ mostUniversesBeyondCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ mostUniversesBeyondCube.stats.cardCounts.universesBeyond }} cards ({{ ((mostUniversesBeyondCube.stats.cardCounts.universesBeyond / mostUniversesBeyondCube.stats.totalCards) * 100).toFixed(1) }}%)</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostUniversesBeyondCube">
+                        <template #header>
+                            <h3>Most Universes Beyond</h3>
+                            <p class="subtitle">Cube with most cards originally from UB</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostUniversesBeyondCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${mostUniversesBeyondCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostUniversesBeyondCube.id)">{{ mostUniversesBeyondCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostUniversesBeyondCube.owner}`" target="_blank" rel="noopener">{{ mostUniversesBeyondCube.owner }}</a></p>
+                                    <div class="stat-highlight">{{ mostUniversesBeyondCube.stats.cardCounts.universesBeyond }} cards ({{ ((mostUniversesBeyondCube.stats.cardCounts.universesBeyond / mostUniversesBeyondCube.stats.totalCards) * 100).toFixed(1) }}%)</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="mostSupplementalProductCube">
-                    <template #header>
-                        <h3>Most Supplemental Product</h3>
-                        <p class="subtitle">Cube with most cards originally from SP</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="mostSupplementalProductCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${mostSupplementalProductCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostSupplementalProductCube.id)">{{ mostSupplementalProductCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${mostSupplementalProductCube.owner}`" target="_blank" rel="noopener">{{ mostSupplementalProductCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ mostSupplementalProductCube.stats.cardCounts.supplementalProduct }} cards ({{ ((mostSupplementalProductCube.stats.cardCounts.supplementalProduct / mostSupplementalProductCube.stats.totalCards) * 100).toFixed(1) }}%)</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostSupplementalProductCube">
+                        <template #header>
+                            <h3>Most Supplemental Product</h3>
+                            <p class="subtitle">Cube with most cards originally from SP</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostSupplementalProductCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${mostSupplementalProductCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostSupplementalProductCube.id)">{{ mostSupplementalProductCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostSupplementalProductCube.owner}`" target="_blank" rel="noopener">{{ mostSupplementalProductCube.owner }}</a></p>
+                                    <div class="stat-highlight">{{ mostSupplementalProductCube.stats.cardCounts.supplementalProduct }} cards ({{ ((mostSupplementalProductCube.stats.cardCounts.supplementalProduct / mostSupplementalProductCube.stats.totalCards) * 100).toFixed(1) }}%)</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="highestAvgPopularityCube">
-                    <template #header>
-                        <h3>Cards You Know</h3>
-                        <p class="subtitle">Cube with highest average card popularity</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="highestAvgPopularityCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${highestAvgPopularityCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(highestAvgPopularityCube.id)">{{ highestAvgPopularityCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${highestAvgPopularityCube.owner}`" target="_blank" rel="noopener">{{ highestAvgPopularityCube.owner }}</a></p>
-                                <div class="stat-highlight">Avg Popularity: {{ highestAvgPopularityCube.stats.averagePopularity.toFixed(2) }}%</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="highestAvgPopularityCube">
+                        <template #header>
+                            <h3>Cards You Know</h3>
+                            <p class="subtitle">Cube with highest average card popularity</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="highestAvgPopularityCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${highestAvgPopularityCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(highestAvgPopularityCube.id)">{{ highestAvgPopularityCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${highestAvgPopularityCube.owner}`" target="_blank" rel="noopener">{{ highestAvgPopularityCube.owner }}</a></p>
+                                    <div class="stat-highlight">Avg Popularity: {{ highestAvgPopularityCube.stats.averagePopularity.toFixed(2) }}%</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="lowestAvgPopularityCube">
-                    <template #header>
-                        <h3>Cards You Don't Know</h3>
-                        <p class="subtitle">Cube with lowest average card popularity</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="lowestAvgPopularityCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${lowestAvgPopularityCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(lowestAvgPopularityCube.id)">{{ lowestAvgPopularityCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${lowestAvgPopularityCube.owner}`" target="_blank" rel="noopener">{{ lowestAvgPopularityCube.owner }}</a></p>
-                                <div class="stat-highlight">Avg Popularity: {{ lowestAvgPopularityCube.stats.averagePopularity.toFixed(2) }}%</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="lowestAvgPopularityCube">
+                        <template #header>
+                            <h3>Cards You Don't Know</h3>
+                            <p class="subtitle">Cube with lowest average card popularity</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="lowestAvgPopularityCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${lowestAvgPopularityCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(lowestAvgPopularityCube.id)">{{ lowestAvgPopularityCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${lowestAvgPopularityCube.owner}`" target="_blank" rel="noopener">{{ lowestAvgPopularityCube.owner }}</a></p>
+                                    <div class="stat-highlight">Avg Popularity: {{ lowestAvgPopularityCube.stats.averagePopularity.toFixed(2) }}%</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="mostWordyCube">
-                    <template #header>
-                        <h3>Most Wordy</h3>
-                        <p class="subtitle">Cube with most average words per unique card</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="mostWordyCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${mostWordyCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostWordyCube.id)">{{ mostWordyCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${mostWordyCube.owner}`" target="_blank" rel="noopener">{{ mostWordyCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ mostWordyCube.stats.averageWordCountUnique.toFixed(1) }} avg words</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostWordyCube">
+                        <template #header>
+                            <h3>Most Wordy</h3>
+                            <p class="subtitle">Cube with most average words per unique card</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostWordyCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${mostWordyCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostWordyCube.id)">{{ mostWordyCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostWordyCube.owner}`" target="_blank" rel="noopener">{{ mostWordyCube.owner }}</a></p>
+                                    <div class="stat-highlight">{{ mostWordyCube.stats.averageWordCountUnique.toFixed(1) }} avg words</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="leastWordyCube">
-                    <template #header>
-                        <h3>Least Wordy</h3>
-                        <p class="subtitle">Cube with fewest average words per unique card</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="leastWordyCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${leastWordyCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(leastWordyCube.id)">{{ leastWordyCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${leastWordyCube.owner}`" target="_blank" rel="noopener">{{ leastWordyCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ leastWordyCube.stats.averageWordCountUnique.toFixed(1) }} avg words</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="leastWordyCube">
+                        <template #header>
+                            <h3>Least Wordy</h3>
+                            <p class="subtitle">Cube with fewest average words per unique card</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="leastWordyCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${leastWordyCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(leastWordyCube.id)">{{ leastWordyCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${leastWordyCube.owner}`" target="_blank" rel="noopener">{{ leastWordyCube.owner }}</a></p>
+                                    <div class="stat-highlight">{{ leastWordyCube.stats.averageWordCountUnique.toFixed(1) }} avg words</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="mostRemovalCube">
-                    <template #header>
-                        <h3>Most Death and Destruction</h3>
-                        <p class="subtitle">Cube with highest % cards tagged "removal"</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="mostRemovalCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${mostRemovalCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostRemovalCube.id)">{{ mostRemovalCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${mostRemovalCube.owner}`" target="_blank" rel="noopener">{{ mostRemovalCube.owner }}</a></p>
-                                <div class="stat-highlight">{{ (mostRemovalCube.stats.cardCounts?.removal || 0) }} cards ({{ ((mostRemovalCube.stats.cardCounts?.removal || 0) / (mostRemovalCube.stats.totalCards || 1) * 100).toFixed(1) }}%)</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostRemovalCube">
+                        <template #header>
+                            <h3>Most Death and Destruction</h3>
+                            <p class="subtitle">Cube with highest % cards tagged "removal"</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostRemovalCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${mostRemovalCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(mostRemovalCube.id)">{{ mostRemovalCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostRemovalCube.owner}`" target="_blank" rel="noopener">{{ mostRemovalCube.owner }}</a></p>
+                                    <div class="stat-highlight">{{ (mostRemovalCube.stats.cardCounts?.removal || 0) }} cards ({{ ((mostRemovalCube.stats.cardCounts?.removal || 0) / (mostRemovalCube.stats.totalCards || 1) * 100).toFixed(1) }}%)</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <el-col :span="8" :xs="24" :sm="12" :md="8">
-                <el-card class="content-card" v-if="lowestRarityScoreCube">
-                    <template #header>
-                        <h3>Common Folk</h3>
-                        <p class="subtitle">Cube with lowest blended rarity score</p>
-                    </template>
-                    <div class="cube-stat">
-                        <div class="cube-info-compact">
-                            <img :src="lowestRarityScoreCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
-                            <div class="cube-details-compact">
-                                <h4><a :href="`https://cubecobra.com/cube/list/${lowestRarityScoreCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(lowestRarityScoreCube.id)">{{ lowestRarityScoreCube.name }}</a></h4>
-                                <p>by <a :href="`https://cubecobra.com/user/view/${lowestRarityScoreCube.owner}`" target="_blank" rel="noopener">{{ lowestRarityScoreCube.owner }}</a></p>
-                                <div class="stat-highlight">Rarity Score: {{ lowestRarityScoreCube.stats.blendedRarityScore.toFixed(2) }}</div>
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="lowestRarityScoreCube">
+                        <template #header>
+                            <h3>Common Folk</h3>
+                            <p class="subtitle">Cube with lowest blended rarity score</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="lowestRarityScoreCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/list/${lowestRarityScoreCube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(lowestRarityScoreCube.id)">{{ lowestRarityScoreCube.name }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${lowestRarityScoreCube.owner}`" target="_blank" rel="noopener">{{ lowestRarityScoreCube.owner }}</a></p>
+                                    <div class="stat-highlight">Rarity Score: {{ lowestRarityScoreCube.stats.blendedRarityScore.toFixed(2) }}</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
-        </el-row>
+                    </el-card>
+                </el-col>
+            </el-row>
 
-        <el-row :gutter="20" class="content-sections">
-            <!-- Top 10 Popular Sets -->
-            <el-col :span="12" :xs="24">
-                <el-card class="content-card">
-                    <template #header>
-                        <h3>Most Popular Sets</h3>
-                        <p class="subtitle">By total number of non-land cards across all cubes; original release only</p>
-                    </template>
-                    <div class="set-list two-column">
-                        <div v-for="(set, index) in topPopularSets" :key="set.setCode" class="set-item" v-show="!isMobile || index < 3 || popularSetsExpanded">
-                            <div class="set-rank">{{ index + 1 }}</div>
-                            <div class="set-info">
-                                <div class="set-name">{{ set.setName }}</div>
-                                <div class="set-stats">{{ set.cardCount.toLocaleString() }} cards</div>
+            <el-row :gutter="20" class="content-sections">
+                <!-- Top 10 Popular Sets -->
+                <el-col :span="12" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>Most Popular Sets</h3>
+                            <p class="subtitle">By total number of non-land cards across all cubes; original release only</p>
+                        </template>
+                        <div class="set-list two-column">
+                            <div v-for="(set, index) in topPopularSets" :key="set.setCode" class="set-item" v-show="!isMobile || index < 3 || popularSetsExpanded">
+                                <div class="set-rank">{{ index + 1 }}</div>
+                                <div class="set-info">
+                                    <div class="set-name">{{ set.setName }}</div>
+                                    <div class="set-stats">{{ set.cardCount.toLocaleString() }} cards</div>
+                                </div>
                             </div>
+                            <a v-if="isMobile && !popularSetsExpanded && topPopularSets.length > 3" class="see-more-link" @click="popularSetsExpanded = true">see more</a>
                         </div>
-                        <a v-if="isMobile && !popularSetsExpanded && topPopularSets.length > 3" class="see-more-link" @click="popularSetsExpanded = true">see more</a>
-                    </div>
-                </el-card>
-            </el-col>
+                    </el-card>
+                </el-col>
 
-            <!-- Top 10 Popular Keywords -->
-            <el-col :span="12" :xs="24">
-                <el-card class="content-card">
-                    <template #header>
-                        <h3>Most Popular Keywords</h3>
-                        <p class="subtitle">By total occurrences across all cubes (excluding evergreen)</p>
-                    </template>
-                    <div class="keyword-list two-column">
-                        <div v-for="(keyword, index) in topPopularKeywords" :key="keyword.name" class="keyword-item" v-show="!isMobile || index < 3 || popularKeywordsExpanded">
-                            <div class="keyword-rank">{{ index + 1 }}</div>
-                            <div class="keyword-info">
-                                <div class="keyword-name">{{ keyword.name }}</div>
-                                <div class="keyword-stats">{{ keyword.count.toLocaleString() }} occurrences</div>
+                <!-- Top 10 Popular Keywords -->
+                <el-col :span="12" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>Most Popular Keywords</h3>
+                            <p class="subtitle">By total occurrences across all cubes (excluding evergreen)</p>
+                        </template>
+                        <div class="keyword-list two-column">
+                            <div v-for="(keyword, index) in topPopularKeywords" :key="keyword.name" class="keyword-item" v-show="!isMobile || index < 3 || popularKeywordsExpanded">
+                                <div class="keyword-rank">{{ index + 1 }}</div>
+                                <div class="keyword-info">
+                                    <div class="keyword-name">{{ keyword.name }}</div>
+                                    <div class="keyword-stats">{{ keyword.count.toLocaleString() }} occurrences</div>
+                                </div>
                             </div>
+                            <a v-if="isMobile && !popularKeywordsExpanded && topPopularKeywords.length > 3" class="see-more-link" @click="popularKeywordsExpanded = true">see more</a>
                         </div>
-                        <a v-if="isMobile && !popularKeywordsExpanded && topPopularKeywords.length > 3" class="see-more-link" @click="popularKeywordsExpanded = true">see more</a>
-                    </div>
-                </el-card>
-            </el-col>
-        </el-row>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </template>
 
     </div>
 </template>
@@ -416,6 +433,10 @@ const props = defineProps({
     overviewTableData: {
         type: Array,
         required: true,
+    },
+    loadingProgress: {
+        type: Object as () => { active: boolean; loaded: number; total: number } | null,
+        default: null,
     },
 });
 

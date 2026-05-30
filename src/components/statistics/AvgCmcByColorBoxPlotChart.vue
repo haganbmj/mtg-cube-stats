@@ -115,7 +115,7 @@ const chartOptions = computed(() => {
         {
             name: 'Distribution',
             type: 'boxplot',
-            data: boxplotData.map((data, index) => [...data, index]),
+            data: boxplotData.filter((d): d is number[] => d !== null).map((data, index) => [...data, index]),
             itemStyle: {
                 borderColor: (params) => {
                     const color = xDimensions[params.dataIndex]?.color || '#5755d9';
