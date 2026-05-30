@@ -125,6 +125,14 @@ const props = defineProps({
         type: Object as () => { prop: string; order: 'ascending' | 'descending' } | null,
         default: null,
     },
+    sortProp: {
+        type: String,
+        default: undefined,
+    },
+    sortOrder: {
+        type: String as () => 'ascending' | 'descending' | null | undefined,
+        default: undefined,
+    },
     stripe: {
         type: Boolean,
         default: false,
@@ -144,7 +152,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-    'sort-change': [payload: { prop: string; order: 'ascending' | 'descending' | null }];
+    'sort-change': [payload: { prop: string; order: 'ascending' | 'descending' }];
 }>();
 
 const sortState = ref<{ prop: string; order: 'ascending' | 'descending' | null }>({
@@ -224,25 +232,38 @@ const cellContentStyle = (col: StickyTableColumn): Record<string, string> => {
     return style;
 };
 
+const isControlled = computed(() => props.sortProp !== undefined && props.sortOrder !== undefined);
+
 const isSortActive = (col: StickyTableColumn, order: string): boolean => {
-    const sortProp = col.sortKey ?? col.prop ?? col.key;
-    return sortState.value.prop === sortProp && sortState.value.order === order;
+    const colProp = col.sortKey ?? col.prop ?? col.key;
+    if (isControlled.value) {
+        return props.sortProp === colProp && props.sortOrder === order;
+    }
+    return sortState.value.prop === colProp && sortState.value.order === order;
 };
 
 const toggleSort = (col: StickyTableColumn) => {
-    const sortProp = col.sortKey ?? col.prop ?? col.key;
-    if (sortState.value.prop === sortProp) {
-        if (sortState.value.order === 'ascending') {
-            sortState.value = { prop: sortProp, order: 'descending' };
-        } else if (sortState.value.order === 'descending') {
-            sortState.value = { prop: '', order: null };
+    const colProp = col.sortKey ?? col.prop ?? col.key;
+
+    let newOrder: 'ascending' | 'descending';
+    if (isControlled.value) {
+        if (props.sortProp === colProp && props.sortOrder === 'ascending') {
+            newOrder = 'descending';
         } else {
-            sortState.value = { prop: sortProp, order: 'ascending' };
+            newOrder = 'ascending';
         }
     } else {
-        sortState.value = { prop: sortProp, order: 'ascending' };
+        if (sortState.value.prop === colProp && sortState.value.order === 'ascending') {
+            newOrder = 'descending';
+        } else {
+            newOrder = 'ascending';
+        }
     }
-    emit('sort-change', { ...sortState.value });
+
+    if (!isControlled.value) {
+        sortState.value = { prop: colProp, order: newOrder };
+    }
+    emit('sort-change', { prop: colProp, order: newOrder });
 };
 
 const toggleExpand = (rowIndex: number) => {
