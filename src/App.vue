@@ -258,7 +258,7 @@ const debouncedSync = useDebounceFn(() => {
         direction: isDefaultSort ? null : directionValue,
         compareA: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeAId : null,
         compareB: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeBId : null,
-        allCards: showAllCards.value,
+        allCards: activeTab.value === 'cards' && showAllCards.value,
     });
 }, 100);
 
