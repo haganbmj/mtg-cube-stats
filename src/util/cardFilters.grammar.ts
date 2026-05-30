@@ -16,7 +16,7 @@ const lexer = moo.compile({
     colon:       ':',
     minus:       '-',
     dateString:  /[0-9]{4}-[0-9]{2}-[0-9]{2}/u,
-    number:      /[0-9]+(?:\.[0-9]+)?/u,
+    number:      /[0-9]+(?:\.[0-9]+)?(?![\p{L}\p{N}_])/u,
     quotedString: { match: /"(?:[^"\\]|\\.)*"/u, value: (s: string) => s.slice(1, -1) },
     or_kw:       { match: /[oO][rR](?=\s|\(|$)/u, value: () => 'or' },
     and_kw:      { match: /[aA][nN][dD](?=\s|\(|$)/u, value: () => 'and' },
