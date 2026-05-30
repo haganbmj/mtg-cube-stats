@@ -116,6 +116,7 @@ import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
+import { getCachedCube, setCachedCube, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
 import { initCardStats } from './util/CubeCobraCardStats';
 import { registerTheme } from 'echarts';
@@ -154,6 +155,7 @@ const presetComparisons = Object.fromEntries(
 );
 
 const loadedCubes = ref({});
+const refreshingCubeIds = ref<Set<string>>(new Set());
 
 // Loading progress for batch cube loads (addCubes)
 const loadingProgress = reactive({ active: false, loaded: 0, total: 0 });
@@ -186,6 +188,7 @@ const navigateToComparison = (cubeAId: string, cubeBId: string) => {
     activeTab.value = 'compare';
 };
 provide('navigateToComparison', navigateToComparison);
+provide('refreshingCubeIds', refreshingCubeIds);
 
 const cardTableQuery = ref('');
 provide('cardTableQuery', cardTableQuery);
@@ -386,6 +389,26 @@ const peerStats = computed(() => {
     };
 });
 
+const backgroundRefreshCube = async (id: string) => {
+    if (refreshingCubeIds.value.has(id)) return;
+    refreshingCubeIds.value = new Set([...refreshingCubeIds.value, id]);
+    try {
+        const rawCube = await getCubeData(id);
+        await ensureScryfallInitialized();
+        const fetchedAt = new Date().toISOString();
+        const strippedCube = remapCube(rawCube, false, fetchedAt);
+        await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
+        const enrichedCube = enrichCube(strippedCube);
+        loadedCubes.value[enrichedCube.id] = enrichedCube;
+    } catch (e) {
+        console.error(`Background refresh failed for cube: ${id}`, e);
+    } finally {
+        const next = new Set(refreshingCubeIds.value);
+        next.delete(id);
+        refreshingCubeIds.value = next;
+    }
+};
+
 const addCubes = async (cubeIds: string[]) => {
     activePresetName.value = null;
     loadingProgress.active = true;
@@ -396,13 +419,23 @@ const addCubes = async (cubeIds: string[]) => {
         while (queue.length > 0) {
             const id = queue.shift()!;
             try {
-                // Fetch from CubeCobra immediately — no Scryfall dependency yet.
-                const rawCube = await getCubeData(id);
-                // Scryfall must be ready before enrichment; await here so the
-                // network round-trip above can overlap with Scryfall initializing.
-                await ensureScryfallInitialized();
-                const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
-                loadedCubes.value[enrichedCube.id] = enrichedCube;
+                const cached = await getCachedCube(id);
+                if (cached) {
+                    await ensureScryfallInitialized();
+                    const enrichedCube = enrichCube(cached.data);
+                    loadedCubes.value[enrichedCube.id] = enrichedCube;
+                    if (isStale(cached)) {
+                        backgroundRefreshCube(cached.id);
+                    }
+                } else {
+                    const rawCube = await getCubeData(id);
+                    await ensureScryfallInitialized();
+                    const fetchedAt = new Date().toISOString();
+                    const strippedCube = remapCube(rawCube, false, fetchedAt);
+                    await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
+                    const enrichedCube = enrichCube(strippedCube);
+                    loadedCubes.value[enrichedCube.id] = enrichedCube;
+                }
                 await nextTick();
             } catch (e) {
                 console.error(`Error loading cube: ${id}`, e);
@@ -446,14 +479,25 @@ const addCube = async (cubeId: string) => {
     if (!Object.values(loadedCubes.value).some(cube => cube.id === id || cube.shortId === id)) {
         console.time(`Add Cube: ${id}`);
         try {
-            // Fetch from CubeCobra immediately — no Scryfall dependency yet.
-            const rawCube = await getCubeData(id);
-            // Scryfall must be ready before enrichment; await here so the
-            // network round-trip above can overlap with Scryfall initializing.
-            await ensureScryfallInitialized();
-            const enrichedCube = remapCube(rawCube, true, new Date().toISOString());
-            activePresetName.value = null;
-            loadedCubes.value[enrichedCube.id] = enrichedCube;
+            const cached = await getCachedCube(id);
+            if (cached) {
+                await ensureScryfallInitialized();
+                const enrichedCube = enrichCube(cached.data);
+                activePresetName.value = null;
+                loadedCubes.value[enrichedCube.id] = enrichedCube;
+                if (isStale(cached)) {
+                    backgroundRefreshCube(cached.id);
+                }
+            } else {
+                const rawCube = await getCubeData(id);
+                await ensureScryfallInitialized();
+                const fetchedAt = new Date().toISOString();
+                const strippedCube = remapCube(rawCube, false, fetchedAt);
+                await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
+                const enrichedCube = enrichCube(strippedCube);
+                activePresetName.value = null;
+                loadedCubes.value[enrichedCube.id] = enrichedCube;
+            }
         } catch (e) {
             console.error("Error loading cube:", e);
             ElMessage({ message: `Failed to load cube: ${id}`, type: 'error', duration: 4000 });
@@ -508,9 +552,15 @@ const clearCubes = () => {
     loadedCubes.value = {};
 };
 
+const refreshCube = async (id: string) => {
+    await backgroundRefreshCube(id);
+};
+provide('refreshCube', refreshCube);
+
 onMounted(async () => {
     // Start data initialization in the background without blocking the UI
     ensureScryfallInitialized();
+    pruneStaleEntries();
     initFrequencyData();
     initCardStats();
 
