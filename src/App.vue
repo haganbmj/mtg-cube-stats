@@ -47,7 +47,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Statistics" name="statistics" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <StatisticsTab :loadedCubes="overviewTableData" />
+                            <StatisticsTab :loadedCubes="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
                         <!-- <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
