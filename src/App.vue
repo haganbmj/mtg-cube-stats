@@ -163,6 +163,9 @@ const loadingProgress = reactive({ active: false, loaded: 0, total: 0 });
 // Tracks which preset (by name) is currently loaded, so the URL can reflect
 // ?preset=name instead of a long list of cube IDs.
 const activePresetName = ref<string | null>(null);
+// Stores the original set of cube IDs from the loaded preset, used to compute
+// add/remove deltas for URL serialization.
+const presetBaseIds = ref<Set<string>>(new Set());
 
 const activeTab = ref('overview');
 
@@ -244,6 +247,12 @@ const debouncedSync = useDebounceFn(() => {
         tab: activeTab.value,
         preset: activePresetName.value,
         cubes: activePresetName.value ? [] : Object.keys(loadedCubes.value),
+        presetAdd: activePresetName.value
+            ? Object.keys(loadedCubes.value).filter(id => !presetBaseIds.value.has(id))
+            : [],
+        presetRemove: activePresetName.value
+            ? [...presetBaseIds.value].filter(id => !(id in loadedCubes.value))
+            : [],
         q: currentQ,
         order: isDefaultSort ? null : (currentSortProp || null),
         direction: isDefaultSort ? null : directionValue,
@@ -270,7 +279,7 @@ watch(
     () => { debouncedSync(); },
 );
 
-onHashChange((newState) => {
+onHashChange(async (newState) => {
     // Update tab
     if (newState.tab !== activeTab.value) {
         activeTab.value = newState.tab;
@@ -304,7 +313,16 @@ onHashChange((newState) => {
     if (newState.preset && newState.preset !== currentPreset) {
         const preset = presetCollections.find(p => p.name === newState.preset);
         if (preset && preset.label in presetComparisons) {
-            loadCollection(preset.label);
+            await loadCollection(preset.label);
+            // Apply add/remove deltas on top of the freshly loaded preset
+            if (newState.presetRemove.length > 0) {
+                for (const id of newState.presetRemove) {
+                    delete loadedCubes.value[id];
+                }
+            }
+            if (newState.presetAdd.length > 0) {
+                await addCubes(newState.presetAdd);
+            }
         }
     } else if (!newState.preset && newIds !== currentIds) {
         if (newIds === '') {
@@ -417,7 +435,9 @@ const backgroundRefreshCube = async (id: string) => {
 };
 
 const addCubes = async (cubeIds: string[]) => {
-    activePresetName.value = null;
+    if (presetBaseIds.value.size === 0) {
+        activePresetName.value = null;
+    }
     loadingProgress.active = true;
     loadingProgress.total = cubeIds.length;
     loadingProgress.loaded = 0;
@@ -490,7 +510,9 @@ const addCube = async (cubeId: string) => {
             if (cached) {
                 await ensureScryfallInitialized();
                 const enrichedCube = enrichCube(cached.data);
-                activePresetName.value = null;
+                if (presetBaseIds.value.size === 0) {
+                    activePresetName.value = null;
+                }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
                 if (isStale(cached)) {
                     backgroundRefreshCube(cached.id);
@@ -502,7 +524,9 @@ const addCube = async (cubeId: string) => {
                 const strippedCube = remapCube(rawCube, false, fetchedAt);
                 await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
                 const enrichedCube = enrichCube(strippedCube);
-                activePresetName.value = null;
+                if (presetBaseIds.value.size === 0) {
+                    activePresetName.value = null;
+                }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
             }
         } catch (e) {
@@ -542,6 +566,7 @@ const loadCollection = async (presetName: string) => {
             // Set the active preset BEFORE updating loadedCubes so the URL watcher
             // writes ?preset=name rather than serializing the cube IDs.
             activePresetName.value = presetCollections.find(p => p.label === presetName)?.name ?? null;
+            presetBaseIds.value = new Set(Object.keys(enrichedCubes));
             loadedCubes.value = enrichedCubes;
             loadingProgress.loaded = 1;
             await nextTick();
@@ -558,12 +583,15 @@ const loadCollection = async (presetName: string) => {
  *  Doing a terrible job currently with these multiple IDs, and I think mutating the reactive object is done improperly.
  */
 const removeCube = (cubeId: string) => {
-    activePresetName.value = null;
+    if (presetBaseIds.value.size === 0) {
+        activePresetName.value = null;
+    }
     delete loadedCubes.value[cubeId];
 };
 
 const clearCubes = () => {
     activePresetName.value = null;
+    presetBaseIds.value = new Set();
     loadedCubes.value = {};
 };
 
@@ -600,6 +628,15 @@ onMounted(async () => {
         const preset = presetCollections.find(p => p.name === hashState.preset);
         if (preset && preset.label in presetComparisons) {
             await loadCollection(preset.label);
+            // Apply add/remove deltas on top of the preset
+            if (hashState.presetRemove.length > 0) {
+                for (const id of hashState.presetRemove) {
+                    delete loadedCubes.value[id];
+                }
+            }
+            if (hashState.presetAdd.length > 0) {
+                await addCubes(hashState.presetAdd);
+            }
         }
     } else if (hashState.cubes.length > 0) {
         await addCubes(hashState.cubes);
