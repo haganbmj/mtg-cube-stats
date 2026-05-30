@@ -3,6 +3,8 @@ export interface HashRouterState {
     tab: string;
     preset: string | null;
     cubes: string[];
+    presetAdd: string[];
+    presetRemove: string[];
     q: string;
     order: string | null;
     direction: string | null;
@@ -28,6 +30,8 @@ export function parseHash(hash: string): HashRouterState {
         tab,
         preset: params.get('preset') || null,
         cubes: params.get('cubes')?.split(',').filter(Boolean) || [],
+        presetAdd: params.get('add')?.split(',').filter(Boolean) || [],
+        presetRemove: params.get('remove')?.split(',').filter(Boolean) || [],
         q: params.get('q') || '',
         order: params.get('order') || null,
         direction: params.get('direction') || null,
@@ -41,6 +45,8 @@ export function serializeHash(state: HashRouterState): string {
     const params = new URLSearchParams();
     if (state.preset) {
         params.set('preset', state.preset);
+        if (state.presetAdd.length > 0) params.set('add', state.presetAdd.join(','));
+        if (state.presetRemove.length > 0) params.set('remove', state.presetRemove.join(','));
     } else if (state.cubes.length > 0) {
         params.set('cubes', state.cubes.join(','));
     }
@@ -74,6 +80,8 @@ function migrateLegacyUrl(): string {
             tab: 'overview',
             preset: preset || null,
             cubes: cubes?.split(',').filter(Boolean) || [],
+            presetAdd: [],
+            presetRemove: [],
             q: '',
             order: null,
             direction: null,
@@ -99,7 +107,7 @@ export function useHashRouter() {
         }
     }
 
-    function onHashChange(callback: (state: HashRouterState) => void): () => void {
+    function onHashChange(callback: (state: HashRouterState) => void | Promise<void>): () => void {
         const handler = () => {
             callback(parseHash(window.location.hash));
         };
