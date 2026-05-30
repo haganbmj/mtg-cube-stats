@@ -2,6 +2,7 @@
     <div class="comparison-tab">
         <!-- Loading state -->
         <div v-if="props.loadingProgress?.active" style="padding: 40px; text-align: center;">
+            <el-text type="info" style="display: block; margin-bottom: 12px;">Loading cubes...</el-text>
             <el-progress
                 :percentage="props.loadingProgress.total > 0 ? Math.round((props.loadingProgress.loaded / props.loadingProgress.total) * 100) : 0"
                 :format="() => `${props.loadingProgress!.loaded} / ${props.loadingProgress!.total}`"
@@ -131,6 +132,10 @@ import { Sort, Hide, BrushFilled } from '@element-plus/icons-vue';
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
 
+const emit = defineEmits<{
+    'update:comparePair': [pair: { cubeAId: string; cubeBId: string } | null];
+}>();
+
 const props = defineProps({
     loadedCubes: {
         type: Object as () => Record<string, Cube>,
@@ -173,6 +178,15 @@ watch(() => props.comparePair, (pair) => {
     if (pair) {
         cubeAId.value = pair.cubeAId;
         cubeBId.value = pair.cubeBId;
+    }
+});
+
+// Emit selection changes back to parent for URL sync
+watch([cubeAId, cubeBId], ([a, b]) => {
+    if (a && b) {
+        emit('update:comparePair', { cubeAId: a, cubeBId: b });
+    } else {
+        emit('update:comparePair', null);
     }
 });
 

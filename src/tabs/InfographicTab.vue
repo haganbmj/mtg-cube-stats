@@ -2,6 +2,7 @@
     <div class="infographic">
         <!-- Loading state -->
         <div v-if="props.loadingProgress?.active" style="padding: 40px; text-align: center;">
+            <el-text type="info" style="display: block; margin-bottom: 12px;">Loading cubes...</el-text>
             <el-progress
                 :percentage="props.loadingProgress.total > 0 ? Math.round((props.loadingProgress.loaded / props.loadingProgress.total) * 100) : 0"
                 :format="() => `${props.loadingProgress!.loaded} / ${props.loadingProgress!.total}`"
