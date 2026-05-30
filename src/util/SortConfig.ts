@@ -47,3 +47,15 @@ export function resolveDirection(direction: SortDirection, prop: string, propert
     const entry = properties.find(p => p.prop === prop);
     return entry?.autoDirection ?? 'ascending';
 }
+
+/**
+ * Remove order:/sort: and direction:/dir: tokens from a raw query string.
+ * Preserves all other filter conditions.
+ */
+export function stripSortTokens(query: string): string {
+    // Match order:value, sort:value, direction:value, dir:value (with optional quotes)
+    return query
+        .replace(/\b(?:order|sort|direction|dir):[^\s]*/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
