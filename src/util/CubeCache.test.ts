@@ -4,8 +4,9 @@ import { getCachedCube, setCachedCube, evictCube, isStale, pruneStaleEntries, _r
 import type { CachedCube } from './CubeCache';
 import type { Cube } from '../types';
 
-const makeCube = (id: string): Cube => ({
+const makeCube = (id: string, shortId?: string): Cube => ({
     id,
+    shortId,
     name: `Test Cube ${id}`,
     owner: 'testowner',
     cards: [
@@ -36,6 +37,16 @@ describe('CubeCache', () => {
         expect(result!.id).toBe('abc123');
         expect(result!.data.name).toBe('Test Cube abc123');
         expect(result!.fetchedAt).toBe(fetchedAt);
+    });
+
+    it('retrieves a cube by shortId', async () => {
+        const cube = makeCube('abc123', 'mycube');
+        await setCachedCube('abc123', cube, '2026-05-30T12:00:00.000Z');
+
+        const result = await getCachedCube('mycube');
+        expect(result).not.toBeNull();
+        expect(result!.id).toBe('abc123');
+        expect(result!.data.shortId).toBe('mycube');
     });
 
     it('evicts a cube by ID', async () => {

@@ -2,7 +2,7 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { Cube } from '../types';
 
 const DB_NAME = 'cube-cache';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'cubes';
 
 const STALE_THRESHOLD_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
@@ -10,6 +10,7 @@ const EVICTION_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export interface CachedCube {
     id: string;
+    shortId?: string;
     data: Cube;
     fetchedAt: string;
 }
@@ -19,9 +20,16 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 function getDb(): Promise<IDBPDatabase> {
     if (!dbPromise) {
         dbPromise = openDB(DB_NAME, DB_VERSION, {
-            upgrade(db) {
+            upgrade(db, oldVersion) {
+                let store;
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                }
+                if (oldVersion < 2) {
+                    store = store ?? db.transaction.objectStore(STORE_NAME);
+                    if (!store.indexNames.contains('shortId')) {
+                        store.createIndex('shortId', 'shortId', { unique: false });
+                    }
                 }
             },
         }).catch((err) => {
@@ -36,8 +44,12 @@ function getDb(): Promise<IDBPDatabase> {
 export async function getCachedCube(id: string): Promise<CachedCube | null> {
     try {
         const db = await getDb();
+        // Try primary key (canonical ID) first
         const entry = await db.get(STORE_NAME, id);
-        return entry ?? null;
+        if (entry) return entry;
+        // Fall back to shortId index
+        const byShortId = await db.getFromIndex(STORE_NAME, 'shortId', id);
+        return byShortId ?? null;
     } catch {
         return null;
     }
@@ -46,7 +58,7 @@ export async function getCachedCube(id: string): Promise<CachedCube | null> {
 export async function setCachedCube(id: string, data: Cube, fetchedAt: string): Promise<void> {
     try {
         const db = await getDb();
-        await db.put(STORE_NAME, { id, data, fetchedAt });
+        await db.put(STORE_NAME, { id, shortId: data.shortId, data, fetchedAt });
     } catch {
         // Silently fail — caching is best-effort
     }
