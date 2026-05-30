@@ -55,7 +55,7 @@
                         </el-tab-pane> -->
 
                         <el-tab-pane label="Compare" name="compare" :lazy="true">
-                            <ComparisonTab :loadedCubes="loadedCubes" :addCube="addCube" :comparePair="comparePair" />
+                            <ComparisonTab :loadedCubes="loadedCubes" :addCube="addCube" :comparePair="comparePair" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
