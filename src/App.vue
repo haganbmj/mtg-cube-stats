@@ -241,6 +241,8 @@ const debouncedSync = useDebounceFn(() => {
         q: currentQ,
         order: isDefaultSort ? null : (currentSortProp || null),
         direction: isDefaultSort ? null : directionValue,
+        compareA: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeAId : null,
+        compareB: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeBId : null,
     });
 }, 100);
 
@@ -255,6 +257,7 @@ watch(
         overviewSearchQuery,
         overviewSortProp,
         overviewSortDirection,
+        comparePair,
     ],
     () => { debouncedSync(); },
 );
@@ -274,6 +277,13 @@ onHashChange((newState) => {
         overviewSearchQuery.value = newState.q;
         if (newState.order) overviewSortProp.value = newState.order;
         if (newState.direction) overviewSortDirection.value = newState.direction === 'asc' ? 'ascending' : 'descending';
+    }
+
+    // Update compare pair if on compare tab
+    if (newState.tab === 'compare' && newState.compareA && newState.compareB) {
+        if (!loadedCubes.value[newState.compareA]) addCube(newState.compareA);
+        if (!loadedCubes.value[newState.compareB]) addCube(newState.compareB);
+        comparePair.value = { cubeAId: newState.compareA, cubeBId: newState.compareB };
     }
 
     // Reconcile cube state only if it actually changed
@@ -542,6 +552,13 @@ onMounted(async () => {
                 position: 'bottom-right',
             });
         }
+    }
+
+    // Set compare pair from URL if on compare tab
+    if (hashState.tab === 'compare' && hashState.compareA && hashState.compareB) {
+        if (!loadedCubes.value[hashState.compareA]) await addCube(hashState.compareA);
+        if (!loadedCubes.value[hashState.compareB]) await addCube(hashState.compareB);
+        comparePair.value = { cubeAId: hashState.compareA, cubeBId: hashState.compareB };
     }
 });
 </script>
