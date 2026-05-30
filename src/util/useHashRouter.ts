@@ -8,6 +8,7 @@ export interface HashRouterState {
     direction: string | null;
     compareA: string | null;
     compareB: string | null;
+    allCards: boolean;
 }
 
 const VALID_TABS = ['overview', 'infographic', 'statistics', 'compare', 'cards', 'about'];
@@ -32,6 +33,7 @@ export function parseHash(hash: string): HashRouterState {
         direction: params.get('direction') || null,
         compareA: params.get('a') || null,
         compareB: params.get('b') || null,
+        allCards: params.get('allCards') === '1',
     };
 }
 
@@ -49,6 +51,7 @@ export function serializeHash(state: HashRouterState): string {
         if (state.compareA) params.set('a', state.compareA);
         if (state.compareB) params.set('b', state.compareB);
     }
+    if (state.allCards) params.set('allCards', '1');
 
     const query = params.toString();
     return `#/${state.tab}${query ? '?' + query : ''}`;
@@ -76,6 +79,7 @@ function migrateLegacyUrl(): string {
             direction: null,
             compareA: null,
             compareB: null,
+            allCards: false,
         };
         const hash = serializeHash(state);
         history.replaceState(null, '', window.location.pathname + hash);

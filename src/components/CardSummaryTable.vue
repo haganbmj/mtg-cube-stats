@@ -19,7 +19,7 @@
                 <el-dropdown-menu>
                     <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
                     <el-dropdown-item @click="exportToCsv">Export as CSV</el-dropdown-item>
-                    <el-dropdown-item divided @click="config.showAllCards = !config.showAllCards">Show All Cards{{ config.showAllCards ? ' ✓' : '' }}</el-dropdown-item>
+                    <el-dropdown-item divided @click="showAllCards = !showAllCards">Show All Cards{{ showAllCards ? ' ✓' : '' }}</el-dropdown-item>
                 </el-dropdown-menu>
             </template>
         </el-dropdown>
@@ -130,7 +130,7 @@
     <div v-if="!isMobile" class="card-table-filter-summary">
         <el-breadcrumb separator="·" class="filter-summary">
             <el-breadcrumb-item>
-                <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light" :enterable="false" >
+                <el-tooltip :content="showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light" :enterable="false" >
                     <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
                 </el-tooltip>
             </el-breadcrumb-item>
@@ -154,8 +154,8 @@
 
     <div v-if="visualDisplayVisible" class="visual-card-grid" v-loading="!scryfallReady" :style="{ gridTemplateColumns: `repeat(${config.visualColumnCount}, 1fr)` }">
         <div v-if="scryfallReady && visibleRows.length === 0" class="visual-card-grid__empty">
-            <template v-if="noCubesLoaded && !config.showAllCards">
-                No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
+            <template v-if="noCubesLoaded && !showAllCards">
+                No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
             </template>
             <template v-else>
                 No matching cards found.
@@ -200,8 +200,8 @@
         <template v-if="!scryfallReady" #empty>
             Loading card data&hellip;
         </template>
-        <template v-else-if="noCubesLoaded && !config.showAllCards" #empty>
-            No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="config.showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
+        <template v-else-if="noCubesLoaded && !showAllCards" #empty>
+            No cubes loaded. Load a cube to see card statistics, or show <el-link type="primary" @click="showAllCards = true"><strong>All Cards</strong></el-link> to browse without a loaded cube.
         </template>
         <template #cell-name="{ row }">
             <el-tooltip
@@ -483,6 +483,7 @@ const props = defineProps({
 });
 
 const openCardDetailDialog = inject<(id: string) => void>('openCardDetailDialog');
+const showAllCards = inject<Ref<boolean>>('showAllCards', ref(false));
 
 const cardResultsTop = useTemplateRef<HTMLElement>('cardResultsTop');
 
@@ -611,8 +612,8 @@ const displayModeValue = computed({
 });
 
 const showAllCardsValue = computed({
-    get: () => config.value.showAllCards ? 'on' : 'off',
-    set: (val: string) => { config.value.showAllCards = val === 'on'; },
+    get: () => showAllCards.value ? 'on' : 'off',
+    set: (val: string) => { showAllCards.value = val === 'on'; },
 });
 
 watch(visualDisplayVisible, () => {
@@ -632,7 +633,6 @@ const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
 const defaultConfig = {
     visibleColumns: [...defaultVisibleColumns],
     visualColumnCount: defaultVisualColumnCount.value,
-    showAllCards: false,
 };
 
 const config = bindStorage('card-summary-table-config', (v) => {
@@ -648,7 +648,6 @@ const config = bindStorage('card-summary-table-config', (v) => {
     return {
         visibleColumns: cols,
         visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : defaultVisualColumnCount.value,
-        showAllCards: typeof v.showAllCards === 'boolean' ? v.showAllCards : false,
     };
 });
 
@@ -1010,7 +1009,7 @@ const tableData = computed(() => {
         return acc;
     }, {} as Record<string, any>);
 
-    if (config.value.showAllCards && scryfallReady.value) {
+    if (showAllCards.value && scryfallReady.value) {
         const scryfallCards = getScryfallCards();
         for (const [oracleId, card] of Object.entries(scryfallCards)) {
             if (allCards[oracleId] !== undefined) continue;

@@ -198,6 +198,9 @@ const cardSortDirection = ref<SortDirection>('auto');
 provide('cardSortProp', cardSortProp);
 provide('cardSortDirection', cardSortDirection);
 
+const showAllCards = ref(false);
+provide('showAllCards', showAllCards);
+
 const overviewSearchQuery = ref('');
 const overviewSortProp = ref('name');
 const overviewSortDirection = ref<SortDirection>('auto');
@@ -246,6 +249,7 @@ const debouncedSync = useDebounceFn(() => {
         direction: isDefaultSort ? null : directionValue,
         compareA: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeAId : null,
         compareB: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeBId : null,
+        allCards: showAllCards.value,
     });
 }, 100);
 
@@ -261,6 +265,7 @@ watch(
         overviewSortProp,
         overviewSortDirection,
         comparePair,
+        showAllCards,
     ],
     () => { debouncedSync(); },
 );
@@ -281,6 +286,8 @@ onHashChange((newState) => {
         if (newState.order) overviewSortProp.value = newState.order;
         if (newState.direction) overviewSortDirection.value = newState.direction === 'asc' ? 'ascending' : 'descending';
     }
+
+    showAllCards.value = newState.allCards;
 
     // Update compare pair if on compare tab
     if (newState.tab === 'compare' && newState.compareA && newState.compareB) {
@@ -585,6 +592,8 @@ onMounted(async () => {
         if (hashState.order) overviewSortProp.value = hashState.order;
         if (hashState.direction) overviewSortDirection.value = hashState.direction === 'asc' ? 'ascending' : 'descending';
     }
+
+    showAllCards.value = hashState.allCards;
 
     // Load cubes from URL
     if (hashState.preset) {
