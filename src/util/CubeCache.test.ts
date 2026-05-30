@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
-import { getCachedCube, setCachedCube, evictCube, isStale, pruneStaleEntries, _resetForTesting } from './CubeCache';
+import { getCachedCube, setCachedCube, setCachedCubeIfNewer, evictCube, isStale, pruneStaleEntries, _resetForTesting } from './CubeCache';
 import type { CachedCube } from './CubeCache';
 import type { Cube } from '../types';
 
@@ -95,5 +95,40 @@ describe('CubeCache', () => {
         expect(await getCachedCube('fresh')).not.toBeNull();
         expect(await getCachedCube('stale')).not.toBeNull();
         expect(await getCachedCube('ancient')).toBeNull();
+    });
+
+    it('setCachedCubeIfNewer does not overwrite a newer existing entry', async () => {
+        const cube = makeCube('abc123');
+        const newerDate = '2026-05-30T12:00:00.000Z';
+        const olderDate = '2026-05-25T12:00:00.000Z';
+
+        await setCachedCube('abc123', cube, newerDate);
+        await setCachedCubeIfNewer('abc123', cube, olderDate);
+
+        const result = await getCachedCube('abc123');
+        expect(result!.fetchedAt).toBe(newerDate);
+    });
+
+    it('setCachedCubeIfNewer writes when no entry exists', async () => {
+        const cube = makeCube('abc123');
+        const date = '2026-05-30T12:00:00.000Z';
+
+        await setCachedCubeIfNewer('abc123', cube, date);
+
+        const result = await getCachedCube('abc123');
+        expect(result).not.toBeNull();
+        expect(result!.fetchedAt).toBe(date);
+    });
+
+    it('setCachedCubeIfNewer overwrites an older existing entry', async () => {
+        const cube = makeCube('abc123');
+        const olderDate = '2026-05-25T12:00:00.000Z';
+        const newerDate = '2026-05-30T12:00:00.000Z';
+
+        await setCachedCube('abc123', cube, olderDate);
+        await setCachedCubeIfNewer('abc123', cube, newerDate);
+
+        const result = await getCachedCube('abc123');
+        expect(result!.fetchedAt).toBe(newerDate);
     });
 });

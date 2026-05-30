@@ -64,6 +64,24 @@ export async function setCachedCube(id: string, data: Cube, fetchedAt: string): 
     }
 }
 
+/**
+ * Store a cube in the cache only if there is no existing entry or the incoming
+ * fetchedAt is newer than the stored one. Use this when persisting preload data
+ * so that a user's manually-refreshed entry is not overwritten by older preload data.
+ */
+export async function setCachedCubeIfNewer(id: string, data: Cube, fetchedAt: string): Promise<void> {
+    try {
+        const db = await getDb();
+        const existing = await db.get(STORE_NAME, id);
+        if (existing && new Date(existing.fetchedAt).getTime() >= new Date(fetchedAt).getTime()) {
+            return; // Existing entry is same age or newer — keep it
+        }
+        await db.put(STORE_NAME, { id, shortId: data.shortId, data, fetchedAt });
+    } catch {
+        // Silently fail — caching is best-effort
+    }
+}
+
 export async function evictCube(id: string): Promise<void> {
     try {
         const db = await getDb();

@@ -111,12 +111,12 @@ import { useDetailNavigation } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
 import { presetCollections } from './presets';
 import { bindStorage } from './util/VueLocalStorage';
-import type { UserCollection } from './types';
+import type { UserCollection, Cube } from './types';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
-import { getCachedCube, setCachedCube, isStale, pruneStaleEntries } from './util/CubeCache';
+import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
 import { initCardStats } from './util/CubeCobraCardStats';
 import { registerTheme } from 'echarts';
@@ -522,6 +522,14 @@ const loadCollection = async (presetName: string) => {
             const cubesModule = await presetComparisons[presetName]();
             preloadSimiliarityMatrix(cubesModule.default.similarities);
             const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+
+            // Persist preload cubes to IndexedDB (won't overwrite newer user-refreshed entries)
+            for (const [id, cube] of Object.entries(cubesModule.default.cubes)) {
+                const c = cube as Cube;
+                if (c.fetchedAt) {
+                    setCachedCubeIfNewer(id, c, c.fetchedAt);
+                }
+            }
 
             console.timeEnd(`Load Collection: ${presetName}`);
             // Set the active preset BEFORE updating loadedCubes so the URL watcher
