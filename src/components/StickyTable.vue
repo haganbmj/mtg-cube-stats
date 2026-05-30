@@ -22,6 +22,7 @@
                                     v-if="col.tooltip"
                                     :content="col.tooltip"
                                     placement="top"
+                                    :enterable="false"
                                     :hide-after="50"
                                 >
                                     <span>{{ col.label }} <el-icon><InfoFilled /></el-icon></span>

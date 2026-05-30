@@ -36,6 +36,7 @@
                         :content="getCategoryTooltip(category)"
                         placement="top"
                         :hide-after="50"
+                        :enterable="false"
                     >
                         <el-tag
                             size="default"
@@ -58,7 +59,7 @@
                             <div class="stat-grid">
                                 <div class="stat-item">
                                     <i class="ms ms-creature ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards with 'Creature' in their Type Line" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards with 'Creature' in their Type Line" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.creatureCards, activeCube.stats?.totalCards) }}
@@ -70,7 +71,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-land ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.landCards, activeCube.stats?.totalCards) }}
@@ -82,7 +83,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-c ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageNonLandCmc ?? 0).toFixed(2) }}
@@ -94,7 +95,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-rarity ms-2x stat-icon"></i>
-                                    <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50">
+                                    <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}
@@ -106,7 +107,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-deathtouch ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards tagged as 'removal' in Scryfall's Tagger" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards tagged as 'removal' in Scryfall's Tagger" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
@@ -118,7 +119,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-token ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards that Create one or more Tokens" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards that Create one or more Tokens" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.makesTokens, activeCube.stats?.totalCards) }}
@@ -130,7 +131,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-token ms-2x stat-icon"></i>
-                                    <el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50">
+                                    <el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ activeCube.stats?.uniqueTokenCount ?? 0 }}
@@ -142,7 +143,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-prototype ms-2x stat-icon"></i>
-                                    <el-tooltip content="Number of Unique Non-Evergreen Keywords" placement="top" :hide-after="50">
+                                    <el-tooltip content="Number of Unique Non-Evergreen Keywords" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}
@@ -154,7 +155,7 @@
                                 </div>
                                 <div class="stat-item" v-if="activeCube.stats?.totalUniqueCards !== activeCube.stats?.totalCards">
                                     <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
-                                    <el-tooltip content="Number of unique cards by oracle ID, as a percentage of the total" placement="top" :hide-after="50">
+                                    <el-tooltip content="Number of unique cards by oracle ID, as a percentage of the total" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.totalUniqueCards, activeCube.stats?.totalCards) }}
@@ -171,7 +172,7 @@
                             <div class="stat-grid">
                                 <div class="stat-item">
                                     <i class="ms ms-counter-time ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Release Year of Cards in the Cube (± Standard Deviation)" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average Release Year of Cards in the Cube (± Standard Deviation)" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})</span>
@@ -183,7 +184,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-time ms-2x stat-icon"></i>
-                                    <el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50">
+                                    <el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})</span>
@@ -195,7 +196,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-lore ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
@@ -207,7 +208,7 @@
                                 </div>
                                 <div class="stat-item" v-if="activeCube.stats?.totalUniqueCards !== activeCube.stats?.totalCards">
                                     <i class="ms ms-counter-lore ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
@@ -219,7 +220,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-defender ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average CubeCobra Card Elo Rating" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average CubeCobra Card Elo Rating" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}
@@ -231,7 +232,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-wotc ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
@@ -243,7 +244,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-brick-print ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50">
+                                    <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(avgSimilarityScore, 1) }}
@@ -255,7 +256,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
@@ -267,7 +268,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-rad ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
@@ -279,7 +280,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-transformers ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
@@ -291,7 +292,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-goad ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50">
+                                    <el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
@@ -309,7 +310,7 @@
                             <div class="stat-grid">
                                 <div class="stat-item">
                                     <i class="ms ms-ability-forage ms-2x stat-icon"></i>
-                                    <el-tooltip content="Total Minimum Price of the Cube in USD" placement="top" :hide-after="50">
+                                    <el-tooltip content="Total Minimum Price of the Cube in USD" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">${{ formatPrice(activeCube.stats?.totalMinPriceUsd ?? 0) }}</div>
                                             <div class="stat-label">Min Price (USD)</div>
@@ -318,7 +319,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-forage ms-2x stat-icon"></i>
-                                    <el-tooltip content="Total Minimum Price of the Cube in MTGO Tix" placement="top" :hide-after="50">
+                                    <el-tooltip content="Total Minimum Price of the Cube in MTGO Tix" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">{{ formatPrice(activeCube.stats?.totalMinPriceTix ?? 0) }}</div>
                                             <div class="stat-label">Min Price (Tix)</div>
@@ -333,7 +334,7 @@
                             <div class="stat-grid">
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
-                                    <el-tooltip content="Whether the cube is playable on MTG Arena" placement="top" :hide-after="50">
+                                    <el-tooltip content="Whether the cube is playable on MTG Arena" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value" :class="activeCube.stats?.arenaPlayable ? 'stat-value--positive' : 'stat-value--negative'">
                                                 Arena
@@ -344,7 +345,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
-                                    <el-tooltip content="Whether the cube is playable on MTGO" placement="top" :hide-after="50">
+                                    <el-tooltip content="Whether the cube is playable on MTGO" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value" :class="activeCube.stats?.mtgoPlayable ? 'stat-value--positive' : 'stat-value--negative'">
                                                 MTGO
@@ -355,7 +356,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon stat-icon-fallback"></i>
-                                    <el-tooltip content="Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" placement="top" :hide-after="50">
+                                    <el-tooltip content="Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value" :class="activeCube.stats?.paperPlayable ? 'stat-value--positive' : 'stat-value--negative'">
                                                 Paper
@@ -476,6 +477,7 @@
                                         popper-class="card-tooltip"
                                         :show-after="50"
                                         :hide-after="50"
+                                        :enterable="false"
                                         :offset="16"
                                     >
                                         <template #content>

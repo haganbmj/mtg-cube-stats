@@ -297,15 +297,6 @@
 
             <template #cell-name="{ row }">
                 <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
-                <template v-if="row.stats.graveyardOrderMatters">
-                    <el-tooltip
-                        content="This cube contains cards that care about Graveyard Order."
-                        placement="top"
-                        :hide-after="50"
-                    >
-                        <el-icon color="yellow" style="margin-left: 0.25rem;"><WarnTriangleFilled /></el-icon>
-                    </el-tooltip>
-                </template>
             </template>
 
             <template #cell-owner="{ row }">

@@ -130,22 +130,22 @@
     <div v-if="!isMobile" class="card-table-filter-summary">
         <el-breadcrumb separator="·" class="filter-summary">
             <el-breadcrumb-item>
-                <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light">
+                <el-tooltip :content="config.showAllCards ? `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total cards in the Scryfall database` : `${filteredRows.length} unique cards match the active filters out of ${sortedRows.length} total unique cards across all loaded cubes`" placement="bottom" effect="light" :enterable="false" >
                     <span>{{ filteredRows.length }} / {{ sortedRows.length }} Cards</span>
                 </el-tooltip>
             </el-breadcrumb-item>
             <el-breadcrumb-item>
-                <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light">
+                <el-tooltip :content="eligibleCubeKeys ? `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} cubes eligible under the active cube filters` : `${filteredStats.cubesWithMatch} cubes contain at least one matching card, out of ${filteredStats.cubeCount} loaded cubes`" placement="bottom" effect="light" :enterable="false" >
                     <span>{{ filteredStats.cubesWithMatch }} / {{ filteredStats.cubeCount }} Cubes</span>
                 </el-tooltip>
             </el-breadcrumb-item>
             <el-breadcrumb-item>
-                <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light">
+                <el-tooltip :content="`Average matching cards per cube (among cubes with at least one match)`" placement="bottom" effect="light" :enterable="false">
                     <span>avg {{ filteredStats.avgPerCube.toFixed(1) }} per cube</span>
                 </el-tooltip>
             </el-breadcrumb-item>
             <el-breadcrumb-item v-if="filteredStats.highlightedCubeCardCount !== null">
-                <el-tooltip :content="filteredStats.highlightedNormalizedAvg !== null ? `Total matching cards in the highlighted cube; normalized average shows expected count if other cubes were scaled to this cube's size` : `Total matching cards summed across all highlighted cubes`" placement="bottom" effect="light">
+                <el-tooltip :content="filteredStats.highlightedNormalizedAvg !== null ? `Total matching cards in the highlighted cube; normalized average shows expected count if other cubes were scaled to this cube's size` : `Total matching cards summed across all highlighted cubes`" placement="bottom" effect="light" :enterable="false">
                     <span>{{ filteredStats.highlightedCubeCardCount }} highlighted<template v-if="filteredStats.highlightedNormalizedAvg !== null"> (avg {{ filteredStats.highlightedNormalizedAvg.toFixed(1) }})</template></span>
                 </el-tooltip>
             </el-breadcrumb-item>
@@ -210,6 +210,7 @@
                 popper-class="card-tooltip"
                 :show-after="50"
                 :hide-after="50"
+                :enterable="false"
                 :offset="16"
             >
                 <template #content>
@@ -266,6 +267,7 @@
                 placement="top-start"
                 effect="light"
                 :show-after="600"
+                :enterable="false"
                 :disabled="!typeLineOverflowSet.has(row.oracleId)"
             >
                 <span
