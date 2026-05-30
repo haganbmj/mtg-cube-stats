@@ -104,6 +104,9 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, provide, onMounted, nextTick } from 'vue';
 import type { SortDirection } from './util/SortConfig';
+import { stripSortTokens } from './util/SortConfig';
+import { useHashRouter } from './util/useHashRouter';
+import { useDebounceFn } from '@vueuse/core';
 import { useDetailNavigation } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
 import { presetCollections } from './presets';
@@ -159,23 +162,6 @@ const loadingProgress = reactive({ active: false, loaded: 0, total: 0 });
 // ?preset=name instead of a long list of cube IDs.
 const activePresetName = ref<string | null>(null);
 
-// Auto-sync the URL with the currently loaded state so the address bar is
-// always a valid share link. Fires whenever any cube is added or removed.
-watch(
-    () => Object.keys(loadedCubes.value).join(','),
-    (ids) => {
-        if (!ids) {
-            history.replaceState(null, '', window.location.pathname);
-        } else if (activePresetName.value) {
-            const params = new URLSearchParams({ preset: activePresetName.value });
-            history.replaceState(null, '', `?${params.toString()}`);
-        } else {
-            const params = new URLSearchParams({ cubes: ids });
-            history.replaceState(null, '', `?${params.toString()}`);
-        }
-    },
-);
-
 const activeTab = ref('overview');
 
 const { stack: navigationStack, push: pushDetail, pop: popDetail, closeAll: closeAllDialogs } = useDetailNavigation();
@@ -215,6 +201,106 @@ const overviewSortDirection = ref<SortDirection>('auto');
 provide('overviewSearchQuery', overviewSearchQuery);
 provide('overviewSortProp', overviewSortProp);
 provide('overviewSortDirection', overviewSortDirection);
+
+const { initialState: hashState, syncToHash, onHashChange } = useHashRouter();
+
+const debouncedSync = useDebounceFn(() => {
+    const currentQ = activeTab.value === 'cards'
+        ? stripSortTokens(cardTableQuery.value)
+        : activeTab.value === 'overview'
+            ? stripSortTokens(overviewSearchQuery.value)
+            : '';
+
+    const currentSortProp = activeTab.value === 'cards'
+        ? cardSortProp.value
+        : activeTab.value === 'overview'
+            ? overviewSortProp.value
+            : null;
+
+    const currentSortDir = activeTab.value === 'cards'
+        ? cardSortDirection.value
+        : activeTab.value === 'overview'
+            ? overviewSortDirection.value
+            : null;
+
+    // Determine if sort values are non-default (skip serializing defaults)
+    const defaultCardSort = 'cubeCount';
+    const defaultOverviewSort = 'name';
+    const isDefaultSort = activeTab.value === 'cards'
+        ? currentSortProp === defaultCardSort && (currentSortDir === 'auto' || currentSortDir === 'descending')
+        : activeTab.value === 'overview'
+            ? currentSortProp === defaultOverviewSort && (currentSortDir === 'auto' || currentSortDir === 'ascending')
+            : true;
+
+    const directionValue = currentSortDir === 'ascending' ? 'asc' : currentSortDir === 'descending' ? 'desc' : null;
+
+    syncToHash({
+        tab: activeTab.value,
+        preset: activePresetName.value,
+        cubes: activePresetName.value ? [] : Object.keys(loadedCubes.value),
+        q: currentQ,
+        order: isDefaultSort ? null : (currentSortProp || null),
+        direction: isDefaultSort ? null : directionValue,
+    });
+}, 100);
+
+watch(
+    [
+        activeTab,
+        () => Object.keys(loadedCubes.value).join(','),
+        activePresetName,
+        cardTableQuery,
+        cardSortProp,
+        cardSortDirection,
+        overviewSearchQuery,
+        overviewSortProp,
+        overviewSortDirection,
+    ],
+    () => { debouncedSync(); },
+);
+
+onHashChange((newState) => {
+    // Update tab
+    if (newState.tab !== activeTab.value) {
+        activeTab.value = newState.tab;
+    }
+
+    // Update sort/query for the target tab
+    if (newState.tab === 'cards') {
+        cardTableQuery.value = newState.q;
+        if (newState.order) cardSortProp.value = newState.order;
+        if (newState.direction) cardSortDirection.value = newState.direction === 'asc' ? 'ascending' : 'descending';
+    } else if (newState.tab === 'overview') {
+        overviewSearchQuery.value = newState.q;
+        if (newState.order) overviewSortProp.value = newState.order;
+        if (newState.direction) overviewSortDirection.value = newState.direction === 'asc' ? 'ascending' : 'descending';
+    }
+
+    // Reconcile cube state only if it actually changed
+    const currentIds = Object.keys(loadedCubes.value).sort().join(',');
+    const newIds = [...newState.cubes].sort().join(',');
+    const currentPreset = activePresetName.value;
+
+    if (newState.preset && newState.preset !== currentPreset) {
+        const preset = presetCollections.find(p => p.name === newState.preset);
+        if (preset && preset.label in presetComparisons) {
+            loadCollection(preset.label);
+        }
+    } else if (!newState.preset && newIds !== currentIds) {
+        if (newIds === '') {
+            clearCubes();
+        } else {
+            // Add missing cubes, remove extras
+            const newIdSet = new Set(newState.cubes);
+            const currentIdSet = new Set(Object.keys(loadedCubes.value));
+            for (const id of currentIdSet) {
+                if (!newIdSet.has(id)) removeCube(id);
+            }
+            const toAdd = newState.cubes.filter(id => !currentIdSet.has(id));
+            if (toAdd.length > 0) addCubes(toAdd);
+        }
+    }
+});
 
 const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
 
@@ -418,38 +504,43 @@ onMounted(async () => {
     initFrequencyData();
     initCardStats();
 
-    // Load cubes or a preset collection from URL query parameters (share links).
-    // The URL watcher above keeps the address bar in sync from this point forward,
-    // so no manual history.replaceState is needed here.
-    const params = new URLSearchParams(window.location.search);
-    const presetParam = params.get('preset');
-    const cubesParam = params.get('cubes');
+    // Apply initial state from URL hash
+    activeTab.value = hashState.tab;
 
-    if (presetParam) {
-        const preset = presetCollections.find(p => p.name === presetParam);
+    // Apply sort/query state for the active tab
+    if (hashState.tab === 'cards') {
+        cardTableQuery.value = hashState.q;
+        if (hashState.order) cardSortProp.value = hashState.order;
+        if (hashState.direction) cardSortDirection.value = hashState.direction === 'asc' ? 'ascending' : 'descending';
+    } else if (hashState.tab === 'overview') {
+        overviewSearchQuery.value = hashState.q;
+        if (hashState.order) overviewSortProp.value = hashState.order;
+        if (hashState.direction) overviewSortDirection.value = hashState.direction === 'asc' ? 'ascending' : 'descending';
+    }
+
+    // Load cubes from URL
+    if (hashState.preset) {
+        const preset = presetCollections.find(p => p.name === hashState.preset);
         if (preset && preset.label in presetComparisons) {
             await loadCollection(preset.label);
         }
-    } else if (cubesParam) {
-        const ids = cubesParam.split(',').map(s => s.trim()).filter(Boolean);
-        if (ids.length > 0) {
-            await addCubes(ids);
+    } else if (hashState.cubes.length > 0) {
+        await addCubes(hashState.cubes);
 
-            // Show a non-blocking hint only if the loaded set isn't already saved
-            const loadedIds = Object.keys(loadedCubes.value);
-            const alreadySaved = userCollections.value.some(col => {
-                const savedSet = new Set(col.cubeIds);
-                return savedSet.size === loadedIds.length && loadedIds.every(id => savedSet.has(id));
+        // Show a non-blocking hint only if the loaded set isn't already saved
+        const loadedIds = Object.keys(loadedCubes.value);
+        const alreadySaved = userCollections.value.some(col => {
+            const savedSet = new Set(col.cubeIds);
+            return savedSet.size === loadedIds.length && loadedIds.every(id => savedSet.has(id));
+        });
+        if (!alreadySaved && loadedIds.length > 0) {
+            ElNotification({
+                type: 'info',
+                title: 'Share link loaded',
+                message: `${loadedIds.length} cube${loadedIds.length !== 1 ? 's' : ''} loaded. Use \"Save As…\" to keep this collection.`,
+                duration: 6000,
+                position: 'bottom-right',
             });
-            if (!alreadySaved && loadedIds.length > 0) {
-                ElNotification({
-                    type: 'info',
-                    title: 'Share link loaded',
-                    message: `${loadedIds.length} cube${loadedIds.length !== 1 ? 's' : ''} loaded. Use "Save As…" to keep this collection.`,
-                    duration: 6000,
-                    position: 'bottom-right',
-                });
-            }
         }
     }
 });
