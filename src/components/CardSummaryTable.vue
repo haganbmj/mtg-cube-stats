@@ -527,8 +527,8 @@ useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.va
 const visualDisplayVisible = bindStorage('card-table-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
 const viewExpanded = ref(false);
 
-const sortProp = ref('cubeCount');
-const sortDirection = ref<SortDirection>('auto');
+const sortProp = inject<Ref<string>>('cardSortProp', ref('cubeCount'));
+const sortDirection = inject<Ref<SortDirection>>('cardSortDirection', ref('auto'));
 
 watch(sortProp, (_newVal, oldVal) => {
     if (oldVal !== undefined && querySortDirective.value) {

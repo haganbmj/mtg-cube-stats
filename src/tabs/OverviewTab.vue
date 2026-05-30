@@ -469,6 +469,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, inject, watch } from 'vue';
+import type { Ref } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort, formatPrice, normalizeSortName } from '../util/HelperFunctions';
@@ -776,8 +777,8 @@ const columnOptions = ref([
 ]);
 
 // --- Sort state ---
-const sortProp = ref('name');
-const sortDirection = ref<SortDirection>('auto');
+const sortProp = inject<Ref<string>>('overviewSortProp', ref('name'));
+const sortDirection = inject<Ref<SortDirection>>('overviewSortDirection', ref('auto'));
 
 watch(sortProp, (_newVal, oldVal) => {
     if (oldVal !== undefined && queryCubeSortDirective.value) {
@@ -866,7 +867,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
 
 // --- Filtered + sorted data ---
 const viewExpanded = ref(false);
-const cubeSearchQuery = ref('');
+const cubeSearchQuery = inject<Ref<string>>('overviewSearchQuery', ref(''));
 const parsedCubeQuery = computed(() => parseQuery(cubeSearchQuery.value));
 const queryCubeSortDirective = computed(() => extractCubeSortDirective(parsedCubeQuery.value.ast));
 

@@ -103,6 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, provide, onMounted, nextTick } from 'vue';
+import type { SortDirection } from './util/SortConfig';
 import { useDetailNavigation } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
 import { presetCollections } from './presets';
@@ -202,6 +203,18 @@ provide('navigateToComparison', navigateToComparison);
 
 const cardTableQuery = ref('');
 provide('cardTableQuery', cardTableQuery);
+
+const cardSortProp = ref('cubeCount');
+const cardSortDirection = ref<SortDirection>('auto');
+provide('cardSortProp', cardSortProp);
+provide('cardSortDirection', cardSortDirection);
+
+const overviewSearchQuery = ref('');
+const overviewSortProp = ref('name');
+const overviewSortDirection = ref<SortDirection>('auto');
+provide('overviewSearchQuery', overviewSearchQuery);
+provide('overviewSortProp', overviewSortProp);
+provide('overviewSortDirection', overviewSortDirection);
 
 const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
 
