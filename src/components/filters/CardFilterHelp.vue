@@ -303,7 +303,7 @@ const FILTER_DOCS: FilterDoc[] = [
     {
         keywords: ['is:', 'not:'],
         description: 'Boolean flags. "not:" is the inverse of "is:".',
-        examples: ['is:universesbeyond', 'not:supplemental', 'is:removal'],
+        examples: ['is:universesbeyond', 'not:supplemental', 'is:removal', 'is:dfc'],
     },
     // ── Sort directives ─────────────────────────────────────────────────────────
     {

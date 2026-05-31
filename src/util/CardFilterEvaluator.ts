@@ -285,6 +285,8 @@ function evaluateFlag(flag: string, row: any): boolean {
             return !!row.isDigital;
         case 'promo':
             return !!row.isPromo;
+        case 'dfc':
+            return ['transform', 'modal_dfc', 'reversible_card'].includes(row.layout);
         // Tag shorthands
         case 'removal':
         case 'draw':
