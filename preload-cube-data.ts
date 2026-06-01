@@ -484,7 +484,7 @@ const batches: Batch[] = [
             '8f2e2e54-88b0-42f7-af64-943760d9d0e7', // Mazes in the Desert
             'c2ca51b2-e33f-4c6d-b63d-974a9d1e7923', // Matt's Chrome Cube
             '8edee7b1-9d95-4007-8a76-512a97911344', // Breya's Scrapyard
-            'undefined', // Kindred Cube
+            'e4810e35-6e75-443b-8215-83d1cb609e8a', // Kindred Cube
             'd5c56175-4e10-4e41-9e4e-08fc01439c4b', // The Legacy of Bloodwake Atoll
             'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's Arena Cube
             'e7e1e793-f89b-4db8-bc2f-9a35db34d76c', // Jank Diver Peasant Cube (Cubecon)
@@ -530,7 +530,7 @@ const batches: Batch[] = [
             'e79fb711-6ead-4736-94d0-904d4773653e', // A.C.E. Synergy Cube
             'a88a0418-0a55-457a-92f9-cdf44d362750', // Bridges Over Troubled Water
             '4284258f-89ec-4dd7-a7c8-6bb46f4829d7', // Bergy's Synergy Cube
-            'undefined', // Stadium Stampede
+            '0e2e86be-6674-4e69-be38-6a3ba63c0a93', // Stadium Stampede
             '555f0bbc-c056-4c2f-b103-106bcfddc152', // The Promised Land CubeCon Edition: An Oasis Cube
             '8f18005d-6573-4520-b437-93faf6cc8311', // GhostBox
             '61483627-042e-4a6c-b1ba-5aae1896d3d1', // The Mono Red Cube
@@ -657,7 +657,7 @@ const batches: Batch[] = [
             '8f2e2e54-88b0-42f7-af64-943760d9d0e7', // Mazes in the Desert
             'c2ca51b2-e33f-4c6d-b63d-974a9d1e7923', // Matt's Chrome Cube
             '8edee7b1-9d95-4007-8a76-512a97911344', // Breya's Scrapyard
-            'undefined', // Kindred Cube
+            'e4810e35-6e75-443b-8215-83d1cb609e8a', // Kindred Cube
             'd5c56175-4e10-4e41-9e4e-08fc01439c4b', // The Legacy of Bloodwake Atoll
             'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's Arena Cube
             'e7e1e793-f89b-4db8-bc2f-9a35db34d76c', // Jank Diver Peasant Cube (Cubecon)
@@ -721,7 +721,7 @@ const batches: Batch[] = [
             'e79fb711-6ead-4736-94d0-904d4773653e', // A.C.E. Synergy Cube
             'a88a0418-0a55-457a-92f9-cdf44d362750', // Bridges Over Troubled Water
             '4284258f-89ec-4dd7-a7c8-6bb46f4829d7', // Bergy's Synergy Cube
-            'undefined', // Stadium Stampede
+            '0e2e86be-6674-4e69-be38-6a3ba63c0a93', // Stadium Stampede
             '555f0bbc-c056-4c2f-b103-106bcfddc152', // The Promised Land CubeCon Edition: An Oasis Cube
             '8f18005d-6573-4520-b437-93faf6cc8311', // GhostBox
             '61483627-042e-4a6c-b1ba-5aae1896d3d1', // The Mono Red Cube
