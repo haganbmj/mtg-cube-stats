@@ -437,6 +437,7 @@ const batches: Batch[] = [
             '6413e9038d5d8938753c40ac', // Echoes of Creation
             '17fa4f29-ad19-4eb4-94cf-525d2697f082', // Enchanted Evening
             '37475a24-8f7d-448e-b562-1404e42f390d', // THE FLOOR IS LAVA
+            '68c09094-c473-47cd-893b-e9d8a3d66fbe', // I Loot The Body
             '5a1d3ff2-3eec-40c0-849c-e19de60305ae', // Innistrad to Eldritch Moon 2011-2016 Golden Age Standard Cube
             'aefb5841-8654-48fc-9b02-ba5062a651cd', // The Mardube
             '6122a60ae66c4a105041808a', // Old Border Foil Cube
@@ -451,7 +452,6 @@ const batches: Batch[] = [
             '077a945b-f5b0-403c-8900-27bfda429257', // The Vintage Cube Retirement Home
             'f78dab79-4c6d-4da7-9834-85c7eed380a8', // Vistas Unventured
             'bd9bfd7d-12a1-4442-9b20-5ffee6e8d7ce', // World Championship Museum (96-04)
-            '37475a24-8f7d-448e-b562-1404e42f390d', // THE FLOOR IS LAVA
         ],
     },
     {
@@ -535,7 +535,7 @@ const batches: Batch[] = [
             '8f18005d-6573-4520-b437-93faf6cc8311', // GhostBox
             '61483627-042e-4a6c-b1ba-5aae1896d3d1', // The Mono Red Cube
             '95e54429-d20a-43e8-accc-806f20890123', // The Monored Cube, by WOTC Game Designer bsweitz
-            '4c478d44-5c46-4abf-8354-1bc316e66884', // Synergy Cube
+            '4c478d44-5c46-4abf-8354-1bc316e66884', // Synergy Cube (Jeffisepic)
             'b28a6704-9917-4baa-9979-eb2c825bbef2', // Reading The Card Explains The Card
             '4cf0a6c4-3d4f-42e7-af9e-ff24daf49bd4', // Life, Death, and Undeath
 
@@ -611,7 +611,7 @@ const batches: Batch[] = [
             '42387891-39c3-4eef-852f-17cb6ee7c52f', // Truly Maddening Tempo
             'fb3d87fd-0efa-4391-82d0-461ae9ad3476', // The Star Field
             'b078c2c7-9d47-4b21-ab8e-261e7185d7ef', // What does it cost?
-            '4c478d44-5c46-4abf-8354-1bc316e66884', // Synergy Cube
+            '91add4db-5356-4a1b-bcee-f51f2b2196f6', // Synergy Cube (AColonyOfAnts)
             '3029bb6c-7b67-4f02-ad8b-e298b2cfa721', // Arcbound Cube
             '3b63f9b4-99b1-41f0-ab05-b3dc7850c9c1', // Like Tears in Rain
             '2bc8ff2c-228c-4660-8d7a-b21e53695459', // Nefarious
@@ -726,7 +726,7 @@ const batches: Batch[] = [
             '8f18005d-6573-4520-b437-93faf6cc8311', // GhostBox
             '61483627-042e-4a6c-b1ba-5aae1896d3d1', // The Mono Red Cube
             '95e54429-d20a-43e8-accc-806f20890123', // The Monored Cube, by WOTC Game Designer bsweitz
-            '4c478d44-5c46-4abf-8354-1bc316e66884', // Synergy Cube
+            '4c478d44-5c46-4abf-8354-1bc316e66884', // Synergy Cube (Jeffisepic)
             'b28a6704-9917-4baa-9979-eb2c825bbef2', // Reading The Card Explains The Card
             '4cf0a6c4-3d4f-42e7-af9e-ff24daf49bd4', // Life, Death, and Undeath
         ]
@@ -832,7 +832,7 @@ const batches: Batch[] = [
             '42387891-39c3-4eef-852f-17cb6ee7c52f', // Truly Maddening Tempo
             'fb3d87fd-0efa-4391-82d0-461ae9ad3476', // The Star Field
             'b078c2c7-9d47-4b21-ab8e-261e7185d7ef', // What does it cost?
-            '4c478d44-5c46-4abf-8354-1bc316e66884', // Synergy Cube
+            '91add4db-5356-4a1b-bcee-f51f2b2196f6', // Synergy Cube (AColonyOfAnts)
             '3029bb6c-7b67-4f02-ad8b-e298b2cfa721', // Arcbound Cube
             '3b63f9b4-99b1-41f0-ab05-b3dc7850c9c1', // Like Tears in Rain
             '2bc8ff2c-228c-4660-8d7a-b21e53695459', // Nefarious
