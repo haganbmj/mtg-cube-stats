@@ -24,6 +24,7 @@ const CUBE_KEYWORD_ALIASES: Record<string, string> = {
     // Category
     category: 'category',
     cat: 'category',
+    cubecategory: 'category',
     // Date modified
     modified: 'modified',
     date: 'modified',
