@@ -64,6 +64,7 @@ jobs:
           path: |
             data/default-cards.json
             data/flavor-words.json
+            data/sets.json
             data/tagger-data.json
             data/cubecobra-card-stats.json
           key: scryfall-json-${{ github.run_id }}
@@ -88,6 +89,7 @@ jobs:
           path: |
             data/default-cards.json
             data/flavor-words.json
+            data/sets.json
             data/tagger-data.json
             data/cubecobra-card-stats.json
           key: scryfall-json-${{ github.run_id }}
