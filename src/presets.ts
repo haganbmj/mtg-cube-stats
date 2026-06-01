@@ -14,4 +14,18 @@ export const presetCollections: PresetCollection[] = [
     { name: 'peasant', label: 'Peasant Cubes' },
     { name: 'boston-cube-party-2026', label: 'Boston Cube Party 2026' },
     { name: 'cubecon2026', label: 'CubeCon 2026' },
+
+    { name: 'cubecon-voting-all', label: 'CubeCon 2026 Voting (All)' },
+
+    { name: 'cubecon-voting-6-1', label: 'CubeCon 2026 Voting (6/1)' },
+    { name: 'cubecon-voting-6-2', label: 'CubeCon 2026 Voting (6/2)' },
+    { name: 'cubecon-voting-6-3', label: 'CubeCon 2026 Voting (6/3)' },
+    { name: 'cubecon-voting-6-4', label: 'CubeCon 2026 Voting (6/4)' },
+    { name: 'cubecon-voting-6-5', label: 'CubeCon 2026 Voting (6/5)' },
+
+    { name: 'cubecon-voting-6-8', label: 'CubeCon 2026 Voting (6/8)' },
+    { name: 'cubecon-voting-6-9', label: 'CubeCon 2026 Voting (6/9)' },
+    { name: 'cubecon-voting-6-10', label: 'CubeCon 2026 Voting (6/10)' },
+    { name: 'cubecon-voting-6-11', label: 'CubeCon 2026 Voting (6/11)' },
+    { name: 'cubecon-voting-6-12', label: 'CubeCon 2026 Voting (6/12)' },
 ];
