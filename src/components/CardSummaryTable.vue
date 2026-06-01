@@ -455,6 +455,7 @@ import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { capitalizeFirstLetter, rarityOrder, getRarityColor, formatPrice, normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
+import { colorComboSortKey } from '../util/CardGrouping';
 import { cardSortProperties, resolveDirection, stripSortTokens } from '../util/SortConfig';
 import type { SortDirection } from '../util/SortConfig';
 import StickyTable from './StickyTable.vue';
@@ -1077,8 +1078,16 @@ const sortedRows = computed(() => {
             return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
         }
 
-        // String-based sorts: effectiveColors, effectiveColorIdentity, typeLine, setCode, setType, layout
-        if (['effectiveColors', 'effectiveColorIdentity', 'typeLine', 'setCode', 'setType', 'layout'].includes(sortKey)) {
+        // Color sorting using Magic's color pie order
+        if (sortKey === 'effectiveColors' || sortKey === 'effectiveColorIdentity') {
+            const aVal = colorComboSortKey(a[sortKey] ?? []);
+            const bVal = colorComboSortKey(b[sortKey] ?? []);
+            if (aVal !== bVal) return (aVal - bVal) * dir;
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
+        }
+
+        // String-based sorts: typeLine, setCode, setType, layout
+        if (['typeLine', 'setCode', 'setType', 'layout'].includes(sortKey)) {
             const aVal = a[sortKey] ?? '';
             const bVal = b[sortKey] ?? '';
             const cmp = castInensitiveSort(String(aVal), String(bVal)) * dir;
