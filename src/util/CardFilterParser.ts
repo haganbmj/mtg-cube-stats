@@ -115,6 +115,7 @@ const KEYWORD_ALIASES: Record<string, string> = {
     game: 'game',
     // Cube membership
     cube: 'cube',
+    in: 'cube',
     // Cube highlight (visual-only; rows are never filtered out)
     highlight: 'highlight',
     // Cube size (card count)
