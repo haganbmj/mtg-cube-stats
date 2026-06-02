@@ -306,6 +306,7 @@
                     :key="tag"
                     size="small"
                     type="info"
+                    :class="{ 'custom-color-tag': getTagColor(tag) }"
                     :color="getTagColor(tag)"
                     disable-transitions
                 >
@@ -319,6 +320,7 @@
                 v-if="row.minRarity"
                 size="small"
                 type="info"
+                :class="{ 'custom-color-tag': getRarityColor(row.minRarity) }"
                 :color="getRarityColor(row.minRarity)"
                 disable-transitions
             >{{ capitalizeFirstLetter(row.minRarity) }}</el-tag>
@@ -387,6 +389,7 @@
                     :key="game"
                     size="small"
                     type="info"
+                    :class="{ 'custom-color-tag': getGameTagColor(game) }"
                     :color="getGameTagColor(game)"
                     disable-transitions
                 >
@@ -774,19 +777,19 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
 
 // --- Tag / game display helpers ---
 const tagsMeta = [
-    { value: 'counterspell', color: 'rgba(20, 155, 226, 0.3)' },
-    { value: 'draw', color: 'rgba(30, 144, 255, 0.3)' },
-    { value: 'flicker', color: 'rgba(255, 140, 0, 0.3)' },
-    { value: 'ramp', color: 'rgba(60, 179, 113, 0.3)' },
-    { value: 'removal', color: 'rgba(255, 99, 71, 0.3)' },
-    { value: 'token', color: 'rgba(255, 215, 0, 0.3)' },
-    { value: 'tutor', color: 'rgba(153, 102, 255, 0.3)' },
+    { value: 'counterspell', color: '#1a6e9e' },
+    { value: 'draw', color: '#1c5fb8' },
+    { value: 'flicker', color: '#b36b00' },
+    { value: 'ramp', color: '#2e7d4f' },
+    { value: 'removal', color: '#b33a2a' },
+    { value: 'token', color: '#8a6d00' },
+    { value: 'tutor', color: '#5c3d99' },
 ];
 
 const gamesMeta = [
-    { value: 'paper', color: 'rgba(34, 139, 34, 0.3)' },
-    { value: 'mtgo', color: 'rgba(70, 130, 180, 0.3)' },
-    { value: 'arena', color: 'rgba(218, 112, 214, 0.3)' },
+    { value: 'paper', color: '#1e6b1e' },
+    { value: 'mtgo', color: '#3a6d8c' },
+    { value: 'arena', color: '#7a3d78' },
 ];
 
 const filteredTags = (cardTags: string[]) => {
@@ -794,11 +797,11 @@ const filteredTags = (cardTags: string[]) => {
 };
 
 const getTagColor = (tag: string) => {
-    return tagsMeta.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+    return tagsMeta.find(t => t.value.toLowerCase() === tag.toLowerCase())?.color;
 };
 
 const getGameTagColor = (game: string) => {
-    return gamesMeta.find(g => g.value.toLowerCase() === game.toLowerCase())?.color ?? 'rgba(200, 200, 200, 0.3)';
+    return gamesMeta.find(g => g.value.toLowerCase() === game.toLowerCase())?.color;
 };
 
 const appendFilter = (clause: string) => {
@@ -1491,5 +1494,10 @@ const filteredStats = computed(() => {
 
 .card-image--dimmed {
     opacity: 0.4;
+}
+
+.custom-color-tag {
+    color: #fff !important;
+    border-color: transparent !important;
 }
 </style>

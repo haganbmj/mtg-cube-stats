@@ -9,16 +9,16 @@ export const rarityOrder: Record<string, number> = {
 };
 
 export const rarityColors: Record<string, string> = {
-    common: 'rgba(160, 160, 160, 0.35)',
-    uncommon: 'rgba(130, 185, 210, 0.45)',
-    rare: 'rgba(210, 170, 30, 0.45)',
-    mythic: 'rgba(225, 95, 35, 0.5)',
-    special: 'rgba(175, 80, 210, 0.4)',
-    bonus: 'rgba(175, 80, 210, 0.4)',
+    common: '#5a5a5a',
+    uncommon: '#3a7a94',
+    rare: '#9a7a10',
+    mythic: '#b34510',
+    special: '#7a3d99',
+    bonus: '#7a3d99',
 };
 
-export function getRarityColor(rarity: string): string {
-    return rarityColors[rarity?.toLowerCase()] ?? 'rgba(200, 200, 200, 0.3)';
+export function getRarityColor(rarity: string): string | undefined {
+    return rarityColors[rarity?.toLowerCase()];
 }
 
 export function getNestedProp(obj: any, path: string): any {
