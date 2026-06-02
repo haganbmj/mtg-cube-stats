@@ -59,7 +59,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
-                            <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
+                            <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
                         <el-tab-pane label="About" name="about" :lazy="true">
