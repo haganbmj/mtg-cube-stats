@@ -61,7 +61,7 @@
             <h4 class="help-section-title">Cube filter dropdown</h4>
             <p>
                 The <strong>cube dropdown</strong> next to the search box lets you include or exclude specific loaded cubes using a point-and-click interface.
-                You can also filter by cube name in the text query using <code>cube:&lt;name&gt;</code>.
+                You can also filter by cube name in the text query using <code>cube:&lt;name&gt;</code> (or <code>in:&lt;name&gt;</code>).
             </p>
 
             <h4 class="help-section-title">Sorting</h4>
@@ -249,9 +249,9 @@ const FILTER_DOCS: FilterDoc[] = [
     },
     // ── Cube membership ────────────────────────────────────────────────────────
     {
-        keywords: ['cube'],
+        keywords: ['cube', 'in'],
         description: 'Card appears in a loaded cube whose name, key, or short ID contains the text.',
-        examples: ['cube:vintage', 'cube:peasant'],
+        examples: ['cube:vintage', 'in:peasant'],
     },
     {
         keywords: ['highlight'],
