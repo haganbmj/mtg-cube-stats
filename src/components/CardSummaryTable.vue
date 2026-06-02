@@ -529,7 +529,7 @@ const cubeOptions = computed(() =>
 
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
-const visualDisplayVisible = bindStorage('card-table-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
+const visualDisplayVisible = bindStorage('card-table-display-mode-visual', (v) => typeof v === 'boolean' ? v : true);
 const viewExpanded = ref(false);
 
 const sortProp = inject<Ref<string>>('cardSortProp', ref('cubeCount'));
