@@ -27,7 +27,10 @@
                             :key="id"
                             :label="cube.name"
                             :value="id"
-                        />
+                        >
+                            <span>{{ cube.name }}</span>
+                            <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                        </el-option>
                     </el-select>
                 </div>
                 <el-button :icon="Sort" @click="swapCubes" title="Swap cubes" />
@@ -46,7 +49,10 @@
                             :key="id"
                             :label="cube.name"
                             :value="id"
-                        />
+                        >
+                            <span>{{ cube.name }}</span>
+                            <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                        </el-option>
                     </el-select>
                 </div>
             </div>
