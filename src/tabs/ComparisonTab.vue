@@ -23,7 +23,7 @@
                         style="width: 100%;"
                     >
                         <el-option
-                            v-for="(cube, id) in loadedCubes"
+                            v-for="{ id, cube } in sortedCubeOptions"
                             :key="id"
                             :label="cube.name"
                             :value="id"
@@ -45,7 +45,7 @@
                         style="width: 100%;"
                     >
                         <el-option
-                            v-for="(cube, id) in loadedCubes"
+                            v-for="{ id, cube } in sortedCubeOptions"
                             :key="id"
                             :label="cube.name"
                             :value="id"
@@ -135,6 +135,7 @@ import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
 import { Sort, Hide, BrushFilled } from '@element-plus/icons-vue';
+import { normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
 
@@ -166,6 +167,12 @@ const cubeBId = ref<string>('');
 const loading = ref(false);
 const cubeA = computed(() => cubeAId.value ? props.loadedCubes[cubeAId.value] ?? null : null);
 const cubeB = computed(() => cubeBId.value ? props.loadedCubes[cubeBId.value] ?? null : null);
+
+const sortedCubeOptions = computed(() => {
+    return Object.entries(props.loadedCubes)
+        .map(([id, cube]) => ({ id, cube }))
+        .sort((a, b) => castInensitiveSort(normalizeSortName(a.cube.name), normalizeSortName(b.cube.name)));
+});
 
 // Default to first two cubes when loadedCubes changes
 watch(() => Object.keys(props.loadedCubes), (keys) => {
