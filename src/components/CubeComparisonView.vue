@@ -286,7 +286,7 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
     for (const card of cards) {
         if (getColorColumnId(card) !== colorId) continue;
         if (colorId === 'M') {
-            if (colorComboLabel(card.colors ?? []) === groupLabel) count++;
+            if (colorComboLabel(card.colorIdentity ?? []) === groupLabel) count++;
         } else if (colorId === 'L') {
             if (colorComboLabel(card.colorIdentity ?? []) === groupLabel) count++;
         } else {

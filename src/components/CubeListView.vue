@@ -161,10 +161,10 @@ const columns = computed(() => {
             let groups: { label: string; cards: CubeCard[] }[];
 
             if (def.id === 'M') {
-                // Group multicolored cards by their color pairing (guild/shard/etc.)
+                // Group multicolored cards by their color identity pairing (guild/shard/etc.)
                 const guildBuckets: Record<string, CubeCard[]> = {};
                 for (const card of cards) {
-                    const label = colorComboLabel(card.colors ?? []);
+                    const label = colorComboLabel(card.colorIdentity ?? []);
                     if (!guildBuckets[label]) guildBuckets[label] = [];
                     guildBuckets[label].push(card);
                 }

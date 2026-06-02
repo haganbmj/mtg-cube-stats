@@ -91,7 +91,7 @@ export interface ColorColumn {
 
 export function getColorColumnId(card: CubeCard): string {
     if (card.primaryType === 'Land') return 'L';
-    const colors = card.colors ?? [];
+    const colors = card.colorIdentity ?? [];
     if (colors.length > 1) return 'M';
     if (colors.length === 0) return 'C';
     return colors[0];
@@ -130,10 +130,10 @@ export function groupCardsByColorAndType(cards: CubeCard[]): ColorColumn[] {
             let groups: CardGroup[];
 
             if (def.id === 'M') {
-                // Group multicolored cards by their color pairing (guild/shard/etc.)
+                // Group multicolored cards by their color identity pairing (guild/shard/etc.)
                 const guildBuckets: Record<string, CubeCard[]> = {};
                 for (const card of colCards) {
-                    const label = colorComboLabel(card.colors ?? []);
+                    const label = colorComboLabel(card.colorIdentity ?? []);
                     if (!guildBuckets[label]) guildBuckets[label] = [];
                     guildBuckets[label].push(card);
                 }
