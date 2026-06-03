@@ -614,7 +614,7 @@ const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new 
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
-    await props.addCube(addCubeForm.cubeId);
+    await props.addCube(addCubeForm.cubeId, { refresh: true });
     addCubeForm.cubeId = '';
     addCubeForm.loading = false;
 };
