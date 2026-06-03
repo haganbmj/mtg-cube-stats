@@ -12,7 +12,7 @@
             <div v-if="activeCube" class="cube-dialog-header">
                 <el-image :src="activeCube.thumbnail" fit="contain" class="cube-dialog-image" />
                 <div class="cube-dialog-title-block">
-                    <el-link :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank" type="default" underline="never">
+                    <el-link :href="`https://cubecobra.com/cube/about/${activeCube.id}`" target="_blank" type="default" underline="never">
                         <span class="cube-dialog-name">{{ activeCube.name }}</span>
                         <el-icon class="el-icon--right"><Link /></el-icon>
                     </el-link>
@@ -379,7 +379,7 @@
                         <el-col :span="24">
                             <div class="external-links">
                                 <el-space wrap>
-                                    <el-button tag="a" :href="`https://cubecobra.com/cube/list/${activeCube.id}`" target="_blank">CubeCobra</el-button>
+                                    <el-button tag="a" :href="`https://cubecobra.com/cube/about/${activeCube.id}`" target="_blank">CubeCobra</el-button>
                                     <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${activeCube.id}`" target="_blank">Hedron Network</el-button>
                                     <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${activeCube.id}`" target="_blank">LuckyPaper Cube Map</el-button>
                                 </el-space>

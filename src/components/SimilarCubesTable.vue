@@ -13,7 +13,7 @@
             sortable
         >
             <template #default="{ row }">
-                <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
             </template>
         </el-table-column>
         <el-table-column

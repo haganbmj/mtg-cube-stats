@@ -66,7 +66,7 @@
                     <div class="cube-header">
                         <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/list/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
+                            <el-link :href="`https://cubecobra.com/cube/about/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
                                 <span class="cube-header-name">{{ cubeA.name }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
@@ -83,7 +83,7 @@
                     <div class="cube-header">
                         <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/list/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
+                            <el-link :href="`https://cubecobra.com/cube/about/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
                                 <span class="cube-header-name">{{ cubeB.name }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">

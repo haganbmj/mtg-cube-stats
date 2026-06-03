@@ -200,7 +200,7 @@
                             <el-row direction="horizontal">
                                 <el-col :span="16">
                                     <el-tooltip :content="`Owner: ${cube.owner}`" :enterable="false" placement="top" :hide-after="50">
-                                        <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
+                                        <el-link :href="`https://cubecobra.com/cube/about/${cube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
                                     </el-tooltip>
                                 </el-col>
                                 <el-col :span="8">
@@ -218,7 +218,7 @@
                             <el-row direction="horizontal">
                                 <el-col :span="16">
                                     <el-tooltip :content="`Owner: ${cube.owner}`" :enterable="false" placement="top" :hide-after="50">
-                                        <el-link :href="`https://cubecobra.com/cube/list/${cube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
+                                        <el-link :href="`https://cubecobra.com/cube/about/${cube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
                                     </el-tooltip>
                                 </el-col>
                                 <el-col :span="8">

@@ -300,7 +300,7 @@
 
             <template #cell-name="{ row }">
                 <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                <el-link :href="`https://cubecobra.com/cube/list/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
             </template>
 
             <template #cell-owner="{ row }">
