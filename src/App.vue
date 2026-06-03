@@ -497,7 +497,7 @@ const removeCollection = (name: string) => {
     userCollections.value = userCollections.value.filter(c => c.name !== name);
 };
 
-const addCube = async (cubeId: string) => {
+const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean } = {}) => {
     // Attempt to take just the Cube ID based on multiple possible input formats.
     const input = cubeId.split('?')[0].trim();
     const [ id ] = input.match(/([^\/]+)\/?$/);
@@ -514,7 +514,7 @@ const addCube = async (cubeId: string) => {
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
-                if (isStale(cached)) {
+                if (refresh || isStale(cached)) {
                     backgroundRefreshCube(cached.id);
                 }
             } else {
