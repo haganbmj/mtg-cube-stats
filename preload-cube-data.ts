@@ -429,6 +429,7 @@ const batches: Batch[] = [
             '43684f97-93c5-4ef3-95e8-8a8095859232', // The Absolute Junk Cube (Abzan)
             'b6ce3845-d40c-4b34-9352-d003dde0e670', // Alpha Reimagined
             '1efd75a8-91de-498c-b3ee-24df7bde3a38', // Alternate History Powered Cube
+            '5fc9e578bada5f7f15feb582', // aquaone Powered Cube
             '015d501b-a03f-4767-9c7e-5ba667433644', // The Bearclaw Changeling Cube
             'dd8976ec-160b-4bfe-af4f-24e71976967a', // Breaking the Oath Cube
             '6400c8c11b98ce50ca72c39f', // The Chicago Cube
