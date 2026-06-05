@@ -86,6 +86,7 @@
         :element-loading-text="loadingText"
         element-loading-custom-class="overview-loading"
     >
+        <PresetHeader :preset="props.activePreset" />
         <div class="overview-toolbar-row-1">
             <div class="overview-search-input">
                 <CubeSearchInput v-model="cubeSearchQuery" />
@@ -493,6 +494,7 @@ import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 import StatCmpIndicator from '../components/StatCmpIndicator.vue';
+import PresetHeader from '../components/PresetHeader.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
 
 const props = defineProps({
@@ -550,6 +552,10 @@ const props = defineProps({
     },
     peerStats: {
         type: Object as () => Record<string, { mean: number; stddev: number }> | null,
+        default: null,
+    },
+    activePreset: {
+        type: Object as () => import('../presets').PresetCollection | null,
         default: null,
     },
 });
