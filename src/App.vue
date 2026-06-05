@@ -39,11 +39,12 @@
                                 :removeCollection="removeCollection"
                                 :loadingProgress="loadingProgress"
                                 :peerStats="peerStats"
+                                :activePreset="activePreset"
                             />
                         </el-tab-pane>
 
                         <el-tab-pane label="Infographic" name="infographic" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
+                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" :activePreset="activePreset" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Statistics" name="statistics" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
@@ -166,6 +167,11 @@ const activePresetName = ref<string | null>(null);
 // Stores the original set of cube IDs from the loaded preset, used to compute
 // add/remove deltas for URL serialization.
 const presetBaseIds = ref<Set<string>>(new Set());
+
+const activePreset = computed(() => {
+    if (!activePresetName.value) return null;
+    return presetCollections.find(p => p.name === activePresetName.value) ?? null;
+});
 
 const activeTab = ref('overview');
 

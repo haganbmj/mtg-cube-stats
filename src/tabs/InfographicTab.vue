@@ -16,6 +16,7 @@
 
         <!-- Normal content -->
         <template v-else>
+            <PresetHeader :preset="props.activePreset" />
             <el-row :gutter="20" class="stats-cards">
                 <!-- Basic Stats -->
                 <el-col :span="6" :xs="12" :sm="8" :md="6">
@@ -413,6 +414,7 @@ import { computed, ref, inject } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { getSetName } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
+import PresetHeader from '../components/PresetHeader.vue';
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
@@ -436,6 +438,10 @@ const props = defineProps({
     },
     loadingProgress: {
         type: Object as () => { active: boolean; loaded: number; total: number } | null,
+        default: null,
+    },
+    activePreset: {
+        type: Object as () => import('../presets').PresetCollection | null,
         default: null,
     },
 });
@@ -754,7 +760,6 @@ const lowestRarityScoreCube = computed(() => {
 .infographic {
     max-width: 1500px;
     margin: 0 auto;
-    padding: 20px 0;
 }
 
 .stats-cards {
