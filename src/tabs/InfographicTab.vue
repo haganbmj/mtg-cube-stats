@@ -760,7 +760,6 @@ const lowestRarityScoreCube = computed(() => {
 .infographic {
     max-width: 1500px;
     margin: 0 auto;
-    padding: 20px 0;
 }
 
 .stats-cards {
