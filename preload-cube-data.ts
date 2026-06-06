@@ -453,10 +453,15 @@ const batches: Batch[] = [
             '077a945b-f5b0-403c-8900-27bfda429257', // The Vintage Cube Retirement Home
             'f78dab79-4c6d-4da7-9834-85c7eed380a8', // Vistas Unventured
             'bd9bfd7d-12a1-4442-9b20-5ffee6e8d7ce', // World Championship Museum (96-04)
+            
+            'd167470c-b7ba-4fac-b9a1-2ed599357d54', // Prismatic Wilds
             'b2c27903-e5ca-45a7-b264-2239c18217cb', // Esper Cube
+            
             '6c078fb9-5559-4296-a57b-5d86ed19ae90', // HeatherCube
             'd5c56175-4e10-4e41-9e4e-08fc01439c4b', // The Legacy of Bloodwake Atoll
-            'd167470c-b7ba-4fac-b9a1-2ed599357d54', // Prismatic Wilds
+            
+            '9b10cb19-6018-4f14-8682-1a4e38d9d526', // The Pit
+            '0fb014f6-3fe1-486c-9cfb-81a78053208d', // How Bazaar, How Bazaar
         ],
     },
     {
