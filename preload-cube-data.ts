@@ -462,6 +462,12 @@ const batches: Batch[] = [
             
             '9b10cb19-6018-4f14-8682-1a4e38d9d526', // The Pit
             '0fb014f6-3fe1-486c-9cfb-81a78053208d', // How Bazaar, How Bazaar
+
+            'ce678ae4-ed17-41fc-88c8-b6c66e305c0b', // The Exile Files
+            'e4f78fea-edfe-4134-af6c-30878142e035', // Death By Ten Cuts
+
+            'a88a0418-0a55-457a-92f9-cdf44d362750', // Bridges Over Troubled Water
+            '1732d8d0-6803-4d60-8680-3a8e0f05a664', // GUT
         ],
     },
     {
