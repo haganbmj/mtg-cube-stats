@@ -192,7 +192,7 @@ watch(() => props.comparePair, (pair) => {
         cubeAId.value = pair.cubeAId;
         cubeBId.value = pair.cubeBId;
     }
-});
+}, { immediate: true });
 
 // Emit selection changes back to parent for URL sync
 watch([cubeAId, cubeBId], ([a, b]) => {
