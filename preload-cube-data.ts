@@ -139,6 +139,7 @@ const batches: Batch[] = [
             '5dc657d5930245513fdff287', // campervanbeethoven - Uncommon Cube
             'cccf5f35-7800-4135-a52d-1678d9dec978', // Minty - Minty 360 Peasant Cube
             '3f208867-323a-46c9-9fd2-97a9fdfe7100', // nomadmtg - The Limitless Peasant Cube
+            '5f54080fa382126d07a3f2d3', // CivesPDX - Valhalla Peasant Cube 2026
         ],
     },
     {
