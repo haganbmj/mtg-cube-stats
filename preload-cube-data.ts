@@ -469,6 +469,9 @@ const batches: Batch[] = [
 
             'a88a0418-0a55-457a-92f9-cdf44d362750', // Bridges Over Troubled Water
             '1732d8d0-6803-4d60-8680-3a8e0f05a664', // GUT
+
+            '81a7639f-fe0f-4ad2-9bbd-2f3dc35cf484', // 1UP Cube
+            '630291c300eb860734853b05', // Clean Evergreen
         ],
     },
     {
