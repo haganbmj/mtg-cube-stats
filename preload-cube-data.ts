@@ -83,7 +83,7 @@ const batches: Batch[] = [
             '5e4fec00b2fc055a2a149986', // WasherDryer - Peasant Cube
             'f0a3ee59-d86b-4449-a8af-a90ed977089a', // Shrimp72 - Shrimp Cube (Peasant)
             '5f02e8171a314e101892d630', // resporius - Resporius's Peasant Cube
-            'a02e4e2c-b523-4ccc-b12c-d278d601135c', // SHRIKE - Peasant+ 2025
+            'a02e4e2c-b523-4ccc-b12c-d278d601135c', // SHRIKE - Peasant+ 2026
             '768c2165-e9d7-4485-9a4e-d7ce0754303b', // eklug - C/Ube
             '5dc5a6af83065f5e62dd3e35', // RosencrantzDies - The Elysian Cube
             '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube (old)
@@ -472,6 +472,18 @@ const batches: Batch[] = [
 
             '81a7639f-fe0f-4ad2-9bbd-2f3dc35cf484', // 1UP Cube
             '630291c300eb860734853b05', // Clean Evergreen
+
+            '5fca9a5abada5f7f150c8c2e', // Hackett Cube
+            '5d893e44e9d4421b2dd8ff45', // The Endless Cycle
+
+            'bdd22c80-e14b-48aa-b7aa-3122d0dd1ebd', // Cube Save America
+            '71a6c512-0d90-4801-a0fc-5864f5d468fb', // Tiny Axe
+
+            'e353934d-cfe8-4eb2-90f5-6e6688b86ebb', // The Trading Post Cube
+            '7ee389d9-61c7-45ab-9078-97ebfe2e9d9a', // Good Clean Magic
+
+            '3b63f9b4-99b1-41f0-ab05-b3dc7850c9c1', // Like Tears in Rain
+            '5ee84f3e7c9901100bc212d1', // Fifteen Card Highlander
         ],
     },
     {
