@@ -45,7 +45,7 @@
     "happy-dom": "^20.9.0",
     "sass": "^1.99.0",
     "stream-chain": "^4.2.5",
-    "stream-json": "^3.0.0",
+    "stream-json": "^3.4.0",
     "tsx": "^4.22.3",
     "typescript-eslint": "^8.59.3",
     "vite": "8.0.16",
