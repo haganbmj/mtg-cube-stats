@@ -83,7 +83,7 @@ const batches: Batch[] = [
             '5e4fec00b2fc055a2a149986', // WasherDryer - Peasant Cube
             'f0a3ee59-d86b-4449-a8af-a90ed977089a', // Shrimp72 - Shrimp Cube (Peasant)
             '5f02e8171a314e101892d630', // resporius - Resporius's Peasant Cube
-            '899cecd6-78cd-4c8f-a3df-ae08244e8de7', // SHRIKE - Peasant+ 2025
+            'a02e4e2c-b523-4ccc-b12c-d278d601135c', // SHRIKE - Peasant+ 2025
             '768c2165-e9d7-4485-9a4e-d7ce0754303b', // eklug - C/Ube
             '5dc5a6af83065f5e62dd3e35', // RosencrantzDies - The Elysian Cube
             '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube (old)
@@ -454,13 +454,13 @@ const batches: Batch[] = [
             '077a945b-f5b0-403c-8900-27bfda429257', // The Vintage Cube Retirement Home
             'f78dab79-4c6d-4da7-9834-85c7eed380a8', // Vistas Unventured
             'bd9bfd7d-12a1-4442-9b20-5ffee6e8d7ce', // World Championship Museum (96-04)
-            
+
             'd167470c-b7ba-4fac-b9a1-2ed599357d54', // Prismatic Wilds
             'b2c27903-e5ca-45a7-b264-2239c18217cb', // Esper Cube
-            
+
             '6c078fb9-5559-4296-a57b-5d86ed19ae90', // HeatherCube
             'd5c56175-4e10-4e41-9e4e-08fc01439c4b', // The Legacy of Bloodwake Atoll
-            
+
             '9b10cb19-6018-4f14-8682-1a4e38d9d526', // The Pit
             '0fb014f6-3fe1-486c-9cfb-81a78053208d', // How Bazaar, How Bazaar
 
