@@ -72,6 +72,17 @@ export const presetCollections: PresetCollection[] = [
     },
 
     {
+        name: 'cubecon-sudden-death-all',
+        label: 'CubeCon 2026 Sudden Death (All)',
+        description: 'Madison, WI - August 26-30, 2026',
+        icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+        links: [
+            { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+            { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+        ],
+    },
+
+    {
         name: 'cubecon-voting-6-1',
         label: 'CubeCon 2026 Voting (6/1)',
         description: 'Madison, WI - August 26-30, 2026',
@@ -165,6 +176,56 @@ export const presetCollections: PresetCollection[] = [
     {
         name: 'cubecon-voting-6-12',
         label: 'CubeCon 2026 Voting (6/12)',
+        description: 'Madison, WI - August 26-30, 2026',
+        icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+        links: [
+            { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+            { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+        ],
+    },
+    {
+        name: 'cubecon-voting-6-15',
+        label: 'CubeCon 2026 Voting (6/15)',
+        description: 'Madison, WI - August 26-30, 2026',
+        icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+        links: [
+            { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+            { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+        ],
+    },
+    {
+        name: 'cubecon-voting-6-16',
+        label: 'CubeCon 2026 Voting (6/16)',
+        description: 'Madison, WI - August 26-30, 2026',
+        icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+        links: [
+            { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+            { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+        ],
+    },
+    {
+        name: 'cubecon-voting-6-17',
+        label: 'CubeCon 2026 Voting (6/17)',
+        description: 'Madison, WI - August 26-30, 2026',
+        icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+        links: [
+            { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+            { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+        ],
+    },
+    {
+        name: 'cubecon-voting-6-18',
+        label: 'CubeCon 2026 Voting (6/18)',
+        description: 'Madison, WI - August 26-30, 2026',
+        icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+        links: [
+            { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+            { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+        ],
+    },
+    {
+        name: 'cubecon-voting-6-19',
+        label: 'CubeCon 2026 Voting (6/19)',
         description: 'Madison, WI - August 26-30, 2026',
         icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
         links: [
