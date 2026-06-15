@@ -84,7 +84,7 @@ export const presetCollections: PresetCollection[] = [
 
     {
         name: 'cubecon-voting-6-15',
-        label: 'CubeCon 2026 Voting (6/15)',
+        label: 'CubeCon 2026 Sudden Death (Mon 6/15)',
         description: 'Madison, WI - August 26-30, 2026',
         icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
         links: [
@@ -94,7 +94,7 @@ export const presetCollections: PresetCollection[] = [
     },
     {
         name: 'cubecon-voting-6-16',
-        label: 'CubeCon 2026 Voting (6/16)',
+        label: 'CubeCon 2026 Sudden Death (Tue 6/16)',
         description: 'Madison, WI - August 26-30, 2026',
         icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
         links: [
@@ -104,7 +104,7 @@ export const presetCollections: PresetCollection[] = [
     },
     {
         name: 'cubecon-voting-6-17',
-        label: 'CubeCon 2026 Voting (6/17)',
+        label: 'CubeCon 2026 Sudden Death (Wed 6/17)',
         description: 'Madison, WI - August 26-30, 2026',
         icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
         links: [
@@ -114,7 +114,7 @@ export const presetCollections: PresetCollection[] = [
     },
     {
         name: 'cubecon-voting-6-18',
-        label: 'CubeCon 2026 Voting (6/18)',
+        label: 'CubeCon 2026 Sudden Death (Thu 6/18)',
         description: 'Madison, WI - August 26-30, 2026',
         icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
         links: [
@@ -124,7 +124,7 @@ export const presetCollections: PresetCollection[] = [
     },
     {
         name: 'cubecon-voting-6-19',
-        label: 'CubeCon 2026 Voting (6/19)',
+        label: 'CubeCon 2026 Sudden Death (Fri 6/19)',
         description: 'Madison, WI - August 26-30, 2026',
         icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
         links: [
