@@ -321,17 +321,25 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         // ── Array text fields ─────────────────────────────────────────────────
         case 'keyword':
-            if (op !== ':' && op !== '=') return false;
-            return (row.keywords ?? []).some((k: string) => k.toLowerCase() === strVal.toLowerCase());
+            if (op === ':') return (row.keywords ?? []).some((k: string) => k.toLowerCase().includes(strVal.toLowerCase()));
+            if (op === '=') return (row.keywords ?? []).some((k: string) => k.toLowerCase() === strVal.toLowerCase());
+            return false;
 
         case 'tag':
-            if (op !== ':' && op !== '=') return false;
-            return (row.tags ?? []).some((t: string) => t.toLowerCase() === strVal.toLowerCase());
+            if (op === ':') return (row.tags ?? []).some((t: string) => t.toLowerCase().includes(strVal.toLowerCase()));
+            if (op === '=') return (row.tags ?? []).some((t: string) => t.toLowerCase() === strVal.toLowerCase());
+            return false;
 
         // ── Color ─────────────────────────────────────────────────────────────
         case 'color': {
             const wantedColors = parseColorValue(strVal);
             const rowColors: string[] = (row.effectiveColors ?? []).map((c: string) => c.toUpperCase());
+
+            // Numeric value → compare against color count (colorless = 0)
+            if (!isNaN(numVal)) {
+                const colorCount = rowColors.filter(c => c !== 'C').length;
+                return compareValues(colorCount, op, numVal);
+            }
 
             if (op === '=') {
                 // Exact set equality: row must have exactly the wanted colors, no more
@@ -373,6 +381,12 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         case 'coloridentity': {
             const wantedColors = parseColorValue(strVal);
             const rowId: string[] = (row.effectiveColorIdentity ?? []).map((c: string) => c.toUpperCase());
+
+            // Numeric value → compare against color count (colorless = 0)
+            if (!isNaN(numVal)) {
+                const colorCount = rowId.filter(c => c !== 'C').length;
+                return compareValues(colorCount, op, numVal);
+            }
 
             if (op === '=') {
                 if (wantedColors.length !== rowId.length) return false;

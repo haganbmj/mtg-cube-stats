@@ -143,24 +143,24 @@ const FILTER_DOCS: FilterDoc[] = [
     },
     {
         keywords: ['keyword', 'kw'],
-        description: 'Card has a specific keyword ability.',
-        examples: ['kw:flying', 'kw:trample'],
+        description: 'Card has a keyword ability. ":" matches partial text (substring); "=" matches the exact keyword.',
+        examples: ['kw:flash', 'kw=flying', 'kw:trample'],
     },
     {
         keywords: ['tag', 'otag'],
-        description: 'Card has a functional tag from Scryfall Tagger.',
-        examples: ['tag:removal', 'tag:draw', '-tag:ramp'],
+        description: 'Card has a functional tag from Scryfall Tagger. ":" matches partial text (substring); "=" matches the exact tag.',
+        examples: ['tag:removal', 'tag=draw', '-tag:ramp'],
     },
     // ── Color ─────────────────────────────────────────────────────────────────
     {
         keywords: ['color', 'c'],
-        description: 'Card\'s colors. ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset of these colors (includes colorless); "<" = proper subset; ">" = proper superset (these colors plus others).',
-        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c<ur', 'c>r', 'c:azorius', '-c:b'],
+        description: 'Card\'s colors. With color values: ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset (includes colorless); "<" = proper subset; ">" = proper superset. With a number: compares against the color count (colorless = 0).',
+        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c>1', 'c=0', 'c:azorius', '-c:b'],
     },
     {
         keywords: ['identity', 'id'],
-        description: 'Color identity (for Commander). Same color syntax: ":" / ">=" = contains, "=" = exact, "<=" = subset (includes colorless), "<" = proper subset, ">" = proper superset.',
-        examples: ['id:bant', 'id=uw', 'id<=esper', 'id<naya', 'id>r'],
+        description: 'Color identity (for Commander). Same color syntax as color. With a number: compares against the identity color count (colorless = 0).',
+        examples: ['id:bant', 'id=uw', 'id<=esper', 'id>1', 'id=0', 'id<=2'],
     },
     // ── Numeric fields ─────────────────────────────────────────────────────────
     {
