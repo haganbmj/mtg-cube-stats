@@ -692,21 +692,21 @@ const batches: Batch[] = [
             '773dac30-0290-4c10-b140-530dc856d26b', // Adam's Ethical Synergy Cube
             '1daac6ea-813b-464c-8a84-b42d5bfa0345', // The Peasant Signpost Maze
             '4f131833-035d-48a2-bcf7-db23cb3633ee', // Daydreaming
-            'd7da9efa-55fd-422e-973a-e2ad8cbf65df', // MV:1
             'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // The Trinket Cube
-            'f0dd3b67-ddbc-4bc3-a7d0-b600fd0944e2', // Pauper All-Stars
+            'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's Arena Cube
+            'd7da9efa-55fd-422e-973a-e2ad8cbf65df', // MV:1
             '3e1e506d-c1ec-4002-8879-6ea4af066ea1', // One from Everything
             'd5a5344f-7060-4c2a-a861-1d2ace71d673', // Six-Colored Calamity
 
             // 2026 Sudden Death - Friday
-            '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
+            'f0dd3b67-ddbc-4bc3-a7d0-b600fd0944e2', // Pauper All-Stars
             '4cf0a6c4-3d4f-42e7-af9e-ff24daf49bd4', // Life, Death, and Undeath
             'dd921b61-7e3e-4d0c-9f2b-68b879a6110f', // Worship the Gods! A Theros Odyssey
+            '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
             'b059cecd-c525-4d1f-9d22-e75cb767ea40', // Triptych Cube
-            '6622ab33-89cb-40f9-b80b-fe056d9ca5bd', // The Chrome Wars
             'b3298474-c560-46ec-af3c-cf65e1421c78', // Grixis Desert Cube
             'ce8e8ab8-060b-48ef-b051-bb8cdf93a424', // Enchanted Teachings
-            '52e9c0e5-b187-486e-8067-38c6cf6c1ebd', // Bailout Cube: Modernity and Oct 3rd, 2008
+            '6622ab33-89cb-40f9-b80b-fe056d9ca5bd', // The Chrome Wars
         ]
     },
 
@@ -767,9 +767,9 @@ const batches: Batch[] = [
             '773dac30-0290-4c10-b140-530dc856d26b', // Adam's Ethical Synergy Cube
             '1daac6ea-813b-464c-8a84-b42d5bfa0345', // The Peasant Signpost Maze
             '4f131833-035d-48a2-bcf7-db23cb3633ee', // Daydreaming
-            'd7da9efa-55fd-422e-973a-e2ad8cbf65df', // MV:1
             'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // The Trinket Cube
-            'f0dd3b67-ddbc-4bc3-a7d0-b600fd0944e2', // Pauper All-Stars
+            'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's Arena Cube
+            'd7da9efa-55fd-422e-973a-e2ad8cbf65df', // MV:1
             '3e1e506d-c1ec-4002-8879-6ea4af066ea1', // One from Everything
             'd5a5344f-7060-4c2a-a861-1d2ace71d673', // Six-Colored Calamity
         ]
@@ -780,14 +780,14 @@ const batches: Batch[] = [
         shardCount: 2,
         cubes: [
             // 2026 Sudden Death - Friday
-            '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
+            'f0dd3b67-ddbc-4bc3-a7d0-b600fd0944e2', // Pauper All-Stars
             '4cf0a6c4-3d4f-42e7-af9e-ff24daf49bd4', // Life, Death, and Undeath
             'dd921b61-7e3e-4d0c-9f2b-68b879a6110f', // Worship the Gods! A Theros Odyssey
+            '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
             'b059cecd-c525-4d1f-9d22-e75cb767ea40', // Triptych Cube
-            '6622ab33-89cb-40f9-b80b-fe056d9ca5bd', // The Chrome Wars
             'b3298474-c560-46ec-af3c-cf65e1421c78', // Grixis Desert Cube
             'ce8e8ab8-060b-48ef-b051-bb8cdf93a424', // Enchanted Teachings
-            '52e9c0e5-b187-486e-8067-38c6cf6c1ebd', // Bailout Cube: Modernity and Oct 3rd, 2008
+            '6622ab33-89cb-40f9-b80b-fe056d9ca5bd', // The Chrome Wars
         ]
     }
 ];
