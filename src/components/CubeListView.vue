@@ -11,13 +11,35 @@
                 <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
                 <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
             </el-button-group>
+            <el-button-group>
+                <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="List Display" />
+            </el-button-group>
         </div>
         <div class="cube-list-filter-status">
             <div class="cube-list-match-count">
                 <el-text size="small" type="info">Filtered to {{ matchingOracleIds ? `${matchingOracleIds.size} / ${props.cards.length}` : props.cards.length }} cards</el-text>
             </div>
         </div>
-        <div class="cube-list-view">
+        <div v-if="visualDisplayVisible" class="cube-list-image-grid">
+            <div
+                v-for="card in flatCards"
+                :key="card.oracleId"
+                class="cube-list-image-item"
+                :class="{ 'cube-list-image-item--dimmed': filterMode === 'dim' && matchingOracleIds && !matchingOracleIds.has(card.oracleId) }"
+                @click="openCardDetailDialog?.(card.oracleId)"
+            >
+                <el-image
+                    :src="card.urlFront"
+                    fit="contain"
+                    :alt="card.name"
+                    :class="['card-image', card.setCode?.toLowerCase()]"
+                    style="width: 100%; aspect-ratio: 745 / 1040;"
+                    lazy
+                />
+            </div>
+        </div>
+        <div v-else class="cube-list-view">
             <div
                 v-for="col in columns"
                 :key="col.id"
@@ -75,7 +97,7 @@ import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
-import { View, Hide, BrushFilled } from '@element-plus/icons-vue';
+import { Hide, BrushFilled, Grid, List } from '@element-plus/icons-vue';
 import {
     PRIMARY_TYPE_ORDER,
     COLOR_COMBO_NAMES,
@@ -97,6 +119,8 @@ const props = defineProps({
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
 const activeQuery = ref('');
+
+const visualDisplayVisible = bindStorage('cube-list-display-mode-visual', (v) => typeof v === 'boolean' ? v : false);
 
 const filterMode = bindStorage('cube-list-filter-mode', (v) => {
     return v === 'dim' ? 'dim' : 'hide';
@@ -220,6 +244,10 @@ const columns = computed(() => {
             };
         });
 });
+
+const flatCards = computed(() => {
+    return columns.value.flatMap(col => col.groups.flatMap(group => group.cards));
+});
 </script>
 
 <style scoped>
@@ -324,6 +352,29 @@ const columns = computed(() => {
 
 .card-entry--dimmed {
     opacity: 0.3;
+}
+
+.cube-list-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+
+    @media (max-width: 760px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+
+.cube-list-image-item {
+    cursor: pointer;
+
+    &:hover .card-image {
+        opacity: 0.85;
+    }
+}
+
+.cube-list-image-item--dimmed {
+    opacity: 0.4;
 }
 
 .card-name {
