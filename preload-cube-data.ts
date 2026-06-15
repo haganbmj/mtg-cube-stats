@@ -86,7 +86,7 @@ const batches: Batch[] = [
             'a02e4e2c-b523-4ccc-b12c-d278d601135c', // SHRIKE - Peasant+ 2026
             '768c2165-e9d7-4485-9a4e-d7ce0754303b', // eklug - C/Ube
             '5dc5a6af83065f5e62dd3e35', // RosencrantzDies - The Elysian Cube
-            '2c5a6b43-6541-4904-8dad-3ba32b737ea4', // Cryonicity - Camelot Cube (old)
+            'e71197e7-2a49-4cbc-b985-22051958995f', // Cryonicity - Camelot Cube
             '480e729f-55bd-423d-8c38-7ed8fbead377', // Illuminous - Illuminous Peasant 360 UB nonsense
             '5d9fd6df1f2af308d72ddf35', // UlkaMTGN - Ulka's Peasant Cube
             '90d860e8-ab6c-4163-b1fb-19722ac000b5', // UlkaMTGN - Peasant's Past
