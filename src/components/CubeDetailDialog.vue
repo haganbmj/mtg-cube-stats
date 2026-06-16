@@ -385,7 +385,7 @@
                                 </el-space>
                             </div>
                         </el-col>
-                        <el-col :span="24" class="fetched-at-row">
+                        <el-col v-if="isMobile" :span="24" class="fetched-at-row">
                             <el-text tag="small" type="info">
                                 Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
                             </el-text>
@@ -538,7 +538,25 @@
         </template>
 
         <template v-if="!isMobile" #footer>
-            <el-button @click="$emit('close')">Close</el-button>
+            <div class="dialog-footer">
+                <div class="fetched-at-row">
+                    <el-text tag="small" type="info">
+                        Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
+                    </el-text>
+                    <el-button
+                        :icon="Refresh"
+                        size="small"
+                        text
+                        :loading="isRefreshing"
+                        :disabled="isRefreshing"
+                        @click="handleRefresh"
+                        style="margin-left: 8px;"
+                    >
+                        Refresh
+                    </el-button>
+                </div>
+                <el-button @click="$emit('close')">Close</el-button>
+            </div>
         </template>
     </el-dialog>
 </template>
@@ -858,8 +876,17 @@ const tokensTabData = computed(() => {
 }
 
 .fetched-at-row {
+    display: flex;
+    align-items: center;
     padding: 10px;
     padding-top: 4px;
+}
+
+.dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
 
 .tokens-tab {
