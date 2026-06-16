@@ -282,6 +282,25 @@ const toggleExpand = (rowIndex: number) => {
 .sticky-table-wrapper {
     overflow-x: auto;
     overflow-y: clip;
+
+    &::-webkit-scrollbar {
+        height: 12px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--el-fill-color-light);
+        border-radius: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--el-text-color-placeholder);
+        border-radius: 6px;
+        border: 2px solid var(--el-fill-color-light);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--el-text-color-secondary);
+    }
 }
 
 .sticky-table {
