@@ -39,7 +39,11 @@
                 />
             </div>
         </div>
-        <div v-else class="cube-list-view">
+        <div v-else class="cube-list-wrapper">
+            <div ref="topScrollbarRef" class="cube-list-top-scrollbar" @scroll="onTopScroll">
+                <div :style="{ width: scrollContentWidth + 'px', height: '1px' }"></div>
+            </div>
+            <div ref="listViewRef" class="cube-list-view" @scroll="onListScroll">
             <div
                 v-for="col in columns"
                 :key="col.id"
@@ -86,12 +90,13 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue';
+import { ref, computed, inject, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import type { CubeCard } from '../types';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
@@ -248,6 +253,52 @@ const columns = computed(() => {
 const flatCards = computed(() => {
     return columns.value.flatMap(col => col.groups.flatMap(group => group.cards));
 });
+
+// --- Top scrollbar sync ---
+const topScrollbarRef = ref<HTMLElement | null>(null);
+const listViewRef = ref<HTMLElement | null>(null);
+const scrollContentWidth = ref(0);
+let syncing = false;
+
+const updateScrollWidth = () => {
+    if (listViewRef.value) {
+        scrollContentWidth.value = listViewRef.value.scrollWidth;
+    }
+};
+
+const onListScroll = () => {
+    if (syncing) return;
+    syncing = true;
+    if (topScrollbarRef.value && listViewRef.value) {
+        topScrollbarRef.value.scrollLeft = listViewRef.value.scrollLeft;
+    }
+    syncing = false;
+};
+
+const onTopScroll = () => {
+    if (syncing) return;
+    syncing = true;
+    if (listViewRef.value && topScrollbarRef.value) {
+        listViewRef.value.scrollLeft = topScrollbarRef.value.scrollLeft;
+    }
+    syncing = false;
+};
+
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+    nextTick(updateScrollWidth);
+    if (listViewRef.value) {
+        resizeObserver = new ResizeObserver(updateScrollWidth);
+        resizeObserver.observe(listViewRef.value);
+    }
+});
+
+onBeforeUnmount(() => {
+    resizeObserver?.disconnect();
+});
+
+watch(columns, () => nextTick(updateScrollWidth));
 </script>
 
 <style scoped>
@@ -277,11 +328,43 @@ const flatCards = computed(() => {
     margin-bottom: 8px;
 }
 
+.cube-list-wrapper {
+    position: relative;
+}
+
+.cube-list-top-scrollbar,
+.cube-list-view {
+    &::-webkit-scrollbar {
+        height: 12px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--el-fill-color-light);
+        border-radius: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--el-text-color-placeholder);
+        border-radius: 6px;
+        border: 2px solid var(--el-fill-color-light);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--el-text-color-secondary);
+    }
+}
+
+.cube-list-top-scrollbar {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    margin-bottom: 8px;
+}
+
 .cube-list-view {
     display: flex;
     flex-direction: row;
     gap: 8px;
-    overflow-x: auto;
+    overflow-x: scroll;
     align-items: flex-start;
     padding-bottom: 8px;
     min-height: 200px;
