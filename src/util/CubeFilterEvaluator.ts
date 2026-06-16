@@ -368,8 +368,9 @@ function evaluateNode(node: QueryNode, cube: any, ctx: CubeFilterContext): boole
         case 'condition':
             return evaluateCondition(node.keyword, node.op, node.value, cube, ctx);
         case 'name':
-            // Bare word → name substring match
-            return compareStrings(cube.name, ':', String(node.value));
+            // Bare word → name or owner substring match
+            return compareStrings(cube.name, ':', String(node.value))
+                || compareStrings(cube.owner, ':', String(node.value));
         default:
             return true;
     }
