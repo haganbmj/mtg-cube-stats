@@ -1,2 +1,4 @@
 *.json
 !manifests/*.json
+cache/
+generated/
