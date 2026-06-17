@@ -255,6 +255,76 @@ async function phaseAssemble(manifests: Manifest[]) {
     console.log(`\nWrote presets.json with ${presets.length} collections.`);
 }
 
+// --- Phase 3: Prune ---
+
+async function phasePrune(manifests: Manifest[]) {
+    console.log('\n=== Phase 3: Prune ===\n');
+
+    // Collect all cube IDs referenced by any manifest (including dynamic sources)
+    const referencedIds = new Set<string>();
+    for (const manifest of manifests) {
+        const cubeIds = await resolveManifestCubes(manifest);
+        for (const id of cubeIds) {
+            referencedIds.add(id);
+        }
+    }
+
+    // Also include canonical IDs from generated cubes (remapCube may change IDs)
+    // Read the presets.json to get the canonical IDs that were actually written
+    const presetsPath = path.join(GENERATED_DIR, 'presets.json');
+    if (fs.existsSync(presetsPath)) {
+        const presets: PresetCollection[] = JSON.parse(fs.readFileSync(presetsPath, 'utf-8'));
+        for (const preset of presets) {
+            for (const id of Object.keys(preset.cubes)) {
+                referencedIds.add(id);
+            }
+        }
+    }
+
+    // Prune cache/cubes/
+    let cacheRemoved = 0;
+    if (fs.existsSync(CACHE_CUBES_DIR)) {
+        for (const file of fs.readdirSync(CACHE_CUBES_DIR)) {
+            const id = file.replace('.json', '');
+            if (!referencedIds.has(id)) {
+                fs.unlinkSync(path.join(CACHE_CUBES_DIR, file));
+                cacheRemoved++;
+            }
+        }
+    }
+
+    // Prune generated/cubes/
+    let generatedRemoved = 0;
+    if (fs.existsSync(GENERATED_CUBES_DIR)) {
+        for (const file of fs.readdirSync(GENERATED_CUBES_DIR)) {
+            const id = file.replace('.json', '');
+            if (!referencedIds.has(id)) {
+                fs.unlinkSync(path.join(GENERATED_CUBES_DIR, file));
+                generatedRemoved++;
+            }
+        }
+    }
+
+    // Prune generated/similarities/ (remove matrices for manifests that no longer exist)
+    let simRemoved = 0;
+    const manifestNames = new Set(manifests.map(m => m.name));
+    if (fs.existsSync(GENERATED_SIMILARITIES_DIR)) {
+        for (const file of fs.readdirSync(GENERATED_SIMILARITIES_DIR)) {
+            const name = file.replace('.json', '');
+            if (!manifestNames.has(name)) {
+                fs.unlinkSync(path.join(GENERATED_SIMILARITIES_DIR, file));
+                simRemoved++;
+            }
+        }
+    }
+
+    if (cacheRemoved + generatedRemoved + simRemoved > 0) {
+        console.log(`Pruned ${cacheRemoved} cached, ${generatedRemoved} generated cube(s), ${simRemoved} similarity file(s).`);
+    } else {
+        console.log('No orphaned files to prune.');
+    }
+}
+
 // --- Main ---
 
 async function main() {
@@ -271,6 +341,8 @@ async function main() {
         await phaseFetch(manifests);
         await phaseAssemble(manifests);
     }
+
+    await phasePrune(manifests);
 
     console.log('\nDone.');
 }
