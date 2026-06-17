@@ -441,7 +441,7 @@ const props = defineProps({
         default: null,
     },
     activePreset: {
-        type: Object as () => import('../presets').PresetCollection | null,
+        type: Object as () => import('../types').PresetCollection | null,
         default: null,
     },
 });
