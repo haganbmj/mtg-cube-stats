@@ -564,13 +564,6 @@ const loadCollection = async (presetName: string) => {
     try {
         await ensureScryfallInitialized();
 
-        // Load similarity matrix
-        const simKey = `../preloads/generated/similarities/${preset.name}.json`;
-        if (simKey in similarityModules) {
-            const simModule = await similarityModules[simKey]();
-            preloadSimiliarityMatrix(simModule.default);
-        }
-
         // Load each cube: IndexedDB → preload file → CubeCobra fallback
         const results = await Promise.all(cubeEntries.map(async ([id, meta]) => {
             try {
@@ -606,6 +599,13 @@ const loadCollection = async (presetName: string) => {
         const enrichedCubes = Object.fromEntries(
             results.filter((c): c is Cube => c !== null).map(c => [c.id, c]),
         );
+
+        // Load similarity matrix (after cubes are available for versioned cache keys)
+        const simKey = `../preloads/generated/similarities/${preset.name}.json`;
+        if (simKey in similarityModules) {
+            const simModule = await similarityModules[simKey]();
+            preloadSimiliarityMatrix(simModule.default, enrichedCubes);
+        }
 
         console.timeEnd(`Load Collection: ${presetName}`);
 

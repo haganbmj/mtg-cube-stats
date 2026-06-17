@@ -401,24 +401,20 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
     return secondOrderStats;
 }
 
-function similarityScoreKey(keyA: string, keyB: string): string {
-    if (keyA < keyB) {
-        return `${keyA}|${keyB}`;
-    } else {
-        return `${keyB}|${keyA}`;
-    }
+function versionedSimilarityScoreKey(cubeA: Cube, cubeB: Cube): string {
+    const a = `${cubeA.id}@${cubeA.lastModified ?? ''}`;
+    const b = `${cubeB.id}@${cubeB.lastModified ?? ''}`;
+    if (a < b) return `${a}|${b}`;
+    return `${b}|${a}`;
 }
 
 /**
  * FIXME: This doesn't evaluate filtered cards (eg. non-land).
- * FIXME: This also caches based on purely the cube id,
- *  so if the CubeCon static set is loaded then it will lock the evaluations
- *  using those versions of the list even if you add the current ones.
  */
 export const determineCosineSimilarityScore = useMemoize(
     (cubeA: Cube, cubeB: Cube) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
     {
-        getKey: (cubeA: Cube, cubeB: Cube) => similarityScoreKey(cubeA.id, cubeB.id),
+        getKey: (cubeA: Cube, cubeB: Cube) => versionedSimilarityScoreKey(cubeA, cubeB),
     },
 );
 
@@ -471,10 +467,14 @@ export const computeSimilarityMatrix = (cubes: Record<string, Cube>): Similarity
     return result;
 };
 
-export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix): void => {
+export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix, cubes: Record<string, Cube>): void => {
     Object.entries(matrix).forEach(([id, scores]) => {
         Object.entries(scores).forEach(([otherId, score]) => {
-            determineCosineSimilarityScore.cache.set(similarityScoreKey(id, otherId), score);
+            const cubeA = cubes[id];
+            const cubeB = cubes[otherId];
+            if (cubeA && cubeB) {
+                determineCosineSimilarityScore.cache.set(versionedSimilarityScoreKey(cubeA, cubeB), score);
+            }
         });
     });
 };
