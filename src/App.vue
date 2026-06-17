@@ -117,7 +117,7 @@ import { bindStorage } from './util/VueLocalStorage';
 import type { UserCollection, Cube } from './types';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
-import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
+import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
@@ -327,6 +327,7 @@ onHashChange(async (newState) => {
             if (newState.presetRemove.length > 0) {
                 for (const id of newState.presetRemove) {
                     delete loadedCubes.value[id];
+                    removeSimilarityForCube(id, similarityMatrix.value);
                 }
             }
             if (newState.presetAdd.length > 0) {
@@ -353,10 +354,7 @@ const presetComparisonsSelect = ref([...availablePresets].map(label => ({ label,
 
 const userCollections = bindStorage<UserCollection[]>('user-collections', v => Array.isArray(v) ? v : []);
 
-// FIXME: Still getting a double render on this for some reason, but the memoization is absorbing the hit.
-const similarityMatrix = computed(() => {
-    return computeSimilarityMatrix(loadedCubes.value);
-});
+const similarityMatrix = ref<Record<string, Record<string, import('./types').SimilarityScore>>>({});
 
 const getAverageSimilarityScore = (cubeId: string) => {
     const scores = similarityMatrix.value[cubeId] || {};
@@ -434,6 +432,7 @@ const backgroundRefreshCube = async (id: string) => {
         await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
         const enrichedCube = enrichCube(strippedCube);
         loadedCubes.value[enrichedCube.id] = enrichedCube;
+        updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
     } catch (e) {
         console.error(`Background refresh failed for cube: ${id}`, e);
     } finally {
@@ -482,6 +481,8 @@ const addCubes = async (cubeIds: string[]) => {
         }
     };
     await Promise.all(Array.from({ length: 2 }, worker));
+    // Compute full matrix after batch add completes
+    similarityMatrix.value = computeSimilarityMatrix(loadedCubes.value);
     loadingProgress.active = false;
 };
 
@@ -523,6 +524,7 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
                 if (refresh || isStale(cached)) {
                     backgroundRefreshCube(cached.id);
                 }
@@ -537,6 +539,7 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
             }
         } catch (e) {
             console.error("Error loading cube:", e);
@@ -614,6 +617,7 @@ const loadCollection = async (presetName: string) => {
         activePresetName.value = preset.name;
         presetBaseIds.value = new Set(Object.keys(enrichedCubes));
         loadedCubes.value = enrichedCubes;
+        similarityMatrix.value = computeSimilarityMatrix(loadedCubes.value);
         await nextTick();
     } finally {
         loadingProgress.active = false;
@@ -631,12 +635,14 @@ const removeCube = (cubeId: string) => {
         activePresetName.value = null;
     }
     delete loadedCubes.value[cubeId];
+    removeSimilarityForCube(cubeId, similarityMatrix.value);
 };
 
 const clearCubes = () => {
     activePresetName.value = null;
     presetBaseIds.value = new Set();
     loadedCubes.value = {};
+    similarityMatrix.value = {};
 };
 
 const refreshCube = async (id: string) => {
@@ -676,6 +682,7 @@ onMounted(async () => {
             if (hashState.presetRemove.length > 0) {
                 for (const id of hashState.presetRemove) {
                     delete loadedCubes.value[id];
+                    removeSimilarityForCube(id, similarityMatrix.value);
                 }
             }
             if (hashState.presetAdd.length > 0) {

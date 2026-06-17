@@ -467,6 +467,32 @@ export const computeSimilarityMatrix = (cubes: Record<string, Cube>): Similarity
     return result;
 };
 
+/**
+ * Compute similarity scores for a single cube against all others and merge into the existing matrix.
+ */
+export const updateSimilarityForCube = (cubeId: string, cubes: Record<string, Cube>, matrix: SimilarityMatrix): void => {
+    const cube = cubes[cubeId];
+    if (!cube) return;
+    matrix[cubeId] = {};
+    for (const [otherId, otherCube] of Object.entries(cubes)) {
+        if (otherId === cubeId) continue;
+        const score = determineCosineSimilarityScore(cube, otherCube);
+        matrix[cubeId][otherId] = score;
+        if (!matrix[otherId]) matrix[otherId] = {};
+        matrix[otherId][cubeId] = score;
+    }
+};
+
+/**
+ * Remove a cube's entries from the similarity matrix.
+ */
+export const removeSimilarityForCube = (cubeId: string, matrix: SimilarityMatrix): void => {
+    delete matrix[cubeId];
+    for (const scores of Object.values(matrix)) {
+        delete scores[cubeId];
+    }
+};
+
 export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix, cubes: Record<string, Cube>): void => {
     Object.entries(matrix).forEach(([id, scores]) => {
         Object.entries(scores).forEach(([otherId, score]) => {
