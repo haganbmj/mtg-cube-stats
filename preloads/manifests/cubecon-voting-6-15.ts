@@ -1,0 +1,25 @@
+import type { Manifest } from './types';
+
+const manifest: Manifest = {
+    name: 'cubecon-voting-6-15',
+    label: 'CubeCon 2026 Sudden Death (Mon 6/15)',
+    description: 'Madison, WI - August 26-30, 2026',
+    icon: 'https://haganbmj-misc-cube.s3.us-east-2.amazonaws.com/FfWtopWXkAAQ5cS.png',
+    links: [
+        { label: 'Event Website', url: 'https://cubecon.org', type: 'website' },
+        { label: 'Voting', url: 'https://cubecon.org/vote', type: 'voting' },
+    ],
+    fetch: { staleThreshold: '1d', shardCount: 2 },
+    cubes: [
+        '62b52e13-b269-441b-81ed-5f4a7a861e8f', // Combat Cube
+        '6291a0072d25a32206e9e19a', // Good Old Days: The Classic Frame Experience
+        '7e440c69-038a-4dbc-bac6-ca77b0ee4088', // Rakdos Pauper Cube
+        '0e2e86be-6674-4e69-be38-6a3ba63c0a93', // Stadium Stampede
+        '1a06dbf9-f2d9-4d10-bc38-c2955b691b04', // The Epic Experiment Cube
+        '3b5e5b8b-4aee-456f-b0a4-fd1994c31565', // Jank Assembly
+        '045800b1-bac8-4ee1-86a6-9b6b31212d11', // Spooky Black Halloween Graveyard
+        '62b40b50f7573b1c2d86cc75', // Channel Cube
+    ],
+};
+
+export default manifest;

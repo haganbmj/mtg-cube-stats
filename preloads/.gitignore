@@ -1,4 +1,4 @@
 *.json
-!manifests/*.json
+!manifests/
 cache/
 generated/

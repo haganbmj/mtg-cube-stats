@@ -1,0 +1,13 @@
+import type { Manifest } from './types';
+
+const manifest: Manifest = {
+    name: 'wotc',
+    label: 'WotC MTGO/Arena',
+    fetch: { staleThreshold: '1d', shardCount: 4 },
+    cubes: [
+        '5d2cb3f44153591614458e5d', // MTGO Vintage Cube
+        'ef9deff3-c05a-4dc1-a43e-45ad0990e784', // Arena Powered Cube
+    ],
+};
+
+export default manifest;

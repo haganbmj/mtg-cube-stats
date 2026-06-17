@@ -4,6 +4,7 @@ import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions';
 import { getCubeData, fetchTopCubeIds } from './src/util/CubeCobra';
 import type { Cube } from './src/types';
 import type { PresetCollection } from './src/types/presets';
+import type { Manifest } from './preloads/manifests/types';
 
 // --- Configuration ---
 
@@ -23,24 +24,6 @@ const TOP100_IDS_PATH = './preloads/cache/cubecobra-top100-ids.json';
 const args = process.argv.slice(2);
 const fetchOnly = args.includes('--fetch-only');
 const assembleOnly = args.includes('--assemble-only');
-
-// --- Types ---
-
-interface ManifestFetch {
-    staleThreshold: string;
-    shardCount: number;
-    source?: string;
-}
-
-interface Manifest {
-    name: string;
-    label: string;
-    description?: string;
-    icon?: string | null;
-    links?: Array<{ label: string; url: string; type?: string }>;
-    fetch: ManifestFetch | null;
-    cubes: string[];
-}
 
 // --- Helpers ---
 
@@ -64,12 +47,14 @@ function isStale(filePath: string, thresholdMs: number): boolean {
     return (Date.now() - stats.mtimeMs) > thresholdMs;
 }
 
-function loadManifests(): Manifest[] {
-    const files = fs.readdirSync(MANIFESTS_DIR).filter(f => f.endsWith('.json'));
-    return files.map(f => {
-        const content = fs.readFileSync(path.join(MANIFESTS_DIR, f), 'utf-8');
-        return JSON.parse(content) as Manifest;
-    });
+async function loadManifests(): Promise<Manifest[]> {
+    const files = fs.readdirSync(MANIFESTS_DIR).filter(f => f.endsWith('.ts') && f !== 'types.ts');
+    const manifests: Manifest[] = [];
+    for (const f of files) {
+        const mod = await import(path.resolve(MANIFESTS_DIR, f));
+        manifests.push(mod.default as Manifest);
+    }
+    return manifests;
 }
 
 // --- Ensure directories exist ---
@@ -275,7 +260,7 @@ async function phaseAssemble(manifests: Manifest[]) {
 async function main() {
     ensureDirectories();
 
-    const manifests = loadManifests();
+    const manifests = await loadManifests();
     console.log(`Loaded ${manifests.length} manifests from ${MANIFESTS_DIR}`);
 
     if (fetchOnly) {

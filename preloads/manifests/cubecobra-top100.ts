@@ -1,0 +1,16 @@
+import type { Manifest } from './types';
+
+const manifest: Manifest = {
+    name: 'cubecobra-top100',
+    label: 'CubeCobra Top 100',
+    description: 'Top 100 cubes on CubeCobra by popularity.',
+    icon: 'https://avatars.githubusercontent.com/u/28238025?s=48&v=4',
+    links: [
+        { label: 'CubeCobra', url: 'https://cubecobra.com/search?order=pop', type: 'website' },
+    ],
+    fetch: { staleThreshold: '1d', shardCount: 4, source: 'cubecobra-top100' },
+    cubes: [
+    ],
+};
+
+export default manifest;
