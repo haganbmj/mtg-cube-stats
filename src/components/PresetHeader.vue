@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
-import type { PresetCollection, PresetLink } from '../presets';
+import type { PresetCollection, PresetLink } from '../types';
 import { Link, ChatDotRound, EditPen, Ticket, Promotion } from '@element-plus/icons-vue';
 
 const props = defineProps({

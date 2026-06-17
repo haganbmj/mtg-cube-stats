@@ -110,12 +110,14 @@ import { useHashRouter } from './util/useHashRouter';
 import { useDebounceFn } from '@vueuse/core';
 import { useDetailNavigation } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
-import { presetCollections } from './presets';
+import type { PresetCollection } from './types';
+import presetsJson from '../preloads/generated/presets.json';
+const presetCollections: PresetCollection[] = presetsJson as PresetCollection[];
 import { bindStorage } from './util/VueLocalStorage';
 import type { UserCollection, Cube } from './types';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
-import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix } from './util/CubeFunctions';
+import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
@@ -147,12 +149,13 @@ const ensureScryfallInitialized = async () => {
 
 // import.meta.glob captures only files that exist at build time, so the build
 // succeeds even if a preload JSON hasn't been generated yet.
-const availablePreloadModules = import.meta.glob<{ default: any }>('../preloads/cubes-*.json');
+const cubeModules = import.meta.glob<{ default: any }>('../preloads/generated/cubes/*.json');
+const similarityModules = import.meta.glob<{ default: any }>('../preloads/generated/similarities/*.json');
 
-const presetComparisons = Object.fromEntries(
+const availablePresets = new Set(
     presetCollections
-        .filter(preset => `../preloads/cubes-${preset.name}.json` in availablePreloadModules)
-        .map(preset => [preset.label, availablePreloadModules[`../preloads/cubes-${preset.name}.json`]]),
+        .filter(preset => `../preloads/generated/similarities/${preset.name}.json` in similarityModules)
+        .map(preset => preset.label),
 );
 
 const loadedCubes = ref({});
@@ -318,12 +321,13 @@ onHashChange(async (newState) => {
 
     if (newState.preset && newState.preset !== currentPreset) {
         const preset = presetCollections.find(p => p.name === newState.preset);
-        if (preset && preset.label in presetComparisons) {
+        if (preset && availablePresets.has(preset.label)) {
             await loadCollection(preset.label);
             // Apply add/remove deltas on top of the freshly loaded preset
             if (newState.presetRemove.length > 0) {
                 for (const id of newState.presetRemove) {
                     delete loadedCubes.value[id];
+                    removeSimilarityForCube(id, similarityMatrix.value);
                 }
             }
             if (newState.presetAdd.length > 0) {
@@ -346,14 +350,11 @@ onHashChange(async (newState) => {
     }
 });
 
-const presetComparisonsSelect = ref(presetComparisons ? Object.keys(presetComparisons).map(key => ({ label: key, value: key })) : []);
+const presetComparisonsSelect = ref([...availablePresets].map(label => ({ label, value: label })));
 
 const userCollections = bindStorage<UserCollection[]>('user-collections', v => Array.isArray(v) ? v : []);
 
-// FIXME: Still getting a double render on this for some reason, but the memoization is absorbing the hit.
-const similarityMatrix = computed(() => {
-    return computeSimilarityMatrix(loadedCubes.value);
-});
+const similarityMatrix = ref<Record<string, Record<string, import('./types').SimilarityScore>>>({});
 
 const getAverageSimilarityScore = (cubeId: string) => {
     const scores = similarityMatrix.value[cubeId] || {};
@@ -431,6 +432,7 @@ const backgroundRefreshCube = async (id: string) => {
         await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
         const enrichedCube = enrichCube(strippedCube);
         loadedCubes.value[enrichedCube.id] = enrichedCube;
+        updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
     } catch (e) {
         console.error(`Background refresh failed for cube: ${id}`, e);
     } finally {
@@ -479,6 +481,8 @@ const addCubes = async (cubeIds: string[]) => {
         }
     };
     await Promise.all(Array.from({ length: 2 }, worker));
+    // Compute full matrix after batch add completes
+    similarityMatrix.value = computeSimilarityMatrix(loadedCubes.value);
     loadingProgress.active = false;
 };
 
@@ -520,6 +524,7 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
                 if (refresh || isStale(cached)) {
                     backgroundRefreshCube(cached.id);
                 }
@@ -534,6 +539,7 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
             }
         } catch (e) {
             console.error("Error loading cube:", e);
@@ -545,43 +551,79 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
 };
 
 const loadCollection = async (presetName: string) => {
-    if (presetName in presetComparisons) {
-        console.time(`Render Collection: ${presetName}`);
-        console.time(`Load Collection: ${presetName}`);
+    if (!availablePresets.has(presetName)) return;
 
-        loadingProgress.active = true;
-        loadingProgress.total = 1;
-        loadingProgress.loaded = 0;
+    const preset = presetCollections.find(p => p.label === presetName);
+    if (!preset) return;
 
-        try {
-            await ensureScryfallInitialized();
+    console.time(`Render Collection: ${presetName}`);
+    console.time(`Load Collection: ${presetName}`);
 
-            const cubesModule = await presetComparisons[presetName]();
-            preloadSimiliarityMatrix(cubesModule.default.similarities);
-            const enrichedCubes = Object.fromEntries(Object.entries(cubesModule.default.cubes).map(([id, cube]) => [id, enrichCube(cube)]));
+    const cubeEntries = Object.entries(preset.cubes);
+    loadingProgress.active = true;
+    loadingProgress.total = cubeEntries.length;
+    loadingProgress.loaded = 0;
 
-            // Persist preload cubes to IndexedDB (won't overwrite newer user-refreshed entries)
-            for (const [id, cube] of Object.entries(cubesModule.default.cubes)) {
-                const c = cube as Cube;
-                if (c.fetchedAt) {
-                    setCachedCubeIfNewer(id, c, c.fetchedAt);
+    try {
+        await ensureScryfallInitialized();
+
+        // Load each cube: IndexedDB → preload file → CubeCobra fallback
+        const results = await Promise.all(cubeEntries.map(async ([id, meta]) => {
+            try {
+                // Tier 1: IndexedDB (if newer than preload)
+                const cached = await getCachedCube(id);
+                if (cached && cached.fetchedAt >= meta.fetchedAt) {
+                    return enrichCube(cached.data);
                 }
-            }
 
-            console.timeEnd(`Load Collection: ${presetName}`);
-            // Set the active preset BEFORE updating loadedCubes so the URL watcher
-            // writes ?preset=name rather than serializing the cube IDs.
-            activePresetName.value = presetCollections.find(p => p.label === presetName)?.name ?? null;
-            presetBaseIds.value = new Set(Object.keys(enrichedCubes));
-            loadedCubes.value = enrichedCubes;
-            loadingProgress.loaded = 1;
-            await nextTick();
-        } finally {
-            loadingProgress.active = false;
+                // Tier 2: Preload file
+                const cubeKey = `../preloads/generated/cubes/${id}.json`;
+                if (cubeKey in cubeModules) {
+                    const mod = await cubeModules[cubeKey]();
+                    const cube: Cube = mod.default;
+                    setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
+                    return enrichCube(cube);
+                }
+
+                // Tier 3: Live fetch (fallback)
+                const raw = await getCubeData(id);
+                const fetchedAt = new Date().toISOString();
+                const cube = remapCube(raw, false, fetchedAt);
+                await setCachedCube(id, cube, fetchedAt);
+                return enrichCube(cube);
+            } catch (e) {
+                console.error(`[${id}] Failed to load cube:`, e);
+                return null;
+            } finally {
+                loadingProgress.loaded++;
+            }
+        }));
+
+        const enrichedCubes = Object.fromEntries(
+            results.filter((c): c is Cube => c !== null).map(c => [c.id, c]),
+        );
+
+        // Load similarity matrix (after cubes are available for versioned cache keys)
+        const simKey = `../preloads/generated/similarities/${preset.name}.json`;
+        if (simKey in similarityModules) {
+            const simModule = await similarityModules[simKey]();
+            preloadSimiliarityMatrix(simModule.default, enrichedCubes);
         }
 
-        console.timeEnd(`Render Collection: ${presetName}`);
+        console.timeEnd(`Load Collection: ${presetName}`);
+
+        // Set the active preset BEFORE updating loadedCubes so the URL watcher
+        // writes ?preset=name rather than serializing the cube IDs.
+        activePresetName.value = preset.name;
+        presetBaseIds.value = new Set(Object.keys(enrichedCubes));
+        loadedCubes.value = enrichedCubes;
+        similarityMatrix.value = computeSimilarityMatrix(loadedCubes.value);
+        await nextTick();
+    } finally {
+        loadingProgress.active = false;
     }
+
+    console.timeEnd(`Render Collection: ${presetName}`);
 };
 
 /**
@@ -593,12 +635,14 @@ const removeCube = (cubeId: string) => {
         activePresetName.value = null;
     }
     delete loadedCubes.value[cubeId];
+    removeSimilarityForCube(cubeId, similarityMatrix.value);
 };
 
 const clearCubes = () => {
     activePresetName.value = null;
     presetBaseIds.value = new Set();
     loadedCubes.value = {};
+    similarityMatrix.value = {};
 };
 
 const refreshCube = async (id: string) => {
@@ -632,12 +676,13 @@ onMounted(async () => {
     // Load cubes from URL
     if (hashState.preset) {
         const preset = presetCollections.find(p => p.name === hashState.preset);
-        if (preset && preset.label in presetComparisons) {
+        if (preset && availablePresets.has(preset.label)) {
             await loadCollection(preset.label);
             // Apply add/remove deltas on top of the preset
             if (hashState.presetRemove.length > 0) {
                 for (const id of hashState.presetRemove) {
                     delete loadedCubes.value[id];
+                    removeSimilarityForCube(id, similarityMatrix.value);
                 }
             }
             if (hashState.presetAdd.length > 0) {

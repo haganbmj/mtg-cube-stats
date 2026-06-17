@@ -401,24 +401,20 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
     return secondOrderStats;
 }
 
-function similarityScoreKey(keyA: string, keyB: string): string {
-    if (keyA < keyB) {
-        return `${keyA}|${keyB}`;
-    } else {
-        return `${keyB}|${keyA}`;
-    }
+function versionedSimilarityScoreKey(cubeA: Cube, cubeB: Cube): string {
+    const a = `${cubeA.id}@${cubeA.lastModified ?? ''}`;
+    const b = `${cubeB.id}@${cubeB.lastModified ?? ''}`;
+    if (a < b) return `${a}|${b}`;
+    return `${b}|${a}`;
 }
 
 /**
  * FIXME: This doesn't evaluate filtered cards (eg. non-land).
- * FIXME: This also caches based on purely the cube id,
- *  so if the CubeCon static set is loaded then it will lock the evaluations
- *  using those versions of the list even if you add the current ones.
  */
 export const determineCosineSimilarityScore = useMemoize(
     (cubeA: Cube, cubeB: Cube) => determineCosineSimilarityScoreInternal(cubeA, cubeB),
     {
-        getKey: (cubeA: Cube, cubeB: Cube) => similarityScoreKey(cubeA.id, cubeB.id),
+        getKey: (cubeA: Cube, cubeB: Cube) => versionedSimilarityScoreKey(cubeA, cubeB),
     },
 );
 
@@ -471,10 +467,40 @@ export const computeSimilarityMatrix = (cubes: Record<string, Cube>): Similarity
     return result;
 };
 
-export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix): void => {
+/**
+ * Compute similarity scores for a single cube against all others and merge into the existing matrix.
+ */
+export const updateSimilarityForCube = (cubeId: string, cubes: Record<string, Cube>, matrix: SimilarityMatrix): void => {
+    const cube = cubes[cubeId];
+    if (!cube) return;
+    matrix[cubeId] = {};
+    for (const [otherId, otherCube] of Object.entries(cubes)) {
+        if (otherId === cubeId) continue;
+        const score = determineCosineSimilarityScore(cube, otherCube);
+        matrix[cubeId][otherId] = score;
+        if (!matrix[otherId]) matrix[otherId] = {};
+        matrix[otherId][cubeId] = score;
+    }
+};
+
+/**
+ * Remove a cube's entries from the similarity matrix.
+ */
+export const removeSimilarityForCube = (cubeId: string, matrix: SimilarityMatrix): void => {
+    delete matrix[cubeId];
+    for (const scores of Object.values(matrix)) {
+        delete scores[cubeId];
+    }
+};
+
+export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix, cubes: Record<string, Cube>): void => {
     Object.entries(matrix).forEach(([id, scores]) => {
         Object.entries(scores).forEach(([otherId, score]) => {
-            determineCosineSimilarityScore.cache.set(similarityScoreKey(id, otherId), score);
+            const cubeA = cubes[id];
+            const cubeB = cubes[otherId];
+            if (cubeA && cubeB) {
+                determineCosineSimilarityScore.cache.set(versionedSimilarityScoreKey(cubeA, cubeB), score);
+            }
         });
     });
 };

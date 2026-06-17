@@ -16,6 +16,8 @@
     "cobra-cards": "tsx download-cubecobra-card-stats.ts",
     "cobra-cards:update": "tsx download-cubecobra-card-stats.ts --update",
     "preload": "tsx preload-cube-data.ts",
+    "preload:fetch": "tsx preload-cube-data.ts --fetch-only",
+    "preload:assemble": "tsx preload-cube-data.ts --assemble-only",
     "test": "vitest"
   },
   "dependencies": {
