@@ -195,7 +195,12 @@ const activeTab = ref('overview');
 const { stack: navigationStack, push: pushDetail, pop: popDetail, closeAll: closeAllDialogs } = useDetailNavigation();
 
 const getCubeRow = (cubeId: string) => {
-    return overviewTableData.value.find(c => c.id === cubeId) || null;
+    const visible = overviewTableData.value.find(c => c.id === cubeId);
+    if (visible) return visible;
+    // Hidden snapshots are excluded from overviewTableData but still need to render in the dialog.
+    const hidden = loadedCubes.value[cubeId];
+    if (!hidden) return null;
+    return { ...hidden, cards: undefined, suffixedCardIds: undefined, avgSimilarityScore: getAverageSimilarityScore(cubeId) };
 };
 const getCubeCards = (cubeId: string) => {
     return loadedCubes.value[cubeId]?.cards || [];

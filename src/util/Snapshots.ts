@@ -2,8 +2,8 @@ import type { Cube } from '../types';
 
 export const SNAPSHOT_KEY_SEPARATOR = '@';
 
-export function isSnapshot(cube: Pick<Cube, 'snapshotDate'>): boolean {
-    return cube.snapshotDate != null;
+export function isSnapshot(cube: Pick<Cube, 'snapshotDate'> | null | undefined): boolean {
+    return cube != null && cube.snapshotDate != null;
 }
 
 export function snapshotKey(baseCubeId: string, snapshotDate: number): string {
