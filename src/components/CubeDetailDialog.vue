@@ -599,15 +599,20 @@
                                                     Modified: {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
                                                 </span>
                                             </el-tooltip>
-                                            <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
+                                            <span v-if="row.diff" class="history-snapshot-diff">
+                                                <span class="diff-added">+{{ row.diff.added }}</span>
+                                                <span class="diff-sep">/</span>
+                                                <span class="diff-removed">&minus;{{ row.diff.removed }}</span>
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="history-snapshot-actions">
                                         <el-button
                                             v-if="row.state === 'loaded-visible'"
                                             size="small"
+                                            type="success"
                                             @click="setHidden(row.id, true)"
-                                        >Hide in Overview</el-button>
+                                        >In Overview</el-button>
                                         <el-button
                                             v-else
                                             size="small"
@@ -810,6 +815,30 @@ type HistoryRow = {
     state: 'loaded-visible' | 'loaded-hidden' | 'cached-only';
     id: string;
     cube: Pick<Cube, 'id' | 'name' | 'thumbnail' | 'baseCubeId' | 'snapshotDate' | 'lastModified' | 'hidden'>;
+    diff: { added: number; removed: number } | null;
+};
+
+const snapshotDiff = (snapshotCards: CubeCard[] | undefined): { added: number; removed: number } | null => {
+    const liveCube = loadedCubesRef.value[baseCubeId.value];
+    if (!liveCube?.cards || !snapshotCards) return null;
+
+    const freq = (cards: CubeCard[]) => {
+        const m = new Map<string, number>();
+        for (const c of cards) m.set(c.oracleId, (m.get(c.oracleId) ?? 0) + 1);
+        return m;
+    };
+    const freqLive = freq(liveCube.cards);
+    const freqSnap = freq(snapshotCards);
+    const allIds = new Set([...freqLive.keys(), ...freqSnap.keys()]);
+    let added = 0;
+    let removed = 0;
+    for (const id of allIds) {
+        const liveCount = freqLive.get(id) ?? 0;
+        const snapCount = freqSnap.get(id) ?? 0;
+        if (liveCount > snapCount) added += liveCount - snapCount;
+        else if (snapCount > liveCount) removed += snapCount - liveCount;
+    }
+    return { added, removed };
 };
 
 const historyRows = computed<HistoryRow[]>(() => {
@@ -824,6 +853,7 @@ const historyRows = computed<HistoryRow[]>(() => {
         state: c.hidden ? 'loaded-hidden' : 'loaded-visible',
         id: c.id,
         cube: c,
+        diff: snapshotDiff(c.cards),
     }));
 
     for (const cached of cachedSnapshots.value) {
@@ -832,6 +862,7 @@ const historyRows = computed<HistoryRow[]>(() => {
                 state: 'cached-only',
                 id: cached.id,
                 cube: cached.data as any,
+                diff: snapshotDiff(cached.data.cards),
             });
         }
     }
@@ -1441,7 +1472,7 @@ const tokensTabData = computed(() => {
 .history-snapshot-sub {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 1em;
     font-size: 12px;
     color: var(--el-text-color-secondary);
     margin-top: 2px;
@@ -1449,6 +1480,25 @@ const tokensTabData = computed(() => {
 
 .history-snapshot-modified {
     font-variant-numeric: tabular-nums;
+}
+
+.history-snapshot-diff {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
+
+.diff-added {
+    color: #67c23a;
+}
+
+.diff-removed {
+    color: #f56c6c;
+}
+
+.diff-sep {
+    color: var(--el-text-color-placeholder);
+    margin: 0 1px;
 }
 
 .history-snapshot-actions {
