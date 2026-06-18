@@ -30,6 +30,11 @@
                             <span class="cube-dialog-snapshot-sep">·</span>
                             <el-link type="primary" underline="never" @click="loadAndOpenCurrentCube" :loading="loadingCurrent">Load current cube</el-link>
                         </template>
+                        <template v-if="activeSnapshotInCubeList !== null">
+                            <span class="cube-dialog-snapshot-sep">·</span>
+                            <el-link v-if="activeSnapshotInCubeList" type="success" underline="never" @click="setHidden(activeCube!.id, true)">In Cube List</el-link>
+                            <el-link v-else type="primary" underline="never" @click="setHidden(activeCube!.id, false)">Show in Cube List</el-link>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -763,6 +768,14 @@ const baseCubeId = computed(() => externalCubeId(activeCube.value ?? { id: '' })
 const currentCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
 
 const loadingCurrent = ref(false);
+
+const activeSnapshotInCubeList = computed(() => {
+    const cube = activeCube.value;
+    if (!cube || !isSnapshot(cube)) return null;
+    const loaded = loadedCubesRef.value[cube.id];
+    if (!loaded) return null;
+    return !loaded.hidden;
+});
 
 const openCurrentCube = () => {
     if (openCubeDetailDialog && currentCubeLoaded.value) {
