@@ -612,11 +612,11 @@
                                             v-if="row.state === 'loaded-visible'"
                                             size="small"
                                             @click="setHidden(row.id, true)"
-                                        >Hide</el-button>
+                                        >Hide in Overview</el-button>
                                         <el-button
-                                            v-else-if="row.state === 'loaded-hidden'"
+                                            v-else
                                             size="small"
-                                            @click="setHidden(row.id, false)"
+                                            @click="showInOverview(row)"
                                         >Show in Overview</el-button>
                                     </div>
                                 </div>
@@ -874,8 +874,16 @@ const loadCustomSnapshot = async () => {
 const setHidden = (id: string, hidden: boolean) => {
     const current = loadedCubesRef.value[id];
     if (!current) return;
-    // Reassign to a new object to trigger Vue's reactive proxy.
     loadedCubesRef.value[id] = { ...current, hidden };
+};
+
+const showInOverview = async (row: HistoryRow) => {
+    if (row.state === 'cached-only' && addSnapshot && row.cube.snapshotDate != null) {
+        await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: false });
+        await refreshCachedSnapshots();
+    } else {
+        setHidden(row.id, false);
+    }
 };
 
 const forget = async (id: string) => {
