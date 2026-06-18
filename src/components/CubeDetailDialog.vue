@@ -3,7 +3,7 @@
         :model-value="visible"
         :modal="modal"
         width="90%"
-        style="max-width: 1500px;"
+        style="max-width: 1900px;"
         top="5vh"
         align-center
         :before-close="() => $emit('close')"
