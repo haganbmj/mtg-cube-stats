@@ -423,7 +423,7 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 
 .cmc-break {
     padding-top: 2px;
-    border-top: 1px solid var(--el-border-color-extra-light);
+    border-top: 1px solid var(--el-border-color);
 }
 
 .card-entry--dimmed {

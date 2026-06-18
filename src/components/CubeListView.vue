@@ -428,7 +428,7 @@ watch(columns, () => nextTick(updateScrollWidth));
 }
 
 .cmc-break {
-    padding-top: 0;
+    padding-top: 2px;
     margin-top: 0;
     border-top: 1px solid var(--el-border-color);
 }
