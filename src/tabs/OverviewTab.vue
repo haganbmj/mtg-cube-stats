@@ -312,9 +312,9 @@
             </template>
 
             <template #cell-lastModified="{ row }">
-                <span :title="row.lastModified ? new Date(row.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' }) : undefined">
-                    {{ fmtDate('lastModified')(row) }}
-                </span>
+                <el-tooltip :content="row.lastModified ? new Date(row.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' }) : ''" placement="top" :hide-after="50" :enterable="false" :disabled="!row.lastModified">
+                    <span>{{ fmtDate('lastModified')(row) }}</span>
+                </el-tooltip>
             </template>
 
             <template #cell-arenaPlayable="{ row }">

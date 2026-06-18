@@ -102,7 +102,9 @@
                                 <span>Cards: <strong>{{ cubeA.stats?.totalCards ?? cubeA.cards.length }}</strong></span>
                                 <span>Avg CMC: <strong>{{ cubeA.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
                                 <span>Avg Elo: <strong>{{ cubeA.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                                <span v-if="cubeA.lastModified" :title="fullTimestamp(cubeA.lastModified)">Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
+                                <el-tooltip v-if="cubeA.lastModified" :content="fullTimestamp(cubeA.lastModified)" placement="top" :hide-after="50" :enterable="false">
+                                    <span>Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
+                                </el-tooltip>
                             </div>
                         </div>
                     </div>
@@ -119,7 +121,9 @@
                                 <span>Cards: <strong>{{ cubeB.stats?.totalCards ?? cubeB.cards.length }}</strong></span>
                                 <span>Avg CMC: <strong>{{ cubeB.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
                                 <span>Avg Elo: <strong>{{ cubeB.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                                <span v-if="cubeB.lastModified" :title="fullTimestamp(cubeB.lastModified)">Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
+                                <el-tooltip v-if="cubeB.lastModified" :content="fullTimestamp(cubeB.lastModified)" placement="top" :hide-after="50" :enterable="false">
+                                    <span>Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
+                                </el-tooltip>
                             </div>
                         </div>
                     </div>
