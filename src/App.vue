@@ -193,8 +193,6 @@ const openCardDetailDialog = (oracleId: string) => pushDetail({ type: 'card', or
 
 provide('openCubeDetailDialog', openCubeDetailDialog);
 provide('openCardDetailDialog', openCardDetailDialog);
-provide('addCube', addCube);
-provide('removeCube', removeCube);
 
 const comparePair = ref<{ cubeAId: string; cubeBId: string } | null>(null);
 const navigateToComparison = (cubeAId: string, cubeBId: string) => {
@@ -730,7 +728,9 @@ const refreshCube = async (id: string) => {
     await backgroundRefreshCube(id);
 };
 provide('refreshCube', refreshCube);
+provide('addCube', addCube);
 provide('addSnapshot', addSnapshot);
+provide('removeCube', removeCube);
 
 onMounted(async () => {
     // Start data initialization in the background without blocking the UI
