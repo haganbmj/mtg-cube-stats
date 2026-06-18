@@ -108,6 +108,8 @@ export interface CubeStats {
 export interface Cube {
   // Basic cube metadata from CubeCobra
   id: string;
+  baseCubeId?: string;     // Present only on snapshots; the canonical CubeCobra cube id
+  snapshotDate?: number;   // Present only on snapshots; ms epoch from changelog.date
   shortId?: string;
   name: string;
   owner: string;
