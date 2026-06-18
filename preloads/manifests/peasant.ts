@@ -85,7 +85,7 @@ const manifest: Manifest = {
         '629004baa478db0ff2c963ff', // The G.O.A.T. Peasant Cube
         'b3436656-0dfa-40d8-a11d-698c7791e9b6', // livethedream - The Peasant + Combat Cube
         '5e26d17463c7ef63a8986401', // Purtagio - To Synergy and Beyond
-        '60345f7e98852d10440afc4b', // cubedraft - Dominaria Peasant Cube
+        // '60345f7e98852d10440afc4b', // cubedraft - Dominaria Peasant Cube --- Deleted?
         '604fd7038858261043aff963', // ArborAxis - Peasant Cube
         '5e78e0ef40eaf0158e593517', // FiniteMTG - Limited as Garfield Intended
         '5ecae527f3c65270129f5a28', // Tiray - Synergy Peasant Cube

@@ -61,6 +61,9 @@ const manifest: Manifest = {
         '7ee389d9-61c7-45ab-9078-97ebfe2e9d9a', // Good Clean Magic
         '3b63f9b4-99b1-41f0-ab05-b3dc7850c9c1', // Like Tears in Rain
         '5ee84f3e7c9901100bc212d1', // Fifteen Card Highlander
+        '0e2e86be-6674-4e69-be38-6a3ba63c0a93', // Stadium Stampede
+        '3b5e5b8b-4aee-456f-b0a4-fd1994c31565', // Jank Assembly
+        '6291a0072d25a32206e9e19a', // Good Old Days: The Classic Frame Experience
     ],
 };
 
