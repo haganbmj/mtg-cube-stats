@@ -121,6 +121,24 @@ export async function pruneStaleEntries(): Promise<void> {
     }
 }
 
+export async function listCachedSnapshots(baseCubeId: string): Promise<CachedCube[]> {
+    const db = await getDb();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const prefix = `${baseCubeId}${SNAPSHOT_KEY_SEPARATOR}`;
+    const matches: CachedCube[] = [];
+    let cursor = await store.openCursor();
+    while (cursor) {
+        const entry = cursor.value as CachedCube;
+        if (entry.id.startsWith(prefix)) {
+            matches.push(entry);
+        }
+        cursor = await cursor.continue();
+    }
+    matches.sort((a, b) => (b.data.snapshotDate ?? 0) - (a.data.snapshotDate ?? 0));
+    return matches;
+}
+
 export async function _resetForTesting(): Promise<void> {
     if (dbPromise) {
         try {

@@ -110,6 +110,13 @@ export interface Cube {
   id: string;
   baseCubeId?: string;     // Present only on snapshots; the canonical CubeCobra cube id
   snapshotDate?: number;   // Present only on snapshots; ms epoch from changelog.date
+  /**
+   * Session-only visibility flag. When true, the cube is excluded from
+   * Overview, Statistics, Cards, Infographic, and similarity peer rankings,
+   * but remains available in the Compare tab and the History tab. Never
+   * persisted to IndexedDB; reapplied from URL state on hydration.
+   */
+  hidden?: boolean;
   shortId?: string;
   name: string;
   owner: string;
