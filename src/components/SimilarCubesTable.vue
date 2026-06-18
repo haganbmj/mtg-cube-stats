@@ -59,6 +59,7 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
+import { displayName } from '../util/Snapshots';
 
 const props = defineProps({
     similarityMatrix: {
@@ -94,7 +95,7 @@ const mostSimilarCubes = (cubeId: string) => {
                 id: entry[0],
                 score: entry[1].cosineSimilarity,
                 intersection: entry[1].insersectionSize,
-                name: otherCube?.name || 'Unknown',
+                name: otherCube ? displayName(otherCube) : 'Unknown',
                 owner: otherCube?.owner || 'Unknown',
                 ownerId: otherCube?.ownerId || '',
                 size: otherCube?.stats?.totalCards || 0,

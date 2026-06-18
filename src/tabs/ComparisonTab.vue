@@ -25,10 +25,10 @@
                         <el-option
                             v-for="{ id, cube } in sortedCubeOptions"
                             :key="id"
-                            :label="cube.name"
+                            :label="displayName(cube)"
                             :value="id"
                         >
-                            <span>{{ cube.name }}</span>
+                            <span>{{ displayName(cube) }}</span>
                             <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
                         </el-option>
                     </el-select>
@@ -47,10 +47,10 @@
                         <el-option
                             v-for="{ id, cube } in sortedCubeOptions"
                             :key="id"
-                            :label="cube.name"
+                            :label="displayName(cube)"
                             :value="id"
                         >
-                            <span>{{ cube.name }}</span>
+                            <span>{{ displayName(cube) }}</span>
                             <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
                         </el-option>
                     </el-select>
@@ -67,7 +67,7 @@
                         <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
                             <el-link :href="`https://cubecobra.com/cube/about/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
-                                <span class="cube-header-name">{{ cubeA.name }}</span>
+                                <span class="cube-header-name">{{ displayName(cubeA) }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
                                 <span class="cube-header-owner">{{ cubeA.owner }}</span>
@@ -84,7 +84,7 @@
                         <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
                             <el-link :href="`https://cubecobra.com/cube/about/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
-                                <span class="cube-header-name">{{ cubeB.name }}</span>
+                                <span class="cube-header-name">{{ displayName(cubeB) }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
                                 <span class="cube-header-owner">{{ cubeB.owner }}</span>
@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
 import type { Cube, CubeCard } from '../types';
+import { displayName } from '../util/Snapshots';
 import CubeComparisonView from '../components/CubeComparisonView.vue';
 import CardSearchInput from '../components/filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
