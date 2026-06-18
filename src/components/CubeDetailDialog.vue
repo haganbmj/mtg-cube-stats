@@ -582,7 +582,7 @@
                                         <div class="history-snapshot-sub">
                                             <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
                                             <el-tag v-else-if="row.state === 'loaded-hidden'" type="info" size="small">Loaded · Hidden</el-tag>
-                                            <el-tag v-else type="" size="small">Cached</el-tag>
+                                            <el-tag v-else type="info" size="small">Cached</el-tag>
                                             <span v-if="row.cube.lastModified" class="history-snapshot-modified">
                                                 {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
                                             </span>
