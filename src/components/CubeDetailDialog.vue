@@ -612,17 +612,17 @@
                                             size="small"
                                             type="success"
                                             @click="setHidden(row.id, true)"
-                                        >In Overview</el-button>
+                                        >In Cube List</el-button>
                                         <el-button
                                             v-else
                                             size="small"
                                             @click="showInOverview(row)"
-                                        >Show in Overview</el-button>
+                                        >Show in Cube List</el-button>
                                         <el-button
                                             size="small"
                                             :loading="compareLoadingFor === row.id"
-                                            @click="compareSnapshotWithLive(row)"
-                                        >Compare vs Live</el-button>
+                                            @click="compareSnapshotWithCurrent(row)"
+                                        >Compare vs Current</el-button>
                                     </div>
                                 </div>
                             </div>
@@ -936,7 +936,7 @@ const openSnapshot = async (row: HistoryRow) => {
     openCubeDetailDialog(row.id);
 };
 
-const compareSnapshotWithLive = async (row: HistoryRow) => {
+const compareSnapshotWithCurrent = async (row: HistoryRow) => {
     if (!navigateToComparison || !addCube || !addSnapshot) return;
     compareLoadingFor.value = row.id;
     try {
