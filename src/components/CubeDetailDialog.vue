@@ -594,20 +594,15 @@
                                             <span v-else>{{ displayName(row.cube) }}</span>
                                         </div>
                                         <div class="history-snapshot-sub">
-                                            <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
                                             <el-tooltip v-if="row.cube.lastModified" :content="new Date(row.cube.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' })" placement="top" :hide-after="50" :enterable="false">
                                                 <span class="history-snapshot-modified">
-                                                    {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
+                                                    Modified: {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
                                                 </span>
                                             </el-tooltip>
+                                            <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
                                         </div>
                                     </div>
                                     <div class="history-snapshot-actions">
-                                        <el-button
-                                            size="small"
-                                            :loading="compareLoadingFor === row.id"
-                                            @click="compareSnapshotWithLive(row)"
-                                        >Compare vs Live</el-button>
                                         <el-button
                                             v-if="row.state === 'loaded-visible'"
                                             size="small"
@@ -618,6 +613,11 @@
                                             size="small"
                                             @click="showInOverview(row)"
                                         >Show in Overview</el-button>
+                                        <el-button
+                                            size="small"
+                                            :loading="compareLoadingFor === row.id"
+                                            @click="compareSnapshotWithLive(row)"
+                                        >Compare vs Live</el-button>
                                     </div>
                                 </div>
                             </div>
