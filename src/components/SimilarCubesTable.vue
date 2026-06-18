@@ -85,17 +85,19 @@ const tableData = computed(() => {
 
 const mostSimilarCubes = (cubeId: string) => {
     const scores = props.similarityMatrix[cubeId] || {};
+    const cubeIndex = new Map(props.loadedCubes.map((cube: any) => [cube.id, cube]));
 
     return Object.entries(scores)
+        .filter(([id]) => cubeIndex.has(id))
         .sort((a, b) => b[1] - a[1])
         .map(entry => {
-            const otherCube = props.loadedCubes.filter(cube => cube.id === entry[0])[0];
+            const otherCube = cubeIndex.get(entry[0]);
 
             return {
                 id: entry[0],
                 score: entry[1].cosineSimilarity,
                 intersection: entry[1].insersectionSize,
-                name: otherCube ? displayName(otherCube) : 'Unknown',
+                name: displayName(otherCube),
                 owner: otherCube?.owner || 'Unknown',
                 ownerId: otherCube?.ownerId || '',
                 size: otherCube?.stats?.totalCards || 0,
