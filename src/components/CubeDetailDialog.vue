@@ -571,36 +571,59 @@
                                 <span>Live cube not loaded.</span>
                                 <el-link type="primary" underline="never" :loading="loadingLive" @click="loadAndOpenLiveCube">Load live</el-link>
                             </div>
-                            <div v-if="loadedSnapshots.length === 0" class="history-empty">
-                                No snapshots loaded for this cube yet.
+                            <div v-if="historyRows.length === 0" class="history-empty">
+                                No snapshots yet. Pick a date above to load one.
                             </div>
-                            <div v-for="snap in loadedSnapshots" :key="snap.id" class="history-snapshot-row">
-                                <el-image :src="snap.thumbnail" fit="cover" class="history-snapshot-thumb" />
-                                <span class="history-snapshot-name">{{ displayName(snap) }}</span>
-                                <el-tag v-if="snap.id === activeCube.id" size="small" type="info">viewing</el-tag>
-                                <div class="history-snapshot-actions">
-                                    <el-button
-                                        v-if="snap.id !== activeCube.id"
-                                        size="small"
-                                        @click="openCubeDetailDialog?.(snap.id)"
-                                    >
-                                        Open
-                                    </el-button>
-                                    <el-button
-                                        size="small"
-                                        :loading="compareLoadingFor === snap.id"
-                                        @click="compareWithLive(snap.id)"
-                                    >
-                                        Compare vs. live
-                                    </el-button>
-                                    <el-button
-                                        size="small"
-                                        type="danger"
-                                        plain
-                                        @click="removeCube?.(snap.id)"
-                                    >
-                                        Remove
-                                    </el-button>
+                            <div v-else>
+                                <div v-for="row in historyRows" :key="row.id" class="history-snapshot-row">
+                                    <el-image v-if="row.cube.thumbnail" :src="row.cube.thumbnail" fit="cover" class="history-snapshot-thumb" />
+                                    <div class="history-snapshot-name">
+                                        <div>{{ displayName(row.cube) }}</div>
+                                        <div class="history-snapshot-sub">
+                                            <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
+                                            <el-tag v-else-if="row.state === 'loaded-hidden'" type="info" size="small">Loaded · Hidden</el-tag>
+                                            <el-tag v-else type="" size="small">Cached</el-tag>
+                                            <span v-if="row.cube.lastModified" class="history-snapshot-modified">
+                                                {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="history-snapshot-actions">
+                                        <el-button
+                                            v-if="row.id !== activeCube?.id"
+                                            size="small"
+                                            @click="openSnapshot(row)"
+                                        >Open</el-button>
+                                        <el-button
+                                            size="small"
+                                            :loading="compareLoadingFor === row.id"
+                                            @click="compareSnapshotWithLive(row)"
+                                        >Compare vs Live</el-button>
+                                        <el-button
+                                            v-if="row.state === 'loaded-visible'"
+                                            size="small"
+                                            @click="setHidden(row.id, true)"
+                                        >Hide</el-button>
+                                        <el-button
+                                            v-else-if="row.state === 'loaded-hidden'"
+                                            size="small"
+                                            @click="setHidden(row.id, false)"
+                                        >Show in Overview</el-button>
+                                        <el-button
+                                            v-if="row.state !== 'cached-only'"
+                                            size="small"
+                                            type="warning"
+                                            plain
+                                            @click="unload(row.id)"
+                                        >Unload</el-button>
+                                        <el-button
+                                            v-else
+                                            size="small"
+                                            type="danger"
+                                            plain
+                                            @click="forget(row.id)"
+                                        >Forget</el-button>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -656,7 +679,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh, Clock, InfoFilled } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock, InfoFilled, Hide, View, Delete } from '@element-plus/icons-vue';
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -665,6 +688,8 @@ import type { ScryfallToken } from '../types/scryfall';
 import { formatPrice } from '../util/HelperFunctions';
 import { getTokens } from '../util/CubeFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
+import { listCachedSnapshots, evictCube } from '../util/CubeCache';
+import type { CachedCube } from '../util/CubeCache';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';
 import ReleaseYearChart from './charts/basic/ReleaseYearChart.vue';
 import ColorIdentityDistributionChart from './charts/distributions/ColorIdentityDistributionChart.vue';
@@ -721,7 +746,8 @@ const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailD
 const openCubeDetailDialog = inject<(id: string) => void>('openCubeDetailDialog');
 const refreshCube = inject<(id: string) => Promise<void>>('refreshCube');
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
-const addCube = inject<(id: string, opts?: { refresh?: boolean }) => Promise<void>>('addCube');
+const addCube = inject<(id: string, opts?: { refresh?: boolean; hidden?: boolean }) => Promise<void>>('addCube');
+const popDetail = inject<() => void>('popDetail');
 
 // Convert loadedCubes prop to Ref for computed properties
 const loadedCubesRef = toRef(props, 'loadedCubes');
@@ -748,7 +774,7 @@ const loadAndOpenLiveCube = async () => {
     }
 };
 
-const addSnapshot = inject<(baseCubeId: string, requestedDate: number) => Promise<{ key: string; deduped: boolean } | null>>('addSnapshot');
+const addSnapshot = inject<(baseCubeId: string, requestedDate: number, opts?: { hidden?: boolean }) => Promise<{ key: string; deduped: boolean } | null>>('addSnapshot');
 const removeCube = inject<(id: string) => void>('removeCube');
 const navigateToComparison = inject<(cubeAId: string, cubeBId: string) => void>('navigateToComparison');
 
@@ -763,16 +789,57 @@ const customSnapshotDate = ref<Date | null>(null);
 const snapshotLoading = ref(false);
 const compareLoadingFor = ref<string | null>(null);
 
+const cachedSnapshots = ref<CachedCube[]>([]);
+
+const refreshCachedSnapshots = async () => {
+    if (!baseCubeId.value) {
+        cachedSnapshots.value = [];
+        return;
+    }
+    cachedSnapshots.value = await listCachedSnapshots(baseCubeId.value);
+};
+
+// Refresh whenever the dialog switches to a different cube
+watch(baseCubeId, () => { refreshCachedSnapshots(); }, { immediate: true });
+
 const isFutureDate = (d: Date) => d.getTime() > Date.now();
 
-const loadedSnapshots = computed(() => {
-    return Object.values(loadedCubesRef.value)
-        .filter(c => isSnapshot(c) && externalCubeId(c) === baseCubeId.value)
-        .sort((a, b) => (b.snapshotDate ?? 0) - (a.snapshotDate ?? 0));
+type HistoryRow = {
+    state: 'loaded-visible' | 'loaded-hidden' | 'cached-only';
+    id: string;
+    cube: Pick<Cube, 'id' | 'name' | 'thumbnail' | 'baseCubeId' | 'snapshotDate' | 'lastModified' | 'hidden'>;
+};
+
+const historyRows = computed<HistoryRow[]>(() => {
+    if (!baseCubeId.value) return [];
+
+    const loaded = Object.values(loadedCubesRef.value)
+        .filter((c: any) => isSnapshot(c) && externalCubeId(c) === baseCubeId.value);
+
+    const loadedIds = new Set(loaded.map((c: any) => c.id));
+
+    const rows: HistoryRow[] = loaded.map((c: any) => ({
+        state: c.hidden ? 'loaded-hidden' : 'loaded-visible',
+        id: c.id,
+        cube: c,
+    }));
+
+    for (const cached of cachedSnapshots.value) {
+        if (!loadedIds.has(cached.id)) {
+            rows.push({
+                state: 'cached-only',
+                id: cached.id,
+                cube: cached.data as any,
+            });
+        }
+    }
+
+    rows.sort((a, b) => (b.cube.snapshotDate ?? 0) - (a.cube.snapshotDate ?? 0));
+    return rows;
 });
 
 const historyTabLabel = computed(() => {
-    const n = loadedSnapshots.value.length;
+    const n = historyRows.value.length;
     return n > 0 ? `History (${n})` : 'History';
 });
 
@@ -780,7 +847,8 @@ const loadPreset = async (offsetMs: number) => {
     if (!addSnapshot) return;
     snapshotLoading.value = true;
     try {
-        await addSnapshot(baseCubeId.value, Date.now() - offsetMs);
+        await addSnapshot(baseCubeId.value, Date.now() - offsetMs, { hidden: true });
+        await refreshCachedSnapshots();
     } finally {
         snapshotLoading.value = false;
     }
@@ -793,21 +861,66 @@ const loadCustomSnapshot = async () => {
     const utcNoon = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
     snapshotLoading.value = true;
     try {
-        await addSnapshot(baseCubeId.value, utcNoon);
+        await addSnapshot(baseCubeId.value, utcNoon, { hidden: true });
         customSnapshotDate.value = null;
+        await refreshCachedSnapshots();
     } finally {
         snapshotLoading.value = false;
     }
 };
 
-const compareWithLive = async (snapshotId: string) => {
-    if (!navigateToComparison) return;
-    compareLoadingFor.value = snapshotId;
+const setHidden = (id: string, hidden: boolean) => {
+    const current = loadedCubesRef.value[id];
+    if (!current) return;
+    // Mutate via the loadedCubes object so reactivity fires. The injection
+    // exposed by App.vue mutates a shared ref, but we don't have a direct
+    // setter — fall back to mutating in place since the prop is the same ref.
+    (current as any).hidden = hidden;
+    // Force the computed to re-evaluate by reassigning the entry to a new object.
+    // (Vue's reactive proxy tracks property additions, so a direct set works,
+    // but reassignment is more defensive against missed reactivity.)
+    loadedCubesRef.value[id] = { ...current, hidden };
+};
+
+const unload = async (id: string) => {
+    if (!removeCube) return;
+    const isActive = activeCube.value?.id === id;
+    removeCube(id);
+    await refreshCachedSnapshots();
+    if (isActive && popDetail) popDetail();
+};
+
+const forget = async (id: string) => {
+    if (loadedCubesRef.value[id] && removeCube) {
+        const isActive = activeCube.value?.id === id;
+        removeCube(id);
+        if (isActive && popDetail) popDetail();
+    }
+    await evictCube(id);
+    await refreshCachedSnapshots();
+};
+
+const openSnapshot = async (row: HistoryRow) => {
+    if (!openCubeDetailDialog) return;
+    if (row.state === 'cached-only' && addSnapshot && row.cube.snapshotDate != null) {
+        await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: true });
+        await refreshCachedSnapshots();
+    }
+    openCubeDetailDialog(row.id);
+};
+
+const compareSnapshotWithLive = async (row: HistoryRow) => {
+    if (!navigateToComparison || !addCube || !addSnapshot) return;
+    compareLoadingFor.value = row.id;
     try {
-        if (!liveCubeLoaded.value && addCube) {
-            await addCube(baseCubeId.value);
+        if (row.state === 'cached-only' && row.cube.snapshotDate != null) {
+            await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: true });
         }
-        navigateToComparison(baseCubeId.value, snapshotId);
+        if (!liveCubeLoaded.value) {
+            await addCube(baseCubeId.value, { hidden: true });
+        }
+        await refreshCachedSnapshots();
+        navigateToComparison(baseCubeId.value, row.id);
     } finally {
         compareLoadingFor.value = null;
     }
@@ -1305,6 +1418,19 @@ const tokensTabData = computed(() => {
 .history-snapshot-name {
     flex: 1;
     font-weight: 500;
+}
+
+.history-snapshot-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-top: 2px;
+}
+
+.history-snapshot-modified {
+    font-variant-numeric: tabular-nums;
 }
 
 .history-snapshot-actions {
