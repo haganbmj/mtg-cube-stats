@@ -529,6 +529,84 @@
                     <ArchetypeAnalysis :cubeCards="activeCubeCards" />
                 </el-tab-pane> -->
 
+                <el-tab-pane :label="historyTabLabel">
+                    <div class="history-tab">
+                        <section class="history-presets">
+                            <h4 class="history-section-title">Load snapshot from…</h4>
+                            <div class="history-preset-buttons">
+                                <el-button
+                                    v-for="preset in snapshotPresets"
+                                    :key="preset.label"
+                                    :disabled="snapshotLoading"
+                                    @click="loadPreset(preset.offsetMs)"
+                                >
+                                    {{ preset.label }}
+                                </el-button>
+                            </div>
+                        </section>
+
+                        <section class="history-custom">
+                            <h4 class="history-section-title">Or pick a date</h4>
+                            <div class="history-custom-row">
+                                <el-date-picker
+                                    v-model="customSnapshotDate"
+                                    type="date"
+                                    placeholder="Pick a date"
+                                    :disabled-date="isFutureDate"
+                                />
+                                <el-button
+                                    type="primary"
+                                    :disabled="!customSnapshotDate || snapshotLoading"
+                                    @click="loadCustomSnapshot"
+                                >
+                                    Load snapshot
+                                </el-button>
+                            </div>
+                        </section>
+
+                        <section class="history-loaded">
+                            <h4 class="history-section-title">Loaded snapshots</h4>
+                            <div v-if="!liveCubeLoaded" class="history-live-missing">
+                                <el-icon><InfoFilled /></el-icon>
+                                <span>Live cube not loaded.</span>
+                                <el-link type="primary" underline="never" :loading="loadingLive" @click="loadAndOpenLiveCube">Load live</el-link>
+                            </div>
+                            <div v-if="loadedSnapshots.length === 0" class="history-empty">
+                                No snapshots loaded for this cube yet.
+                            </div>
+                            <div v-for="snap in loadedSnapshots" :key="snap.id" class="history-snapshot-row">
+                                <el-image :src="snap.thumbnail" fit="cover" class="history-snapshot-thumb" />
+                                <span class="history-snapshot-name">{{ displayName(snap) }}</span>
+                                <el-tag v-if="snap.id === activeCube.id" size="small" type="info">viewing</el-tag>
+                                <div class="history-snapshot-actions">
+                                    <el-button
+                                        v-if="snap.id !== activeCube.id"
+                                        size="small"
+                                        @click="openCubeDetailDialog?.(snap.id)"
+                                    >
+                                        Open
+                                    </el-button>
+                                    <el-button
+                                        size="small"
+                                        :loading="compareLoadingFor === snap.id"
+                                        @click="compareWithLive(snap.id)"
+                                    >
+                                        Compare vs. live
+                                    </el-button>
+                                    <el-button
+                                        size="small"
+                                        type="danger"
+                                        plain
+                                        @click="removeCube?.(snap.id)"
+                                    >
+                                        Remove
+                                    </el-button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </el-tab-pane>
+
                 <el-tab-pane label="Sample Pack" :lazy="true">
                     <div class="sample-pack">
                         <el-button @click="generateNewPack" style="margin-bottom: 1em;">Generate New Pack</el-button>
@@ -578,7 +656,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh, Clock } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock, InfoFilled } from '@element-plus/icons-vue';
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -667,6 +745,71 @@ const loadAndOpenLiveCube = async () => {
         openLiveCube();
     } finally {
         loadingLive.value = false;
+    }
+};
+
+const addSnapshot = inject<(baseCubeId: string, requestedDate: number) => Promise<{ key: string; deduped: boolean } | null>>('addSnapshot');
+const removeCube = inject<(id: string) => void>('removeCube');
+const navigateToComparison = inject<(cubeAId: string, cubeBId: string) => void>('navigateToComparison');
+
+const snapshotPresets = [
+    { label: '3 months ago', offsetMs: 3 * 30 * 24 * 60 * 60 * 1000 },
+    { label: '6 months ago', offsetMs: 6 * 30 * 24 * 60 * 60 * 1000 },
+    { label: '12 months ago', offsetMs: 12 * 30 * 24 * 60 * 60 * 1000 },
+    { label: '24 months ago', offsetMs: 24 * 30 * 24 * 60 * 60 * 1000 },
+];
+
+const customSnapshotDate = ref<Date | null>(null);
+const snapshotLoading = ref(false);
+const compareLoadingFor = ref<string | null>(null);
+
+const isFutureDate = (d: Date) => d.getTime() > Date.now();
+
+const loadedSnapshots = computed(() => {
+    return Object.values(loadedCubesRef.value)
+        .filter(c => isSnapshot(c) && externalCubeId(c) === baseCubeId.value)
+        .sort((a, b) => (b.snapshotDate ?? 0) - (a.snapshotDate ?? 0));
+});
+
+const historyTabLabel = computed(() => {
+    const n = loadedSnapshots.value.length;
+    return n > 0 ? `History (${n})` : 'History';
+});
+
+const loadPreset = async (offsetMs: number) => {
+    if (!addSnapshot) return;
+    snapshotLoading.value = true;
+    try {
+        await addSnapshot(baseCubeId.value, Date.now() - offsetMs);
+    } finally {
+        snapshotLoading.value = false;
+    }
+};
+
+const loadCustomSnapshot = async () => {
+    if (!addSnapshot || !customSnapshotDate.value) return;
+    // Use noon UTC of the selected day to avoid timezone edge effects
+    const d = customSnapshotDate.value;
+    const utcNoon = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+    snapshotLoading.value = true;
+    try {
+        await addSnapshot(baseCubeId.value, utcNoon);
+        customSnapshotDate.value = null;
+    } finally {
+        snapshotLoading.value = false;
+    }
+};
+
+const compareWithLive = async (snapshotId: string) => {
+    if (!navigateToComparison) return;
+    compareLoadingFor.value = snapshotId;
+    try {
+        if (!liveCubeLoaded.value && addCube) {
+            await addCube(baseCubeId.value);
+        }
+        navigateToComparison(baseCubeId.value, snapshotId);
+    } finally {
+        compareLoadingFor.value = null;
     }
 };
 
@@ -1095,6 +1238,78 @@ const tokensTabData = computed(() => {
 
 .stat-value--negative {
     color: #f56c6c;
+}
+
+.history-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+.history-section-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    color: var(--el-text-color-primary);
+}
+
+.history-preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.history-custom-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-loaded {
+    border-top: 1px solid var(--el-border-color-lighter);
+    padding-top: 1rem;
+}
+
+.history-empty {
+    color: var(--el-text-color-secondary);
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+}
+
+.history-live-missing {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    background: var(--el-color-info-light-9);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.history-snapshot-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.history-snapshot-thumb {
+    width: 50px;
+    height: 35px;
+    border-radius: 4px;
+}
+
+.history-snapshot-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.history-snapshot-actions {
+    display: flex;
+    gap: 0.4rem;
 }
 
 </style>

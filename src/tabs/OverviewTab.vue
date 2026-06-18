@@ -239,7 +239,7 @@
                 @click="openCubeDetailDialog(row.id)"
             >
                 <div class="cube-tile-thumbnail-wrapper">
-                    <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" />
+                    <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" :class="{ 'cube-tile-thumbnail--snapshot': isSnapshot(row) }" />
                     <div class="cube-tile-categories">
                         <el-tag
                             v-for="category in row.stats.assumedCategories"
@@ -257,6 +257,7 @@
                     <div class="cube-tile-name">
                         <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
                         {{ displayName(row) }}
+                        <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
                     </div>
                     <div class="cube-tile-owner">
                         <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank" @click.stop>{{ row.owner }}</el-link>
@@ -301,7 +302,8 @@
 
             <template #cell-name="{ row }">
                 <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                <el-link :href="`https://cubecobra.com/cube/about/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ displayName(row) }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ displayName(row) }}</el-link>
+                <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
             </template>
 
             <template #cell-owner="{ row }">
@@ -488,7 +490,7 @@ import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { displayName } from '../util/Snapshots';
+import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 
@@ -1280,5 +1282,10 @@ const formatters = {
 :global(.overview-loading .el-loading-text) {
     color: var(--el-text-color-primary) !important;
     font-size: 14px;
+}
+
+.cube-tile-thumbnail--snapshot {
+    opacity: 0.7;
+    filter: grayscale(0.3);
 }
 </style>
