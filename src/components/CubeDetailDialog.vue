@@ -392,8 +392,8 @@
                             <div class="external-links">
                                 <el-space wrap>
                                     <el-button tag="a" :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank">CubeCobra</el-button>
-                                    <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${activeCube.id}`" target="_blank">Hedron Network</el-button>
-                                    <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${activeCube.id}`" target="_blank">LuckyPaper Cube Map</el-button>
+                                    <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${externalCubeId(activeCube)}`" target="_blank">Hedron Network</el-button>
+                                    <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${externalCubeId(activeCube)}`" target="_blank">LuckyPaper Cube Map</el-button>
                                 </el-space>
                             </div>
                         </el-col>
@@ -742,7 +742,7 @@ const loadAndOpenLiveCube = async () => {
     loadingLive.value = true;
     try {
         await addCube(baseCubeId.value);
-        openLiveCube();
+        if (liveCubeLoaded.value) openLiveCube();
     } finally {
         loadingLive.value = false;
     }
@@ -922,7 +922,7 @@ const samplePackSeed = ref(Date.now());
 
 const samplePackUrl = computed(() => {
     if (!activeCube.value) return '';
-    return `https://cubecobra.com/cube/samplepackimage/${activeCube.value.id}/${samplePackSeed.value}`;
+    return `https://cubecobra.com/cube/samplepackimage/${externalCubeId(activeCube.value)}/${samplePackSeed.value}`;
 });
 
 const generateNewPack = () => {

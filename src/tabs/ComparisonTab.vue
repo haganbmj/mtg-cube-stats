@@ -66,7 +66,7 @@
                     <div class="cube-header">
                         <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/about/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
+                            <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cubeA)}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
                                 <span class="cube-header-name">{{ displayName(cubeA) }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
@@ -83,7 +83,7 @@
                     <div class="cube-header">
                         <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/about/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
+                            <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cubeB)}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
                                 <span class="cube-header-name">{{ displayName(cubeB) }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
@@ -129,7 +129,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
 import type { Cube, CubeCard } from '../types';
-import { displayName } from '../util/Snapshots';
+import { displayName, externalCubeId } from '../util/Snapshots';
 import CubeComparisonView from '../components/CubeComparisonView.vue';
 import CardSearchInput from '../components/filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';

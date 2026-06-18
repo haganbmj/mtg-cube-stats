@@ -13,7 +13,7 @@
             sortable
         >
             <template #default="{ row }">
-                <el-link :href="`https://cubecobra.com/cube/about/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
             </template>
         </el-table-column>
         <el-table-column
@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
-import { displayName } from '../util/Snapshots';
+import { displayName, externalCubeId } from '../util/Snapshots';
 
 const props = defineProps({
     similarityMatrix: {

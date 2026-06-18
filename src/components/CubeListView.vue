@@ -44,52 +44,52 @@
                 <div :style="{ width: scrollContentWidth + 'px', height: '1px' }"></div>
             </div>
             <div ref="listViewRef" class="cube-list-view" @scroll="onListScroll">
-            <div
-                v-for="col in columns"
-                :key="col.id"
-                class="cube-list-column"
-                :style="{ background: col.bodyBg }"
-            >
-                <div class="column-header" :style="{ background: col.headerBg }">
-                    <span class="column-label">{{ col.label }}</span>
-                    <span class="column-count">{{ col.matchCount !== null ? `${col.matchCount} / ` : '' }}{{ col.totalCount }}</span>
-                </div>
-                <div class="column-body">
-                    <div v-for="group in col.groups" :key="group.label" class="type-section">
-                        <div class="type-header">
-                            {{ group.label }}
-                            <span class="type-count">({{ group.cards.length }})</span>
-                        </div>
-                        <div
-                            v-for="(card, i) in group.cards"
-                            :key="`${card.oracleId}-${i}`"
-                            class="card-entry"
-                            :class="{
-                                'cmc-break': i > 0 && card.cmc !== group.cards[i - 1].cmc,
-                                'card-entry--dimmed': filterMode === 'dim' && matchingOracleIds && !matchingOracleIds.has(card.oracleId),
-                            }"
-                        >
-                            <el-tooltip
-                                effect="light"
-                                placement="right"
-                                popper-class="card-tooltip"
-                                :show-after="50"
-                                :hide-after="50"
-                                :offset="16"
+                <div
+                    v-for="col in columns"
+                    :key="col.id"
+                    class="cube-list-column"
+                    :style="{ background: col.bodyBg }"
+                >
+                    <div class="column-header" :style="{ background: col.headerBg }">
+                        <span class="column-label">{{ col.label }}</span>
+                        <span class="column-count">{{ col.matchCount !== null ? `${col.matchCount} / ` : '' }}{{ col.totalCount }}</span>
+                    </div>
+                    <div class="column-body">
+                        <div v-for="group in col.groups" :key="group.label" class="type-section">
+                            <div class="type-header">
+                                {{ group.label }}
+                                <span class="type-count">({{ group.cards.length }})</span>
+                            </div>
+                            <div
+                                v-for="(card, i) in group.cards"
+                                :key="`${card.oracleId}-${i}`"
+                                class="card-entry"
+                                :class="{
+                                    'cmc-break': i > 0 && card.cmc !== group.cards[i - 1].cmc,
+                                    'card-entry--dimmed': filterMode === 'dim' && matchingOracleIds && !matchingOracleIds.has(card.oracleId),
+                                }"
                             >
-                                <template #content>
-                                    <el-image :src="card.urlFront" fit="contain" class="card-image" />
-                                </template>
-                                <el-link
-                                    @click="openCardDetailDialog?.(card.oracleId)"
-                                    underline="never"
-                                    class="card-name"
-                                >{{ card.name }}</el-link>
-                            </el-tooltip>
+                                <el-tooltip
+                                    effect="light"
+                                    placement="right"
+                                    popper-class="card-tooltip"
+                                    :show-after="50"
+                                    :hide-after="50"
+                                    :offset="16"
+                                >
+                                    <template #content>
+                                        <el-image :src="card.urlFront" fit="contain" class="card-image" />
+                                    </template>
+                                    <el-link
+                                        @click="openCardDetailDialog?.(card.oracleId)"
+                                        underline="never"
+                                        class="card-name"
+                                    >{{ card.name }}</el-link>
+                                </el-tooltip>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
