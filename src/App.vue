@@ -167,12 +167,6 @@ const visibleLoadedCubes = computed(() =>
     ),
 );
 
-const hiddenLoadedCubes = computed(() =>
-    Object.fromEntries(
-        Object.entries(loadedCubes.value).filter(([, cube]: [string, any]) => cube.hidden),
-    ),
-);
-
 const refreshingCubeIds = ref<Set<string>>(new Set());
 
 // Loading progress for batch cube loads (addCubes)
@@ -276,7 +270,6 @@ const debouncedSync = useDebounceFn(() => {
         tab: activeTab.value,
         preset: activePresetName.value,
         cubes: activePresetName.value ? [] : Object.keys(visibleLoadedCubes.value),
-        hidden: Object.keys(hiddenLoadedCubes.value),
         presetAdd: activePresetName.value
             ? Object.keys(visibleLoadedCubes.value).filter(id => !presetBaseIds.value.has(id))
             : [],
@@ -296,7 +289,6 @@ watch(
     [
         activeTab,
         () => Object.keys(visibleLoadedCubes.value).join(','),
-        () => Object.keys(hiddenLoadedCubes.value).join(','),
         activePresetName,
         cardTableQuery,
         cardSortProp,
@@ -346,8 +338,6 @@ onHashChange(async (newState) => {
     }
 
     // Reconcile cube state only if it actually changed
-    const currentIds = Object.keys(loadedCubes.value).sort().join(',');
-    const newIds = [...newState.cubes].sort().join(',');
     const currentPreset = activePresetName.value;
 
     if (newState.preset && newState.preset !== currentPreset) {
@@ -366,29 +356,18 @@ onHashChange(async (newState) => {
             }
         }
     } else if (!newState.preset) {
-        const allNewIds = [...newState.cubes, ...newState.hidden];
-        const newIdSet = new Set(allNewIds);
+        const newIdSet = new Set(newState.cubes);
         const currentIdSet = new Set(Object.keys(loadedCubes.value));
 
-        if (allNewIds.length === 0 && currentIdSet.size > 0) {
+        if (newState.cubes.length === 0 && currentIdSet.size > 0) {
             clearCubes();
         } else {
             // Add missing cubes, remove extras
             for (const id of currentIdSet) {
                 if (!newIdSet.has(id)) removeCube(id);
             }
-            const toAdd = allNewIds.filter(id => !currentIdSet.has(id));
+            const toAdd = newState.cubes.filter(id => !currentIdSet.has(id));
             if (toAdd.length > 0) await addCubes(toAdd);
-        }
-
-        // Apply / clear hidden flag after loads resolve
-        const hiddenSet = new Set(newState.hidden);
-        for (const id of Object.keys(loadedCubes.value)) {
-            const shouldHide = hiddenSet.has(id);
-            const current = loadedCubes.value[id];
-            if (current && !!current.hidden !== shouldHide) {
-                loadedCubes.value[id] = { ...current, hidden: shouldHide };
-            }
         }
     }
 });
@@ -838,25 +817,9 @@ onMounted(async () => {
             if (hashState.presetAdd.length > 0) {
                 await addCubes(hashState.presetAdd);
             }
-            if (hashState.hidden.length > 0) {
-                await addCubes(hashState.hidden);
-                const hiddenSet = new Set(hashState.hidden);
-                for (const id of Object.keys(loadedCubes.value)) {
-                    if (hiddenSet.has(id)) {
-                        loadedCubes.value[id] = { ...loadedCubes.value[id], hidden: true };
-                    }
-                }
-            }
         }
-    } else if (hashState.cubes.length > 0 || hashState.hidden.length > 0) {
-        await addCubes([...hashState.cubes, ...hashState.hidden]);
-
-        const hiddenSet = new Set(hashState.hidden);
-        for (const id of Object.keys(loadedCubes.value)) {
-            if (hiddenSet.has(id)) {
-                loadedCubes.value[id] = { ...loadedCubes.value[id], hidden: true };
-            }
-        }
+    } else if (hashState.cubes.length > 0) {
+        await addCubes(hashState.cubes);
 
         // Show a non-blocking hint only if the loaded set isn't already saved
         const loadedIds = Object.keys(loadedCubes.value);
