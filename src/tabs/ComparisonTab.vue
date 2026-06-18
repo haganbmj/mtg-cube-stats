@@ -102,7 +102,7 @@
                                 <span>Cards: <strong>{{ cubeA.stats?.totalCards ?? cubeA.cards.length }}</strong></span>
                                 <span>Avg CMC: <strong>{{ cubeA.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
                                 <span>Avg Elo: <strong>{{ cubeA.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                                <span v-if="cubeA.lastModified">Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
+                                <span v-if="cubeA.lastModified" :title="fullTimestamp(cubeA.lastModified)">Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
                             </div>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                                 <span>Cards: <strong>{{ cubeB.stats?.totalCards ?? cubeB.cards.length }}</strong></span>
                                 <span>Avg CMC: <strong>{{ cubeB.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
                                 <span>Avg Elo: <strong>{{ cubeB.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                                <span v-if="cubeB.lastModified">Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
+                                <span v-if="cubeB.lastModified" :title="fullTimestamp(cubeB.lastModified)">Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
                             </div>
                         </div>
                     </div>
@@ -341,6 +341,14 @@ const matchingOracleIds = computed<Set<string> | null>(() => {
 const formatDate = (dateStr: string) => {
     try {
         return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    } catch {
+        return dateStr;
+    }
+};
+
+const fullTimestamp = (dateStr: string) => {
+    try {
+        return new Date(dateStr).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' });
     } catch {
         return dateStr;
     }

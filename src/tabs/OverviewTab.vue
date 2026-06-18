@@ -311,6 +311,12 @@
                 <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
             </template>
 
+            <template #cell-lastModified="{ row }">
+                <span :title="row.lastModified ? new Date(row.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' }) : undefined">
+                    {{ fmtDate('lastModified')(row) }}
+                </span>
+            </template>
+
             <template #cell-arenaPlayable="{ row }">
                 <el-tag :type="row.stats.arenaPlayable ? 'success' : 'danger'">
                     {{ row.stats.arenaPlayable ? 'Yes' : 'No' }}

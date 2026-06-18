@@ -39,7 +39,7 @@
             <div class="cube-dialog-meta">
                 <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
                 <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
-                <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
+                <span class="cube-dialog-meta-item" :title="fullLastModified">Modified: <strong>{{ formattedLastModified }}</strong></span>
                 <span class="cube-dialog-meta-item" v-if="(activeCube.stats?.assumedCategories || []).length">
                     Categories:
                     <el-tooltip
@@ -590,7 +590,7 @@
                                             <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
                                             <el-tag v-else-if="row.state === 'loaded-hidden'" type="info" size="small">Loaded · Hidden</el-tag>
                                             <el-tag v-else type="info" size="small">Cached</el-tag>
-                                            <span v-if="row.cube.lastModified" class="history-snapshot-modified">
+                                            <span v-if="row.cube.lastModified" class="history-snapshot-modified" :title="new Date(row.cube.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' })">
                                                 {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
                                             </span>
                                         </div>
@@ -1006,6 +1006,16 @@ const formattedLastModified = computed(() => {
     const ts = activeCube.value?.lastModified;
     if (!ts) return 'N/A';
     return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+});
+
+const fullLastModified = computed(() => {
+    const ts = activeCube.value?.lastModified;
+    if (!ts) return undefined;
+    try {
+        return new Date(ts).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' });
+    } catch {
+        return undefined;
+    }
 });
 
 const formattedFetchedAt = computed(() => {
