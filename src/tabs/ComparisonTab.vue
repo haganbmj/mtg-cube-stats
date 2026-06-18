@@ -340,7 +340,7 @@ const matchingOracleIds = computed<Set<string> | null>(() => {
 
 const formatDate = (dateStr: string) => {
     try {
-        return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
     } catch {
         return dateStr;
     }
