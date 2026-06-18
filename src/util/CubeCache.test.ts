@@ -132,3 +132,39 @@ describe('CubeCache', () => {
         expect(result!.fetchedAt).toBe(newerDate);
     });
 });
+
+describe('CubeCache snapshot entries', () => {
+    beforeEach(async () => {
+        await _resetForTesting();
+        const { deleteDB } = await import('idb');
+        await deleteDB('cube-cache');
+    });
+
+    it('round-trips a composite-key entry', async () => {
+        const cube = makeCube('abc@1566534018025');
+        await setCachedCube('abc@1566534018025', cube, '2026-05-30T12:00:00.000Z');
+        const result = await getCachedCube('abc@1566534018025');
+        expect(result).not.toBeNull();
+        expect(result!.id).toBe('abc@1566534018025');
+    });
+
+    it('isStale returns false for composite-key entries regardless of age', () => {
+        const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+        const entry: CachedCube = {
+            id: 'abc@1566534018025',
+            data: makeCube('abc@1566534018025'),
+            fetchedAt: tenDaysAgo,
+        };
+        expect(isStale(entry)).toBe(false);
+    });
+
+    it('pruneStaleEntries does not evict old composite-key entries', async () => {
+        const snapshot = makeCube('abc@1566534018025');
+        const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+        await setCachedCube('abc@1566534018025', snapshot, tenDaysAgo);
+
+        await pruneStaleEntries();
+
+        expect(await getCachedCube('abc@1566534018025')).not.toBeNull();
+    });
+});

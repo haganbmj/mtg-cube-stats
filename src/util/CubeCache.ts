@@ -1,5 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Cube } from '../types';
+import { SNAPSHOT_KEY_SEPARATOR } from './Snapshots';
 
 const DB_NAME = 'cube-cache';
 const DB_VERSION = 2;
@@ -92,6 +93,7 @@ export async function evictCube(id: string): Promise<void> {
 }
 
 export function isStale(entry: CachedCube): boolean {
+    if (entry.id.includes(SNAPSHOT_KEY_SEPARATOR)) return false;
     const fetchedAt = new Date(entry.fetchedAt).getTime();
     return Date.now() - fetchedAt > STALE_THRESHOLD_MS;
 }
@@ -107,7 +109,7 @@ export async function pruneStaleEntries(): Promise<void> {
         while (cursor) {
             const entry = cursor.value as CachedCube;
             const age = now - new Date(entry.fetchedAt).getTime();
-            if (age > EVICTION_THRESHOLD_MS) {
+            if (age > EVICTION_THRESHOLD_MS && !entry.id.includes(SNAPSHOT_KEY_SEPARATOR)) {
                 await cursor.delete();
             }
             cursor = await cursor.continue();
