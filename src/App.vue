@@ -269,9 +269,10 @@ const debouncedSync = useDebounceFn(() => {
     syncToHash({
         tab: activeTab.value,
         preset: activePresetName.value,
-        cubes: activePresetName.value ? [] : Object.keys(loadedCubes.value),
+        cubes: activePresetName.value ? [] : Object.keys(visibleLoadedCubes.value),
+        hidden: Object.keys(hiddenLoadedCubes.value),
         presetAdd: activePresetName.value
-            ? Object.keys(loadedCubes.value).filter(id => !presetBaseIds.value.has(id))
+            ? Object.keys(visibleLoadedCubes.value).filter(id => !presetBaseIds.value.has(id))
             : [],
         presetRemove: activePresetName.value
             ? [...presetBaseIds.value].filter(id => !(id in loadedCubes.value))
@@ -288,7 +289,8 @@ const debouncedSync = useDebounceFn(() => {
 watch(
     [
         activeTab,
-        () => Object.keys(loadedCubes.value).join(','),
+        () => Object.keys(visibleLoadedCubes.value).join(','),
+        () => Object.keys(hiddenLoadedCubes.value).join(','),
         activePresetName,
         cardTableQuery,
         cardSortProp,
@@ -357,18 +359,30 @@ onHashChange(async (newState) => {
                 await addCubes(newState.presetAdd);
             }
         }
-    } else if (!newState.preset && newIds !== currentIds) {
-        if (newIds === '') {
+    } else if (!newState.preset) {
+        const allNewIds = [...newState.cubes, ...newState.hidden];
+        const newIdSet = new Set(allNewIds);
+        const currentIdSet = new Set(Object.keys(loadedCubes.value));
+
+        if (allNewIds.length === 0 && currentIdSet.size > 0) {
             clearCubes();
         } else {
             // Add missing cubes, remove extras
-            const newIdSet = new Set(newState.cubes);
-            const currentIdSet = new Set(Object.keys(loadedCubes.value));
             for (const id of currentIdSet) {
                 if (!newIdSet.has(id)) removeCube(id);
             }
-            const toAdd = newState.cubes.filter(id => !currentIdSet.has(id));
-            if (toAdd.length > 0) addCubes(toAdd);
+            const toAdd = allNewIds.filter(id => !currentIdSet.has(id));
+            if (toAdd.length > 0) await addCubes(toAdd);
+        }
+
+        // Apply / clear hidden flag after loads resolve
+        const hiddenSet = new Set(newState.hidden);
+        for (const id of Object.keys(loadedCubes.value)) {
+            const shouldHide = hiddenSet.has(id);
+            const current = loadedCubes.value[id];
+            if (current && !!current.hidden !== shouldHide) {
+                loadedCubes.value[id] = { ...current, hidden: shouldHide };
+            }
         }
     }
 });
@@ -516,7 +530,7 @@ const addCubes = async (cubeIds: string[]) => {
 };
 
 const saveCollection = (name: string) => {
-    const cubeIds = Object.keys(loadedCubes.value);
+    const cubeIds = Object.keys(visibleLoadedCubes.value);
     const existing = userCollections.value.findIndex(c => c.name === name);
     if (existing >= 0) {
         userCollections.value[existing] = { name, cubeIds };
@@ -539,6 +553,7 @@ const removeCollection = (name: string) => {
 const addSnapshot = async (
     baseCubeId: string,
     requestedDate: number,
+    options: { hidden?: boolean } = {},
 ): Promise<{ key: string; deduped: boolean } | null> => {
     // Optimization: if the requestedDate exactly matches a previously-cached
     // composite key (URL recovery for a snapshot loaded in a past session),
@@ -552,6 +567,9 @@ const addSnapshot = async (
             activePresetName.value = null;
         }
         loadedCubes.value[optimisticKey] = enriched;
+        if (options.hidden) {
+            loadedCubes.value[optimisticKey] = { ...loadedCubes.value[optimisticKey], hidden: true };
+        }
         updateSimilarityForCube(optimisticKey, loadedCubes.value, similarityMatrix.value);
         return { key: optimisticKey, deduped: false };
     }
@@ -581,6 +599,9 @@ const addSnapshot = async (
             activePresetName.value = null;
         }
         loadedCubes.value[key] = enriched;
+        if (options.hidden) {
+            loadedCubes.value[key] = { ...loadedCubes.value[key], hidden: true };
+        }
         updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
         return { key, deduped: false };
     }
@@ -595,6 +616,9 @@ const addSnapshot = async (
         activePresetName.value = null;
     }
     loadedCubes.value[key] = enriched;
+    if (options.hidden) {
+        loadedCubes.value[key] = { ...loadedCubes.value[key], hidden: true };
+    }
     updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
     return { key, deduped: false };
 };
@@ -608,7 +632,7 @@ const addAny = async (key: string): Promise<void> => {
     }
 };
 
-const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean } = {}) => {
+const addCube = async (cubeId: string, { refresh = false, hidden = false }: { refresh?: boolean; hidden?: boolean } = {}) => {
     // Attempt to take just the Cube ID based on multiple possible input formats.
     const input = cubeId.split('?')[0].trim();
     const [ id ] = input.match(/([^\/]+)\/?$/);
@@ -625,6 +649,9 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                if (hidden) {
+                    loadedCubes.value[enrichedCube.id] = { ...loadedCubes.value[enrichedCube.id], hidden: true };
+                }
                 updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
                 if (refresh || isStale(cached)) {
                     backgroundRefreshCube(cached.id);
@@ -640,6 +667,9 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                if (hidden) {
+                    loadedCubes.value[enrichedCube.id] = { ...loadedCubes.value[enrichedCube.id], hidden: true };
+                }
                 updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
             }
         } catch (e) {
@@ -792,9 +822,25 @@ onMounted(async () => {
             if (hashState.presetAdd.length > 0) {
                 await addCubes(hashState.presetAdd);
             }
+            if (hashState.hidden.length > 0) {
+                await addCubes(hashState.hidden);
+                const hiddenSet = new Set(hashState.hidden);
+                for (const id of Object.keys(loadedCubes.value)) {
+                    if (hiddenSet.has(id)) {
+                        loadedCubes.value[id] = { ...loadedCubes.value[id], hidden: true };
+                    }
+                }
+            }
         }
-    } else if (hashState.cubes.length > 0) {
-        await addCubes(hashState.cubes);
+    } else if (hashState.cubes.length > 0 || hashState.hidden.length > 0) {
+        await addCubes([...hashState.cubes, ...hashState.hidden]);
+
+        const hiddenSet = new Set(hashState.hidden);
+        for (const id of Object.keys(loadedCubes.value)) {
+            if (hiddenSet.has(id)) {
+                loadedCubes.value[id] = { ...loadedCubes.value[id], hidden: true };
+            }
+        }
 
         // Show a non-blocking hint only if the loaded set isn't already saved
         const loadedIds = Object.keys(loadedCubes.value);
