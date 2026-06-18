@@ -1005,7 +1005,7 @@ const activeCubeComparisons = computed((): Record<string, ComparisonResult | nul
 const formattedLastModified = computed(() => {
     const ts = activeCube.value?.lastModified;
     if (!ts) return 'N/A';
-    return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+    return new Date(ts).toISOString().slice(0, 10);
 });
 
 const fullLastModified = computed(() => {

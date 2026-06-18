@@ -491,7 +491,7 @@ import { overviewSortProperties, resolveDirection, stripSortTokens } from '../ut
 import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
-import { useDateFormat, useWindowSize } from '@vueuse/core';
+import { useWindowSize } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
@@ -845,7 +845,7 @@ const fmtPercentage = (prop: string) => (row: any) => ((getNestedProp(row, prop)
 const fmtDate = (prop: string) => (row: any) => {
     const ts = getNestedProp(row, prop);
     if (!ts) return 'N/A';
-    return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+    return new Date(ts).toISOString().slice(0, 10);
 };
 
 // --- Table column definitions ---
