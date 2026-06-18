@@ -26,6 +26,10 @@ function isSameEntry(a: DetailEntry, b: DetailEntry): boolean {
 // resulting popstate event and avoid double-popping.
 let ignoreNextPop = 0;
 
+// Bumped when a dialog pop causes a URL revert that App.vue's hashchange
+// handler should NOT treat as a user-initiated cube state reset.
+export const suppressHashReconcile = ref(false);
+
 const stack = ref<DetailEntryWithKey[]>([]);
 
 function push(entry: DetailEntry): void {
@@ -40,6 +44,7 @@ function pop(): void {
     if (stack.value.length === 0) return;
     stack.value = stack.value.slice(0, -1);
     ignoreNextPop++;
+    suppressHashReconcile.value = true;
     history.back();
 }
 
@@ -48,6 +53,7 @@ function closeAll(): void {
     if (n === 0) return;
     stack.value = [];
     ignoreNextPop += n;
+    suppressHashReconcile.value = true;
     // Go back N entries to consume all pushed history states
     history.go(-n);
 }
@@ -60,6 +66,7 @@ function onPopState(): void {
     // Browser back pressed by user — pop top entry without triggering history.back()
     if (stack.value.length > 0) {
         stack.value = stack.value.slice(0, -1);
+        suppressHashReconcile.value = true;
     }
 }
 

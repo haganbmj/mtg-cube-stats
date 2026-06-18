@@ -108,7 +108,7 @@ import type { SortDirection } from './util/SortConfig';
 import { stripSortTokens } from './util/SortConfig';
 import { useHashRouter } from './util/useHashRouter';
 import { useDebounceFn } from '@vueuse/core';
-import { useDetailNavigation } from './util/useDetailNavigation';
+import { useDetailNavigation, suppressHashReconcile } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
 import type { PresetCollection } from './types';
 import presetsJson from '../preloads/generated/presets.json';
@@ -290,6 +290,15 @@ watch(
 );
 
 onHashChange(async (newState) => {
+    // If a dialog close just reverted the URL via history.back/go, the URL no
+    // longer matches loadedCubes (e.g. snapshots added inside the dialog).
+    // Skip reconciliation and re-sync the URL from current state instead.
+    if (suppressHashReconcile.value) {
+        suppressHashReconcile.value = false;
+        debouncedSync();
+        return;
+    }
+
     // Update tab
     if (newState.tab !== activeTab.value) {
         activeTab.value = newState.tab;
