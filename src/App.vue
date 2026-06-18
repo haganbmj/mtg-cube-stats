@@ -23,7 +23,7 @@
             <el-main>
                 <div id="contents">
                     <el-tabs tab-position="top" v-model="activeTab">
-                        <el-tab-pane :label="'Cubes (' + Object.keys(loadedCubes).length + ')'" name="overview" :lazy="true">
+                        <el-tab-pane :label="'Cubes (' + Object.keys(visibleLoadedCubes).length + ')'" name="overview" :lazy="true">
                             <OverviewTab
                                 :loadedCubes="loadedCubes"
                                 :overviewTableData="overviewTableData"
