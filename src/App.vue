@@ -44,7 +44,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Infographic" name="infographic" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" :activePreset="activePreset" />
+                            <InfographicTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" :activePreset="activePreset" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Statistics" name="statistics" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
@@ -52,7 +52,7 @@
                         </el-tab-pane>
 
                         <!-- <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
+                            <ArchetypeAnalysisTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane> -->
 
                         <el-tab-pane label="Compare" name="compare" :lazy="true">
@@ -60,7 +60,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
-                            <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
+                            <CardsTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
                         <el-tab-pane label="About" name="about" :lazy="true">
@@ -160,6 +160,19 @@ const availablePresets = new Set(
 );
 
 const loadedCubes = ref({});
+
+const visibleLoadedCubes = computed(() =>
+    Object.fromEntries(
+        Object.entries(loadedCubes.value).filter(([, cube]: [string, any]) => !cube.hidden),
+    ),
+);
+
+const hiddenLoadedCubes = computed(() =>
+    Object.fromEntries(
+        Object.entries(loadedCubes.value).filter(([, cube]: [string, any]) => cube.hidden),
+    ),
+);
+
 const refreshingCubeIds = ref<Set<string>>(new Set());
 
 // Loading progress for batch cube loads (addCubes)
@@ -368,7 +381,7 @@ const similarityMatrix = ref<Record<string, Record<string, import('./types').Sim
 
 const getAverageSimilarityScore = (cubeId: string) => {
     const scores = similarityMatrix.value[cubeId] || {};
-    const totalCubes = Object.keys(loadedCubes.value).length - 1;
+    const totalCubes = Object.keys(visibleLoadedCubes.value).length - 1;
 
     if (totalCubes === 0) {
         return 0;
@@ -380,7 +393,7 @@ const getAverageSimilarityScore = (cubeId: string) => {
 
 // FIXME: Is there a way to indicate that this should wait until after similarityMatrix is recomputed?
 const overviewTableData = computed(() => {
-    return Object.entries(loadedCubes.value).map(([id, cube]) => {
+    return Object.entries(visibleLoadedCubes.value).map(([id, cube]) => {
         return {
             ...cube,
             // Strip cards from the table object to improve render performance.
