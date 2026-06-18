@@ -872,13 +872,7 @@ const loadCustomSnapshot = async () => {
 const setHidden = (id: string, hidden: boolean) => {
     const current = loadedCubesRef.value[id];
     if (!current) return;
-    // Mutate via the loadedCubes object so reactivity fires. The injection
-    // exposed by App.vue mutates a shared ref, but we don't have a direct
-    // setter — fall back to mutating in place since the prop is the same ref.
-    (current as any).hidden = hidden;
-    // Force the computed to re-evaluate by reassigning the entry to a new object.
-    // (Vue's reactive proxy tracks property additions, so a direct set works,
-    // but reassignment is more defensive against missed reactivity.)
+    // Reassign to a new object to trigger Vue's reactive proxy.
     loadedCubesRef.value[id] = { ...current, hidden };
 };
 

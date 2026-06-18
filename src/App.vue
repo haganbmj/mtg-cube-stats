@@ -562,6 +562,11 @@ const addSnapshot = async (
     const optimisticKey = snapshotKey(baseCubeId, requestedDate);
     const cachedOptimistic = await getCachedCube(optimisticKey);
     if (cachedOptimistic) {
+        if (loadedCubes.value[optimisticKey]) {
+            ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
+            return { key: optimisticKey, deduped: true };
+        }
+
         await ensureScryfallInitialized();
         const enriched = enrichCube(cachedOptimistic.data);
         if (presetBaseIds.value.size === 0) {
@@ -594,6 +599,11 @@ const addSnapshot = async (
 
     const cached = await getCachedCube(key);
     if (cached) {
+        if (loadedCubes.value[key]) {
+            ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
+            return { key, deduped: true };
+        }
+
         await ensureScryfallInitialized();
         const enriched = enrichCube(cached.data);
         if (presetBaseIds.value.size === 0) {
