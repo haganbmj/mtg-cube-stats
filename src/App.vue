@@ -193,6 +193,8 @@ const openCardDetailDialog = (oracleId: string) => pushDetail({ type: 'card', or
 
 provide('openCubeDetailDialog', openCubeDetailDialog);
 provide('openCardDetailDialog', openCardDetailDialog);
+provide('addCube', addCube);
+provide('loadedCubes', loadedCubes);
 
 const comparePair = ref<{ cubeAId: string; cubeBId: string } | null>(null);
 const navigateToComparison = (cubeAId: string, cubeBId: string) => {

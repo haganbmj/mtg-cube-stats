@@ -12,13 +12,25 @@
             <div v-if="activeCube" class="cube-dialog-header">
                 <el-image :src="activeCube.thumbnail" fit="contain" class="cube-dialog-image" />
                 <div class="cube-dialog-title-block">
-                    <el-link :href="`https://cubecobra.com/cube/about/${activeCube.id}`" target="_blank" type="default" underline="never">
-                        <span class="cube-dialog-name">{{ activeCube.name }}</span>
+                    <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank" type="default" underline="never">
+                        <span class="cube-dialog-name">{{ displayName(activeCube) }}</span>
                         <el-icon class="el-icon--right"><Link /></el-icon>
                     </el-link>
                     <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
                         <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
                     </el-link>
+                    <div v-if="isSnapshot(activeCube)" class="cube-dialog-snapshot-meta">
+                        <el-icon><Clock /></el-icon>
+                        <span>Snapshot · {{ snapshotDateLabel(activeCube.snapshotDate!) }}</span>
+                        <template v-if="liveCubeLoaded">
+                            <span class="cube-dialog-snapshot-sep">·</span>
+                            <el-link type="primary" underline="never" @click="openLiveCube">View live cube</el-link>
+                        </template>
+                        <template v-else>
+                            <span class="cube-dialog-snapshot-sep">·</span>
+                            <el-link type="primary" underline="never" @click="loadAndOpenLiveCube" :loading="loadingLive">Load live cube</el-link>
+                        </template>
+                    </div>
                 </div>
             </div>
         </template>
@@ -379,7 +391,7 @@
                         <el-col :span="24">
                             <div class="external-links">
                                 <el-space wrap>
-                                    <el-button tag="a" :href="`https://cubecobra.com/cube/about/${activeCube.id}`" target="_blank">CubeCobra</el-button>
+                                    <el-button tag="a" :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank">CubeCobra</el-button>
                                     <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${activeCube.id}`" target="_blank">Hedron Network</el-button>
                                     <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${activeCube.id}`" target="_blank">LuckyPaper Cube Map</el-button>
                                 </el-space>
@@ -390,6 +402,7 @@
                                 Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
                             </el-text>
                             <el-button
+                                v-if="!isSnapshot(activeCube)"
                                 :icon="Refresh"
                                 size="small"
                                 text
@@ -544,6 +557,7 @@
                         Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
                     </el-text>
                     <el-button
+                        v-if="!isSnapshot(activeCube)"
                         :icon="Refresh"
                         size="small"
                         text
@@ -562,9 +576,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, inject, type Ref } from 'vue';
+import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock } from '@element-plus/icons-vue';
+import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
@@ -625,8 +640,35 @@ const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
+const openCubeDetailDialog = inject<(id: string) => void>('openCubeDetailDialog');
 const refreshCube = inject<(id: string) => Promise<void>>('refreshCube');
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
+const addCube = inject<(id: string, opts?: { refresh?: boolean }) => Promise<void>>('addCube');
+
+// Convert loadedCubes prop to Ref for computed properties
+const loadedCubesRef = toRef(props, 'loadedCubes');
+
+const baseCubeId = computed(() => externalCubeId(activeCube.value ?? { id: '' }));
+const liveCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
+
+const loadingLive = ref(false);
+
+const openLiveCube = () => {
+    if (openCubeDetailDialog && liveCubeLoaded.value) {
+        openCubeDetailDialog(baseCubeId.value);
+    }
+};
+
+const loadAndOpenLiveCube = async () => {
+    if (!addCube) return;
+    loadingLive.value = true;
+    try {
+        await addCube(baseCubeId.value);
+        openLiveCube();
+    } finally {
+        loadingLive.value = false;
+    }
+};
 
 const isRefreshing = computed(() => {
     const id = activeCube.value?.id;
@@ -796,6 +838,19 @@ const tokensTabData = computed(() => {
 .cube-dialog-owner {
     font-size: 0.875rem;
     color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-snapshot-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-snapshot-sep {
+    color: var(--el-text-color-disabled);
 }
 
 .cube-dialog-meta {
