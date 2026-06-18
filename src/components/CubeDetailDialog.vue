@@ -578,7 +578,14 @@
                                 <div v-for="row in historyRows" :key="row.id" class="history-snapshot-row">
                                     <el-image v-if="row.cube.thumbnail" :src="row.cube.thumbnail" fit="cover" class="history-snapshot-thumb" />
                                     <div class="history-snapshot-name">
-                                        <div>{{ displayName(row.cube) }}</div>
+                                        <div>
+                                            <el-link
+                                                v-if="row.id !== activeCube?.id"
+                                                underline="never"
+                                                @click="openSnapshot(row)"
+                                            >{{ displayName(row.cube) }}</el-link>
+                                            <span v-else>{{ displayName(row.cube) }}</span>
+                                        </div>
                                         <div class="history-snapshot-sub">
                                             <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
                                             <el-tag v-else-if="row.state === 'loaded-hidden'" type="info" size="small">Loaded · Hidden</el-tag>
@@ -589,11 +596,6 @@
                                         </div>
                                     </div>
                                     <div class="history-snapshot-actions">
-                                        <el-button
-                                            v-if="row.id !== activeCube?.id"
-                                            size="small"
-                                            @click="openSnapshot(row)"
-                                        >Open</el-button>
                                         <el-button
                                             size="small"
                                             :loading="compareLoadingFor === row.id"
