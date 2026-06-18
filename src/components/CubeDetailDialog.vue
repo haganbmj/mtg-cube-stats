@@ -22,13 +22,13 @@
                     <div v-if="isSnapshot(activeCube)" class="cube-dialog-snapshot-meta">
                         <el-icon><Clock /></el-icon>
                         <span>Snapshot · {{ snapshotDateLabel(activeCube.snapshotDate!) }}</span>
-                        <template v-if="liveCubeLoaded">
+                        <template v-if="currentCubeLoaded">
                             <span class="cube-dialog-snapshot-sep">·</span>
-                            <el-link type="primary" underline="never" @click="openLiveCube">View live cube</el-link>
+                            <el-link type="primary" underline="never" @click="openCurrentCube">View current cube</el-link>
                         </template>
                         <template v-else>
                             <span class="cube-dialog-snapshot-sep">·</span>
-                            <el-link type="primary" underline="never" @click="loadAndOpenLiveCube" :loading="loadingLive">Load live cube</el-link>
+                            <el-link type="primary" underline="never" @click="loadAndOpenCurrentCube" :loading="loadingCurrent">Load current cube</el-link>
                         </template>
                     </div>
                 </div>
@@ -568,10 +568,10 @@
 
                         <section class="history-loaded">
                             <h4 class="history-section-title">Loaded snapshots</h4>
-                            <div v-if="!liveCubeLoaded" class="history-live-missing">
+                            <div v-if="!currentCubeLoaded" class="history-live-missing">
                                 <el-icon><InfoFilled /></el-icon>
-                                <span>Live cube not loaded.</span>
-                                <el-link type="primary" underline="never" :loading="loadingLive" @click="loadAndOpenLiveCube">Load live</el-link>
+                                <span>Current cube not loaded.</span>
+                                <el-link type="primary" underline="never" :loading="loadingCurrent" @click="loadAndOpenCurrentCube">Load current</el-link>
                             </div>
                             <div v-if="historyRows.length === 0" class="history-empty">
                                 No snapshots yet. Pick a date above to load one.
@@ -760,24 +760,24 @@ const activeCube = computed(() => {
 });
 
 const baseCubeId = computed(() => externalCubeId(activeCube.value ?? { id: '' }));
-const liveCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
+const currentCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
 
-const loadingLive = ref(false);
+const loadingCurrent = ref(false);
 
-const openLiveCube = () => {
-    if (openCubeDetailDialog && liveCubeLoaded.value) {
+const openCurrentCube = () => {
+    if (openCubeDetailDialog && currentCubeLoaded.value) {
         openCubeDetailDialog(baseCubeId.value);
     }
 };
 
-const loadAndOpenLiveCube = async () => {
+const loadAndOpenCurrentCube = async () => {
     if (!addCube) return;
-    loadingLive.value = true;
+    loadingCurrent.value = true;
     try {
         await addCube(baseCubeId.value);
-        if (liveCubeLoaded.value) openLiveCube();
+        if (currentCubeLoaded.value) openCurrentCube();
     } finally {
-        loadingLive.value = false;
+        loadingCurrent.value = false;
     }
 };
 
@@ -943,7 +943,7 @@ const compareSnapshotWithCurrent = async (row: HistoryRow) => {
         if (row.state === 'cached-only' && row.cube.snapshotDate != null) {
             await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: true });
         }
-        if (!liveCubeLoaded.value) {
+        if (!currentCubeLoaded.value) {
             await addCube(baseCubeId.value, { hidden: true });
         }
         await refreshCachedSnapshots();
