@@ -4,6 +4,7 @@ import { cosineSimilarity, intersectionSizeOf, suffixedDuplicates } from './Simi
 import { isEvergreenKeyword } from './Keywords';
 import { detectCubeArchetypes } from './ArchetypeDetection';
 import { assumedCategories } from './CubeCategories';
+import { snapshotKey } from './Snapshots';
 import type {
     ScryfallDataStructure,
     ScryfallCard,
@@ -69,7 +70,12 @@ export function getSetReleaseDates(): Record<string, string> {
  *
  * FIXME: This should probably be done as part of the function that fetches from Scryfall to remap that response object rather than relying on the caller to do it.
  */
-export function remapCube(cube: any, enrich: boolean = true, fetchedAt?: string): Cube {
+export function remapCube(
+    cube: any,
+    enrich: boolean = true,
+    fetchedAt?: string,
+    options: { snapshotDate?: number } = {},
+): Cube {
     const cards: CubeCard[] = cube.cards.mainboard.map((card: any) => ({
         printingId: card.details.scryfall_id,
         oracleId: card.details.oracle_id,
@@ -96,6 +102,14 @@ export function remapCube(cube: any, enrich: boolean = true, fetchedAt?: string)
         cards: cards,
         suffixedCardIds: suffixedDuplicates(cards.map(c => c.oracleId)),
     };
+
+    if (options.snapshotDate != null) {
+        remappedCube.baseCubeId = remappedCube.id;
+        remappedCube.snapshotDate = options.snapshotDate;
+        remappedCube.id = snapshotKey(remappedCube.baseCubeId, options.snapshotDate);
+        remappedCube.lastModified = new Date(options.snapshotDate).toISOString();
+        delete remappedCube.shortId;
+    }
 
     if (enrich) {
         return enrichCube(remappedCube);
