@@ -240,6 +240,7 @@
             >
                 <div class="cube-tile-thumbnail-wrapper">
                     <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" :class="{ 'cube-tile-thumbnail--snapshot': isSnapshot(row) }" />
+                    <el-icon v-if="isSnapshot(row)" class="cube-tile-snapshot-badge" title="Snapshot"><Clock /></el-icon>
                     <div class="cube-tile-categories">
                         <el-tag
                             v-for="category in row.stats.assumedCategories"
@@ -485,7 +486,7 @@ import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading } from '@element-plus/icons-vue';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
@@ -1287,5 +1288,19 @@ const formatters = {
 .cube-tile-thumbnail--snapshot {
     opacity: 0.7;
     filter: grayscale(0.3);
+}
+
+.cube-tile-snapshot-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    padding: 4px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: white;
+    font-size: 14px;
+    z-index: 1;
 }
 </style>
