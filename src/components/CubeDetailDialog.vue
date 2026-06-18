@@ -578,7 +578,12 @@
                             </div>
                             <div v-else>
                                 <div v-for="row in historyRows" :key="row.id" class="history-snapshot-row">
-                                    <el-image v-if="row.cube.thumbnail" :src="row.cube.thumbnail" fit="cover" class="history-snapshot-thumb" />
+                                    <div class="history-snapshot-thumb-wrapper">
+                                        <el-image v-if="row.cube.thumbnail" :src="row.cube.thumbnail" fit="cover" class="history-snapshot-thumb history-snapshot-thumb-img" />
+                                        <el-button class="history-snapshot-remove" size="small" type="danger" @click="forget(row.id)">
+                                            <el-icon><Delete /></el-icon>
+                                        </el-button>
+                                    </div>
                                     <div class="history-snapshot-name">
                                         <div>
                                             <el-link
@@ -590,8 +595,6 @@
                                         </div>
                                         <div class="history-snapshot-sub">
                                             <el-tag v-if="row.state === 'loaded-visible'" type="success" size="small">In Overview</el-tag>
-                                            <el-tag v-else-if="row.state === 'loaded-hidden'" type="info" size="small">Loaded · Hidden</el-tag>
-                                            <el-tag v-else type="info" size="small">Cached</el-tag>
                                             <el-tooltip v-if="row.cube.lastModified" :content="new Date(row.cube.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' })" placement="top" :hide-after="50" :enterable="false">
                                                 <span class="history-snapshot-modified">
                                                     {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
@@ -615,20 +618,6 @@
                                             size="small"
                                             @click="setHidden(row.id, false)"
                                         >Show in Overview</el-button>
-                                        <el-button
-                                            v-if="row.state !== 'cached-only'"
-                                            size="small"
-                                            type="warning"
-                                            plain
-                                            @click="unload(row.id)"
-                                        >Unload</el-button>
-                                        <el-button
-                                            v-else
-                                            size="small"
-                                            type="danger"
-                                            plain
-                                            @click="forget(row.id)"
-                                        >Forget</el-button>
                                     </div>
                                 </div>
                             </div>
@@ -685,7 +674,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh, Clock, InfoFilled, Hide, View, Delete } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock, InfoFilled, Delete } from '@element-plus/icons-vue';
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -889,22 +878,14 @@ const setHidden = (id: string, hidden: boolean) => {
     loadedCubesRef.value[id] = { ...current, hidden };
 };
 
-const unload = async (id: string) => {
-    if (!removeCube) return;
-    const isActive = activeCube.value?.id === id;
-    removeCube(id);
-    await refreshCachedSnapshots();
-    if (isActive && popDetail) popDetail();
-};
-
 const forget = async (id: string) => {
+    const isActive = activeCube.value?.id === id;
     if (loadedCubesRef.value[id] && removeCube) {
-        const isActive = activeCube.value?.id === id;
         removeCube(id);
-        if (isActive && popDetail) popDetail();
     }
     await evictCube(id);
     await refreshCachedSnapshots();
+    if (isActive && popDetail) popDetail();
 };
 
 const openSnapshot = async (row: HistoryRow) => {
@@ -1423,6 +1404,25 @@ const tokensTabData = computed(() => {
     width: 50px;
     height: 35px;
     border-radius: 4px;
+}
+
+.history-snapshot-thumb-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.history-snapshot-remove {
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.history-snapshot-thumb-img:hover + .history-snapshot-remove,
+.history-snapshot-remove:hover {
+    visibility: visible;
 }
 
 .history-snapshot-name {
