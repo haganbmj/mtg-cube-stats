@@ -752,6 +752,13 @@ const popDetail = inject<() => void>('popDetail');
 // Convert loadedCubes prop to Ref for computed properties
 const loadedCubesRef = toRef(props, 'loadedCubes');
 
+const activeCubeId = ref<string | null>(null);
+
+const activeCube = computed(() => {
+    if (!activeCubeId.value) return props.cubeRow;
+    return props.overviewTableData.find(c => c.id === activeCubeId.value) || props.cubeRow;
+});
+
 const baseCubeId = computed(() => externalCubeId(activeCube.value ?? { id: '' }));
 const liveCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
 
@@ -932,17 +939,10 @@ const handleRefresh = async () => {
     await refreshCube(id);
 };
 
-const activeCubeId = ref<string | null>(null);
-
 // Reset activeCubeId whenever the dialog opens with a new cube
 watch(() => props.cubeRow, (newRow) => {
     activeCubeId.value = newRow?.id || null;
     samplePackSeed.value = Date.now();
-});
-
-const activeCube = computed(() => {
-    if (!activeCubeId.value) return props.cubeRow;
-    return props.overviewTableData.find(c => c.id === activeCubeId.value) || props.cubeRow;
 });
 
 const activeCubeCards = computed(() => {
