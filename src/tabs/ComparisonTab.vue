@@ -22,15 +22,28 @@
                         @change="(v: string) => onCubeSelect(v, 'A')"
                         style="width: 100%;"
                     >
-                        <el-option
-                            v-for="{ id, cube } in sortedCubeOptions"
-                            :key="id"
-                            :label="displayName(cube)"
-                            :value="id"
-                        >
-                            <span>{{ displayName(cube) }}</span>
-                            <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
-                        </el-option>
+                        <el-option-group label="Loaded">
+                            <el-option
+                                v-for="{ id, cube } in visibleOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
+                        <el-option-group v-if="hiddenOptions.length > 0" label="Hidden / Compare-only">
+                            <el-option
+                                v-for="{ id, cube } in hiddenOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
                     </el-select>
                 </div>
                 <el-button :icon="Sort" @click="swapCubes" title="Swap cubes" />
@@ -44,15 +57,28 @@
                         @change="(v: string) => onCubeSelect(v, 'B')"
                         style="width: 100%;"
                     >
-                        <el-option
-                            v-for="{ id, cube } in sortedCubeOptions"
-                            :key="id"
-                            :label="displayName(cube)"
-                            :value="id"
-                        >
-                            <span>{{ displayName(cube) }}</span>
-                            <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
-                        </el-option>
+                        <el-option-group label="Loaded">
+                            <el-option
+                                v-for="{ id, cube } in visibleOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
+                        <el-option-group v-if="hiddenOptions.length > 0" label="Hidden / Compare-only">
+                            <el-option
+                                v-for="{ id, cube } in hiddenOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
                     </el-select>
                 </div>
             </div>
@@ -174,6 +200,14 @@ const sortedCubeOptions = computed(() => {
         .map(([id, cube]) => ({ id, cube }))
         .sort((a, b) => castInensitiveSort(normalizeSortName(a.cube.name), normalizeSortName(b.cube.name)));
 });
+
+const visibleOptions = computed(() =>
+    sortedCubeOptions.value.filter(({ cube }) => !cube.hidden),
+);
+
+const hiddenOptions = computed(() =>
+    sortedCubeOptions.value.filter(({ cube }) => cube.hidden),
+);
 
 // Default to first two cubes when loadedCubes changes
 watch(() => Object.keys(props.loadedCubes), (keys) => {
