@@ -96,7 +96,7 @@
                                 <template #content>
                                     <el-image :src="card.urlFront" fit="contain" class="card-image" />
                                 </template>
-                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
+                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.isCustomCard ? '* ' : '' }}{{ card.name }}</el-link>
                             </el-tooltip>
                         </div>
                     </div>
@@ -113,7 +113,7 @@
                                 <template #content>
                                     <el-image :src="card.urlFront" fit="contain" class="card-image" />
                                 </template>
-                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
+                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.isCustomCard ? '* ' : '' }}{{ card.name }}</el-link>
                             </el-tooltip>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                                 <template #content>
                                     <el-image :src="card.urlFront" fit="contain" class="card-image" />
                                 </template>
-                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.name }}</el-link>
+                                <el-link @click="openCardDetailDialog?.(card.oracleId)" underline="never" class="card-name">{{ card.isCustomCard ? '* ' : '' }}{{ card.name }}</el-link>
                             </el-tooltip>
                         </div>
                     </div>

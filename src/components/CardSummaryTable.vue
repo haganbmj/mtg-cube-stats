@@ -226,7 +226,7 @@
                     :title="nameOverflowSet.has(row.oracleId) ? row.name : undefined"
                     @mouseenter="onNameMouseenter($event.currentTarget as HTMLElement, row.oracleId)"
                 >
-                    <el-link @click="openCardDetailDialog?.(row.oracleId)">{{ row.name }}</el-link>
+                    <el-link @click="openCardDetailDialog?.(row.oracleId)">{{ row.isCustomCard ? '* ' : '' }}{{ row.name }}</el-link>
                 </span>
             </el-tooltip>
         </template>
@@ -790,6 +790,7 @@ const gamesMeta = [
     { value: 'paper', color: '#1e6b1e' },
     { value: 'mtgo', color: '#3a6d8c' },
     { value: 'arena', color: '#7a3d78' },
+    { value: 'custom', color: '#8c5c3a' },
 ];
 
 const filteredTags = (cardTags: string[]) => {

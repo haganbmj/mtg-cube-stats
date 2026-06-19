@@ -5,6 +5,7 @@ import { isEvergreenKeyword } from './Keywords';
 import { detectCubeArchetypes } from './ArchetypeDetection';
 import { assumedCategories } from './CubeCategories';
 import { snapshotKey } from './Snapshots';
+import { flatMapTypes, primaryTypeOf } from './TypeLine';
 import type {
     ScryfallDataStructure,
     ScryfallCard,
@@ -76,12 +77,32 @@ export function remapCube(
     fetchedAt?: string,
     options: { snapshotDate?: number } = {},
 ): Cube {
-    const cards: CubeCard[] = cube.cards.mainboard.map((card: any) => ({
-        printingId: card.details.scryfall_id,
-        oracleId: card.details.oracle_id,
-        elo: card.details.elo,
-        popularity: card.details.popularity,
-    }));
+    const cards: CubeCard[] = cube.cards.mainboard.map((card: any) => {
+        if (card.cardID === 'custom-card' || card.details?.oracle_id === 'custom-card') {
+            const customName: string | undefined = card.custom_name;
+            const syntheticOracleId = customName
+                ? `custom-${customName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+                : 'custom-card';
+            return {
+                printingId: 'custom-card',
+                oracleId: syntheticOracleId,
+                isCustomCard: true,
+                name: customName,
+                cmc: Number(card.cmc) || undefined,
+                colors: card.colors?.length ? card.colors : undefined,
+                typeLine: card.type_line || undefined,
+                customImageUrl: card.imgUrl || undefined,
+                elo: card.details?.elo,
+                popularity: card.details?.popularity,
+            };
+        }
+        return {
+            printingId: card.details.scryfall_id,
+            oracleId: card.details.oracle_id,
+            elo: card.details.elo,
+            popularity: card.details.popularity,
+        };
+    });
 
     const remappedCube: Cube = {
         id: cube.id,
@@ -131,16 +152,57 @@ export function enrichCube(cube: Cube): Cube {
 }
 
 /**
- * FIXME: This needs to handle Custom Cards on CubeCobra. I think those just have cardId="custom-card"
+ * Enrich cube cards with Scryfall data, or fill custom card fields from CubeCobra overrides.
  */
 function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
     return cards.map(card => {
+        if (card.isCustomCard) {
+            const types = card.typeLine ? flatMapTypes(card.typeLine) : [];
+            return {
+                ...card,
+                name: card.name ?? 'Unknown Card',
+                cmc: card.cmc ?? 0,
+                colors: card.colors ?? [],
+                colorIdentity: card.colors ?? [],
+                typeLine: card.typeLine ?? '',
+                effectiveTypes: types,
+                primaryType: card.typeLine ? primaryTypeOf(card.typeLine) as any : undefined,
+                urlFront: card.customImageUrl ?? '',
+                oracleText: '',
+                oracleTextWordCount: 0,
+                oracleTextWordCountMinusParen: 0,
+                legality: {},
+                isUniversesBeyond: false,
+                rarity: undefined,
+                minRarity: undefined,
+                releaseDate: undefined,
+                releaseYear: undefined,
+                setCode: 'CUSTOM',
+                setName: 'Custom',
+                collectorNumber: '',
+                isSupplementalProduct: false,
+                keywords: [],
+                games: ['custom'],
+                tags: [],
+                archetypes: [],
+                setType: 'custom',
+                layout: 'normal',
+                isNormalLayout: true,
+                makesTokens: false,
+                tokenOracleIds: [],
+                power: undefined,
+                toughness: undefined,
+                minPriceUsd: null,
+                minPriceTix: null,
+                urlBack: '',
+            };
+        }
+
         const scryfallCard: ScryfallCard | undefined = scryfall?.cards[card.oracleId];
         if (!scryfallCard) {
             console.warn(`Could not find card with oracle ID ${card.oracleId} in Scryfall data.`);
         }
 
-        // The default cases here really should only matter for Custom Cards, the rest we should have data for (unless it's _brand_ new).
         return {
             ...card,
             name: scryfallCard?.name ?? 'Unknown Card',
@@ -164,7 +226,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             collectorNumber: scryfallCard?.collectorNumber ?? '',
             isSupplementalProduct: scryfallCard?.isSupplementalProduct ?? false,
             keywords: scryfallCard?.keywords ?? [],
-            games: scryfallCard?.games ?? [], // custom cards won't have a game listed.
+            games: scryfallCard?.games ?? [],
             tags: scryfallCard?.tags ?? [],
             archetypes: scryfallCard?.archetypes ?? [],
             setType: scryfallCard?.setType ?? '',

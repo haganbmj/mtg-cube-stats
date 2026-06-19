@@ -84,7 +84,7 @@
                                         @click="openCardDetailDialog?.(card.oracleId)"
                                         underline="never"
                                         class="card-name"
-                                    >{{ card.name }}</el-link>
+                                    >{{ card.isCustomCard ? '* ' : '' }}{{ card.name }}</el-link>
                                 </el-tooltip>
                             </div>
                         </div>

@@ -505,8 +505,8 @@ const uniqueOnlyCards = computed(() => {
 const topPopularCards = computed(() => {
     const cards = Array.from(cardCubeCounts.value.entries())
         .filter(([oracleId, data]) => {
-            // Filter out lands
-            return !data.card.effectiveTypes?.includes('Land');
+            // Filter out lands and custom cards
+            return !data.card.effectiveTypes?.includes('Land') && !data.card.isCustomCard;
         })
         .map(([oracleId, data]) => ({
             ...data.card,
@@ -525,7 +525,7 @@ const topLowEloCards = computed(() => {
     // First pass: collect all cards and track which cubes contain them
     Object.values(props.loadedCubes).forEach((cube: any) => {
         cube.cards.forEach((card: any) => {
-            if (card.elo !== undefined && card.elo !== null) {
+            if (card.elo !== undefined && card.elo !== null && !card.isCustomCard) {
                 if (!cardCubeMap.has(card.oracleId)) {
                     cardCubeMap.set(card.oracleId, { card, cubes: [] });
                 }

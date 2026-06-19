@@ -7,6 +7,7 @@ const { chain } = _require('stream-chain');
 const { parser } = _require('stream-json');
 const { streamArray } = _require('stream-json/streamers/stream-array');
 import { detectCardArchetypes } from './src/util/ArchetypeDetection';
+import { flatMapTypes } from './src/util/TypeLine';
 import type { CubeCard } from './src/types';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
@@ -176,11 +177,6 @@ cards.forEach((card: any) => {
         taggerOracleIds[card.oracle_id].add('token');
     }
 });
-
-const flatMapTypes = (typeLine: string): string[] => {
-    // Some of the Spiderman cards are using the wrong dash character.
-    return typeLine.replace('—', '-').split('//')[0].split('-')[0].trim().split(' ');
-}
 
 const effectiveTypes = (card: any): string[] => {
     if (card.layout === 'adventure') {
