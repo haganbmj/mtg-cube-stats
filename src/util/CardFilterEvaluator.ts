@@ -295,6 +295,8 @@ function evaluateFlag(flag: string, row: any): boolean {
         case 'flicker':
         case 'tutor':
             return (row.tags ?? []).some((t: string) => t.toLowerCase() === f);
+        case 'custom':
+            return !!row.isCustomCard;
         default:
             return false;
     }
