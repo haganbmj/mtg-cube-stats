@@ -1,5 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Cube } from '../types';
+import { SNAPSHOT_KEY_SEPARATOR } from './Snapshots';
 
 const DB_NAME = 'cube-cache';
 const DB_VERSION = 2;
@@ -92,6 +93,7 @@ export async function evictCube(id: string): Promise<void> {
 }
 
 export function isStale(entry: CachedCube): boolean {
+    if (entry.id.includes(SNAPSHOT_KEY_SEPARATOR)) return false;
     const fetchedAt = new Date(entry.fetchedAt).getTime();
     return Date.now() - fetchedAt > STALE_THRESHOLD_MS;
 }
@@ -107,7 +109,7 @@ export async function pruneStaleEntries(): Promise<void> {
         while (cursor) {
             const entry = cursor.value as CachedCube;
             const age = now - new Date(entry.fetchedAt).getTime();
-            if (age > EVICTION_THRESHOLD_MS) {
+            if (age > EVICTION_THRESHOLD_MS && !entry.id.includes(SNAPSHOT_KEY_SEPARATOR)) {
                 await cursor.delete();
             }
             cursor = await cursor.continue();
@@ -117,6 +119,24 @@ export async function pruneStaleEntries(): Promise<void> {
     } catch {
         // Silently fail
     }
+}
+
+export async function listCachedSnapshots(baseCubeId: string): Promise<CachedCube[]> {
+    const db = await getDb();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const prefix = `${baseCubeId}${SNAPSHOT_KEY_SEPARATOR}`;
+    const matches: CachedCube[] = [];
+    let cursor = await store.openCursor();
+    while (cursor) {
+        const entry = cursor.value as CachedCube;
+        if (entry.id.startsWith(prefix)) {
+            matches.push(entry);
+        }
+        cursor = await cursor.continue();
+    }
+    matches.sort((a, b) => (b.data.snapshotDate ?? 0) - (a.data.snapshotDate ?? 0));
+    return matches;
 }
 
 export async function _resetForTesting(): Promise<void> {

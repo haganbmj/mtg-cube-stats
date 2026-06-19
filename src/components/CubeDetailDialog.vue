@@ -3,7 +3,7 @@
         :model-value="visible"
         :modal="modal"
         width="90%"
-        style="max-width: 1500px;"
+        style="max-width: 1900px;"
         top="5vh"
         align-center
         :before-close="() => $emit('close')"
@@ -12,13 +12,30 @@
             <div v-if="activeCube" class="cube-dialog-header">
                 <el-image :src="activeCube.thumbnail" fit="contain" class="cube-dialog-image" />
                 <div class="cube-dialog-title-block">
-                    <el-link :href="`https://cubecobra.com/cube/about/${activeCube.id}`" target="_blank" type="default" underline="never">
-                        <span class="cube-dialog-name">{{ activeCube.name }}</span>
+                    <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank" type="default" underline="never">
+                        <span class="cube-dialog-name">{{ displayName(activeCube) }}</span>
                         <el-icon class="el-icon--right"><Link /></el-icon>
                     </el-link>
                     <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
                         <span class="cube-dialog-owner">{{ activeCube.owner }}</span>
                     </el-link>
+                    <div v-if="isSnapshot(activeCube)" class="cube-dialog-snapshot-meta">
+                        <el-icon><Clock /></el-icon>
+                        <span>Snapshot · {{ snapshotDateLabel(activeCube.snapshotDate!) }}</span>
+                        <template v-if="currentCubeLoaded">
+                            <span class="cube-dialog-snapshot-sep">·</span>
+                            <el-link type="primary" underline="never" @click="openCurrentCube">View current cube</el-link>
+                        </template>
+                        <template v-else>
+                            <span class="cube-dialog-snapshot-sep">·</span>
+                            <el-link type="primary" underline="never" @click="loadAndOpenCurrentCube" :loading="loadingCurrent">Load current cube</el-link>
+                        </template>
+                        <template v-if="activeSnapshotInCubeList !== null">
+                            <span class="cube-dialog-snapshot-sep">·</span>
+                            <el-link v-if="activeSnapshotInCubeList" type="success" underline="never" @click="setHidden(activeCube!.id, true)">In Cube List</el-link>
+                            <el-link v-else type="primary" underline="never" @click="setHidden(activeCube!.id, false)">Show in Cube List</el-link>
+                        </template>
+                    </div>
                 </div>
             </div>
         </template>
@@ -27,7 +44,9 @@
             <div class="cube-dialog-meta">
                 <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
                 <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
-                <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
+                <el-tooltip :content="fullLastModified" placement="top" :hide-after="50" :enterable="false" :disabled="!fullLastModified">
+                    <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
+                </el-tooltip>
                 <span class="cube-dialog-meta-item" v-if="(activeCube.stats?.assumedCategories || []).length">
                     Categories:
                     <el-tooltip
@@ -59,7 +78,7 @@
                             <div class="stat-grid">
                                 <div class="stat-item">
                                     <i class="ms ms-creature ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards with 'Creature' in their Type Line" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards with Creature in their Type Line', activeCubeComparisons.creatureRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.creatureCards, activeCube.stats?.totalCards) }}
@@ -71,7 +90,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-land ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards that are playable from hand as a Land, includes MDFCs" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards that are playable from hand as a Land, includes MDFCs', activeCubeComparisons.landRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.landCards, activeCube.stats?.totalCards) }}
@@ -83,7 +102,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-c ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Mana Value of Non-Land Cards" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average Mana Value of Non-Land Cards', activeCubeComparisons.averageNonLandCmc)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageNonLandCmc ?? 0).toFixed(2) }}
@@ -95,7 +114,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-rarity ms-2x stat-icon"></i>
-                                    <el-tooltip content="Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200', activeCubeComparisons.blendedRarityScore)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}
@@ -107,7 +126,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-deathtouch ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards tagged as 'removal' in Scryfall's Tagger" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards tagged as removal in Scryfall Tagger', activeCubeComparisons.removalRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.removal, activeCube.stats?.totalCards) }}
@@ -119,7 +138,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-token ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards that Create one or more Tokens" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards that Create one or more Tokens', activeCubeComparisons.makesTokensRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.makesTokens, activeCube.stats?.totalCards) }}
@@ -131,7 +150,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-token ms-2x stat-icon"></i>
-                                    <el-tooltip content="Number of unique token types produced by cards in the cube" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Number of unique token types produced by cards in the cube', activeCubeComparisons.uniqueTokenCount)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ activeCube.stats?.uniqueTokenCount ?? 0 }}
@@ -143,7 +162,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-prototype ms-2x stat-icon"></i>
-                                    <el-tooltip content="Number of Unique Non-Evergreen Keywords" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Number of Unique Non-Evergreen Keywords', activeCubeComparisons.uniqueNonEvergreenKeywords)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ activeCube.stats?.uniqueNonEvergreenKeywords ?? 0 }}
@@ -172,7 +191,7 @@
                             <div class="stat-grid">
                                 <div class="stat-item">
                                     <i class="ms ms-counter-time ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Release Year of Cards in the Cube (± Standard Deviation)" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average Release Year of Cards in the Cube (± Standard Deviation)', activeCubeComparisons.averageReleaseYear)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ Math.round(activeCube.stats?.averageReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.averageReleaseYearStdDev ?? 0).toFixed(1) }})</span>
@@ -184,7 +203,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-time ms-2x stat-icon"></i>
-                                    <el-tooltip content="Median Release Year of Cards in the Cube (± Median Absolute Deviation)" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Median Release Year of Cards in the Cube (± Median Absolute Deviation)', activeCubeComparisons.medianReleaseYear)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ Math.round(activeCube.stats?.medianReleaseYear ?? 0) }} <span class="stat-secondary">(±{{ (activeCube.stats?.medianReleaseYearMAD ?? 0).toFixed(1) }})</span>
@@ -196,7 +215,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-lore ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Oracle Text Word Count, excluding Reminder Text" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average Oracle Text Word Count, excluding Reminder Text', activeCubeComparisons.averageWordCount)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageWordCount ?? 0).toFixed(2) }}
@@ -208,7 +227,7 @@
                                 </div>
                                 <div class="stat-item" v-if="activeCube.stats?.totalUniqueCards !== activeCube.stats?.totalCards">
                                     <i class="ms ms-counter-lore ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average Oracle Text Word Count of Unique Cards, excluding Reminder Text', activeCubeComparisons.averageWordCountUnique)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageWordCountUnique ?? 0).toFixed(2) }}
@@ -220,7 +239,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-ability-defender ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average CubeCobra Card Elo Rating" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average CubeCobra Card Elo Rating', activeCubeComparisons.averageElo)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averageElo ?? 0).toFixed(2) }}
@@ -232,7 +251,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-wotc ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average CubeCobra Card Popularity Score" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average CubeCobra Card Popularity Score', activeCubeComparisons.averagePopularity)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ (activeCube.stats?.averagePopularity ?? 0).toFixed(2) }} %
@@ -244,7 +263,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-brick-print ms-2x stat-icon"></i>
-                                    <el-tooltip content="Average Cosine Similarity Score vs. Other Loaded Cubes" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Average Cosine Similarity Score vs. Other Loaded Cubes', activeCubeComparisons.avgSimilarityScore)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(avgSimilarityScore, 1) }}
@@ -256,7 +275,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-cutiemark-sparkle ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards Released in the Last 12 Months" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards Released in the Last 12 Months', activeCubeComparisons.newCardRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.newCards, activeCube.stats?.totalCards) }}
@@ -268,7 +287,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-rad ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)', activeCubeComparisons.abnormalLayoutRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.abnormalLayout, activeCube.stats?.totalCards) }}
@@ -280,7 +299,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-watermark-transformers ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards originally from Universes Beyond Products (includes Standard sets)" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards originally from Universes Beyond Products (includes Standard sets)', activeCubeComparisons.universesBeyondRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.universesBeyond, activeCube.stats?.totalCards) }}
@@ -292,7 +311,7 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-counter-goad ms-2x stat-icon"></i>
-                                    <el-tooltip content="Cards originally from Supplemental Products (includes Portal)" placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Cards originally from Supplemental Products (includes Portal)', activeCubeComparisons.supplementalProductRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
                                                 {{ formatPercentage(activeCube.stats?.cardCounts?.supplementalProduct, activeCube.stats?.totalCards) }}
@@ -379,9 +398,9 @@
                         <el-col :span="24">
                             <div class="external-links">
                                 <el-space wrap>
-                                    <el-button tag="a" :href="`https://cubecobra.com/cube/about/${activeCube.id}`" target="_blank">CubeCobra</el-button>
-                                    <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${activeCube.id}`" target="_blank">Hedron Network</el-button>
-                                    <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${activeCube.id}`" target="_blank">LuckyPaper Cube Map</el-button>
+                                    <el-button tag="a" :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank">CubeCobra</el-button>
+                                    <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${externalCubeId(activeCube)}`" target="_blank">Hedron Network</el-button>
+                                    <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${externalCubeId(activeCube)}`" target="_blank">LuckyPaper Cube Map</el-button>
                                 </el-space>
                             </div>
                         </el-col>
@@ -390,6 +409,7 @@
                                 Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
                             </el-text>
                             <el-button
+                                v-if="!isSnapshot(activeCube)"
                                 :icon="Refresh"
                                 size="small"
                                 text
@@ -516,6 +536,105 @@
                     <ArchetypeAnalysis :cubeCards="activeCubeCards" />
                 </el-tab-pane> -->
 
+                <el-tab-pane :label="historyTabLabel">
+                    <div class="history-tab">
+                        <section class="history-presets">
+                            <h4 class="history-section-title">Load snapshot from…</h4>
+                            <div class="history-preset-buttons">
+                                <el-button
+                                    v-for="preset in snapshotPresets"
+                                    :key="preset.label"
+                                    :disabled="snapshotLoading"
+                                    @click="loadPreset(preset.offsetMs)"
+                                >
+                                    {{ preset.label }}
+                                </el-button>
+                            </div>
+                        </section>
+
+                        <section class="history-custom">
+                            <h4 class="history-section-title">Or pick a date</h4>
+                            <div class="history-custom-row">
+                                <el-date-picker
+                                    v-model="customSnapshotDate"
+                                    type="date"
+                                    placeholder="Pick a date"
+                                    :disabled-date="isFutureDate"
+                                />
+                                <el-button
+                                    type="primary"
+                                    :disabled="!customSnapshotDate || snapshotLoading"
+                                    @click="loadCustomSnapshot"
+                                >
+                                    Load snapshot
+                                </el-button>
+                            </div>
+                        </section>
+
+                        <section class="history-loaded">
+                            <h4 class="history-section-title">Loaded snapshots</h4>
+                            <div v-if="!currentCubeLoaded" class="history-live-missing">
+                                <el-icon><InfoFilled /></el-icon>
+                                <span>Current cube not loaded.</span>
+                                <el-link type="primary" underline="never" :loading="loadingCurrent" @click="loadAndOpenCurrentCube">Load current</el-link>
+                            </div>
+                            <div v-if="historyRows.length === 0" class="history-empty">
+                                No snapshots yet. Pick a date above to load one.
+                            </div>
+                            <div v-else>
+                                <div v-for="row in historyRows" :key="row.id" class="history-snapshot-row">
+                                    <div class="history-snapshot-thumb-wrapper">
+                                        <el-image v-if="row.cube.thumbnail" :src="row.cube.thumbnail" fit="cover" class="history-snapshot-thumb history-snapshot-thumb-img" />
+                                        <el-button class="history-snapshot-remove" size="small" type="danger" @click="forget(row.id)">
+                                            <el-icon><Delete /></el-icon>
+                                        </el-button>
+                                    </div>
+                                    <div class="history-snapshot-name">
+                                        <div>
+                                            <el-link
+                                                v-if="row.id !== activeCube?.id"
+                                                underline="never"
+                                                @click="openSnapshot(row)"
+                                            >{{ displayName(row.cube) }}</el-link>
+                                            <span v-else>{{ displayName(row.cube) }}</span>
+                                        </div>
+                                        <div class="history-snapshot-sub">
+                                            <el-tooltip v-if="row.cube.lastModified" :content="new Date(row.cube.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' })" placement="top" :hide-after="50" :enterable="false">
+                                                <span class="history-snapshot-modified">
+                                                    Modified: {{ new Date(row.cube.lastModified).toISOString().slice(0, 10) }}
+                                                </span>
+                                            </el-tooltip>
+                                            <span v-if="row.diff" class="history-snapshot-diff">
+                                                <span class="diff-added">+{{ row.diff.added }}</span>
+                                                <span class="diff-sep">/</span>
+                                                <span class="diff-removed">&minus;{{ row.diff.removed }}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="history-snapshot-actions">
+                                        <el-button
+                                            v-if="row.state === 'loaded-visible'"
+                                            size="small"
+                                            type="success"
+                                            @click="setHidden(row.id, true)"
+                                        >In Cube List</el-button>
+                                        <el-button
+                                            v-else
+                                            size="small"
+                                            @click="showInOverview(row)"
+                                        >Show in Cube List</el-button>
+                                        <el-button
+                                            size="small"
+                                            :loading="compareLoadingFor === row.id"
+                                            @click="compareSnapshotWithCurrent(row)"
+                                        >Compare vs Current</el-button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </el-tab-pane>
+
                 <el-tab-pane label="Sample Pack" :lazy="true">
                     <div class="sample-pack">
                         <el-button @click="generateNewPack" style="margin-bottom: 1em;">Generate New Pack</el-button>
@@ -544,6 +663,7 @@
                         Data fetched: {{ isRefreshing ? 'updating...' : formattedFetchedAt }}
                     </el-text>
                     <el-button
+                        v-if="!isSnapshot(activeCube)"
                         :icon="Refresh"
                         size="small"
                         text
@@ -562,9 +682,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, inject, type Ref } from 'vue';
+import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock, InfoFilled, Delete } from '@element-plus/icons-vue';
+import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
@@ -572,6 +693,8 @@ import type { ScryfallToken } from '../types/scryfall';
 import { formatPrice } from '../util/HelperFunctions';
 import { getTokens } from '../util/CubeFunctions';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
+import { listCachedSnapshots, evictCube } from '../util/CubeCache';
+import type { CachedCube } from '../util/CubeCache';
 import ManaValueChart from './charts/basic/ManaValueChart.vue';
 import ReleaseYearChart from './charts/basic/ReleaseYearChart.vue';
 import ColorIdentityDistributionChart from './charts/distributions/ColorIdentityDistributionChart.vue';
@@ -625,8 +748,223 @@ const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
+const openCubeDetailDialog = inject<(id: string) => void>('openCubeDetailDialog');
 const refreshCube = inject<(id: string) => Promise<void>>('refreshCube');
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
+const addCube = inject<(id: string, opts?: { refresh?: boolean; hidden?: boolean }) => Promise<void>>('addCube');
+const popDetail = inject<() => void>('popDetail');
+
+// Convert loadedCubes prop to Ref for computed properties
+const loadedCubesRef = toRef(props, 'loadedCubes');
+
+const activeCubeId = ref<string | null>(null);
+
+const activeCube = computed(() => {
+    if (!activeCubeId.value) return props.cubeRow;
+    return props.overviewTableData.find(c => c.id === activeCubeId.value) || props.cubeRow;
+});
+
+const baseCubeId = computed(() => externalCubeId(activeCube.value ?? { id: '' }));
+const currentCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
+
+const loadingCurrent = ref(false);
+
+const activeSnapshotInCubeList = computed(() => {
+    const cube = activeCube.value;
+    if (!cube || !isSnapshot(cube)) return null;
+    const loaded = loadedCubesRef.value[cube.id];
+    if (!loaded) return null;
+    return !loaded.hidden;
+});
+
+const openCurrentCube = () => {
+    if (openCubeDetailDialog && currentCubeLoaded.value) {
+        openCubeDetailDialog(baseCubeId.value);
+    }
+};
+
+const loadAndOpenCurrentCube = async () => {
+    if (!addCube) return;
+    loadingCurrent.value = true;
+    try {
+        await addCube(baseCubeId.value);
+        if (currentCubeLoaded.value) openCurrentCube();
+    } finally {
+        loadingCurrent.value = false;
+    }
+};
+
+const addSnapshot = inject<(baseCubeId: string, requestedDate: number, opts?: { hidden?: boolean }) => Promise<{ key: string; deduped: boolean } | null>>('addSnapshot');
+const removeCube = inject<(id: string) => void>('removeCube');
+const navigateToComparison = inject<(cubeAId: string, cubeBId: string) => void>('navigateToComparison');
+
+const snapshotPresets = [
+    { label: '3 months ago', offsetMs: 3 * 30 * 24 * 60 * 60 * 1000 },
+    { label: '6 months ago', offsetMs: 6 * 30 * 24 * 60 * 60 * 1000 },
+    { label: '12 months ago', offsetMs: 12 * 30 * 24 * 60 * 60 * 1000 },
+    { label: '24 months ago', offsetMs: 24 * 30 * 24 * 60 * 60 * 1000 },
+];
+
+const customSnapshotDate = ref<Date | null>(null);
+const snapshotLoading = ref(false);
+const compareLoadingFor = ref<string | null>(null);
+
+const cachedSnapshots = ref<CachedCube[]>([]);
+
+const refreshCachedSnapshots = async () => {
+    if (!baseCubeId.value) {
+        cachedSnapshots.value = [];
+        return;
+    }
+    cachedSnapshots.value = await listCachedSnapshots(baseCubeId.value);
+};
+
+// Refresh whenever the dialog switches to a different cube
+watch(baseCubeId, () => { refreshCachedSnapshots(); }, { immediate: true });
+
+const isFutureDate = (d: Date) => d.getTime() > Date.now();
+
+type HistoryRow = {
+    state: 'loaded-visible' | 'loaded-hidden' | 'cached-only';
+    id: string;
+    cube: Pick<Cube, 'id' | 'name' | 'thumbnail' | 'baseCubeId' | 'snapshotDate' | 'lastModified' | 'hidden'>;
+    diff: { added: number; removed: number } | null;
+};
+
+const snapshotDiff = (snapshotCards: CubeCard[] | undefined): { added: number; removed: number } | null => {
+    const liveCube = loadedCubesRef.value[baseCubeId.value];
+    if (!liveCube?.cards || !snapshotCards) return null;
+
+    const freq = (cards: CubeCard[]) => {
+        const m = new Map<string, number>();
+        for (const c of cards) m.set(c.oracleId, (m.get(c.oracleId) ?? 0) + 1);
+        return m;
+    };
+    const freqLive = freq(liveCube.cards);
+    const freqSnap = freq(snapshotCards);
+    const allIds = new Set([...freqLive.keys(), ...freqSnap.keys()]);
+    let added = 0;
+    let removed = 0;
+    for (const id of allIds) {
+        const liveCount = freqLive.get(id) ?? 0;
+        const snapCount = freqSnap.get(id) ?? 0;
+        if (liveCount > snapCount) added += liveCount - snapCount;
+        else if (snapCount > liveCount) removed += snapCount - liveCount;
+    }
+    return { added, removed };
+};
+
+const historyRows = computed<HistoryRow[]>(() => {
+    if (!baseCubeId.value) return [];
+
+    const loaded = Object.values(loadedCubesRef.value)
+        .filter((c: any) => isSnapshot(c) && externalCubeId(c) === baseCubeId.value);
+
+    const loadedIds = new Set(loaded.map((c: any) => c.id));
+
+    const rows: HistoryRow[] = loaded.map((c: any) => ({
+        state: c.hidden ? 'loaded-hidden' : 'loaded-visible',
+        id: c.id,
+        cube: c,
+        diff: snapshotDiff(c.cards),
+    }));
+
+    for (const cached of cachedSnapshots.value) {
+        if (!loadedIds.has(cached.id)) {
+            rows.push({
+                state: 'cached-only',
+                id: cached.id,
+                cube: cached.data as any,
+                diff: snapshotDiff(cached.data.cards),
+            });
+        }
+    }
+
+    rows.sort((a, b) => (b.cube.snapshotDate ?? 0) - (a.cube.snapshotDate ?? 0));
+    return rows;
+});
+
+const historyTabLabel = computed(() => {
+    const n = historyRows.value.length;
+    return n > 0 ? `History (${n})` : 'History';
+});
+
+const loadPreset = async (offsetMs: number) => {
+    if (!addSnapshot) return;
+    snapshotLoading.value = true;
+    try {
+        await addSnapshot(baseCubeId.value, Date.now() - offsetMs, { hidden: true });
+        await refreshCachedSnapshots();
+    } finally {
+        snapshotLoading.value = false;
+    }
+};
+
+const loadCustomSnapshot = async () => {
+    if (!addSnapshot || !customSnapshotDate.value) return;
+    // Use noon UTC of the selected day to avoid timezone edge effects
+    const d = customSnapshotDate.value;
+    const utcNoon = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+    snapshotLoading.value = true;
+    try {
+        await addSnapshot(baseCubeId.value, utcNoon, { hidden: true });
+        customSnapshotDate.value = null;
+        await refreshCachedSnapshots();
+    } finally {
+        snapshotLoading.value = false;
+    }
+};
+
+const setHidden = (id: string, hidden: boolean) => {
+    const current = loadedCubesRef.value[id];
+    if (!current) return;
+    loadedCubesRef.value[id] = { ...current, hidden };
+};
+
+const showInOverview = async (row: HistoryRow) => {
+    if (row.state === 'cached-only' && addSnapshot && row.cube.snapshotDate != null) {
+        await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: false });
+        await refreshCachedSnapshots();
+    } else {
+        setHidden(row.id, false);
+    }
+};
+
+const forget = async (id: string) => {
+    const isActive = activeCube.value?.id === id;
+    if (loadedCubesRef.value[id] && removeCube) {
+        removeCube(id);
+    }
+    await evictCube(id);
+    await refreshCachedSnapshots();
+    if (isActive && popDetail) popDetail();
+};
+
+const openSnapshot = async (row: HistoryRow) => {
+    if (!openCubeDetailDialog) return;
+    if (row.state === 'cached-only' && addSnapshot && row.cube.snapshotDate != null) {
+        await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: true });
+        await refreshCachedSnapshots();
+    }
+    openCubeDetailDialog(row.id);
+};
+
+const compareSnapshotWithCurrent = async (row: HistoryRow) => {
+    if (!navigateToComparison || !addCube || !addSnapshot) return;
+    compareLoadingFor.value = row.id;
+    try {
+        if (row.state === 'cached-only' && row.cube.snapshotDate != null) {
+            await addSnapshot(baseCubeId.value, row.cube.snapshotDate, { hidden: true });
+        }
+        if (!currentCubeLoaded.value) {
+            await addCube(baseCubeId.value, { hidden: true });
+        }
+        await refreshCachedSnapshots();
+        navigateToComparison(baseCubeId.value, row.id);
+    } finally {
+        compareLoadingFor.value = null;
+    }
+};
 
 const isRefreshing = computed(() => {
     const id = activeCube.value?.id;
@@ -640,17 +978,10 @@ const handleRefresh = async () => {
     await refreshCube(id);
 };
 
-const activeCubeId = ref<string | null>(null);
-
 // Reset activeCubeId whenever the dialog opens with a new cube
 watch(() => props.cubeRow, (newRow) => {
     activeCubeId.value = newRow?.id || null;
     samplePackSeed.value = Date.now();
-});
-
-const activeCube = computed(() => {
-    if (!activeCubeId.value) return props.cubeRow;
-    return props.overviewTableData.find(c => c.id === activeCubeId.value) || props.cubeRow;
 });
 
 const activeCubeCards = computed(() => {
@@ -711,7 +1042,17 @@ const activeCubeComparisons = computed((): Record<string, ComparisonResult | nul
 const formattedLastModified = computed(() => {
     const ts = activeCube.value?.lastModified;
     if (!ts) return 'N/A';
-    return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+    return new Date(ts).toISOString().slice(0, 10);
+});
+
+const fullLastModified = computed(() => {
+    const ts = activeCube.value?.lastModified;
+    if (!ts) return undefined;
+    try {
+        return new Date(ts).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' });
+    } catch {
+        return undefined;
+    }
 });
 
 const formattedFetchedAt = computed(() => {
@@ -726,6 +1067,12 @@ const formatPercentage = (value: number | undefined, total: number | undefined) 
     return ((v / t) * 100).toFixed(2) + '%';
 };
 
+const statTooltip = (base: string, comparison: 'high' | 'low' | null | undefined) => {
+    if (!comparison) return base;
+    const suffix = comparison === 'high' ? '<br>High among loaded cubes' : '<br>Low among loaded cubes';
+    return base + suffix;
+};
+
 const renderedBrief = computed(() => {
     const brief = activeCube.value?.brief;
     if (!brief) return '';
@@ -737,7 +1084,7 @@ const samplePackSeed = ref(Date.now());
 
 const samplePackUrl = computed(() => {
     if (!activeCube.value) return '';
-    return `https://cubecobra.com/cube/samplepackimage/${activeCube.value.id}/${samplePackSeed.value}`;
+    return `https://cubecobra.com/cube/samplepackimage/${externalCubeId(activeCube.value)}/${samplePackSeed.value}`;
 });
 
 const generateNewPack = () => {
@@ -796,6 +1143,19 @@ const tokensTabData = computed(() => {
 .cube-dialog-owner {
     font-size: 0.875rem;
     color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-snapshot-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--el-text-color-secondary);
+}
+
+.cube-dialog-snapshot-sep {
+    color: var(--el-text-color-disabled);
 }
 
 .cube-dialog-meta {
@@ -1040,6 +1400,129 @@ const tokensTabData = computed(() => {
 
 .stat-value--negative {
     color: #f56c6c;
+}
+
+.history-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+.history-section-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    color: var(--el-text-color-primary);
+}
+
+.history-preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.history-custom-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.history-loaded {
+    border-top: 1px solid var(--el-border-color-lighter);
+    padding-top: 1rem;
+}
+
+.history-empty {
+    color: var(--el-text-color-secondary);
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+}
+
+.history-live-missing {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    background: var(--el-color-info-light-9);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.history-snapshot-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.history-snapshot-thumb {
+    width: 50px;
+    height: 35px;
+    border-radius: 4px;
+}
+
+.history-snapshot-thumb-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.history-snapshot-remove {
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.history-snapshot-thumb-img:hover + .history-snapshot-remove,
+.history-snapshot-remove:hover {
+    visibility: visible;
+}
+
+.history-snapshot-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.history-snapshot-sub {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-top: 2px;
+}
+
+.history-snapshot-modified {
+    font-variant-numeric: tabular-nums;
+}
+
+.history-snapshot-diff {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
+
+.diff-added {
+    color: #67c23a;
+}
+
+.diff-removed {
+    color: #f56c6c;
+}
+
+.diff-sep {
+    color: var(--el-text-color-placeholder);
+    margin: 0 1px;
+}
+
+.history-snapshot-actions {
+    display: flex;
+    gap: 0.4rem;
 }
 
 </style>

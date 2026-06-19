@@ -200,7 +200,7 @@
                             <el-row direction="horizontal">
                                 <el-col :span="16">
                                     <el-tooltip :content="`Owner: ${cube.owner}`" :enterable="false" placement="top" :hide-after="50">
-                                        <el-link :href="`https://cubecobra.com/cube/about/${cube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
+                                        <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cube)}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ displayName(cube) }}</el-link>
                                     </el-tooltip>
                                 </el-col>
                                 <el-col :span="8">
@@ -218,7 +218,7 @@
                             <el-row direction="horizontal">
                                 <el-col :span="16">
                                     <el-tooltip :content="`Owner: ${cube.owner}`" :enterable="false" placement="top" :hide-after="50">
-                                        <el-link :href="`https://cubecobra.com/cube/about/${cube.id}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ cube.name }}</el-link>
+                                        <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cube)}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ displayName(cube) }}</el-link>
                                     </el-tooltip>
                                 </el-col>
                                 <el-col :span="8">
@@ -247,6 +247,7 @@ import { renderManaSymbols } from '../util/ManaSymbols';
 import { getScryfallCards } from '../util/CubeFunctions';
 import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
 import { getCardStats } from '../util/CubeCobraCardStats';
+import { displayName, externalCubeId } from '../util/Snapshots';
 import type { Cube } from '../types';
 
 const props = defineProps({

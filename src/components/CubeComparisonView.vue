@@ -3,7 +3,7 @@
         <!-- Column headers -->
         <div class="comparison-row column-headers">
             <div class="comparison-cell header-a">
-                <span class="header-label">Only in {{ props.cubeA.name }}</span>
+                <span class="header-label">Only in {{ headerLabelA }}</span>
                 <span class="header-count">({{ filteredOnlyA.length }} / {{ props.cubeA.cards.length }})</span>
             </div>
             <div class="comparison-cell header-both">
@@ -11,7 +11,7 @@
                 <span class="header-count">({{ filteredBoth.length }})</span>
             </div>
             <div class="comparison-cell header-b">
-                <span class="header-label">Only in {{ props.cubeB.name }}</span>
+                <span class="header-label">Only in {{ headerLabelB }}</span>
                 <span class="header-count">({{ filteredOnlyB.length }} / {{ props.cubeB.cards.length }})</span>
             </div>
         </div>
@@ -150,6 +150,7 @@ import {
     colorComboLabel,
     type ColorColumn
 } from '../util/CardGrouping';
+import { externalCubeId } from '../util/Snapshots';
 
 const props = defineProps({
     onlyA: {
@@ -183,6 +184,27 @@ const props = defineProps({
 });
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
+
+const sameBaseCube = computed(
+    () => externalCubeId(props.cubeA) === externalCubeId(props.cubeB),
+);
+
+const formatSnapshotDate = (iso?: string): string | null => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+};
+
+const headerLabelA = computed(() => {
+    const stamp = sameBaseCube.value ? formatSnapshotDate(props.cubeA.lastModified) : null;
+    return stamp ?? props.cubeA.name;
+});
+
+const headerLabelB = computed(() => {
+    const stamp = sameBaseCube.value ? formatSnapshotDate(props.cubeB.lastModified) : null;
+    return stamp ?? props.cubeB.name;
+});
 
 // Apply hide filter
 const filteredOnlyA = computed(() => {
@@ -401,7 +423,7 @@ function getGroupTotal(cards: CubeCard[], colorId: string, groupLabel: string): 
 
 .cmc-break {
     padding-top: 2px;
-    border-top: 1px solid var(--el-border-color-extra-light);
+    border-top: 1px solid var(--el-border-color);
 }
 
 .card-entry--dimmed {

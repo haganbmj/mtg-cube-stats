@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
-import { getCachedCube, setCachedCube, setCachedCubeIfNewer, evictCube, isStale, pruneStaleEntries, _resetForTesting } from './CubeCache';
+import { getCachedCube, setCachedCube, setCachedCubeIfNewer, evictCube, isStale, pruneStaleEntries, listCachedSnapshots, _resetForTesting } from './CubeCache';
 import type { CachedCube } from './CubeCache';
 import type { Cube } from '../types';
 
@@ -130,5 +130,100 @@ describe('CubeCache', () => {
 
         const result = await getCachedCube('abc123');
         expect(result!.fetchedAt).toBe(newerDate);
+    });
+});
+
+describe('CubeCache snapshot entries', () => {
+    beforeEach(async () => {
+        await _resetForTesting();
+        const { deleteDB } = await import('idb');
+        await deleteDB('cube-cache');
+    });
+
+    it('round-trips a composite-key entry', async () => {
+        const cube = makeCube('abc@1566534018025');
+        await setCachedCube('abc@1566534018025', cube, '2026-05-30T12:00:00.000Z');
+        const result = await getCachedCube('abc@1566534018025');
+        expect(result).not.toBeNull();
+        expect(result!.id).toBe('abc@1566534018025');
+    });
+
+    it('isStale returns false for composite-key entries regardless of age', () => {
+        const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+        const entry: CachedCube = {
+            id: 'abc@1566534018025',
+            data: makeCube('abc@1566534018025'),
+            fetchedAt: tenDaysAgo,
+        };
+        expect(isStale(entry)).toBe(false);
+    });
+
+    it('pruneStaleEntries does not evict old composite-key entries', async () => {
+        const snapshot = makeCube('abc@1566534018025');
+        const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+        await setCachedCube('abc@1566534018025', snapshot, tenDaysAgo);
+
+        await pruneStaleEntries();
+
+        expect(await getCachedCube('abc@1566534018025')).not.toBeNull();
+    });
+});
+
+describe('listCachedSnapshots', () => {
+    beforeEach(async () => {
+        await _resetForTesting();
+        const { deleteDB } = await import('idb');
+        await deleteDB('cube-cache');
+    });
+
+    const makeCube = (id: string, snapshotDate?: number) => ({
+        id,
+        shortId: id,
+        name: 'Test Cube',
+        owner: 'tester',
+        ownerId: 'tester-id',
+        thumbnail: '',
+        cards: [],
+        baseCubeId: snapshotDate ? id.split('@')[0] : undefined,
+        snapshotDate,
+        lastModified: new Date().toISOString(),
+    } as any);
+
+    it('returns snapshots matching the baseCubeId', async () => {
+        await setCachedCube('abc@1000', makeCube('abc@1000', 1000), '2026-01-01');
+        await setCachedCube('abc@2000', makeCube('abc@2000', 2000), '2026-01-01');
+        await setCachedCube('xyz@1500', makeCube('xyz@1500', 1500), '2026-01-01');
+
+        const result = await listCachedSnapshots('abc');
+        expect(result.map(c => c.id).sort()).toEqual(['abc@1000', 'abc@2000']);
+    });
+
+    it('excludes plain (non-snapshot) ids that share the prefix', async () => {
+        await setCachedCube('abc', makeCube('abc'), '2026-01-01');
+        await setCachedCube('abc@1000', makeCube('abc@1000', 1000), '2026-01-01');
+
+        const result = await listCachedSnapshots('abc');
+        expect(result.map(c => c.id)).toEqual(['abc@1000']);
+    });
+
+    it('returns an empty array when no snapshots match', async () => {
+        await setCachedCube('xyz@1000', makeCube('xyz@1000', 1000), '2026-01-01');
+        const result = await listCachedSnapshots('abc');
+        expect(result).toEqual([]);
+    });
+
+    it('sorts newest snapshotDate first', async () => {
+        await setCachedCube('abc@1000', makeCube('abc@1000', 1000), '2026-01-01');
+        await setCachedCube('abc@3000', makeCube('abc@3000', 3000), '2026-01-01');
+        await setCachedCube('abc@2000', makeCube('abc@2000', 2000), '2026-01-01');
+
+        const result = await listCachedSnapshots('abc');
+        expect(result.map(c => c.id)).toEqual(['abc@3000', 'abc@2000', 'abc@1000']);
+    });
+
+    it('does not match a different baseCubeId that contains the queried id as a substring', async () => {
+        await setCachedCube('abcd@1000', makeCube('abcd@1000', 1000), '2026-01-01');
+        const result = await listCachedSnapshots('abc');
+        expect(result).toEqual([]);
     });
 });

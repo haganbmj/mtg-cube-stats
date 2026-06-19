@@ -13,7 +13,7 @@
             sortable
         >
             <template #default="{ row }">
-                <el-link :href="`https://cubecobra.com/cube/about/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ row.name }}</el-link>
             </template>
         </el-table-column>
         <el-table-column
@@ -59,6 +59,7 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
+import { displayName, externalCubeId } from '../util/Snapshots';
 
 const props = defineProps({
     similarityMatrix: {
@@ -84,17 +85,19 @@ const tableData = computed(() => {
 
 const mostSimilarCubes = (cubeId: string) => {
     const scores = props.similarityMatrix[cubeId] || {};
+    const cubeIndex = new Map(props.loadedCubes.map((cube: any) => [cube.id, cube]));
 
     return Object.entries(scores)
+        .filter(([id]) => cubeIndex.has(id))
         .sort((a, b) => b[1] - a[1])
         .map(entry => {
-            const otherCube = props.loadedCubes.filter(cube => cube.id === entry[0])[0];
+            const otherCube = cubeIndex.get(entry[0]);
 
             return {
                 id: entry[0],
                 score: entry[1].cosineSimilarity,
                 intersection: entry[1].insersectionSize,
-                name: otherCube?.name || 'Unknown',
+                name: displayName(otherCube),
                 owner: otherCube?.owner || 'Unknown',
                 ownerId: otherCube?.ownerId || '',
                 size: otherCube?.stats?.totalCards || 0,

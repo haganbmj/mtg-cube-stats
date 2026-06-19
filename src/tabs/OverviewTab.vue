@@ -239,7 +239,8 @@
                 @click="openCubeDetailDialog(row.id)"
             >
                 <div class="cube-tile-thumbnail-wrapper">
-                    <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" />
+                    <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" :class="{ 'cube-tile-thumbnail--snapshot': isSnapshot(row) }" />
+                    <el-icon v-if="isSnapshot(row)" class="cube-tile-snapshot-badge" title="Snapshot"><Clock /></el-icon>
                     <div class="cube-tile-categories">
                         <el-tag
                             v-for="category in row.stats.assumedCategories"
@@ -256,7 +257,8 @@
                 <div class="cube-tile-body">
                     <div class="cube-tile-name">
                         <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                        {{ row.name }}
+                        {{ displayName(row) }}
+                        <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
                     </div>
                     <div class="cube-tile-owner">
                         <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank" @click.stop>{{ row.owner }}</el-link>
@@ -301,11 +303,18 @@
 
             <template #cell-name="{ row }">
                 <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                <el-link :href="`https://cubecobra.com/cube/about/${row.id}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ row.name }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ displayName(row) }}</el-link>
+                <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
             </template>
 
             <template #cell-owner="{ row }">
                 <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
+            </template>
+
+            <template #cell-lastModified="{ row }">
+                <el-tooltip :content="row.lastModified ? new Date(row.lastModified).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' }) : ''" placement="top" :hide-after="50" :enterable="false" :disabled="!row.lastModified">
+                    <span>{{ fmtDate('lastModified')(row) }}</span>
+                </el-tooltip>
             </template>
 
             <template #cell-arenaPlayable="{ row }">
@@ -482,12 +491,13 @@ import { overviewSortProperties, resolveDirection, stripSortTokens } from '../ut
 import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
-import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading } from '@element-plus/icons-vue';
+import { useWindowSize } from '@vueuse/core';
+import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
+import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 
@@ -835,7 +845,7 @@ const fmtPercentage = (prop: string) => (row: any) => ((getNestedProp(row, prop)
 const fmtDate = (prop: string) => (row: any) => {
     const ts = getNestedProp(row, prop);
     if (!ts) return 'N/A';
-    return useDateFormat(new Date(ts), 'YYYY-MM-DD').value;
+    return new Date(ts).toISOString().slice(0, 10);
 };
 
 // --- Table column definitions ---
@@ -1279,5 +1289,24 @@ const formatters = {
 :global(.overview-loading .el-loading-text) {
     color: var(--el-text-color-primary) !important;
     font-size: 14px;
+}
+
+.cube-tile-thumbnail--snapshot {
+    opacity: 0.7;
+    filter: grayscale(0.3);
+}
+
+.cube-tile-snapshot-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    padding: 4px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: white;
+    font-size: 14px;
+    z-index: 1;
 }
 </style>

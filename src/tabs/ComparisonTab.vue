@@ -22,15 +22,28 @@
                         @change="(v: string) => onCubeSelect(v, 'A')"
                         style="width: 100%;"
                     >
-                        <el-option
-                            v-for="{ id, cube } in sortedCubeOptions"
-                            :key="id"
-                            :label="cube.name"
-                            :value="id"
-                        >
-                            <span>{{ cube.name }}</span>
-                            <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
-                        </el-option>
+                        <el-option-group label="Loaded">
+                            <el-option
+                                v-for="{ id, cube } in visibleOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
+                        <el-option-group v-if="hiddenOptions.length > 0" label="Hidden / Compare-only">
+                            <el-option
+                                v-for="{ id, cube } in hiddenOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
                     </el-select>
                 </div>
                 <el-button :icon="Sort" @click="swapCubes" title="Swap cubes" />
@@ -44,15 +57,28 @@
                         @change="(v: string) => onCubeSelect(v, 'B')"
                         style="width: 100%;"
                     >
-                        <el-option
-                            v-for="{ id, cube } in sortedCubeOptions"
-                            :key="id"
-                            :label="cube.name"
-                            :value="id"
-                        >
-                            <span>{{ cube.name }}</span>
-                            <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
-                        </el-option>
+                        <el-option-group label="Loaded">
+                            <el-option
+                                v-for="{ id, cube } in visibleOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
+                        <el-option-group v-if="hiddenOptions.length > 0" label="Hidden / Compare-only">
+                            <el-option
+                                v-for="{ id, cube } in hiddenOptions"
+                                :key="id"
+                                :label="displayName(cube)"
+                                :value="id"
+                            >
+                                <span>{{ displayName(cube) }}</span>
+                                <span style="float: right; color: var(--el-text-color-secondary); font-size: 12px;">{{ cube.owner }}</span>
+                            </el-option>
+                        </el-option-group>
                     </el-select>
                 </div>
             </div>
@@ -66,8 +92,8 @@
                     <div class="cube-header">
                         <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/about/${cubeA.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
-                                <span class="cube-header-name">{{ cubeA.name }}</span>
+                            <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cubeA)}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
+                                <span class="cube-header-name">{{ displayName(cubeA) }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
                                 <span class="cube-header-owner">{{ cubeA.owner }}</span>
@@ -76,15 +102,17 @@
                                 <span>Cards: <strong>{{ cubeA.stats?.totalCards ?? cubeA.cards.length }}</strong></span>
                                 <span>Avg CMC: <strong>{{ cubeA.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
                                 <span>Avg Elo: <strong>{{ cubeA.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                                <span v-if="cubeA.lastModified">Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
+                                <el-tooltip v-if="cubeA.lastModified" :content="fullTimestamp(cubeA.lastModified)" placement="top" :hide-after="50" :enterable="false">
+                                    <span>Modified: <strong>{{ formatDate(cubeA.lastModified) }}</strong></span>
+                                </el-tooltip>
                             </div>
                         </div>
                     </div>
                     <div class="cube-header">
                         <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/about/${cubeB.id}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
-                                <span class="cube-header-name">{{ cubeB.name }}</span>
+                            <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cubeB)}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
+                                <span class="cube-header-name">{{ displayName(cubeB) }}</span>
                             </el-link>
                             <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
                                 <span class="cube-header-owner">{{ cubeB.owner }}</span>
@@ -93,7 +121,9 @@
                                 <span>Cards: <strong>{{ cubeB.stats?.totalCards ?? cubeB.cards.length }}</strong></span>
                                 <span>Avg CMC: <strong>{{ cubeB.stats?.averageNonLandCmc?.toFixed(2) ?? '—' }}</strong></span>
                                 <span>Avg Elo: <strong>{{ cubeB.stats?.averageElo?.toFixed(0) ?? '—' }}</strong></span>
-                                <span v-if="cubeB.lastModified">Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
+                                <el-tooltip v-if="cubeB.lastModified" :content="fullTimestamp(cubeB.lastModified)" placement="top" :hide-after="50" :enterable="false">
+                                    <span>Modified: <strong>{{ formatDate(cubeB.lastModified) }}</strong></span>
+                                </el-tooltip>
                             </div>
                         </div>
                     </div>
@@ -129,6 +159,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
 import type { Cube, CubeCard } from '../types';
+import { displayName, externalCubeId } from '../util/Snapshots';
 import CubeComparisonView from '../components/CubeComparisonView.vue';
 import CardSearchInput from '../components/filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
@@ -173,6 +204,14 @@ const sortedCubeOptions = computed(() => {
         .map(([id, cube]) => ({ id, cube }))
         .sort((a, b) => castInensitiveSort(normalizeSortName(a.cube.name), normalizeSortName(b.cube.name)));
 });
+
+const visibleOptions = computed(() =>
+    sortedCubeOptions.value.filter(({ cube }) => !cube.hidden),
+);
+
+const hiddenOptions = computed(() =>
+    sortedCubeOptions.value.filter(({ cube }) => cube.hidden),
+);
 
 // Default to first two cubes when loadedCubes changes
 watch(() => Object.keys(props.loadedCubes), (keys) => {
@@ -305,7 +344,15 @@ const matchingOracleIds = computed<Set<string> | null>(() => {
 
 const formatDate = (dateStr: string) => {
     try {
-        return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    } catch {
+        return dateStr;
+    }
+};
+
+const fullTimestamp = (dateStr: string) => {
+    try {
+        return new Date(dateStr).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' });
     } catch {
         return dateStr;
     }

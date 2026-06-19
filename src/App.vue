@@ -23,7 +23,7 @@
             <el-main>
                 <div id="contents">
                     <el-tabs tab-position="top" v-model="activeTab">
-                        <el-tab-pane :label="'Cubes (' + Object.keys(loadedCubes).length + ')'" name="overview" :lazy="true">
+                        <el-tab-pane :label="'Cubes (' + Object.keys(visibleLoadedCubes).length + ')'" name="overview" :lazy="true">
                             <OverviewTab
                                 :loadedCubes="loadedCubes"
                                 :overviewTableData="overviewTableData"
@@ -44,7 +44,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Infographic" name="infographic" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <InfographicTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" :activePreset="activePreset" />
+                            <InfographicTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" :activePreset="activePreset" />
                         </el-tab-pane>
 
                         <el-tab-pane label="Statistics" name="statistics" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
@@ -52,7 +52,7 @@
                         </el-tab-pane>
 
                         <!-- <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <ArchetypeAnalysisTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
+                            <ArchetypeAnalysisTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
                         </el-tab-pane> -->
 
                         <el-tab-pane label="Compare" name="compare" :lazy="true">
@@ -60,7 +60,7 @@
                         </el-tab-pane>
 
                         <el-tab-pane label="Cards" name="cards" :lazy="true">
-                            <CardsTab :loadedCubes="loadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
+                            <CardsTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
                         <el-tab-pane label="About" name="about" :lazy="true">
@@ -108,7 +108,7 @@ import type { SortDirection } from './util/SortConfig';
 import { stripSortTokens } from './util/SortConfig';
 import { useHashRouter } from './util/useHashRouter';
 import { useDebounceFn } from '@vueuse/core';
-import { useDetailNavigation } from './util/useDetailNavigation';
+import { useDetailNavigation, suppressHashReconcile } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
 import type { PresetCollection } from './types';
 import presetsJson from '../preloads/generated/presets.json';
@@ -119,6 +119,7 @@ import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
 import { getCubeData } from './util/CubeCobra';
+import { snapshotKey, parseLoadedKey } from './util/Snapshots';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
 import { initCardStats } from './util/CubeCobraCardStats';
@@ -159,6 +160,13 @@ const availablePresets = new Set(
 );
 
 const loadedCubes = ref({});
+
+const visibleLoadedCubes = computed(() =>
+    Object.fromEntries(
+        Object.entries(loadedCubes.value).filter(([, cube]: [string, any]) => !cube.hidden),
+    ),
+);
+
 const refreshingCubeIds = ref<Set<string>>(new Set());
 
 // Loading progress for batch cube loads (addCubes)
@@ -181,7 +189,12 @@ const activeTab = ref('overview');
 const { stack: navigationStack, push: pushDetail, pop: popDetail, closeAll: closeAllDialogs } = useDetailNavigation();
 
 const getCubeRow = (cubeId: string) => {
-    return overviewTableData.value.find(c => c.id === cubeId) || null;
+    const visible = overviewTableData.value.find(c => c.id === cubeId);
+    if (visible) return visible;
+    // Hidden snapshots are excluded from overviewTableData but still need to render in the dialog.
+    const hidden = loadedCubes.value[cubeId];
+    if (!hidden) return null;
+    return { ...hidden, cards: undefined, suffixedCardIds: undefined, avgSimilarityScore: getAverageSimilarityScore(cubeId) };
 };
 const getCubeCards = (cubeId: string) => {
     return loadedCubes.value[cubeId]?.cards || [];
@@ -192,6 +205,7 @@ const openCardDetailDialog = (oracleId: string) => pushDetail({ type: 'card', or
 
 provide('openCubeDetailDialog', openCubeDetailDialog);
 provide('openCardDetailDialog', openCardDetailDialog);
+provide('popDetail', popDetail);
 
 const comparePair = ref<{ cubeAId: string; cubeBId: string } | null>(null);
 const navigateToComparison = (cubeAId: string, cubeBId: string) => {
@@ -255,9 +269,9 @@ const debouncedSync = useDebounceFn(() => {
     syncToHash({
         tab: activeTab.value,
         preset: activePresetName.value,
-        cubes: activePresetName.value ? [] : Object.keys(loadedCubes.value),
+        cubes: activePresetName.value ? [] : Object.keys(visibleLoadedCubes.value),
         presetAdd: activePresetName.value
-            ? Object.keys(loadedCubes.value).filter(id => !presetBaseIds.value.has(id))
+            ? Object.keys(visibleLoadedCubes.value).filter(id => !presetBaseIds.value.has(id))
             : [],
         presetRemove: activePresetName.value
             ? [...presetBaseIds.value].filter(id => !(id in loadedCubes.value))
@@ -274,7 +288,7 @@ const debouncedSync = useDebounceFn(() => {
 watch(
     [
         activeTab,
-        () => Object.keys(loadedCubes.value).join(','),
+        () => Object.keys(visibleLoadedCubes.value).join(','),
         activePresetName,
         cardTableQuery,
         cardSortProp,
@@ -289,6 +303,15 @@ watch(
 );
 
 onHashChange(async (newState) => {
+    // If a dialog close just reverted the URL via history.back/go, the URL no
+    // longer matches loadedCubes (e.g. snapshots added inside the dialog).
+    // Skip reconciliation and re-sync the URL from current state instead.
+    if (suppressHashReconcile.value) {
+        suppressHashReconcile.value = false;
+        debouncedSync();
+        return;
+    }
+
     // Update tab
     if (newState.tab !== activeTab.value) {
         activeTab.value = newState.tab;
@@ -309,14 +332,12 @@ onHashChange(async (newState) => {
 
     // Update compare pair if on compare tab
     if (newState.tab === 'compare' && newState.compareA && newState.compareB) {
-        if (!loadedCubes.value[newState.compareA]) addCube(newState.compareA);
-        if (!loadedCubes.value[newState.compareB]) addCube(newState.compareB);
+        if (!loadedCubes.value[newState.compareA]) addAny(newState.compareA);
+        if (!loadedCubes.value[newState.compareB]) addAny(newState.compareB);
         comparePair.value = { cubeAId: newState.compareA, cubeBId: newState.compareB };
     }
 
     // Reconcile cube state only if it actually changed
-    const currentIds = Object.keys(loadedCubes.value).sort().join(',');
-    const newIds = [...newState.cubes].sort().join(',');
     const currentPreset = activePresetName.value;
 
     if (newState.preset && newState.preset !== currentPreset) {
@@ -334,18 +355,19 @@ onHashChange(async (newState) => {
                 await addCubes(newState.presetAdd);
             }
         }
-    } else if (!newState.preset && newIds !== currentIds) {
-        if (newIds === '') {
+    } else if (!newState.preset) {
+        const newIdSet = new Set(newState.cubes);
+        const currentIdSet = new Set(Object.keys(loadedCubes.value));
+
+        if (newState.cubes.length === 0 && currentIdSet.size > 0) {
             clearCubes();
         } else {
             // Add missing cubes, remove extras
-            const newIdSet = new Set(newState.cubes);
-            const currentIdSet = new Set(Object.keys(loadedCubes.value));
             for (const id of currentIdSet) {
                 if (!newIdSet.has(id)) removeCube(id);
             }
             const toAdd = newState.cubes.filter(id => !currentIdSet.has(id));
-            if (toAdd.length > 0) addCubes(toAdd);
+            if (toAdd.length > 0) await addCubes(toAdd);
         }
     }
 });
@@ -358,7 +380,7 @@ const similarityMatrix = ref<Record<string, Record<string, import('./types').Sim
 
 const getAverageSimilarityScore = (cubeId: string) => {
     const scores = similarityMatrix.value[cubeId] || {};
-    const totalCubes = Object.keys(loadedCubes.value).length - 1;
+    const totalCubes = Object.keys(visibleLoadedCubes.value).length - 1;
 
     if (totalCubes === 0) {
         return 0;
@@ -370,7 +392,7 @@ const getAverageSimilarityScore = (cubeId: string) => {
 
 // FIXME: Is there a way to indicate that this should wait until after similarityMatrix is recomputed?
 const overviewTableData = computed(() => {
-    return Object.entries(loadedCubes.value).map(([id, cube]) => {
+    return Object.entries(visibleLoadedCubes.value).map(([id, cube]) => {
         return {
             ...cube,
             // Strip cards from the table object to improve render performance.
@@ -454,22 +476,28 @@ const addCubes = async (cubeIds: string[]) => {
         while (queue.length > 0) {
             const id = queue.shift()!;
             try {
-                const cached = await getCachedCube(id);
-                if (cached) {
-                    await ensureScryfallInitialized();
-                    const enrichedCube = enrichCube(cached.data);
-                    loadedCubes.value[enrichedCube.id] = enrichedCube;
-                    if (isStale(cached)) {
-                        backgroundRefreshCube(cached.id);
-                    }
+                const { snapshotDate } = parseLoadedKey(id);
+                if (snapshotDate != null) {
+                    await addAny(id);
                 } else {
-                    const rawCube = await getCubeData(id);
-                    await ensureScryfallInitialized();
-                    const fetchedAt = new Date().toISOString();
-                    const strippedCube = remapCube(rawCube, false, fetchedAt);
-                    await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
-                    const enrichedCube = enrichCube(strippedCube);
-                    loadedCubes.value[enrichedCube.id] = enrichedCube;
+                    // existing live-cube logic unchanged
+                    const cached = await getCachedCube(id);
+                    if (cached) {
+                        await ensureScryfallInitialized();
+                        const enrichedCube = enrichCube(cached.data);
+                        loadedCubes.value[enrichedCube.id] = enrichedCube;
+                        if (isStale(cached)) {
+                            backgroundRefreshCube(cached.id);
+                        }
+                    } else {
+                        const rawCube = await getCubeData(id);
+                        await ensureScryfallInitialized();
+                        const fetchedAt = new Date().toISOString();
+                        const strippedCube = remapCube(rawCube, false, fetchedAt);
+                        await setCachedCube(strippedCube.id, strippedCube, fetchedAt);
+                        const enrichedCube = enrichCube(strippedCube);
+                        loadedCubes.value[enrichedCube.id] = enrichedCube;
+                    }
                 }
                 await nextTick();
             } catch (e) {
@@ -487,7 +515,7 @@ const addCubes = async (cubeIds: string[]) => {
 };
 
 const saveCollection = (name: string) => {
-    const cubeIds = Object.keys(loadedCubes.value);
+    const cubeIds = Object.keys(visibleLoadedCubes.value);
     const existing = userCollections.value.findIndex(c => c.name === name);
     if (existing >= 0) {
         userCollections.value[existing] = { name, cubeIds };
@@ -507,7 +535,99 @@ const removeCollection = (name: string) => {
     userCollections.value = userCollections.value.filter(c => c.name !== name);
 };
 
-const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean } = {}) => {
+const addSnapshot = async (
+    baseCubeId: string,
+    requestedDate: number,
+    options: { hidden?: boolean } = {},
+): Promise<{ key: string; deduped: boolean } | null> => {
+    // Optimization: if the requestedDate exactly matches a previously-cached
+    // composite key (URL recovery for a snapshot loaded in a past session),
+    // skip the network round-trip entirely.
+    const optimisticKey = snapshotKey(baseCubeId, requestedDate);
+    const cachedOptimistic = await getCachedCube(optimisticKey);
+    if (cachedOptimistic) {
+        if (loadedCubes.value[optimisticKey]) {
+            ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
+            return { key: optimisticKey, deduped: true };
+        }
+
+        await ensureScryfallInitialized();
+        const enriched = enrichCube(cachedOptimistic.data);
+        if (presetBaseIds.value.size === 0) {
+            activePresetName.value = null;
+        }
+        loadedCubes.value[optimisticKey] = enriched;
+        if (options.hidden) {
+            loadedCubes.value[optimisticKey] = { ...loadedCubes.value[optimisticKey], hidden: true };
+        }
+        updateSimilarityForCube(optimisticKey, loadedCubes.value, similarityMatrix.value);
+        return { key: optimisticKey, deduped: false };
+    }
+
+    let raw;
+    try {
+        raw = await getCubeData(baseCubeId, { date: requestedDate });
+    } catch (e) {
+        console.error(`Failed to load snapshot for ${baseCubeId}:`, e);
+        ElMessage({ message: `Failed to load snapshot for ${baseCubeId}`, type: 'error', duration: 4000 });
+        return null;
+    }
+
+    const changelogDate: number = raw.changelog.date;
+    const key = snapshotKey(baseCubeId, changelogDate);
+
+    if (loadedCubes.value[key]) {
+        ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
+        return { key, deduped: true };
+    }
+
+    const cached = await getCachedCube(key);
+    if (cached) {
+        if (loadedCubes.value[key]) {
+            ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
+            return { key, deduped: true };
+        }
+
+        await ensureScryfallInitialized();
+        const enriched = enrichCube(cached.data);
+        if (presetBaseIds.value.size === 0) {
+            activePresetName.value = null;
+        }
+        loadedCubes.value[key] = enriched;
+        if (options.hidden) {
+            loadedCubes.value[key] = { ...loadedCubes.value[key], hidden: true };
+        }
+        updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
+        return { key, deduped: false };
+    }
+
+    await ensureScryfallInitialized();
+    const fetchedAt = new Date().toISOString();
+    const stripped = remapCube(raw, false, fetchedAt, { snapshotDate: changelogDate });
+    await setCachedCube(key, stripped, fetchedAt);
+    const enriched = enrichCube(stripped);
+
+    if (presetBaseIds.value.size === 0) {
+        activePresetName.value = null;
+    }
+    loadedCubes.value[key] = enriched;
+    if (options.hidden) {
+        loadedCubes.value[key] = { ...loadedCubes.value[key], hidden: true };
+    }
+    updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
+    return { key, deduped: false };
+};
+
+const addAny = async (key: string): Promise<void> => {
+    const { baseCubeId, snapshotDate } = parseLoadedKey(key);
+    if (snapshotDate != null) {
+        await addSnapshot(baseCubeId, snapshotDate);
+    } else {
+        await addCube(key);
+    }
+};
+
+const addCube = async (cubeId: string, { refresh = false, hidden = false }: { refresh?: boolean; hidden?: boolean } = {}) => {
     // Attempt to take just the Cube ID based on multiple possible input formats.
     const input = cubeId.split('?')[0].trim();
     const [ id ] = input.match(/([^\/]+)\/?$/);
@@ -524,6 +644,9 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                if (hidden) {
+                    loadedCubes.value[enrichedCube.id] = { ...loadedCubes.value[enrichedCube.id], hidden: true };
+                }
                 updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
                 if (refresh || isStale(cached)) {
                     backgroundRefreshCube(cached.id);
@@ -539,6 +662,9 @@ const addCube = async (cubeId: string, { refresh = false }: { refresh?: boolean 
                     activePresetName.value = null;
                 }
                 loadedCubes.value[enrichedCube.id] = enrichedCube;
+                if (hidden) {
+                    loadedCubes.value[enrichedCube.id] = { ...loadedCubes.value[enrichedCube.id], hidden: true };
+                }
                 updateSimilarityForCube(enrichedCube.id, loadedCubes.value, similarityMatrix.value);
             }
         } catch (e) {
@@ -649,6 +775,9 @@ const refreshCube = async (id: string) => {
     await backgroundRefreshCube(id);
 };
 provide('refreshCube', refreshCube);
+provide('addCube', addCube);
+provide('addSnapshot', addSnapshot);
+provide('removeCube', removeCube);
 
 onMounted(async () => {
     // Start data initialization in the background without blocking the UI
@@ -711,8 +840,8 @@ onMounted(async () => {
 
     // Set compare pair from URL if on compare tab
     if (hashState.tab === 'compare' && hashState.compareA && hashState.compareB) {
-        if (!loadedCubes.value[hashState.compareA]) await addCube(hashState.compareA);
-        if (!loadedCubes.value[hashState.compareB]) await addCube(hashState.compareB);
+        if (!loadedCubes.value[hashState.compareA]) await addAny(hashState.compareA);
+        if (!loadedCubes.value[hashState.compareB]) await addAny(hashState.compareB);
         comparePair.value = { cubeAId: hashState.compareA, cubeBId: hashState.compareB };
     }
 });

@@ -1,12 +1,8 @@
 <template>
-    <el-tooltip
+    <span
         v-if="comparison"
-        :content="comparison === 'high' ? 'Higher than typical among loaded cubes' : 'Lower than typical among loaded cubes'"
-        placement="top"
-        :hide-after="50"
-    >
-        <span :class="['stat-cmp', 'stat-cmp--' + comparison]">{{ comparison === 'high' ? '▲' : '▼' }}</span>
-    </el-tooltip>
+        :class="['stat-cmp', 'stat-cmp--' + comparison]"
+    >{{ comparison === 'high' ? '▲' : '▼' }}</span>
 </template>
 
 <script setup lang="ts">

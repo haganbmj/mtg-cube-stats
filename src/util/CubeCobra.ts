@@ -7,10 +7,16 @@ interface CubeCobraResponse {
 }
 
 // TODO: Handle errors...
-export async function getCubeData(cubeId: string): Promise<CubeCobraResponse> {
+export async function getCubeData(
+    cubeId: string,
+    options: { date?: number } = {},
+): Promise<CubeCobraResponse> {
+    const url = options.date
+        ? `https://cubecobra.com/cube/api/cubeJSON/${cubeId}?date=${options.date}`
+        : `https://cubecobra.com/cube/api/cubeJSON/${cubeId}`;
     try {
         const response = await axios({
-            url: `https://cubecobra.com/cube/api/cubeJSON/${cubeId}`,
+            url,
             method: 'GET',
         });
         return response.data;
