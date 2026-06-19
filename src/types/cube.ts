@@ -54,6 +54,10 @@ export interface CubeCard {
   minPriceTix?: number | null;
   urlFront?: string;
   urlBack?: string;
+
+  // Custom card properties (CubeCobra user-defined cards)
+  isCustomCard?: boolean;
+  customImageUrl?: string;
 }
 
 export interface CubeStats {
