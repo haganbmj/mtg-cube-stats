@@ -49,7 +49,7 @@
     "stream-chain": "^4.2.5",
     "stream-json": "^3.4.0",
     "tsx": "^4.22.3",
-    "typescript-eslint": "^8.59.3",
+    "typescript-eslint": "^8.61.1",
     "vite": "8.0.16",
     "vitest": "^4.1.6",
     "vue-loader": "^17.4.2"
