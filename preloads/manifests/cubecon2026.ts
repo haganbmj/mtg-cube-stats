@@ -70,6 +70,9 @@ const manifest: Manifest = {
         '62e12d83-0030-4fef-b661-a277135bfe02', // Spy Games
         'e7e1e793-f89b-4db8-bc2f-9a35db34d76c', // Jank Diver Peasant Cube (Cubecon)
         '2dcf6fff-76c0-48bf-bc40-bd7ccb87b15d', // The Graveyard Shift
+        'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // The Trinket Cube
+        'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's Arena Cube
+        'd7da9efa-55fd-422e-973a-e2ad8cbf65df', // MV:1
     ],
 };
 
