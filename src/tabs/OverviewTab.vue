@@ -266,15 +266,19 @@
                     <div class="cube-tile-stats">
                         <span class="cube-tile-stat">
                             <el-text size="small" tag="b">{{ row.stats.totalCards }}</el-text>
-                            <el-text size="small" type="info"> cards</el-text>
+                            <el-text size="small" type="info">&nbsp;cards</el-text>
                         </span>
                         <span class="cube-tile-stat">
                             <el-text size="small" tag="b">{{ (row.stats.averageNonLandCmc ?? 0).toFixed(2) }}</el-text>
-                            <el-text size="small" type="info"> avg MV</el-text>
+                            <el-text size="small" type="info">&nbsp;avg MV</el-text>
+                        </span>
+                        <span v-if="activeCheckCount > 0" class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ getChecksPassCount(row.id) }}/{{ activeCheckCount }}</el-text>
+                            <el-text size="small" type="info">&nbsp;checks</el-text>
                         </span>
                         <span v-if="sortedData.length > 1" class="cube-tile-stat">
                             <el-text size="small" tag="b">{{ (row.avgSimilarityScore * 100).toFixed(1) }}%</el-text>
-                            <el-text size="small" type="info"> similarity</el-text>
+                            <el-text size="small" type="info">&nbsp;similarity</el-text>
                         </span>
                     </div>
                 </div>
