@@ -1576,9 +1576,9 @@ const tokensTabData = computed(() => {
 }
 
 .checks-grid {
-    display: grid;
-    grid-template-columns: 20px auto auto 1fr;
-    column-gap: 12px;
+    display: inline-grid;
+    grid-template-columns: auto auto auto;
+    column-gap: 16px;
     row-gap: 0px;
     align-items: center;
 }
@@ -1588,7 +1588,7 @@ const tokensTabData = computed(() => {
     grid-column: 1 / -1;
     align-items: center;
     font-size: 0.9rem;
-    padding: 4px 6px;
+    padding: 4px 12px;
     border-radius: 4px;
 }
 .check-row:nth-child(odd) {
