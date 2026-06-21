@@ -50,4 +50,5 @@ export interface CheckResult {
   lhsValue: number;
   rhsValue: number;
   isPercentage: boolean;
+  expressionType: CheckExpression['type'];
 }

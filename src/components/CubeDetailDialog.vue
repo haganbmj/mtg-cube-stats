@@ -402,7 +402,12 @@
                                     </el-icon>
                                     <span class="check-expression">{{ condition.expression }}</span>
                                     <span v-if="result" class="check-value">
-                                        {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
+                                        <template v-if="result.expressionType === 'relative'">
+                                            {{ result.lhsValue }} vs {{ result.rhsValue }}
+                                        </template>
+                                        <template v-else>
+                                            {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
+                                        </template>
                                     </span>
                                 </div>
                             </div>

@@ -88,6 +88,7 @@ export function evaluateCheck(expression: CheckExpression, cards: CubeCard[], ct
         lhsValue,
         rhsValue: expression.threshold,
         isPercentage: expression.isPercentage,
+        expressionType: 'count',
       };
     }
 
@@ -99,6 +100,7 @@ export function evaluateCheck(expression: CheckExpression, cards: CubeCard[], ct
         lhsValue: lhsCount,
         rhsValue: rhsCount,
         isPercentage: false,
+        expressionType: 'relative',
       };
     }
 
@@ -121,6 +123,7 @@ export function evaluateCheck(expression: CheckExpression, cards: CubeCard[], ct
         lhsValue: aggResult,
         rhsValue: expression.threshold,
         isPercentage: false,
+        expressionType: 'aggregate',
       };
     }
   }

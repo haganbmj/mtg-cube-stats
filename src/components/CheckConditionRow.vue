@@ -87,7 +87,12 @@ const sortedCubeResults = computed(() => {
                 </el-icon>
                 <span class="cube-name">{{ item.cubeName }}</span>
                 <span v-if="item.result" class="result-value">
-                    {{ item.result.lhsValue.toFixed(item.result.isPercentage ? 1 : 0) }}{{ item.result.isPercentage ? '%' : '' }}
+                    <template v-if="item.result.expressionType === 'relative'">
+                        {{ item.result.lhsValue }} vs {{ item.result.rhsValue }}
+                    </template>
+                    <template v-else>
+                        {{ item.result.lhsValue.toFixed(item.result.isPercentage ? 1 : 0) }}{{ item.result.isPercentage ? '%' : '' }}
+                    </template>
                 </span>
             </div>
         </div>
