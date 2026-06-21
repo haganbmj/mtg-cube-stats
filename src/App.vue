@@ -63,6 +63,10 @@
                             <CardsTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
+                        <el-tab-pane label="Checks" name="checks" :lazy="true">
+                            <ChecksTab :loaded-cubes="visibleLoadedCubes" />
+                        </el-tab-pane>
+
                         <el-tab-pane label="About" name="about" :lazy="true">
                             <About />
                         </el-tab-pane>
@@ -137,6 +141,7 @@ import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
 import ComparisonTab from './tabs/ComparisonTab.vue';
+import ChecksTab from './tabs/ChecksTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
