@@ -85,7 +85,8 @@ function getCubeResultsForCondition(conditionId: string) {
             <div class="collection-row">
                 <el-select
                     :model-value="checksState.activeCollectionId"
-                    placeholder="Select collection"
+                    label="Collections"
+                    placeholder="Collections..."
                     class="collection-select"
                     @update:model-value="checksState.activeCollectionId = $event"
                 >
