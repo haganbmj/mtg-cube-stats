@@ -1579,7 +1579,7 @@ const tokensTabData = computed(() => {
     display: grid;
     grid-template-columns: 20px auto auto 1fr;
     column-gap: 12px;
-    row-gap: 8px;
+    row-gap: 0px;
     align-items: center;
 }
 .check-row {
