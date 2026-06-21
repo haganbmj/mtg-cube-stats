@@ -47,7 +47,8 @@ const sortedCubeResults = computed(() => {
   return [...props.cubeResults].sort((a, b) => {
     const aPassed = a.result?.passed ? 0 : 1;
     const bPassed = b.result?.passed ? 0 : 1;
-    return aPassed - bPassed;
+    if (aPassed !== bPassed) return aPassed - bPassed;
+    return a.cubeName.localeCompare(b.cubeName);
   });
 });
 </script>
