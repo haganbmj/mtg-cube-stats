@@ -4,6 +4,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { ArrowDown, ArrowRight, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
 import type { CheckCondition, CheckResult } from '../types/checks';
 import { parseCheckExpression } from '../util/CheckExpressionParser';
+import { normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
 
 const props = defineProps<{
   condition: CheckCondition;
@@ -48,7 +49,7 @@ const sortedCubeResults = computed(() => {
     const aPassed = a.result?.passed ? 0 : 1;
     const bPassed = b.result?.passed ? 0 : 1;
     if (aPassed !== bPassed) return aPassed - bPassed;
-    return a.cubeName.localeCompare(b.cubeName);
+    return castInensitiveSort(normalizeSortName(a.cubeName), normalizeSortName(b.cubeName));
   });
 });
 </script>
