@@ -409,7 +409,6 @@
                                             {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
                                         </template>
                                     </span>
-                                    <div class="check-spacer" />
                                 </div>
                             </div>
                         </el-col>
@@ -1577,14 +1576,17 @@ const tokensTabData = computed(() => {
 }
 
 .checks-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    column-gap: 12px;
+    row-gap: 8px;
+    align-items: center;
 }
 .check-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
     align-items: center;
-    gap: 12px;
     font-size: 0.9rem;
 }
 .check-row.passed .check-icon { color: var(--el-color-success); }
@@ -1599,12 +1601,9 @@ const tokensTabData = computed(() => {
     color: var(--el-text-color-primary);
 }
 .check-value {
-    flex-shrink: 0;
     color: var(--el-text-color-secondary);
     font-variant-numeric: tabular-nums;
-}
-.check-spacer {
-    flex: 1;
+    text-align: right;
 }
 
 </style>

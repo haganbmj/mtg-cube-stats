@@ -94,7 +94,6 @@ const sortedCubeResults = computed(() => {
                         {{ item.result.lhsValue.toFixed(item.result.isPercentage ? 1 : 0) }}{{ item.result.isPercentage ? '%' : '' }}
                     </template>
                 </span>
-                <div class="spacer" />
             </div>
         </div>
     </div>
@@ -143,17 +142,21 @@ const sortedCubeResults = computed(() => {
     overflow-y: auto;
     background: var(--el-fill-color-lighter);
     border-radius: 4px;
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    column-gap: 8px;
+    row-gap: 4px;
+    align-items: center;
 }
 .cube-result-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
     align-items: center;
-    gap: 8px;
-    padding: 4px 0;
     font-size: 14px;
 }
 .cube-result-item .pass { color: var(--el-color-success); }
 .cube-result-item .fail { color: var(--el-color-danger); }
 .cube-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; }
-.spacer { flex: 1; }
+.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; text-align: right; }
 </style>
