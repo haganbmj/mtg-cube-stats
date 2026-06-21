@@ -1,43 +1,25 @@
 <template>
-    <el-dialog
+    <ColumnCustomizer
         v-model="columnCustomizationVisible"
-        title="Customize Columns"
-        width="600"
-        align-center
+        v-model:column-order="config.columnOrder"
+        v-model:visible-columns="config.visibleColumns"
+        :column-meta="columnMeta"
+        :default-column-order="defaultColumnOrder"
+        :default-visible-columns="defaultConfig.visibleColumns"
     >
-        <div v-for="option in columnOptions" :key="option.label" style="margin-bottom: 1em;">
-            <div class="column-group-header">
-                <el-checkbox
-                    :model-value="isGroupAllChecked(option.options)"
-                    :indeterminate="isGroupIndeterminate(option.options)"
-                    @change="(v) => toggleGroupColumns(option.options, v as boolean)"
-                ><strong>{{ option.label }}</strong></el-checkbox>
-            </div>
-            <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
-                <el-row :gutter="10">
-                    <el-col :span="12" :xs="24" :s="24" v-for="item in option.options" :key="item.value">
-                        <el-checkbox
-                            :value="item.value"
-                        >
-                            {{ item.label }}
-                            <el-tooltip
-                                v-if="item.tooltip"
-                                :content="item.tooltip"
-                                placement="top"
-                                :hide-after="50"
-                            >
-                                <el-icon><InfoFilled /></el-icon>
-                            </el-tooltip>
-                        </el-checkbox>
-                    </el-col>
-                </el-row>
-            </el-checkbox-group>
-        </div>
-
-        <template #footer>
-            <el-button @click="columnCustomizationVisible = false">Close</el-button>
+        <template #toggles>
+            <el-checkbox v-model="config.peerComparisons">
+                Peer Comparison Indicators
+                <el-tooltip
+                    content="Show ▲/▼ indicators on stat values that are notably higher or lower than other loaded cubes (±1 standard deviation)"
+                    placement="top"
+                    :hide-after="50"
+                >
+                    <el-icon><InfoFilled /></el-icon>
+                </el-tooltip>
+            </el-checkbox>
         </template>
-    </el-dialog>
+    </ColumnCustomizer>
 
     <el-dialog
         v-model="saveDialogVisible"
@@ -503,6 +485,7 @@ import { useWindowSize } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
 import type { UserCollection } from '../types';
 import StickyTable from '../components/StickyTable.vue';
+import ColumnCustomizer from '../components/ColumnCustomizer.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
@@ -579,9 +562,83 @@ const props = defineProps({
     },
 });
 
+const defaultColumnOrder = [
+    'rowNumber',
+    'name',
+    'owner',
+    'lastModified',
+    'followerCount',
+    'stats.arenaPlayable',
+    'stats.mtgoPlayable',
+    'stats.paperPlayable',
+    'stats.assumedCategories',
+    'stats.totalMinPriceUsd',
+    'stats.totalMinPriceTix',
+    'stats.averageReleaseYear',
+    'stats.medianReleaseYear',
+    'stats.totalCards',
+    'stats.totalUniqueCards',
+    'stats.newCards',
+    'stats.landCards',
+    'stats.creatureCards',
+    'avgSimilarityScore',
+    'stats.averageNonLandCmc',
+    'stats.averageElo',
+    'stats.averagePopularity',
+    'stats.blendedRarityScore',
+    'stats.averageWordCount',
+    'stats.averageWordCountUnique',
+    'stats.uniqueKeywords',
+    'stats.uniqueNonEvergreenKeywords',
+    'stats.cardCounts.abnormalLayout',
+    'stats.cardCounts.makesTokens',
+    'stats.uniqueTokenCount',
+    'stats.cardCounts.removal',
+    'stats.cardCounts.universesBeyond',
+    'stats.cardCounts.supplementalProduct',
+    'checks',
+];
+
+const columnMeta: Record<string, { label: string; tooltip?: string }> = {
+    'rowNumber': { label: 'Row Number' },
+    'name': { label: 'Name' },
+    'owner': { label: 'Owner' },
+    'lastModified': { label: 'Last Modified', tooltip: 'Date when the contents or description of the cube was last modified' },
+    'followerCount': { label: 'Followers', tooltip: 'Number of users following the cube on CubeCobra' },
+    'stats.arenaPlayable': { label: 'Arena Playable', tooltip: 'Whether the cube is playable on MTG Arena' },
+    'stats.mtgoPlayable': { label: 'MTGO Playable', tooltip: 'Whether the cube is playable on MTGO' },
+    'stats.paperPlayable': { label: 'Paper Playable', tooltip: 'Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)' },
+    'stats.assumedCategories': { label: 'Categories', tooltip: 'Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)' },
+    'stats.totalMinPriceUsd': { label: 'Min Price (USD)', tooltip: 'Total Minimum Price of the Cube in USD' },
+    'stats.totalMinPriceTix': { label: 'Min Price (Tix)', tooltip: 'Total Minimum Price of the Cube in MTGO Tix' },
+    'stats.averageReleaseYear': { label: 'Avg. Release Year', tooltip: 'Average Release Year of Cards in the Cube (± Standard Deviation)' },
+    'stats.medianReleaseYear': { label: 'Median Release Year', tooltip: 'Median Release Year of Cards in the Cube (± Median Absolute Deviation)' },
+    'stats.totalCards': { label: 'Total Cards', tooltip: 'Total Number of Cards' },
+    'stats.totalUniqueCards': { label: 'Unique Cards', tooltip: 'Number of unique cards by oracle ID' },
+    'stats.newCards': { label: 'New Cards', tooltip: 'Cards Released in the Last 12 Months' },
+    'stats.landCards': { label: 'Lands', tooltip: 'Cards that are playable from hand as a Land, includes MDFCs' },
+    'stats.creatureCards': { label: 'Creatures', tooltip: "Cards with 'Creature' in their Type Line" },
+    'avgSimilarityScore': { label: 'Avg. Similarity', tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes' },
+    'stats.averageNonLandCmc': { label: 'Avg. Mana Value', tooltip: 'Average Mana Value of Non-Land Cards' },
+    'stats.averageElo': { label: 'Avg. Card Elo', tooltip: 'Average CubeCobra Card Elo Rating' },
+    'stats.averagePopularity': { label: 'Avg. Card Popularity', tooltip: 'Average CubeCobra Card Popularity Score' },
+    'stats.blendedRarityScore': { label: 'Rarity Score', tooltip: 'Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200' },
+    'stats.averageWordCount': { label: 'Avg. Word Count', tooltip: 'Average Oracle Text Word Count, excluding Reminder Text' },
+    'stats.averageWordCountUnique': { label: 'Avg. Word Count (Unique)', tooltip: 'Average Oracle Text Word Count of Unique Cards, excluding Reminder Text' },
+    'stats.uniqueKeywords': { label: 'Keywords', tooltip: 'Number of Unique Keywords' },
+    'stats.uniqueNonEvergreenKeywords': { label: 'Non-Evergreen Keywords', tooltip: 'Number of Unique Non-Evergreen Keywords' },
+    'stats.cardCounts.abnormalLayout': { label: 'Abnormal Layout', tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)' },
+    'stats.cardCounts.makesTokens': { label: 'Makes Tokens', tooltip: 'Cards that Create one or more Tokens' },
+    'stats.uniqueTokenCount': { label: 'Unique Tokens', tooltip: 'Number of unique tokens produced by cards in the cube' },
+    'stats.cardCounts.removal': { label: 'Removal', tooltip: "Cards tagged as 'removal' in Scryfall's Tagger" },
+    'stats.cardCounts.universesBeyond': { label: 'Universes Beyond', tooltip: 'Cards originally from Universes Beyond Products (includes Standard sets)' },
+    'stats.cardCounts.supplementalProduct': { label: 'Supplemental Product', tooltip: 'Cards originally from Supplemental Products (includes Portal)' },
+    'checks': { label: 'Checks', tooltip: 'Number of passing checks from the active check collection' },
+};
+
 const defaultConfig = {
+    columnOrder: [...defaultColumnOrder],
     visibleColumns: [
-        'peerComparisons',
         'rowNumber',
         'name',
         'owner',
@@ -593,16 +650,29 @@ const defaultConfig = {
         'stats.cardCounts.removal',
         'stats.uniqueNonEvergreenKeywords',
     ],
+    peerComparisons: true,
 };
 
 const config = bindStorage('cube-app-config', (v) => {
     if (v == undefined || v === null) {
-        return defaultConfig;
-    } else {
-        return {
-            visibleColumns: Array.isArray(v.visibleColumns) ? v.visibleColumns : defaultConfig.visibleColumns,
+        return { ...defaultConfig, columnOrder: [...defaultColumnOrder] };
+    }
+    const visibleColumns = Array.isArray(v.visibleColumns)
+        ? v.visibleColumns.filter((c: string) => c !== 'peerComparisons')
+        : [...defaultConfig.visibleColumns];
+    const peerComparisons = typeof v.peerComparisons === 'boolean'
+        ? v.peerComparisons
+        : (Array.isArray(v.visibleColumns) && v.visibleColumns.includes('peerComparisons'));
+    let columnOrder = Array.isArray(v.columnOrder) ? v.columnOrder : [...defaultColumnOrder];
+    // Append any new columns not yet in the stored order
+    for (const key of defaultColumnOrder) {
+        if (!columnOrder.includes(key)) {
+            columnOrder.push(key);
         }
     }
+    // Remove keys no longer in defaults (column was removed from code)
+    columnOrder = columnOrder.filter((key: string) => defaultColumnOrder.includes(key));
+    return { columnOrder, visibleColumns, peerComparisons };
 });
 
 const columnCustomizationVisible = ref(false);
@@ -730,25 +800,7 @@ const removeCube = (cubeId: string) => {
     props.removeCube(cubeId);
 };
 
-const isGroupAllChecked = (options: { value: string }[]) =>
-    options.every(o => config.value.visibleColumns.includes(o.value));
-
-const isGroupIndeterminate = (options: { value: string }[]) => {
-    const someChecked = options.some(o => config.value.visibleColumns.includes(o.value));
-    return someChecked && !isGroupAllChecked(options);
-};
-
-const toggleGroupColumns = (options: { value: string }[], checked: boolean) => {
-    if (checked) {
-        const toAdd = options.map(o => o.value).filter(v => !config.value.visibleColumns.includes(v));
-        config.value.visibleColumns = [...config.value.visibleColumns, ...toAdd];
-    } else {
-        const values = new Set(options.map(o => o.value));
-        config.value.visibleColumns = config.value.visibleColumns.filter(v => !values.has(v));
-    }
-};
-
-const showPeerComparisons = computed(() => config.value.visibleColumns.includes('peerComparisons'));
+const showPeerComparisons = computed(() => config.value.peerComparisons);
 
 const rowCmp = (value: number, key: string): 'high' | 'low' | null => {
     if (!props.peerStats) return null;
@@ -758,74 +810,6 @@ const rowCmp = (value: number, key: string): 'high' | 'low' | null => {
     if (value < s.mean - s.stddev) return 'low';
     return null;
 };
-
-const columnOptions = ref([
-    {
-        label: 'Display Options',
-        options: [
-            { value: 'peerComparisons', label: "Peer Comparison Indicators", tooltip: "Show ▲/▼ indicators on stat values that are notably higher or lower than other loaded cubes (±1 standard deviation)" },
-        ],
-    },
-    {
-        label: 'Core',
-        options: [
-            { value: 'rowNumber', label: "Row Number" },
-            { value: 'name', label: "Name" },
-            { value: 'owner', label: "Owner" },
-            { value: 'lastModified', label: "Last Modified", tooltip: "Date when the contents or description of the cube was last modified" },
-            { value: 'followerCount', label: "Followers", tooltip: "Number of users following the cube on CubeCobra" },
-            { value: 'stats.arenaPlayable', label: "Arena Playable", tooltip: "Whether the cube is playable on MTG Arena" },
-            { value: 'stats.mtgoPlayable', label: "MTGO Playable", tooltip: "Whether the cube is playable on MTGO" },
-            { value: 'stats.paperPlayable', label: "Paper Playable", tooltip: "Whether the cube is playable in Paper (no Digital-only printings, no Custom cards)" },
-            { value: 'stats.assumedCategories', label: "Categories", tooltip: "Assumed Categorization of the cube based on its contents (pauper, peasant, powered, desert)" },
-            { value: 'stats.totalMinPriceUsd', label: "Min Price (USD)", tooltip: "Total Minimum Price of the Cube in USD" },
-            { value: 'stats.totalMinPriceTix', label: "Min Price (Tix)", tooltip: "Total Minimum Price of the Cube in MTGO Tix" },
-            { value: 'stats.averageReleaseYear', label: 'Avg. Release Year', tooltip: "Average Release Year of Cards in the Cube (± Standard Deviation)" },
-            { value: 'stats.medianReleaseYear', label: 'Median Release Year', tooltip: "Median Release Year of Cards in the Cube (± Median Absolute Deviation)" },
-            { value: 'stats.totalCards', label: "Total Cards", tooltip: "Total Number of Cards" },
-            { value: 'stats.newCards', label: "New Cards", tooltip: "Cards Released in the Last 12 Months" },
-            { value: 'stats.totalUniqueCards', label: "Unique Cards", tooltip: "Number of unique cards by oracle ID" },
-            { value: 'stats.landCards', label: "Lands", tooltip: "Cards that are playable from hand as a Land, includes MDFCs" },
-            { value: 'stats.creatureCards', label: "Creatures", tooltip: "Cards with 'Creature' in their Type Line" },
-        ],
-    },
-    {
-        label: 'Summary Stats',
-        options: [
-            { value: 'avgSimilarityScore', label: "Avg. Similarity", tooltip: "Average Cosine Similarity Score vs. Other Loaded Cubes" },
-            { value: 'stats.averageNonLandCmc', label: "Avg. Mana Value", tooltip: "Average Mana Value of Non-Land Cards" },
-            { value: 'stats.averageElo', label: "Avg. Card Elo", tooltip: "Average CubeCobra Card Elo Rating" },
-            { value: 'stats.averagePopularity', label: "Avg. Card Popularity", tooltip: "Average CubeCobra Card Popularity Score" },
-            { value: 'stats.blendedRarityScore', label: "Rarity Score", tooltip: "Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200" },
-        ],
-    },
-    {
-        label: 'Characteristics',
-        options: [
-            { value: 'stats.averageWordCount', label: 'Avg. Word Count', tooltip: "Average Oracle Text Word Count, excluding Reminder Text" },
-            { value: 'stats.averageWordCountUnique', label: 'Avg. Word Count (Unique)', tooltip: "Average Oracle Text Word Count of Unique Cards, excluding Reminder Text" },
-            { value: 'stats.uniqueKeywords', label: "Keywords", tooltip: "Number of Unique Keywords" },
-            { value: 'stats.uniqueNonEvergreenKeywords', label: "Non-Evergreen Keywords", tooltip: "Number of Unique Non-Evergreen Keywords" },
-            { value: 'stats.cardCounts.abnormalLayout', label: "Abnormal Layout", tooltip: "Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)" },
-            { value: 'stats.cardCounts.makesTokens', label: "Makes Tokens", tooltip: "Cards that Create one or more Tokens" },
-            { value: 'stats.uniqueTokenCount', label: "Unique Tokens", tooltip: "Number of unique tokens produced by cards in the cube" },
-            { value: 'stats.cardCounts.removal', label: "Removal", tooltip: "Cards tagged as \"removal\" in Scryfall's Tagger" },
-        ],
-    },
-    {
-        label: 'Product Line',
-        options: [
-            { value: 'stats.cardCounts.universesBeyond', label: "Universes Beyond", tooltip: "Cards originally from Universes Beyond Products (includes Standard sets)" },
-            { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product", tooltip: "Cards originally from Supplemental Products (includes Portal)" },
-        ],
-    },
-    {
-        label: 'Checks',
-        options: [
-            { value: 'checks', label: 'Checks', tooltip: 'Number of passing checks from the active check collection' },
-        ],
-    },
-]);
 
 // --- Sort state ---
 const sortProp = inject<Ref<string>>('overviewSortProp', ref('name'));
@@ -879,43 +863,53 @@ const fmtDate = (prop: string) => (row: any) => {
 };
 
 // --- Table column definitions ---
-const tableColumns = computed<StickyTableColumn[]>(() => [
-    { key: 'thumbnail', label: '', width: '75px' },
-    { key: 'rowNumber', label: '#', width: '50px', visible: config.value.visibleColumns.includes('rowNumber') },
-    { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true, visible: config.value.visibleColumns.includes('name') },
-    { key: 'owner', prop: 'owner', label: 'Owner', minWidth: '90px', maxWidth: '160px', showOverflowTooltip: true, sortable: true, visible: config.value.visibleColumns.includes('owner') },
-    { key: 'lastModified', prop: 'lastModified', label: 'Modified', minWidth: '90px', formatter: fmtDate('lastModified'), sortable: true, tooltip: 'Date the cube was last modified', visible: config.value.visibleColumns.includes('lastModified') },
-    { key: 'followerCount', prop: 'followerCount', label: 'Followers', minWidth: '80px', sortable: true, visible: config.value.visibleColumns.includes('followerCount') },
-    { key: 'arenaPlayable', prop: 'stats.arenaPlayable', label: 'Arena', minWidth: '65px', tooltip: 'Arena Playable — all cards available on MTG Arena', visible: config.value.visibleColumns.includes('stats.arenaPlayable') },
-    { key: 'mtgoPlayable', prop: 'stats.mtgoPlayable', label: 'MTGO', minWidth: '65px', tooltip: 'MTGO Playable — all cards available on Magic Online', visible: config.value.visibleColumns.includes('stats.mtgoPlayable') },
-    { key: 'paperPlayable', prop: 'stats.paperPlayable', label: 'Paper', minWidth: '65px', tooltip: 'Paper Playable — no digital-only printings or custom cards', visible: config.value.visibleColumns.includes('stats.paperPlayable') },
-    { key: 'assumedCategories', prop: 'stats.assumedCategories', label: 'Categories', minWidth: '75px', visible: config.value.visibleColumns.includes('stats.assumedCategories') },
-    { key: 'totalMinPriceUsd', prop: 'stats.totalMinPriceUsd', label: 'Price (USD)', minWidth: '80px', formatter: fmtPriceUsd('stats.totalMinPriceUsd'), sortable: true, tooltip: 'Total minimum price of the cube in USD', visible: config.value.visibleColumns.includes('stats.totalMinPriceUsd') },
-    { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Price (Tix)', minWidth: '80px', formatter: fmtPriceTix('stats.totalMinPriceTix'), sortable: true, tooltip: 'Total minimum price of the cube in MTGO Tix', visible: config.value.visibleColumns.includes('stats.totalMinPriceTix') },
-    { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Year', minWidth: '85px', sortable: true, tooltip: 'Average release year of cards in the cube (± Standard Deviation)', visible: config.value.visibleColumns.includes('stats.averageReleaseYear') },
-    { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Med. Year', minWidth: '85px', sortable: true, tooltip: 'Median release year of cards in the cube (± Median Absolute Deviation)', visible: config.value.visibleColumns.includes('stats.medianReleaseYear') },
-    { key: 'totalCards', prop: 'stats.totalCards', label: 'Cards', minWidth: '65px', sortable: true, tooltip: 'Total number of cards', visible: config.value.visibleColumns.includes('stats.totalCards') },
-    { key: 'totalUniqueCards', prop: 'stats.totalUniqueCards', label: 'Unique', minWidth: '75px', sortable: true, tooltip: 'Number of unique cards by oracle ID', visible: config.value.visibleColumns.includes('stats.totalUniqueCards') },
-    { key: 'newCards', prop: 'stats.newCards', label: 'New', minWidth: '65px', sortable: true, tooltip: 'Cards Released in the Last 12 Months', visible: config.value.visibleColumns.includes('stats.newCards') },
-    { key: 'landCards', prop: 'stats.landCards', label: 'Lands', minWidth: '65px', sortable: true, visible: config.value.visibleColumns.includes('stats.landCards') },
-    { key: 'creatureCards', prop: 'stats.creatureCards', label: 'Creatures', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('stats.creatureCards') },
-    { key: 'avgSimilarityScore', prop: 'avgSimilarityScore', label: 'Similarity', minWidth: '75px', formatter: fmtPercentage('avgSimilarityScore'), sortable: true, tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes', visible: config.value.visibleColumns.includes('avgSimilarityScore') },
-    { key: 'averageNonLandCmc', prop: 'stats.averageNonLandCmc', label: 'Avg. MV', minWidth: '70px', formatter: fmtFixed2('stats.averageNonLandCmc'), sortable: true, tooltip: 'Average Mana Value of Non-Land Cards', visible: config.value.visibleColumns.includes('stats.averageNonLandCmc') },
-    { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '70px', formatter: fmtFixed2('stats.averageElo'), sortable: true, tooltip: 'Average CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('stats.averageElo') },
-    { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Pop.', minWidth: '70px', formatter: fmtPopularity('stats.averagePopularity'), sortable: true, tooltip: 'Average CubeCobra Card Popularity %', visible: config.value.visibleColumns.includes('stats.averagePopularity') },
-    { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', formatter: fmtFixed2('stats.blendedRarityScore'), sortable: true, tooltip: 'Blended Rarity Score — minimum rarity per card, C=0.333, U=0.666, R=1.000, M=1.200', visible: config.value.visibleColumns.includes('stats.blendedRarityScore') },
-    { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Words', minWidth: '75px', formatter: fmtFixed2('stats.averageWordCount'), sortable: true, tooltip: 'Average Oracle Text Word Count (excluding Reminder Text)', visible: config.value.visibleColumns.includes('stats.averageWordCount') },
-    { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Words*', minWidth: '80px', formatter: fmtFixed2('stats.averageWordCountUnique'), sortable: true, tooltip: 'Average Oracle Text Word Count of Unique Cards (excluding Reminder Text)', visible: config.value.visibleColumns.includes('stats.averageWordCountUnique') },
-    { key: 'uniqueKeywords', prop: 'stats.uniqueKeywords', label: 'Keywords', minWidth: '75px', sortable: true, tooltip: 'Number of unique keywords', visible: config.value.visibleColumns.includes('stats.uniqueKeywords') },
-    { key: 'uniqueNonEvergreenKeywords', prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-EG KW', minWidth: '80px', sortable: true, tooltip: 'Number of unique non-evergreen keywords', visible: config.value.visibleColumns.includes('stats.uniqueNonEvergreenKeywords') },
-    { key: 'abnormalLayout', prop: 'stats.cardCounts.abnormalLayout', label: 'Abn. Layout', minWidth: '80px', sortable: true, tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)', visible: config.value.visibleColumns.includes('stats.cardCounts.abnormalLayout') },
-    { key: 'makesTokens', prop: 'stats.cardCounts.makesTokens', label: 'Tokens', minWidth: '65px', sortable: true, tooltip: 'Cards that create one or more tokens', visible: config.value.visibleColumns.includes('stats.cardCounts.makesTokens') },
-    { key: 'uniqueTokenCount', prop: 'stats.uniqueTokenCount', label: 'Uniq. Tokens', minWidth: '80px', sortable: true, tooltip: 'Number of unique tokens produced by cards in the cube', visible: config.value.visibleColumns.includes('stats.uniqueTokenCount') },
-    { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '70px', sortable: true, tooltip: "Cards tagged as 'removal' in Scryfall's Tagger", visible: config.value.visibleColumns.includes('stats.cardCounts.removal') },
-    { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'UB', minWidth: '55px', sortable: true, tooltip: 'Universes Beyond — cards originally from non-Magic IP products (includes Standard sets)', visible: config.value.visibleColumns.includes('stats.cardCounts.universesBeyond') },
-    { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },
-    { key: 'checks', prop: 'checksPassCount', label: 'Checks', minWidth: '70px', sortable: true, tooltip: 'Checks passed / total from active collection', visible: config.value.visibleColumns.includes('checks') },
-]);
+const columnDefsMap: Record<string, StickyTableColumn> = {
+    'rowNumber': { key: 'rowNumber', label: '#', width: '50px' },
+    'name': { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
+    'owner': { key: 'owner', prop: 'owner', label: 'Owner', minWidth: '90px', maxWidth: '160px', showOverflowTooltip: true, sortable: true },
+    'lastModified': { key: 'lastModified', prop: 'lastModified', label: 'Modified', minWidth: '90px', formatter: fmtDate('lastModified'), sortable: true, tooltip: 'Date the cube was last modified' },
+    'followerCount': { key: 'followerCount', prop: 'followerCount', label: 'Followers', minWidth: '80px', sortable: true },
+    'stats.arenaPlayable': { key: 'arenaPlayable', prop: 'stats.arenaPlayable', label: 'Arena', minWidth: '65px', tooltip: 'Arena Playable — all cards available on MTG Arena' },
+    'stats.mtgoPlayable': { key: 'mtgoPlayable', prop: 'stats.mtgoPlayable', label: 'MTGO', minWidth: '65px', tooltip: 'MTGO Playable — all cards available on Magic Online' },
+    'stats.paperPlayable': { key: 'paperPlayable', prop: 'stats.paperPlayable', label: 'Paper', minWidth: '65px', tooltip: 'Paper Playable — no digital-only printings or custom cards' },
+    'stats.assumedCategories': { key: 'assumedCategories', prop: 'stats.assumedCategories', label: 'Categories', minWidth: '75px' },
+    'stats.totalMinPriceUsd': { key: 'totalMinPriceUsd', prop: 'stats.totalMinPriceUsd', label: 'Price (USD)', minWidth: '80px', formatter: fmtPriceUsd('stats.totalMinPriceUsd'), sortable: true, tooltip: 'Total minimum price of the cube in USD' },
+    'stats.totalMinPriceTix': { key: 'totalMinPriceTix', prop: 'stats.totalMinPriceTix', label: 'Price (Tix)', minWidth: '80px', formatter: fmtPriceTix('stats.totalMinPriceTix'), sortable: true, tooltip: 'Total minimum price of the cube in MTGO Tix' },
+    'stats.averageReleaseYear': { key: 'averageReleaseYear', prop: 'stats.averageReleaseYear', label: 'Avg. Year', minWidth: '85px', sortable: true, tooltip: 'Average release year of cards in the cube (± Standard Deviation)' },
+    'stats.medianReleaseYear': { key: 'medianReleaseYear', prop: 'stats.medianReleaseYear', label: 'Med. Year', minWidth: '85px', sortable: true, tooltip: 'Median release year of cards in the cube (± Median Absolute Deviation)' },
+    'stats.totalCards': { key: 'totalCards', prop: 'stats.totalCards', label: 'Cards', minWidth: '65px', sortable: true, tooltip: 'Total number of cards' },
+    'stats.totalUniqueCards': { key: 'totalUniqueCards', prop: 'stats.totalUniqueCards', label: 'Unique', minWidth: '75px', sortable: true, tooltip: 'Number of unique cards by oracle ID' },
+    'stats.newCards': { key: 'newCards', prop: 'stats.newCards', label: 'New', minWidth: '65px', sortable: true, tooltip: 'Cards Released in the Last 12 Months' },
+    'stats.landCards': { key: 'landCards', prop: 'stats.landCards', label: 'Lands', minWidth: '65px', sortable: true },
+    'stats.creatureCards': { key: 'creatureCards', prop: 'stats.creatureCards', label: 'Creatures', minWidth: '75px', sortable: true },
+    'avgSimilarityScore': { key: 'avgSimilarityScore', prop: 'avgSimilarityScore', label: 'Similarity', minWidth: '75px', formatter: fmtPercentage('avgSimilarityScore'), sortable: true, tooltip: 'Average Cosine Similarity Score vs. Other Loaded Cubes' },
+    'stats.averageNonLandCmc': { key: 'averageNonLandCmc', prop: 'stats.averageNonLandCmc', label: 'Avg. MV', minWidth: '70px', formatter: fmtFixed2('stats.averageNonLandCmc'), sortable: true, tooltip: 'Average Mana Value of Non-Land Cards' },
+    'stats.averageElo': { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '70px', formatter: fmtFixed2('stats.averageElo'), sortable: true, tooltip: 'Average CubeCobra Elo Rating' },
+    'stats.averagePopularity': { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Pop.', minWidth: '70px', formatter: fmtPopularity('stats.averagePopularity'), sortable: true, tooltip: 'Average CubeCobra Card Popularity %' },
+    'stats.blendedRarityScore': { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', formatter: fmtFixed2('stats.blendedRarityScore'), sortable: true, tooltip: 'Blended Rarity Score — minimum rarity per card, C=0.333, U=0.666, R=1.000, M=1.200' },
+    'stats.averageWordCount': { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Words', minWidth: '75px', formatter: fmtFixed2('stats.averageWordCount'), sortable: true, tooltip: 'Average Oracle Text Word Count (excluding Reminder Text)' },
+    'stats.averageWordCountUnique': { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Words*', minWidth: '80px', formatter: fmtFixed2('stats.averageWordCountUnique'), sortable: true, tooltip: 'Average Oracle Text Word Count of Unique Cards (excluding Reminder Text)' },
+    'stats.uniqueKeywords': { key: 'uniqueKeywords', prop: 'stats.uniqueKeywords', label: 'Keywords', minWidth: '75px', sortable: true, tooltip: 'Number of unique keywords' },
+    'stats.uniqueNonEvergreenKeywords': { key: 'uniqueNonEvergreenKeywords', prop: 'stats.uniqueNonEvergreenKeywords', label: 'Non-EG KW', minWidth: '80px', sortable: true, tooltip: 'Number of unique non-evergreen keywords' },
+    'stats.cardCounts.abnormalLayout': { key: 'abnormalLayout', prop: 'stats.cardCounts.abnormalLayout', label: 'Abn. Layout', minWidth: '80px', sortable: true, tooltip: 'Cards with Abnormal Layouts (e.g. Split, Flip, MDFCs, etc.)' },
+    'stats.cardCounts.makesTokens': { key: 'makesTokens', prop: 'stats.cardCounts.makesTokens', label: 'Tokens', minWidth: '65px', sortable: true, tooltip: 'Cards that create one or more tokens' },
+    'stats.uniqueTokenCount': { key: 'uniqueTokenCount', prop: 'stats.uniqueTokenCount', label: 'Uniq. Tokens', minWidth: '80px', sortable: true, tooltip: 'Number of unique tokens produced by cards in the cube' },
+    'stats.cardCounts.removal': { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '70px', sortable: true, tooltip: "Cards tagged as 'removal' in Scryfall's Tagger" },
+    'stats.cardCounts.universesBeyond': { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'UB', minWidth: '55px', sortable: true, tooltip: 'Universes Beyond — cards originally from non-Magic IP products (includes Standard sets)' },
+    'stats.cardCounts.supplementalProduct': { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)' },
+    'checks': { key: 'checks', prop: 'checksPassCount', label: 'Checks', minWidth: '70px', sortable: true, tooltip: 'Checks passed / total from active collection' },
+};
+
+const tableColumns = computed<StickyTableColumn[]>(() => {
+    const pinnedColumns: StickyTableColumn[] = [
+        { key: 'thumbnail', label: '', width: '75px' },
+    ];
+    const orderedColumns = config.value.columnOrder
+        .filter((key: string) => config.value.visibleColumns.includes(key))
+        .map((key: string) => columnDefsMap[key])
+        .filter(Boolean);
+    return [...pinnedColumns, ...orderedColumns];
+});
 
 // --- Filtered + sorted data ---
 const viewExpanded = ref(false);
@@ -1166,13 +1160,6 @@ const formatters = {
     margin-top: 24px;
     padding-top: 16px;
     border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.column-group-header {
-    background-color: var(--el-fill-color);
-    border-radius: var(--el-border-radius-base);
-    padding: 6px 10px;
-    margin-bottom: 6px;
 }
 
 .overview-loading-container {
