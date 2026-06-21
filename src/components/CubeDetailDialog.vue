@@ -1577,7 +1577,7 @@ const tokensTabData = computed(() => {
 
 .checks-grid {
     display: grid;
-    grid-template-columns: 20px 1fr auto;
+    grid-template-columns: 20px auto auto 1fr;
     column-gap: 12px;
     row-gap: 8px;
     align-items: center;
@@ -1603,7 +1603,6 @@ const tokensTabData = computed(() => {
 .check-value {
     color: var(--el-text-color-secondary);
     font-variant-numeric: tabular-nums;
-    text-align: right;
 }
 
 </style>

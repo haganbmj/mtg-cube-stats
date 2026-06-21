@@ -143,7 +143,7 @@ const sortedCubeResults = computed(() => {
     background: var(--el-fill-color-lighter);
     border-radius: 4px;
     display: grid;
-    grid-template-columns: 16px 1fr auto;
+    grid-template-columns: 16px auto auto 1fr;
     column-gap: 8px;
     row-gap: 4px;
     align-items: center;
@@ -158,5 +158,5 @@ const sortedCubeResults = computed(() => {
 .cube-result-item .pass { color: var(--el-color-success); }
 .cube-result-item .fail { color: var(--el-color-danger); }
 .cube-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; text-align: right; }
+.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; }
 </style>
