@@ -387,6 +387,34 @@
                             </div>
                         </el-col>
 
+                        <el-col :span="24" v-if="activeChecksCollection">
+                            <div class="checks-section">
+                                <div class="checks-header">
+                                    <span class="section-title">Checks</span>
+                                    <span class="checks-summary">
+                                        {{ activeChecksCollection.name }} — {{ checksPassCount }}/{{ cubeCheckResults.length }} passed
+                                    </span>
+                                </div>
+                                <div class="checks-list">
+                                    <div
+                                        v-for="{ condition, result } in cubeCheckResults"
+                                        :key="condition.id"
+                                        class="check-item"
+                                        :class="{ passed: result?.passed, failed: result && !result.passed }"
+                                    >
+                                        <el-icon>
+                                            <CircleCheck v-if="result?.passed" />
+                                            <CircleClose v-else-if="result" />
+                                        </el-icon>
+                                        <span class="check-expression">{{ condition.expression }}</span>
+                                        <span v-if="result" class="check-value">
+                                            {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+
                         <el-col :span="24" v-if="activeCube.stats?.graveyardOrderMatters">
                             <div class="graveyard-warning">
                                 ⚠️ This cube contains cards that care about Graveyard Order
@@ -684,11 +712,12 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh, Clock, InfoFilled, Delete } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock, InfoFilled, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, SimilarityMatrix } from '../types';
+import type { ChecksState, CheckResult } from '../types/checks';
 import type { ScryfallToken } from '../types/scryfall';
 import { formatPrice } from '../util/HelperFunctions';
 import { getTokens } from '../util/CubeFunctions';
@@ -751,6 +780,8 @@ const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailD
 const openCubeDetailDialog = inject<(id: string) => void>('openCubeDetailDialog');
 const refreshCube = inject<(id: string) => Promise<void>>('refreshCube');
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
+const checksState = inject<Ref<ChecksState>>('checksState')!;
+const checkResults = inject<Ref<Map<string, Map<string, CheckResult>>>>('checkResults')!;
 const addCube = inject<(id: string, opts?: { refresh?: boolean; hidden?: boolean }) => Promise<void>>('addCube');
 const popDetail = inject<() => void>('popDetail');
 
@@ -765,6 +796,27 @@ const activeCube = computed(() => {
 });
 
 const baseCubeId = computed(() => externalCubeId(activeCube.value ?? { id: '' }));
+
+const activeChecksCollection = computed(() => {
+    const id = checksState.value.activeCollectionId;
+    if (!id) return null;
+    return checksState.value.collections.find(c => c.id === id) ?? null;
+});
+
+const cubeCheckResults = computed(() => {
+    if (!activeCube.value || !activeChecksCollection.value) return [];
+    const cubeId = activeCube.value.id;
+    const cubeMap = checkResults.value.get(cubeId);
+    if (!cubeMap) return [];
+    return activeChecksCollection.value.conditions.map(cond => ({
+        condition: cond,
+        result: cubeMap.get(cond.id),
+    }));
+});
+
+const checksPassCount = computed(() => {
+    return cubeCheckResults.value.filter(r => r.result?.passed).length;
+});
 const currentCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
 
 const loadingCurrent = ref(false);
@@ -1524,5 +1576,37 @@ const tokensTabData = computed(() => {
     display: flex;
     gap: 0.4rem;
 }
+
+.checks-section {
+    margin-top: 16px;
+}
+.checks-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.checks-header .section-title {
+    font-weight: 600;
+}
+.checks-summary {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+}
+.checks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+.check-item.passed .el-icon { color: var(--el-color-success); }
+.check-item.failed .el-icon { color: var(--el-color-danger); }
+.check-expression { flex: 1; }
+.check-value { color: var(--el-text-color-secondary); }
 
 </style>
