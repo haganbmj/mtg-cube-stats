@@ -400,7 +400,7 @@
                                         <CircleCheck v-if="result?.passed" />
                                         <CircleClose v-else-if="result" />
                                     </el-icon>
-                                    <span class="check-expression">{{ condition.expression }}</span>
+                                    <span class="check-expression"><code>{{ condition.expression }}</code></span>
                                     <span v-if="result" class="check-value">
                                         <template v-if="result.expressionType === 'relative'">
                                             {{ result.lhsValue }} vs {{ result.rhsValue }}
