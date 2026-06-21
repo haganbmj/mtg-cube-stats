@@ -60,17 +60,18 @@ const sortedCubeResults = computed(() => {
                 placeholder="Enter check expression..."
                 :class="{ 'is-error': parseError }"
                 @input="onInput"
-            />
-            <div class="condition-actions">
-                <span class="pass-count">{{ passCount }}/{{ totalCount }}</span>
-                <el-button
-                    class="expand-btn"
-                    text
-                    :icon="expanded ? ArrowDown : ArrowRight"
-                    @click="expanded = !expanded"
-                />
-                <el-button type="danger" text :icon="Delete" @click="$emit('delete')" />
-            </div>
+            >
+                <template #append>
+                    <span class="pass-count" @click="expanded = !expanded">
+                        <el-icon :size="14">
+                            <ArrowDown v-if="expanded" />
+                            <ArrowRight v-else />
+                        </el-icon>
+                        {{ passCount }}/{{ totalCount }}
+                    </span>
+                </template>
+            </el-input>
+            <el-button type="danger" text :icon="Delete" @click="$emit('delete')" />
         </div>
         <div v-if="parseError" class="parse-error">
             {{ parseError }}
@@ -114,20 +115,16 @@ const sortedCubeResults = computed(() => {
 .condition-header .el-input.is-error :deep(.el-input__wrapper) {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
-.condition-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
+.condition-header :deep(.el-input-group__append) {
+    cursor: pointer;
+    user-select: none;
 }
 .pass-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-variant-numeric: tabular-nums;
-    font-size: 14px;
-    min-width: 40px;
-    text-align: right;
-}
-.expand-btn {
-    padding: 4px;
+    font-weight: 600;
 }
 .parse-error {
     margin-top: 4px;
