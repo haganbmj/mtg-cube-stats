@@ -120,7 +120,8 @@ const sortedCubeResults = computed(() => {
 .condition-header :deep(.el-input-group__append) {
     cursor: pointer;
     user-select: none;
-    min-width: 70px;
+    width: 70px;
+    flex-shrink: 0;
     padding: 0;
 }
 .pass-count {
