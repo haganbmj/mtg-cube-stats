@@ -126,6 +126,7 @@ function getCubeResultsForCondition(conditionId: string) {
                 @update:label="updateLabel(index, $event)"
                 @delete="deleteCondition(index)"
             />
+            <el-divider />
             <el-button @click="addCondition">
                 + Add Condition
             </el-button>
