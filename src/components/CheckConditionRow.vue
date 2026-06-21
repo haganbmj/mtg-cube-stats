@@ -91,7 +91,7 @@ const sortedCubeResults = computed(() => {
                         {{ item.result.lhsValue }} vs {{ item.result.rhsValue }}
                     </template>
                     <template v-else>
-                        {{ item.result.lhsValue.toFixed(item.result.isPercentage ? 1 : 0) }}{{ item.result.isPercentage ? '%' : '' }}
+                        {{ item.result.lhsValue.toFixed(item.result.expressionType === 'aggregate' ? 2 : item.result.isPercentage ? 1 : 0) }}{{ item.result.isPercentage ? '%' : '' }}
                     </template>
                 </span>
             </div>

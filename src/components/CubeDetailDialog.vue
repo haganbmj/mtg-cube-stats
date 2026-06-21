@@ -406,7 +406,7 @@
                                             {{ result.lhsValue }} vs {{ result.rhsValue }}
                                         </template>
                                         <template v-else>
-                                            {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
+                                            {{ result.lhsValue.toFixed(result.expressionType === 'aggregate' ? 2 : result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
                                         </template>
                                     </span>
                                 </div>
