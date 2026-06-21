@@ -31,7 +31,7 @@ function createCollection() {
   const newCollection: CheckCollection = {
     id: crypto.randomUUID(),
     name,
-    conditions: [],
+    conditions: [{ id: crypto.randomUUID(), expression: '' }],
   };
   checksState.value.collections.push(newCollection);
   checksState.value.activeCollectionId = newCollection.id;
