@@ -7,6 +7,7 @@ import type {
   AggregateFunction,
   AggregateField
 } from '../types/checks';
+import { parseQuery } from './CardFilterParser';
 
 const COMPARISON_OPS = ['>=', '<=', '!=', '>', '<', '='] as const;
 const AGGREGATE_FUNCTIONS: AggregateFunction[] = ['avg', 'sum', 'min', 'max', 'median'];
@@ -15,6 +16,11 @@ const AGGREGATE_FIELDS: AggregateField[] = ['cmc', 'words', 'power', 'toughness'
 interface ParseCheckResult {
   expression: CheckExpression | null;
   error: string | null;
+}
+
+function validateCardFilter(filter: string): string | null {
+  const { error } = parseQuery(filter);
+  return error;
 }
 
 /**
@@ -112,6 +118,10 @@ export function parseCheckExpression(input: string): ParseCheckResult {
 
   // No top-level operator → implicit > 0 count check
   if (!topOp) {
+    const filterError = validateCardFilter(trimmed);
+    if (filterError) {
+      return { expression: null, error: filterError };
+    }
     return {
       expression: {
         type: 'count',
@@ -141,6 +151,12 @@ export function parseCheckExpression(input: string): ParseCheckResult {
     }
     if (threshold.isPercentage) {
       return { expression: null, error: 'Percentage thresholds are not supported for aggregate functions' };
+    }
+    if (agg.cardFilter) {
+      const filterError = validateCardFilter(agg.cardFilter);
+      if (filterError) {
+        return { expression: null, error: filterError };
+      }
     }
     return {
       expression: {
@@ -172,6 +188,10 @@ export function parseCheckExpression(input: string): ParseCheckResult {
   // Try threshold (count check) vs card filter (relative check)
   const threshold = parseThreshold(rhs);
   if (threshold) {
+    const filterError = validateCardFilter(lhs);
+    if (filterError) {
+      return { expression: null, error: filterError };
+    }
     return {
       expression: {
         type: 'count',
@@ -185,6 +205,14 @@ export function parseCheckExpression(input: string): ParseCheckResult {
   }
 
   // RHS is not numeric → relative check
+  const lhsFilterError = validateCardFilter(lhs);
+  if (lhsFilterError) {
+    return { expression: null, error: lhsFilterError };
+  }
+  const rhsFilterError = validateCardFilter(rhs);
+  if (rhsFilterError) {
+    return { expression: null, error: rhsFilterError };
+  }
   return {
     expression: {
       type: 'relative',

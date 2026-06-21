@@ -16,10 +16,14 @@ function compare(lhs: number, op: string, rhs: number): boolean {
   }
 }
 
+function toEvaluatorRow(card: CubeCard): any {
+  return { ...card, effectiveColors: card.colors, effectiveColorIdentity: card.colorIdentity };
+}
+
 function countMatching(cardFilter: string, cards: CubeCard[], ctx: FilterContext): number {
   const { ast } = parseQuery(cardFilter);
   if (!ast) return 0;
-  return cards.filter(card => evaluateCard(ast, card, ctx)).length;
+  return cards.filter(card => evaluateCard(ast, toEvaluatorRow(card), ctx)).length;
 }
 
 function getNumericField(card: CubeCard, field: AggregateField): number | null {
@@ -109,7 +113,7 @@ export function evaluateCheck(expression: CheckExpression, cards: CubeCard[], ct
       if (expression.cardFilter) {
         const { ast } = parseQuery(expression.cardFilter);
         if (ast) {
-          scopedCards = cards.filter(card => evaluateCard(ast, card, ctx));
+          scopedCards = cards.filter(card => evaluateCard(ast, toEvaluatorRow(card), ctx));
         }
       }
       const values: number[] = [];
