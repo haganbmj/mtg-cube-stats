@@ -121,14 +121,18 @@ const sortedCubeResults = computed(() => {
     cursor: pointer;
     user-select: none;
     min-width: 70px;
-    text-align: center;
+    padding: 0;
 }
 .pass-count {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
+    padding: 0 12px;
+    height: 100%;
+    width: 100%;
 }
 .parse-error {
     margin-top: 4px;
