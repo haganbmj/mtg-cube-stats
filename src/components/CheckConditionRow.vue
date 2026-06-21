@@ -120,7 +120,7 @@ const sortedCubeResults = computed(() => {
 .condition-header :deep(.el-input-group__append) {
     cursor: pointer;
     user-select: none;
-    width: 70px;
+    width: 90px;
     flex-shrink: 0;
     padding: 0;
 }
