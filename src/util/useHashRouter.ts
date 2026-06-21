@@ -13,7 +13,7 @@ export interface HashRouterState {
     allCards: boolean;
 }
 
-const VALID_TABS = ['overview', 'infographic', 'statistics', 'compare', 'cards', 'about'];
+const VALID_TABS = ['overview', 'infographic', 'statistics', 'compare', 'cards', 'checks', 'about'];
 
 export function parseHash(hash: string): HashRouterState {
     // Expected: #/{tab}?{params} or empty

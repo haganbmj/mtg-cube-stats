@@ -63,6 +63,10 @@
                             <CardsTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
+                        <el-tab-pane label="Checks" name="checks" :lazy="true">
+                            <ChecksTab :loaded-cubes="visibleLoadedCubes" />
+                        </el-tab-pane>
+
                         <el-tab-pane label="About" name="about" :lazy="true">
                             <About />
                         </el-tab-pane>
@@ -103,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch, provide, onMounted, nextTick } from 'vue';
+import { ref, shallowRef, computed, reactive, watch, watchEffect, provide, onMounted, nextTick } from 'vue';
 import type { SortDirection } from './util/SortConfig';
 import { stripSortTokens } from './util/SortConfig';
 import { useHashRouter } from './util/useHashRouter';
@@ -115,6 +119,9 @@ import presetsJson from '../preloads/generated/presets.json';
 const presetCollections: PresetCollection[] = presetsJson as PresetCollection[];
 import { bindStorage } from './util/VueLocalStorage';
 import type { UserCollection, Cube } from './types';
+import type { ChecksState, CheckResult } from './types';
+import { parseCheckExpression } from './util/CheckExpressionParser';
+import { evaluateCheck } from './util/CheckEvaluator';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
@@ -134,6 +141,7 @@ import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
 import ComparisonTab from './tabs/ComparisonTab.vue';
+import ChecksTab from './tabs/ChecksTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
@@ -376,6 +384,11 @@ const presetComparisonsSelect = ref([...availablePresets].map(label => ({ label,
 
 const userCollections = bindStorage<UserCollection[]>('user-collections', v => Array.isArray(v) ? v : []);
 
+const checksState = bindStorage<ChecksState>('cube-checks', v => {
+    if (v && typeof v === 'object' && Array.isArray((v as any).collections)) return v as ChecksState;
+    return { collections: [], activeCollectionId: null };
+});
+
 const similarityMatrix = ref<Record<string, Record<string, import('./types').SimilarityScore>>>({});
 
 const getAverageSimilarityScore = (cubeId: string) => {
@@ -403,6 +416,56 @@ const overviewTableData = computed(() => {
             avgSimilarityScore: getAverageSimilarityScore(id),
         }
     });
+});
+
+const checkResults = shallowRef<Map<string, Map<string, CheckResult>>>(new Map());
+
+// Cache keyed by `cubeId::conditionId::expression` to avoid redundant evaluation.
+const _checkResultsCache = new Map<string, CheckResult>();
+
+watchEffect(() => {
+    const results = new Map<string, Map<string, CheckResult>>();
+    const activeId = checksState.value.activeCollectionId;
+    if (!activeId) {
+        checkResults.value = results;
+        return;
+    }
+    const collection = checksState.value.collections.find(c => c.id === activeId);
+    if (!collection) {
+        checkResults.value = results;
+        return;
+    }
+
+    const parsedConditions = collection.conditions
+        .map(cond => ({ id: cond.id, expression: cond.expression, parsed: parseCheckExpression(cond.expression) }))
+        .filter(c => c.parsed.expression !== null);
+
+    const usedKeys = new Set<string>();
+
+    for (const [cubeId, cube] of Object.entries(visibleLoadedCubes.value)) {
+        const cubeResults = new Map<string, CheckResult>();
+        const ctx = { loadedCubes: loadedCubes.value };
+        for (const { id, expression, parsed } of parsedConditions) {
+            if (parsed.expression) {
+                const cacheKey = `${cubeId}::${id}::${expression}`;
+                usedKeys.add(cacheKey);
+                let result = _checkResultsCache.get(cacheKey);
+                if (!result) {
+                    result = evaluateCheck(parsed.expression, cube.cards, ctx);
+                    _checkResultsCache.set(cacheKey, result);
+                }
+                cubeResults.set(id, result);
+            }
+        }
+        results.set(cubeId, cubeResults);
+    }
+
+    // Prune stale cache entries
+    for (const key of _checkResultsCache.keys()) {
+        if (!usedKeys.has(key)) _checkResultsCache.delete(key);
+    }
+
+    checkResults.value = results;
 });
 
 const peerStats = computed(() => {
@@ -778,6 +841,8 @@ provide('refreshCube', refreshCube);
 provide('addCube', addCube);
 provide('addSnapshot', addSnapshot);
 provide('removeCube', removeCube);
+provide('checksState', checksState);
+provide('checkResults', checkResults);
 
 onMounted(async () => {
     // Start data initialization in the background without blocking the UI
