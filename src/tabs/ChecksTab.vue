@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
+import { Delete } from '@element-plus/icons-vue';
 import type { ChecksState, CheckCollection, CheckResult } from '../types/checks';
 import type { Cube } from '../types/cube';
 import CheckConditionRow from '../components/CheckConditionRow.vue';
@@ -14,6 +15,9 @@ const checksState = inject<Ref<ChecksState>>('checksState')!;
 const checkResults = inject<ComputedRef<Map<string, Map<string, CheckResult>>>>('checkResults')!;
 
 const showSyntaxDialog = ref(false);
+const addDialogVisible = ref(false);
+const addDialogName = ref('');
+const editDialogVisible = ref(false);
 
 const activeCollection = computed<CheckCollection | null>(() => {
   const id = checksState.value.activeCollectionId;
@@ -22,20 +26,29 @@ const activeCollection = computed<CheckCollection | null>(() => {
 });
 
 function createCollection() {
+  const name = addDialogName.value.trim();
+  if (!name) return;
   const newCollection: CheckCollection = {
     id: crypto.randomUUID(),
-    name: 'New Collection',
+    name,
     conditions: [],
   };
   checksState.value.collections.push(newCollection);
   checksState.value.activeCollectionId = newCollection.id;
+  addDialogName.value = '';
+  addDialogVisible.value = false;
 }
 
-function deleteCollection() {
-  const id = checksState.value.activeCollectionId;
-  if (!id) return;
+function deleteCollection(id: string) {
   checksState.value.collections = checksState.value.collections.filter(c => c.id !== id);
-  checksState.value.activeCollectionId = checksState.value.collections[0]?.id ?? null;
+  if (checksState.value.activeCollectionId === id) {
+    checksState.value.activeCollectionId = checksState.value.collections[0]?.id ?? null;
+  }
+}
+
+function renameCollection(id: string, name: string) {
+  const col = checksState.value.collections.find(c => c.id === id);
+  if (col) col.name = name;
 }
 
 function addCondition() {
@@ -67,17 +80,22 @@ function getCubeResultsForCondition(conditionId: string) {
 
 <template>
     <div class="checks-tab">
-        <!-- Collection Management -->
-        <div class="collection-toolbar">
+        <!-- Toolbar (only when collections exist) -->
+        <div v-if="checksState.collections.length > 0" class="collection-toolbar">
             <div class="collection-row">
-                <label class="toolbar-label">Collection</label>
                 <el-select
-                    v-if="checksState.collections.length > 0"
                     :model-value="checksState.activeCollectionId"
                     placeholder="Select collection"
                     class="collection-select"
                     @update:model-value="checksState.activeCollectionId = $event"
                 >
+                    <template #footer>
+                        <div class="collection-select-footer">
+                            <el-button text bg type="success" size="small" @click.stop="addDialogVisible = true">Add</el-button>
+                            <el-divider direction="vertical" />
+                            <el-button text bg size="small" @click.stop="editDialogVisible = true">Edit</el-button>
+                        </div>
+                    </template>
                     <el-option
                         v-for="col in checksState.collections"
                         :key="col.id"
@@ -85,21 +103,7 @@ function getCubeResultsForCondition(conditionId: string) {
                         :value="col.id"
                     />
                 </el-select>
-                <el-input
-                    v-if="activeCollection"
-                    :model-value="activeCollection.name"
-                    class="collection-name-input"
-                    placeholder="Collection name"
-                    @update:model-value="activeCollection!.name = $event"
-                />
-                <el-button @click="createCollection">New</el-button>
-                <el-button
-                    v-if="activeCollection"
-                    type="danger"
-                    @click="deleteCollection"
-                >
-                    Delete
-                </el-button>
+                <div class="toolbar-spacer" />
                 <el-button @click="showSyntaxDialog = true">Syntax Help</el-button>
             </div>
         </div>
@@ -120,11 +124,58 @@ function getCubeResultsForCondition(conditionId: string) {
             </el-button>
         </div>
 
-        <!-- Empty State -->
+        <!-- Empty State (no collections at all) -->
         <div v-else-if="checksState.collections.length === 0" class="empty-state">
             <p>Create a check collection to define conditions cubes should meet.</p>
-            <el-button @click="createCollection">Create Collection</el-button>
+            <el-button @click="addDialogVisible = true">Create Collection</el-button>
         </div>
+
+        <!-- Add Collection Dialog -->
+        <el-dialog
+            v-model="addDialogVisible"
+            title="Add Collection"
+            width="400"
+            align-center
+            destroy-on-close
+        >
+            <el-input
+                v-model="addDialogName"
+                placeholder="Collection name"
+                maxlength="60"
+                show-word-limit
+                @keyup.enter="createCollection"
+            />
+            <template #footer>
+                <el-button @click="addDialogVisible = false">Cancel</el-button>
+                <el-button type="primary" :disabled="!addDialogName.trim()" @click="createCollection">Add</el-button>
+            </template>
+        </el-dialog>
+
+        <!-- Edit Collections Dialog -->
+        <el-dialog
+            v-model="editDialogVisible"
+            title="Edit Collections"
+            width="400"
+            align-center
+            destroy-on-close
+        >
+            <el-empty v-if="checksState.collections.length === 0" description="No collections" :image-size="60" />
+            <ul v-else class="collection-edit-list">
+                <li v-for="col in checksState.collections" :key="col.id" class="collection-edit-item">
+                    <el-input
+                        :model-value="col.name"
+                        size="small"
+                        @update:model-value="renameCollection(col.id, $event)"
+                    />
+                    <el-button link type="danger" @click="deleteCollection(col.id)">
+                        <el-icon><Delete /></el-icon>
+                    </el-button>
+                </li>
+            </ul>
+            <template #footer>
+                <el-button @click="editDialogVisible = false">Close</el-button>
+            </template>
+        </el-dialog>
 
         <CheckSyntaxDialog v-model:visible="showSyntaxDialog" />
     </div>
@@ -144,19 +195,18 @@ function getCubeResultsForCondition(conditionId: string) {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
-}
-.toolbar-label {
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    white-space: nowrap;
-    font-weight: 500;
 }
 .collection-select {
     width: 200px;
 }
-.collection-name-input {
-    max-width: 220px;
+.collection-select-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.toolbar-spacer {
+    flex: 1;
 }
 .conditions-heading {
     font-size: 14px;
@@ -172,5 +222,21 @@ function getCubeResultsForCondition(conditionId: string) {
     padding: 60px 20px;
     color: var(--el-text-color-secondary);
     font-size: 14px;
+}
+.collection-edit-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.collection-edit-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.collection-edit-item .el-input {
+    flex: 1;
 }
 </style>
