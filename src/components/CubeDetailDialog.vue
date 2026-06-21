@@ -388,24 +388,22 @@
                         </el-col>
 
                         <el-col :span="24" v-if="activeChecksCollection">
-                            <h4 class="stat-section-title">Checks <span class="checks-collection-name">({{ activeChecksCollection.name }})</span></h4>
+                            <h4 class="stat-section-title">Checks ({{ activeChecksCollection.name }})</h4>
                             <div class="checks-grid">
                                 <div
                                     v-for="{ condition, result } in cubeCheckResults"
                                     :key="condition.id"
-                                    class="check-item"
+                                    class="check-row"
                                     :class="{ passed: result?.passed, failed: result && !result.passed }"
                                 >
-                                    <el-icon :size="18">
+                                    <el-icon :size="20" class="check-icon">
                                         <CircleCheck v-if="result?.passed" />
                                         <CircleClose v-else-if="result" />
                                     </el-icon>
-                                    <div class="check-content">
-                                        <div class="check-expression">{{ condition.expression }}</div>
-                                        <div v-if="result" class="check-detail">
-                                            {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
-                                        </div>
-                                    </div>
+                                    <span class="check-expression">{{ condition.expression }}</span>
+                                    <span v-if="result" class="check-value">
+                                        {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
+                                    </span>
                                 </div>
                             </div>
                         </el-col>
@@ -1572,37 +1570,30 @@ const tokensTabData = computed(() => {
     gap: 0.4rem;
 }
 
-.checks-collection-name {
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: 0.75rem;
-    color: var(--el-text-color-secondary);
-}
 .checks-grid {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
-.check-item {
+.check-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-.check-item.passed .el-icon { color: var(--el-color-success); }
-.check-item.failed .el-icon { color: var(--el-color-danger); }
-.check-content {
-    display: flex;
-    align-items: baseline;
     gap: 12px;
+    font-size: 0.9rem;
+}
+.check-row.passed .check-icon { color: var(--el-color-success); }
+.check-row.failed .check-icon { color: var(--el-color-danger); }
+.check-icon {
+    flex-shrink: 0;
 }
 .check-expression {
-    font-size: 14px;
-    font-family: var(--el-font-family);
+    flex: 1;
     color: var(--el-text-color-primary);
 }
-.check-detail {
-    font-size: 13px;
+.check-value {
+    flex-shrink: 0;
+    min-width: 60px;
+    text-align: right;
     color: var(--el-text-color-secondary);
     font-variant-numeric: tabular-nums;
 }

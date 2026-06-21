@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
+import { ArrowDown, ArrowRight, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
 import type { CheckCondition, CheckResult } from '../types/checks';
 import { parseCheckExpression } from '../util/CheckExpressionParser';
 
@@ -59,16 +60,17 @@ const sortedCubeResults = computed(() => {
                 placeholder="Enter check expression..."
                 :class="{ 'is-error': parseError }"
                 @input="onInput"
-            >
-                <template #append>
-                    <span class="pass-count" @click="expanded = !expanded">
-                        {{ passCount }}/{{ totalCount }}
-                    </span>
-                </template>
-            </el-input>
-            <el-button type="danger" text @click="$emit('delete')">
-                <el-icon><Delete /></el-icon>
-            </el-button>
+            />
+            <div class="condition-actions">
+                <span class="pass-count">{{ passCount }}/{{ totalCount }}</span>
+                <el-button
+                    class="expand-btn"
+                    text
+                    :icon="expanded ? ArrowDown : ArrowRight"
+                    @click="expanded = !expanded"
+                />
+                <el-button type="danger" text :icon="Delete" @click="$emit('delete')" />
+            </div>
         </div>
         <div v-if="parseError" class="parse-error">
             {{ parseError }}
@@ -104,18 +106,23 @@ const sortedCubeResults = computed(() => {
 .condition-header .el-input {
     flex: 1;
 }
-.condition-header :deep(.el-input-group__append) {
-    cursor: pointer;
-    user-select: none;
-    min-width: 56px;
-    text-align: center;
-    font-weight: 600;
-}
 .condition-header .el-input.is-error :deep(.el-input__wrapper) {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
+.condition-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
 .pass-count {
     font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    min-width: 40px;
+    text-align: right;
+}
+.expand-btn {
+    padding: 4px;
 }
 .parse-error {
     margin-top: 4px;
@@ -125,9 +132,11 @@ const sortedCubeResults = computed(() => {
 }
 .cube-results-list {
     margin-top: 8px;
-    margin-left: 12px;
+    padding: 8px 12px;
     max-height: 240px;
     overflow-y: auto;
+    background: var(--el-fill-color-lighter);
+    border-radius: 4px;
 }
 .cube-result-item {
     display: flex;

@@ -75,6 +75,7 @@ function getCubeResultsForCondition(conditionId: string) {
                     v-if="checksState.collections.length > 0"
                     :model-value="checksState.activeCollectionId"
                     placeholder="Select collection"
+                    class="collection-select"
                     @update:model-value="checksState.activeCollectionId = $event"
                 >
                     <el-option
@@ -131,6 +132,9 @@ function getCubeResultsForCondition(conditionId: string) {
 
 <style scoped>
 .checks-tab {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
     padding: 16px;
 }
 .collection-toolbar {
@@ -148,6 +152,9 @@ function getCubeResultsForCondition(conditionId: string) {
     white-space: nowrap;
     font-weight: 500;
 }
+.collection-select {
+    width: 200px;
+}
 .collection-name-input {
     max-width: 220px;
 }
@@ -158,7 +165,7 @@ function getCubeResultsForCondition(conditionId: string) {
     margin-bottom: 12px;
 }
 .conditions-list {
-    max-width: 800px;
+    max-width: 100%;
 }
 .empty-state {
     text-align: center;
