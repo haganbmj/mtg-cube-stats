@@ -73,6 +73,9 @@ const manifest: Manifest = {
         'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // The Trinket Cube
         'c87a14f1-d924-4777-9d12-5c50ee9b1ac6', // Samp's Arena Cube
         'd7da9efa-55fd-422e-973a-e2ad8cbf65df', // MV:1
+        'b059cecd-c525-4d1f-9d22-e75cb767ea40', // Triptych Cube
+        'b3298474-c560-46ec-af3c-cf65e1421c78', // Grixis Desert Cube
+        '6622ab33-89cb-40f9-b80b-fe056d9ca5bd', // The Chrome Wars
     ],
 };
 
