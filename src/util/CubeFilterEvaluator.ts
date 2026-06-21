@@ -7,6 +7,7 @@ import type { QueryNode } from './CardFilterParser';
 export interface CubeFilterContext {
     /** Cards for this cube (from loadedCubes[id].cards) */
     cards: Array<{ name: string; colors?: string[]; [key: string]: any }>;
+    checksPassCount?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,6 +74,10 @@ const CUBE_KEYWORD_ALIASES: Record<string, string> = {
     multicolor: 'multicolor',
     multi: 'multicolor',
     m: 'multicolor',
+    // Checks
+    checks: 'checks',
+    check: 'checks',
+    passed: 'checks',
     // Playability
     game: 'game',
     in: 'game',
@@ -127,6 +132,7 @@ const CUBE_ORDER_ALIASES: Record<string, { prop: string; defaultOrder: 'ascendin
     tix: { prop: 'stats.totalMinPriceTix', defaultOrder: 'descending' },
     words: { prop: 'stats.averageWordCount', defaultOrder: 'ascending' },
     removal: { prop: 'stats.cardCounts.removal', defaultOrder: 'descending' },
+    checks: { prop: 'checksPassCount', defaultOrder: 'descending' },
 };
 
 const CUBE_DIRECTION_ALIASES: Record<string, 'ascending' | 'descending'> = {
@@ -342,6 +348,10 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             // : operator = substring match
             return ctx.cards.some(card => card.name?.toLowerCase().includes(cardName.toLowerCase()));
         }
+
+        // ── Checks ──
+        case 'checks':
+            return compareValues(ctx.checksPassCount ?? 0, op, Number(value));
 
         // ── Sort directives (handled externally; never filter rows) ──
         case 'order':

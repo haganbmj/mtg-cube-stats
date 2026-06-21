@@ -424,6 +424,10 @@
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.cardCounts.supplementalProduct / row.stats.totalCards, 'supplementalProductRatio')" />
             </template>
 
+            <template #cell-checks="{ row }">
+                {{ getChecksPassCount(row.id) }}/{{ activeCheckCount }}
+            </template>
+
             <template #cell-avgSimilarityScore="{ row }">
                 {{ (row.avgSimilarityScore * 100).toFixed(2) }}%
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.avgSimilarityScore, 'avgSimilarityScore')" />
@@ -483,7 +487,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, inject, watch } from 'vue';
-import type { Ref } from 'vue';
+import type { Ref, ComputedRef } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getNestedProp, castInensitiveSort, formatPrice, normalizeSortName } from '../util/HelperFunctions';
@@ -500,6 +504,7 @@ import { parseQuery } from '../util/CardFilterParser';
 import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
+import type { ChecksState, CheckResult } from '../types/checks';
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
@@ -627,6 +632,21 @@ const loadingProgressPercent = computed(() => {
 
 const openCubeDetailDialog = inject('openCubeDetailDialog');
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
+const checksState = inject<Ref<ChecksState>>('checksState')!;
+const checkResults = inject<ComputedRef<Map<string, Map<string, CheckResult>>>>('checkResults')!;
+
+const activeCheckCount = computed(() => {
+    const id = checksState.value.activeCollectionId;
+    if (!id) return 0;
+    const collection = checksState.value.collections.find(c => c.id === id);
+    return collection?.conditions.length ?? 0;
+});
+
+function getChecksPassCount(cubeId: string): number {
+    const cubeMap = checkResults.value.get(cubeId);
+    if (!cubeMap) return 0;
+    return [...cubeMap.values()].filter(r => r.passed).length;
+}
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
@@ -795,6 +815,12 @@ const columnOptions = ref([
             { value: 'stats.cardCounts.supplementalProduct', label: "Supplemental Product", tooltip: "Cards originally from Supplemental Products (includes Portal)" },
         ],
     },
+    {
+        label: 'Checks',
+        options: [
+            { value: 'checks', label: 'Checks', tooltip: 'Number of passing checks from the active check collection' },
+        ],
+    },
 ]);
 
 // --- Sort state ---
@@ -884,6 +910,7 @@ const tableColumns = computed<StickyTableColumn[]>(() => [
     { key: 'removal', prop: 'stats.cardCounts.removal', label: 'Removal', minWidth: '70px', sortable: true, tooltip: "Cards tagged as 'removal' in Scryfall's Tagger", visible: config.value.visibleColumns.includes('stats.cardCounts.removal') },
     { key: 'universesBeyond', prop: 'stats.cardCounts.universesBeyond', label: 'UB', minWidth: '55px', sortable: true, tooltip: 'Universes Beyond — cards originally from non-Magic IP products (includes Standard sets)', visible: config.value.visibleColumns.includes('stats.cardCounts.universesBeyond') },
     { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)', visible: config.value.visibleColumns.includes('stats.cardCounts.supplementalProduct') },
+    { key: 'checks', prop: 'checksPassCount', label: 'Checks', minWidth: '70px', sortable: true, tooltip: 'Checks passed / total from active collection', visible: config.value.visibleColumns.includes('checks') },
 ]);
 
 // --- Filtered + sorted data ---
@@ -899,7 +926,7 @@ const filteredData = computed(() => {
 
     return data.filter(cube => {
         const cards = props.loadedCubes[cube.id]?.cards || [];
-        const ctx: CubeFilterContext = { cards };
+        const ctx: CubeFilterContext = { cards, checksPassCount: getChecksPassCount(cube.id) };
         return evaluateCubeFilter(parsedCubeQuery.value.ast, cube, ctx);
     });
 });
@@ -910,6 +937,14 @@ const sortedData = computed(() => {
     const dir = resolvedSortDirection.value === 'ascending' ? 1 : -1;
 
     return data.sort((a, b) => {
+        // Checks sort (virtual property, not on the cube object)
+        if (prop === 'checksPassCount') {
+            const aVal = getChecksPassCount(a.id);
+            const bVal = getChecksPassCount(b.id);
+            if (aVal !== bVal) return (aVal - bVal) * dir;
+            return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
+        }
+
         // Use ratioSort for newCards and cardCounts ratios
         if (prop === 'stats.newCards' || prop.startsWith('stats.cardCounts.')) {
             const aRatio = getNestedProp(a, prop) / a.stats.totalCards;
