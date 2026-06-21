@@ -58,7 +58,6 @@ const sortedCubeResults = computed(() => {
                 :model-value="localExpression"
                 placeholder="Enter check expression..."
                 :class="{ 'is-error': parseError }"
-                size="small"
                 @input="onInput"
             />
             <el-tooltip v-if="parseError" :content="parseError" placement="top">
@@ -68,7 +67,7 @@ const sortedCubeResults = computed(() => {
                 {{ passCount }}/{{ totalCount }}
                 <el-icon :class="{ expanded }"><ArrowRight /></el-icon>
             </span>
-            <el-button size="small" text type="danger" @click="$emit('delete')">
+            <el-button text type="danger" @click="$emit('delete')">
                 <el-icon><Delete /></el-icon>
             </el-button>
         </div>

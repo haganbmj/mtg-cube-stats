@@ -73,7 +73,6 @@ function getCubeResultsForCondition(conditionId: string) {
                 v-if="checksState.collections.length > 0"
                 :model-value="checksState.activeCollectionId"
                 placeholder="Select collection"
-                size="small"
                 @update:model-value="checksState.activeCollectionId = $event"
             >
                 <el-option
@@ -86,21 +85,19 @@ function getCubeResultsForCondition(conditionId: string) {
             <el-input
                 v-if="activeCollection"
                 :model-value="activeCollection.name"
-                size="small"
                 class="collection-name-input"
                 @update:model-value="activeCollection!.name = $event"
             />
-            <el-button size="small" @click="createCollection">New Collection</el-button>
+            <el-button @click="createCollection">New Collection</el-button>
             <el-button
                 v-if="activeCollection"
-                size="small"
                 type="danger"
                 text
                 @click="deleteCollection"
             >
                 Delete
             </el-button>
-            <el-button size="small" text @click="showSyntaxDialog = true">
+            <el-button text @click="showSyntaxDialog = true">
                 <el-icon><QuestionFilled /></el-icon>
             </el-button>
         </div>
@@ -115,7 +112,7 @@ function getCubeResultsForCondition(conditionId: string) {
                 @update:expression="updateExpression(index, $event)"
                 @delete="deleteCondition(index)"
             />
-            <el-button size="small" class="add-condition-btn" @click="addCondition">
+            <el-button class="add-condition-btn" @click="addCondition">
                 + Add Condition
             </el-button>
         </div>
