@@ -127,7 +127,7 @@ const sortedCubeResults = computed(() => {
 .pass-count {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 6px;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
