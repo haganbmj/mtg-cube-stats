@@ -146,13 +146,18 @@ function handleReset() {
 .column-customizer-actions {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 0;
+}
+
+.column-customizer-actions .el-button {
+    margin: 0;
 }
 
 .drag-handle {
     cursor: grab;
     color: var(--el-text-color-placeholder);
     font-size: 16px;
+    padding: 5px 7px;
 }
 
 .drag-handle:active {
