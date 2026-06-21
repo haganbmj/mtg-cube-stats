@@ -59,17 +59,19 @@ const sortedCubeResults = computed(() => {
                 placeholder="Enter check expression..."
                 :class="{ 'is-error': parseError }"
                 @input="onInput"
-            />
-            <el-tooltip v-if="parseError" :content="parseError" placement="top">
-                <el-icon class="error-icon"><Warning /></el-icon>
-            </el-tooltip>
-            <span class="pass-badge" @click="expanded = !expanded">
-                {{ passCount }}/{{ totalCount }}
-                <el-icon :class="{ expanded }"><ArrowRight /></el-icon>
-            </span>
-            <el-button text type="danger" @click="$emit('delete')">
+            >
+                <template #append>
+                    <span class="pass-count" @click="expanded = !expanded">
+                        {{ passCount }}/{{ totalCount }}
+                    </span>
+                </template>
+            </el-input>
+            <el-button type="danger" text @click="$emit('delete')">
                 <el-icon><Delete /></el-icon>
             </el-button>
+        </div>
+        <div v-if="parseError" class="parse-error">
+            {{ parseError }}
         </div>
         <div v-if="expanded" class="cube-results-list">
             <div
@@ -77,8 +79,9 @@ const sortedCubeResults = computed(() => {
                 :key="item.cubeId"
                 class="cube-result-item"
             >
-                <el-icon :class="item.result?.passed ? 'pass' : 'fail'">
-                    <component :is="item.result?.passed ? 'CircleCheck' : 'CircleClose'" />
+                <el-icon :size="16" :class="item.result?.passed ? 'pass' : 'fail'">
+                    <CircleCheck v-if="item.result?.passed" />
+                    <CircleClose v-else-if="item.result" />
                 </el-icon>
                 <span class="cube-name">{{ item.cubeName }}</span>
                 <span v-if="item.result" class="result-value">
@@ -91,51 +94,50 @@ const sortedCubeResults = computed(() => {
 
 <style scoped>
 .check-condition-row {
-  margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 .condition-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 .condition-header .el-input {
-  flex: 1;
+    flex: 1;
+}
+.condition-header :deep(.el-input-group__append) {
+    cursor: pointer;
+    user-select: none;
+    min-width: 56px;
+    text-align: center;
+    font-weight: 600;
 }
 .condition-header .el-input.is-error :deep(.el-input__wrapper) {
-  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+    box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
-.error-icon {
-  color: var(--el-color-danger);
+.pass-count {
+    font-variant-numeric: tabular-nums;
 }
-.pass-badge {
-  cursor: pointer;
-  white-space: nowrap;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.pass-badge .el-icon {
-  transition: transform 0.2s;
-}
-.pass-badge .el-icon.expanded {
-  transform: rotate(90deg);
+.parse-error {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--el-color-danger);
+    padding-left: 12px;
 }
 .cube-results-list {
-  margin-top: 4px;
-  margin-left: 12px;
-  max-height: 200px;
-  overflow-y: auto;
+    margin-top: 8px;
+    margin-left: 12px;
+    max-height: 240px;
+    overflow-y: auto;
 }
 .cube-result-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 0;
-  font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 14px;
 }
 .cube-result-item .pass { color: var(--el-color-success); }
 .cube-result-item .fail { color: var(--el-color-danger); }
 .cube-name { flex: 1; }
-.result-value { color: var(--el-text-color-secondary); }
+.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; }
 </style>

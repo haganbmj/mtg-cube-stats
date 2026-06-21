@@ -388,28 +388,23 @@
                         </el-col>
 
                         <el-col :span="24" v-if="activeChecksCollection">
-                            <div class="checks-section">
-                                <div class="checks-header">
-                                    <span class="section-title">Checks</span>
-                                    <span class="checks-summary">
-                                        {{ activeChecksCollection.name }} — {{ checksPassCount }}/{{ cubeCheckResults.length }} passed
-                                    </span>
-                                </div>
-                                <div class="checks-list">
-                                    <div
-                                        v-for="{ condition, result } in cubeCheckResults"
-                                        :key="condition.id"
-                                        class="check-item"
-                                        :class="{ passed: result?.passed, failed: result && !result.passed }"
-                                    >
-                                        <el-icon>
-                                            <CircleCheck v-if="result?.passed" />
-                                            <CircleClose v-else-if="result" />
-                                        </el-icon>
-                                        <span class="check-expression">{{ condition.expression }}</span>
-                                        <span v-if="result" class="check-value">
+                            <h4 class="stat-section-title">Checks <span class="checks-collection-name">({{ activeChecksCollection.name }})</span></h4>
+                            <div class="checks-grid">
+                                <div
+                                    v-for="{ condition, result } in cubeCheckResults"
+                                    :key="condition.id"
+                                    class="check-item"
+                                    :class="{ passed: result?.passed, failed: result && !result.passed }"
+                                >
+                                    <el-icon :size="18">
+                                        <CircleCheck v-if="result?.passed" />
+                                        <CircleClose v-else-if="result" />
+                                    </el-icon>
+                                    <div class="check-content">
+                                        <div class="check-expression">{{ condition.expression }}</div>
+                                        <div v-if="result" class="check-detail">
                                             {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
-                                        </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1577,36 +1572,39 @@ const tokensTabData = computed(() => {
     gap: 0.4rem;
 }
 
-.checks-section {
-    margin-top: 16px;
-}
-.checks-header {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-.checks-header .section-title {
-    font-weight: 600;
-}
-.checks-summary {
-    font-size: 12px;
+.checks-collection-name {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.75rem;
     color: var(--el-text-color-secondary);
 }
-.checks-list {
+.checks-grid {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 10px;
 }
 .check-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 10px;
 }
 .check-item.passed .el-icon { color: var(--el-color-success); }
 .check-item.failed .el-icon { color: var(--el-color-danger); }
-.check-expression { flex: 1; }
-.check-value { color: var(--el-text-color-secondary); }
+.check-content {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+.check-expression {
+    font-size: 14px;
+    font-family: var(--el-font-family);
+    color: var(--el-text-color-primary);
+}
+.check-detail {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    font-variant-numeric: tabular-nums;
+}
 
 </style>

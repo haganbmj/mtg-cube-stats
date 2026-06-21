@@ -68,42 +68,44 @@ function getCubeResultsForCondition(conditionId: string) {
 <template>
     <div class="checks-tab">
         <!-- Collection Management -->
-        <div class="collection-controls">
-            <el-select
-                v-if="checksState.collections.length > 0"
-                :model-value="checksState.activeCollectionId"
-                placeholder="Select collection"
-                @update:model-value="checksState.activeCollectionId = $event"
-            >
-                <el-option
-                    v-for="col in checksState.collections"
-                    :key="col.id"
-                    :label="col.name"
-                    :value="col.id"
+        <div class="collection-toolbar">
+            <div class="collection-row">
+                <label class="toolbar-label">Collection</label>
+                <el-select
+                    v-if="checksState.collections.length > 0"
+                    :model-value="checksState.activeCollectionId"
+                    placeholder="Select collection"
+                    @update:model-value="checksState.activeCollectionId = $event"
+                >
+                    <el-option
+                        v-for="col in checksState.collections"
+                        :key="col.id"
+                        :label="col.name"
+                        :value="col.id"
+                    />
+                </el-select>
+                <el-input
+                    v-if="activeCollection"
+                    :model-value="activeCollection.name"
+                    class="collection-name-input"
+                    placeholder="Collection name"
+                    @update:model-value="activeCollection!.name = $event"
                 />
-            </el-select>
-            <el-input
-                v-if="activeCollection"
-                :model-value="activeCollection.name"
-                class="collection-name-input"
-                @update:model-value="activeCollection!.name = $event"
-            />
-            <el-button @click="createCollection">New Collection</el-button>
-            <el-button
-                v-if="activeCollection"
-                type="danger"
-                text
-                @click="deleteCollection"
-            >
-                Delete
-            </el-button>
-            <el-button text @click="showSyntaxDialog = true">
-                <el-icon><QuestionFilled /></el-icon>
-            </el-button>
+                <el-button @click="createCollection">New</el-button>
+                <el-button
+                    v-if="activeCollection"
+                    type="danger"
+                    @click="deleteCollection"
+                >
+                    Delete
+                </el-button>
+                <el-button @click="showSyntaxDialog = true">Syntax Help</el-button>
+            </div>
         </div>
 
         <!-- Conditions List -->
         <div v-if="activeCollection" class="conditions-list">
+            <h4 class="conditions-heading">Conditions</h4>
             <CheckConditionRow
                 v-for="(condition, index) in activeCollection.conditions"
                 :key="condition.id"
@@ -112,7 +114,7 @@ function getCubeResultsForCondition(conditionId: string) {
                 @update:expression="updateExpression(index, $event)"
                 @delete="deleteCondition(index)"
             />
-            <el-button class="add-condition-btn" @click="addCondition">
+            <el-button @click="addCondition">
                 + Add Condition
             </el-button>
         </div>
@@ -129,27 +131,39 @@ function getCubeResultsForCondition(conditionId: string) {
 
 <style scoped>
 .checks-tab {
-  padding: 16px;
+    padding: 16px;
 }
-.collection-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+.collection-toolbar {
+    margin-bottom: 20px;
+}
+.collection-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.toolbar-label {
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+    font-weight: 500;
 }
 .collection-name-input {
-  max-width: 200px;
+    max-width: 220px;
+}
+.conditions-heading {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-regular);
+    margin-bottom: 12px;
 }
 .conditions-list {
-  max-width: 800px;
-}
-.add-condition-btn {
-  margin-top: 8px;
+    max-width: 800px;
 }
 .empty-state {
-  text-align: center;
-  padding: 40px;
-  color: var(--el-text-color-secondary);
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--el-text-color-secondary);
+    font-size: 14px;
 }
 </style>
