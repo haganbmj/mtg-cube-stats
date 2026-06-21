@@ -1588,6 +1588,11 @@ const tokensTabData = computed(() => {
     grid-column: 1 / -1;
     align-items: center;
     font-size: 0.9rem;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+.check-row:nth-child(odd) {
+    background: var(--el-fill-color-lighter);
 }
 .check-row.passed .check-icon { color: var(--el-color-success); }
 .check-row.failed .check-icon { color: var(--el-color-danger); }
