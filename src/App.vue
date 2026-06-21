@@ -115,6 +115,9 @@ import presetsJson from '../preloads/generated/presets.json';
 const presetCollections: PresetCollection[] = presetsJson as PresetCollection[];
 import { bindStorage } from './util/VueLocalStorage';
 import type { UserCollection, Cube } from './types';
+import type { ChecksState, CheckResult } from './types';
+import { parseCheckExpression } from './util/CheckExpressionParser';
+import { evaluateCheck } from './util/CheckEvaluator';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
@@ -376,6 +379,11 @@ const presetComparisonsSelect = ref([...availablePresets].map(label => ({ label,
 
 const userCollections = bindStorage<UserCollection[]>('user-collections', v => Array.isArray(v) ? v : []);
 
+const checksState = bindStorage<ChecksState>('cube-checks', v => {
+    if (v && typeof v === 'object' && Array.isArray((v as any).collections)) return v as ChecksState;
+    return { collections: [], activeCollectionId: null };
+});
+
 const similarityMatrix = ref<Record<string, Record<string, import('./types').SimilarityScore>>>({});
 
 const getAverageSimilarityScore = (cubeId: string) => {
@@ -403,6 +411,30 @@ const overviewTableData = computed(() => {
             avgSimilarityScore: getAverageSimilarityScore(id),
         }
     });
+});
+
+const checkResults = computed<Map<string, Map<string, CheckResult>>>(() => {
+    const results = new Map<string, Map<string, CheckResult>>();
+    const activeId = checksState.value.activeCollectionId;
+    if (!activeId) return results;
+    const collection = checksState.value.collections.find(c => c.id === activeId);
+    if (!collection) return results;
+
+    const parsedConditions = collection.conditions
+        .map(cond => ({ id: cond.id, parsed: parseCheckExpression(cond.expression) }))
+        .filter(c => c.parsed.expression !== null);
+
+    for (const [cubeId, cube] of Object.entries(visibleLoadedCubes.value)) {
+        const cubeResults = new Map<string, CheckResult>();
+        const ctx = { loadedCubes: loadedCubes.value };
+        for (const { id, parsed } of parsedConditions) {
+            if (parsed.expression) {
+                cubeResults.set(id, evaluateCheck(parsed.expression, cube.cards, ctx));
+            }
+        }
+        results.set(cubeId, cubeResults);
+    }
+    return results;
 });
 
 const peerStats = computed(() => {
@@ -778,6 +810,8 @@ provide('refreshCube', refreshCube);
 provide('addCube', addCube);
 provide('addSnapshot', addSnapshot);
 provide('removeCube', removeCube);
+provide('checksState', checksState);
+provide('checkResults', checkResults);
 
 onMounted(async () => {
     // Start data initialization in the background without blocking the UI
