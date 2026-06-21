@@ -418,36 +418,14 @@
 
 
 
-    <!-- Column Customization Dialog -->
-    <el-dialog
+    <ColumnCustomizer
         v-model="columnCustomizationVisible"
-        title="Customize Columns"
-        width="600"
-        align-center
-    >
-        <div v-for="group in columnOptions" :key="group.label" style="margin-bottom: 1em;">
-            <div class="column-group-header">
-                <el-checkbox
-                    :model-value="isGroupAllChecked(group.options)"
-                    :indeterminate="isGroupIndeterminate(group.options)"
-                    @change="(v: boolean | string | number) => toggleGroupColumns(group.options, v as boolean)"
-                ><strong>{{ group.label }}</strong></el-checkbox>
-            </div>
-            <el-checkbox-group v-model="config.visibleColumns" style="width: 100%;">
-                <el-row :gutter="10">
-                    <el-col :span="12" :xs="24" v-for="item in group.options" :key="item.value">
-                        <el-checkbox :value="item.value">
-                            {{ item.label }}
-                        </el-checkbox>
-                    </el-col>
-                </el-row>
-            </el-checkbox-group>
-        </div>
-
-        <template #footer>
-            <el-button @click="columnCustomizationVisible = false">Close</el-button>
-        </template>
-    </el-dialog>
+        v-model:column-order="config.columnOrder"
+        v-model:visible-columns="config.visibleColumns"
+        :column-meta="cardColumnMeta"
+        :default-column-order="defaultCardColumnOrder"
+        :default-visible-columns="defaultVisibleColumns"
+    />
 </template>
 
 <script setup lang="ts">
@@ -457,12 +435,13 @@ import { useWindowSize } from '@vueuse/core';
 import { Menu, Grid, List } from '@element-plus/icons-vue';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useBackDismiss } from '../util/useBackDismiss';
-import { capitalizeFirstLetter, rarityOrder, getRarityColor, formatPrice, normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
+import { capitalizeFirstLetter, rarityOrder, getRarityColor, normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
 import { colorComboSortKey } from '../util/CardGrouping';
 import { cardSortProperties, resolveDirection, stripSortTokens } from '../util/SortConfig';
 import type { SortDirection } from '../util/SortConfig';
 import StickyTable from './StickyTable.vue';
 import type { StickyTableColumn } from '../types/StickyTableColumn';
+import ColumnCustomizer from './ColumnCustomizer.vue';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
@@ -632,24 +611,60 @@ const defaultVisibleColumns = [
     'minRarity', 'setCode', 'releaseDate', 'minPriceUsd',
 ];
 
+const defaultCardColumnOrder = [
+    'cubeCount',
+    'count',
+    ...FREQUENCY_COLUMNS.map(col => col.columnKey),
+    'effectiveColors',
+    'effectiveColorIdentity',
+    'cmc',
+    'power',
+    'toughness',
+    'typeLine',
+    'elo',
+    'popularity',
+    'tags',
+    'minRarity',
+    'setCode',
+    'setType',
+    'layout',
+    'releaseDate',
+    'minPriceUsd',
+    'minPriceTix',
+    'oracleTextWordCount',
+    'oracleTextWordCountMinusParen',
+    'isUniversesBeyond',
+    'isSupplementalProduct',
+    'makesTokens',
+    'games',
+];
+
 const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
 
-const defaultConfig = {
+const defaultCardConfig = {
+    columnOrder: [...defaultCardColumnOrder],
     visibleColumns: [...defaultVisibleColumns],
     visualColumnCount: defaultVisualColumnCount.value,
 };
 
 const config = bindStorage('card-summary-table-config', (v) => {
     if (v == undefined || v === null) {
-        return { ...defaultConfig, visualColumnCount: defaultVisualColumnCount.value };
+        return { ...defaultCardConfig, visualColumnCount: defaultVisualColumnCount.value };
     }
     let cols = (Array.isArray(v.visibleColumns) ? v.visibleColumns : [...defaultVisibleColumns]) as string[];
-    // Migrate legacy single globalRate column to new split columns
     if (cols.includes('globalRate')) {
         cols = cols.filter(c => c !== 'globalRate');
         cols.push('globalRate_total');
     }
+    let columnOrder = Array.isArray(v.columnOrder) ? v.columnOrder : [...defaultCardColumnOrder];
+    for (const key of defaultCardColumnOrder) {
+        if (!columnOrder.includes(key)) {
+            columnOrder.push(key);
+        }
+    }
+    columnOrder = columnOrder.filter((key: string) => defaultCardColumnOrder.includes(key));
     return {
+        columnOrder,
         visibleColumns: cols,
         visualColumnCount: typeof v.visualColumnCount === 'number' ? v.visualColumnCount : defaultVisualColumnCount.value,
     };
@@ -661,119 +676,89 @@ watch(() => config.value.visualColumnCount, () => {
 
 const noCubesLoaded = computed(() => Object.keys(props.loadedCubes).length === 0);
 
-const isGroupAllChecked = (options: { value: string }[]) =>
-    options.every(o => config.value.visibleColumns.includes(o.value));
-
-const isGroupIndeterminate = (options: { value: string }[]) => {
-    const someChecked = options.some(o => config.value.visibleColumns.includes(o.value));
-    return someChecked && !isGroupAllChecked(options);
+const cardColumnMeta: Record<string, { label: string; tooltip?: string }> = {
+    'cubeCount': { label: 'Cubes' },
+    'count': { label: 'Total Count', tooltip: 'Total copies across all loaded cubes' },
+    ...Object.fromEntries(FREQUENCY_COLUMNS.map(col => [
+        col.columnKey,
+        { label: col.label, tooltip: `CubeCobra inclusion rate — ${col.label}` },
+    ])),
+    'effectiveColors': { label: 'Colors', tooltip: 'Actual card colors' },
+    'effectiveColorIdentity': { label: 'Color Identity' },
+    'cmc': { label: 'Mana Value' },
+    'power': { label: 'Power' },
+    'toughness': { label: 'Toughness' },
+    'typeLine': { label: 'Type Line' },
+    'elo': { label: 'Elo' },
+    'popularity': { label: 'Popularity' },
+    'tags': { label: 'Tags' },
+    'minRarity': { label: 'Min Rarity' },
+    'setCode': { label: 'Set' },
+    'setType': { label: 'Set Type' },
+    'layout': { label: 'Layout' },
+    'releaseDate': { label: 'Release Date' },
+    'minPriceUsd': { label: 'Min Price (USD)' },
+    'minPriceTix': { label: 'Min Price (Tix)' },
+    'oracleTextWordCount': { label: 'Word Count (incl. Reminder Text)' },
+    'oracleTextWordCountMinusParen': { label: 'Word Count' },
+    'isUniversesBeyond': { label: 'Universes Beyond' },
+    'isSupplementalProduct': { label: 'Supplemental Product' },
+    'makesTokens': { label: 'Makes Tokens' },
+    'games': { label: 'Games' },
 };
-
-const toggleGroupColumns = (options: { value: string }[], checked: boolean) => {
-    if (checked) {
-        const toAdd = options.map(o => o.value).filter(v => !config.value.visibleColumns.includes(v));
-        config.value.visibleColumns = [...config.value.visibleColumns, ...toAdd];
-    } else {
-        const values = new Set(options.map(o => o.value));
-        config.value.visibleColumns = config.value.visibleColumns.filter(v => !values.has(v));
-    }
-};
-
-const columnOptions = ref([
-    {
-        label: 'Core',
-        options: [
-            { value: 'cubeCount', label: 'Cubes' },
-            { value: 'count', label: 'Total Count' },
-            { value: 'effectiveColors', label: 'Colors' },
-            { value: 'effectiveColorIdentity', label: 'Color Identity' },
-            { value: 'cmc', label: 'Mana Value' },
-            { value: 'power', label: 'Power' },
-            { value: 'toughness', label: 'Toughness' },
-            { value: 'typeLine', label: 'Type Line' },
-            { value: 'elo', label: 'Elo' },
-            { value: 'popularity', label: 'Popularity' },
-            { value: 'tags', label: 'Tags' },
-            { value: 'minRarity', label: 'Min Rarity' },
-        ],
-    },
-    {
-        label: 'Global Rates',
-        options: FREQUENCY_COLUMNS.map(col => ({
-            value: col.columnKey,
-            label: col.label,
-        })),
-    },
-    {
-        label: 'Set & Release',
-        options: [
-            { value: 'setCode', label: 'Set' },
-            { value: 'setType', label: 'Set Type' },
-            { value: 'layout', label: 'Layout' },
-            { value: 'releaseDate', label: 'Release Date' },
-        ],
-    },
-    {
-        label: 'Pricing',
-        options: [
-            { value: 'minPriceUsd', label: 'Min Price (USD)' },
-            { value: 'minPriceTix', label: 'Min Price (Tix)' },
-        ],
-    },
-    {
-        label: 'Characteristics',
-        options: [
-            { value: 'oracleTextWordCount', label: 'Word Count (incl. Reminder Text)' },
-            { value: 'oracleTextWordCountMinusParen', label: 'Word Count' },
-            { value: 'isUniversesBeyond', label: 'Universes Beyond' },
-            { value: 'isSupplementalProduct', label: 'Supplemental Product' },
-            { value: 'makesTokens', label: 'Makes Tokens' },
-            { value: 'games', label: 'Games' },
-        ],
-    },
-
-]);
 
 // --- Table column definitions ---
-const tableColumns = computed<StickyTableColumn[]>(() => [
-    { key: 'index', prop: 'index', label: '#', width: '50px' },
-    { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
-    { key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: config.value.visibleColumns.includes('cubeCount') && !noCubesLoaded.value },
-    { key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: config.value.visibleColumns.includes('count') && !noCubesLoaded.value },
-    ...FREQUENCY_COLUMNS.map(col => ({
-        key: col.columnKey,
-        prop: col.propKey,
-        label: col.label,
-        minWidth: '90px',
-        align: 'center' as const,
-        sortable: true,
-        tooltip: `CubeCobra inclusion rate — ${col.label} (${resolveCubeCount(col.categoryValue)?.toLocaleString() ?? '?'} cubes)`,
-        visible: config.value.visibleColumns.includes(col.columnKey),
-        formatter: (row: any) => row[col.propKey] != null ? `${row[col.propKey].toFixed(1)}%` : 'N/A',
-    })),
-    { key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Actual card colors', visible: config.value.visibleColumns.includes('effectiveColors') },
-    { key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'Color ID', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Color Identity', visible: config.value.visibleColumns.includes('effectiveColorIdentity') },
-    { key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', sortable: true, tooltip: 'Mana Value', visible: config.value.visibleColumns.includes('cmc') },
-    { key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Power', visible: config.value.visibleColumns.includes('power') },
-    { key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', sortable: true, tooltip: 'Toughness', visible: config.value.visibleColumns.includes('toughness') },
-    { key: 'typeLine', prop: 'typeLine', label: 'Type', minWidth: '100px', maxWidth: '220px', showOverflowTooltip: true, sortable: true, tooltip: 'Type Line', visible: config.value.visibleColumns.includes('typeLine') },
-    { key: 'elo', prop: 'elo', label: 'Elo', minWidth: '75px', align: 'center', sortable: true, formatter: (row: any) => row.elo != null ? row.elo.toFixed(0) : 'N/A', tooltip: 'CubeCobra Elo Rating', visible: config.value.visibleColumns.includes('elo') && (!noCubesLoaded.value || cardStatsReady.value) },
-    { key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, formatter: (row: any) => row.popularity != null ? `${row.popularity.toFixed(2)} %` : 'N/A', tooltip: 'CubeCobra Popularity %', visible: config.value.visibleColumns.includes('popularity') && (!noCubesLoaded.value || cardStatsReady.value) },
-    { key: 'tags', prop: 'tags', label: 'Tags', minWidth: '75px', visible: config.value.visibleColumns.includes('tags') },
-    { key: 'minRarity', prop: 'minRarity', label: 'Min Rarity', minWidth: '75px', sortable: true, tooltip: 'Minimum rarity across all printings', visible: config.value.visibleColumns.includes('minRarity') },
-    { key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '60px', sortable: true, visible: config.value.visibleColumns.includes('setCode') },
-    { key: 'setType', prop: 'setType', label: 'Set Type', minWidth: '90px', maxWidth: '130px', showOverflowTooltip: true, sortable: true, visible: config.value.visibleColumns.includes('setType') },
-    { key: 'layout', prop: 'layout', label: 'Layout', minWidth: '75px', sortable: true, visible: config.value.visibleColumns.includes('layout') },
-    { key: 'releaseDate', prop: 'releaseDate', label: 'Released', minWidth: '90px', sortable: true, tooltip: 'Release Date', visible: config.value.visibleColumns.includes('releaseDate') },
-    { key: 'minPriceUsd', prop: 'minPriceUsd', label: 'Price (USD)', minWidth: '75px', sortable: true, formatter: (row: any) => row.minPriceUsd != null ? `$${formatPrice(row.minPriceUsd)}` : 'N/A', tooltip: 'Minimum price in USD across all printings', visible: config.value.visibleColumns.includes('minPriceUsd') },
-    { key: 'minPriceTix', prop: 'minPriceTix', label: 'Price (Tix)', minWidth: '75px', sortable: true, formatter: (row: any) => row.minPriceTix != null ? formatPrice(row.minPriceTix) : 'N/A', tooltip: 'Minimum price in MTGO Tix across all printings', visible: config.value.visibleColumns.includes('minPriceTix') },
-    { key: 'oracleTextWordCount', prop: 'oracleTextWordCount', label: 'Words', minWidth: '65px', align: 'center', sortable: true, tooltip: 'Oracle Text Word Count (including Reminder Text)', visible: config.value.visibleColumns.includes('oracleTextWordCount') },
-    { key: 'oracleTextWordCountMinusParen', prop: 'oracleTextWordCountMinusParen', label: 'Words*', minWidth: '65px', align: 'center', sortable: true, tooltip: 'Oracle Text Word Count (excluding Reminder Text)', visible: config.value.visibleColumns.includes('oracleTextWordCountMinusParen') },
-    { key: 'isUniversesBeyond', prop: 'isUniversesBeyond', label: 'UB', minWidth: '50px', align: 'center', tooltip: 'Universes Beyond — originally from a non-Magic IP product', visible: config.value.visibleColumns.includes('isUniversesBeyond') },
-    { key: 'isSupplementalProduct', prop: 'isSupplementalProduct', label: 'Supp.', minWidth: '55px', align: 'center', tooltip: 'Supplemental Product — originally from a supplemental product (includes Portal)', visible: config.value.visibleColumns.includes('isSupplementalProduct') },
-    { key: 'makesTokens', prop: 'makesTokens', label: 'Tokens', minWidth: '65px', align: 'center', tooltip: 'Makes one or more Tokens', visible: config.value.visibleColumns.includes('makesTokens') },
-    { key: 'games', prop: 'games', label: 'Games', minWidth: '75px', visible: config.value.visibleColumns.includes('games') },
-]);
+const cardColumnDefsMap: Record<string, () => StickyTableColumn> = {
+    'cubeCount': () => ({ key: 'cubeCount', prop: 'cubeCount', label: 'Cubes', minWidth: '75px', align: 'center', sortable: true, visible: !noCubesLoaded.value }),
+    'count': () => ({ key: 'count', prop: 'count', label: 'Count', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Total copies across all loaded cubes', visible: !noCubesLoaded.value }),
+    ...Object.fromEntries(FREQUENCY_COLUMNS.map(col => [
+        col.columnKey,
+        () => ({
+            key: col.columnKey,
+            prop: col.propKey,
+            label: col.label,
+            minWidth: '90px',
+            align: 'center' as const,
+            sortable: true,
+            tooltip: `CubeCobra inclusion rate — ${col.label} (${resolveCubeCount(col.categoryValue)?.toLocaleString() ?? '?'} cubes)`,
+            formatter: (row: any) => row[col.propKey] != null ? `${row[col.propKey].toFixed(1)}%` : 'N/A',
+        }),
+    ])),
+    'effectiveColors': () => ({ key: 'effectiveColors', prop: 'effectiveColors', label: 'Colors', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Actual card colors' }),
+    'effectiveColorIdentity': () => ({ key: 'effectiveColorIdentity', prop: 'effectiveColorIdentity', label: 'CI', minWidth: '75px', align: 'center', sortable: true, tooltip: 'Color Identity' }),
+    'cmc': () => ({ key: 'cmc', prop: 'cmc', label: 'MV', minWidth: '60px', align: 'center', sortable: true }),
+    'power': () => ({ key: 'power', prop: 'power', label: 'Pow', minWidth: '55px', align: 'center', sortable: true }),
+    'toughness': () => ({ key: 'toughness', prop: 'toughness', label: 'Tou', minWidth: '55px', align: 'center', sortable: true }),
+    'typeLine': () => ({ key: 'typeLine', prop: 'typeLine', label: 'Type', minWidth: '120px', showOverflowTooltip: true, sortable: true }),
+    'elo': () => ({ key: 'elo', prop: 'elo', label: 'Elo', minWidth: '70px', align: 'center', sortable: true, visible: !noCubesLoaded.value || cardStatsReady.value }),
+    'popularity': () => ({ key: 'popularity', prop: 'popularity', label: 'Pop.', minWidth: '70px', align: 'center', sortable: true, visible: !noCubesLoaded.value || cardStatsReady.value }),
+    'tags': () => ({ key: 'tags', prop: 'tags', label: 'Tags', minWidth: '100px', showOverflowTooltip: true }),
+    'minRarity': () => ({ key: 'minRarity', prop: 'minRarity', label: 'Rarity', minWidth: '70px', align: 'center', sortable: true }),
+    'setCode': () => ({ key: 'setCode', prop: 'setCode', label: 'Set', minWidth: '65px', align: 'center', sortable: true }),
+    'setType': () => ({ key: 'setType', prop: 'setType', label: 'Set Type', minWidth: '90px', sortable: true }),
+    'layout': () => ({ key: 'layout', prop: 'layout', label: 'Layout', minWidth: '80px', sortable: true }),
+    'releaseDate': () => ({ key: 'releaseDate', prop: 'releaseDate', label: 'Released', minWidth: '90px', sortable: true }),
+    'minPriceUsd': () => ({ key: 'minPriceUsd', prop: 'minPriceUsd', label: '$ USD', minWidth: '70px', align: 'center', sortable: true }),
+    'minPriceTix': () => ({ key: 'minPriceTix', prop: 'minPriceTix', label: 'Tix', minWidth: '60px', align: 'center', sortable: true }),
+    'oracleTextWordCount': () => ({ key: 'oracleTextWordCount', prop: 'oracleTextWordCount', label: 'Words+', minWidth: '70px', align: 'center', sortable: true }),
+    'oracleTextWordCountMinusParen': () => ({ key: 'oracleTextWordCountMinusParen', prop: 'oracleTextWordCountMinusParen', label: 'Words', minWidth: '70px', align: 'center', sortable: true }),
+    'isUniversesBeyond': () => ({ key: 'isUniversesBeyond', prop: 'isUniversesBeyond', label: 'UB', minWidth: '55px', align: 'center', sortable: true }),
+    'isSupplementalProduct': () => ({ key: 'isSupplementalProduct', prop: 'isSupplementalProduct', label: 'Supp.', minWidth: '60px', align: 'center', sortable: true }),
+    'makesTokens': () => ({ key: 'makesTokens', prop: 'makesTokens', label: 'Tokens', minWidth: '65px', align: 'center', sortable: true }),
+    'games': () => ({ key: 'games', prop: 'games', label: 'Games', minWidth: '80px', showOverflowTooltip: true }),
+};
+
+const tableColumns = computed<StickyTableColumn[]>(() => {
+    const pinnedColumns: StickyTableColumn[] = [
+        { key: 'index', prop: 'index', label: '#', width: '50px' },
+        { key: 'name', prop: 'name', label: 'Name', minWidth: '120px', maxWidth: '240px', showOverflowTooltip: true, sortable: true },
+    ];
+    const orderedColumns = config.value.columnOrder
+        .filter((key: string) => config.value.visibleColumns.includes(key))
+        .map((key: string) => cardColumnDefsMap[key]?.())
+        .filter((col: StickyTableColumn | undefined): col is StickyTableColumn => col != null && col.visible !== false);
+    return [...pinnedColumns, ...orderedColumns];
+});
 
 // --- Tag / game display helpers ---
 const tagsMeta = [
