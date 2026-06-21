@@ -158,5 +158,5 @@ const sortedCubeResults = computed(() => {
 .cube-result-item .pass { color: var(--el-color-success); }
 .cube-result-item .fail { color: var(--el-color-danger); }
 .cube-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; }
+.result-value { color: var(--el-text-color-secondary); font-variant-numeric: tabular-nums; text-align: center; padding-left: 8px; }
 </style>

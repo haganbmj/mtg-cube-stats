@@ -1603,6 +1603,8 @@ const tokensTabData = computed(() => {
 .check-value {
     color: var(--el-text-color-secondary);
     font-variant-numeric: tabular-nums;
+    text-align: center;
+    padding-left: 8px;
 }
 
 </style>
