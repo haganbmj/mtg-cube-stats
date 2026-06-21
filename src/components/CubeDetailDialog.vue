@@ -401,7 +401,7 @@
                                         <CircleClose v-else-if="result" />
                                     </el-icon>
                                     <el-tooltip v-if="condition.label" :content="condition.expression" placement="top" :hide-after="50" :enterable="false">
-                                        <span class="check-expression">{{ condition.label }}</span>
+                                        <span class="check-expression"><code>{{ condition.label }}</code></span>
                                     </el-tooltip>
                                     <span v-else class="check-expression"><code>{{ condition.expression }}</code></span>
                                     <span v-if="result" class="check-value">
