@@ -69,6 +69,11 @@ function updateExpression(index: number, value: string) {
   activeCollection.value.conditions[index].expression = value;
 }
 
+function updateLabel(index: number, value: string) {
+  if (!activeCollection.value) return;
+  activeCollection.value.conditions[index].label = value || undefined;
+}
+
 function getCubeResultsForCondition(conditionId: string) {
   return Object.entries(props.loadedCubes).map(([cubeId, cube]) => ({
     cubeId,
@@ -118,6 +123,7 @@ function getCubeResultsForCondition(conditionId: string) {
                 :condition="condition"
                 :cube-results="getCubeResultsForCondition(condition.id)"
                 @update:expression="updateExpression(index, $event)"
+                @update:label="updateLabel(index, $event)"
                 @delete="deleteCondition(index)"
             />
             <el-button @click="addCondition">
@@ -187,7 +193,6 @@ function getCubeResultsForCondition(conditionId: string) {
     max-width: 900px;
     margin: 0 auto;
     width: 100%;
-    padding: 16px;
 }
 .collection-toolbar {
     margin-bottom: 20px;
@@ -195,6 +200,7 @@ function getCubeResultsForCondition(conditionId: string) {
 .collection-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 10px;
 }
 .collection-select {

@@ -18,11 +18,16 @@ const emit = defineEmits<{
 }>();
 
 const localExpression = ref(props.condition.expression);
+const localLabel = ref(props.condition.label ?? '');
 const parseError = ref<string | null>(null);
 const expanded = ref(false);
 
 watch(() => props.condition.expression, (val) => {
   localExpression.value = val;
+});
+
+watch(() => props.condition.label, (val) => {
+  localLabel.value = val ?? '';
 });
 
 const debouncedUpdate = useDebounceFn((val: string) => {
@@ -34,6 +39,11 @@ const debouncedUpdate = useDebounceFn((val: string) => {
 function onInput(val: string) {
   localExpression.value = val;
   debouncedUpdate(val);
+}
+
+function onLabelInput(val: string) {
+  localLabel.value = val;
+  emit('update:label', val);
 }
 
 const passCount = computed(() => {
@@ -58,22 +68,32 @@ const sortedCubeResults = computed(() => {
     <div class="check-condition-row">
         <div class="condition-header">
             <el-input
-                :model-value="localExpression"
-                placeholder="Enter check expression..."
-                :class="{ 'is-error': parseError }"
-                @input="onInput"
+                class="label-input"
+                :model-value="localLabel"
+                placeholder="Label"
+                @update:model-value="onLabelInput"
             >
-                <template #append>
-                    <span class="pass-count" @click="expanded = !expanded">
-                        <el-icon :size="14">
-                            <ArrowDown v-if="expanded" />
-                            <ArrowRight v-else />
-                        </el-icon>
-                        {{ passCount }}/{{ totalCount }}
-                    </span>
-                </template>
+                <template #prepend>Label</template>
             </el-input>
-            <el-button type="danger" text :icon="Delete" @click="$emit('delete')" />
+            <div class="expression-group">
+                <el-input
+                    :model-value="localExpression"
+                    placeholder="Enter check expression..."
+                    :class="{ 'is-error': parseError }"
+                    @input="onInput"
+                >
+                    <template #append>
+                        <span class="pass-count" @click="expanded = !expanded">
+                            <el-icon :size="14">
+                                <ArrowDown v-if="expanded" />
+                                <ArrowRight v-else />
+                            </el-icon>
+                            {{ passCount }}/{{ totalCount }}
+                        </span>
+                    </template>
+                </el-input>
+                <el-button type="danger" text :icon="Delete" @click="$emit('delete')" />
+            </div>
         </div>
         <div v-if="parseError" class="parse-error">
             {{ parseError }}
@@ -104,25 +124,47 @@ const sortedCubeResults = computed(() => {
 
 <style scoped>
 .check-condition-row {
-    margin-bottom: 12px;
+    padding: 12px 0;
+}
+.check-condition-row + .check-condition-row {
+    border-top: 1px solid var(--el-border-color-lighter);
 }
 .condition-header {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
-.condition-header .el-input {
+.condition-header .label-input {
+    flex: 0 1 200px;
+}
+.expression-group {
+    flex: 1 1 280px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.expression-group .el-input {
     flex: 1;
+    min-width: 0;
 }
 .condition-header .el-input.is-error :deep(.el-input__wrapper) {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
-.condition-header :deep(.el-input-group__append) {
+.condition-header :deep(.el-input-group__append),
+.expression-group :deep(.el-input-group__append) {
     cursor: pointer;
     user-select: none;
     width: 90px;
     flex-shrink: 0;
     padding: 0;
+}
+@media (max-width: 600px) {
+    .condition-header .label-input,
+    .condition-header .expression-group {
+        flex-basis: 100%;
+    }
 }
 .pass-count {
     display: flex;
@@ -141,6 +183,7 @@ const sortedCubeResults = computed(() => {
     color: var(--el-color-danger);
     padding-left: 12px;
 }
+
 .cube-results-list {
     margin-top: 8px;
     padding: 8px 12px;
