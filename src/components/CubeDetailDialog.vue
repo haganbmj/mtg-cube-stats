@@ -1592,13 +1592,14 @@ const tokensTabData = computed(() => {
     flex-shrink: 0;
 }
 .check-expression {
-    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--el-text-color-primary);
 }
 .check-value {
     flex-shrink: 0;
-    min-width: 60px;
-    text-align: right;
+    margin-left: auto;
     color: var(--el-text-color-secondary);
     font-variant-numeric: tabular-nums;
 }
