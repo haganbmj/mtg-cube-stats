@@ -409,6 +409,7 @@
                                             {{ result.lhsValue.toFixed(result.isPercentage ? 1 : 0) }}{{ result.isPercentage ? '%' : '' }}
                                         </template>
                                     </span>
+                                    <div class="check-spacer" />
                                 </div>
                             </div>
                         </el-col>
@@ -1599,9 +1600,11 @@ const tokensTabData = computed(() => {
 }
 .check-value {
     flex-shrink: 0;
-    margin-left: auto;
     color: var(--el-text-color-secondary);
     font-variant-numeric: tabular-nums;
+}
+.check-spacer {
+    flex: 1;
 }
 
 </style>
