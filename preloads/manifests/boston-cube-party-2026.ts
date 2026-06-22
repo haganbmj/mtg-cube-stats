@@ -13,7 +13,8 @@ const manifest: Manifest = {
     fetch: { staleThreshold: '1d', shardCount: 3 },
     cubes: [
         '549acfea-4793-41ca-b171-b7ae89a9903b', // A Brooding Saga
-        '1efd75a8-91de-498c-b3ee-24df7bde3a38', // Alternate History Powered Cube
+        // '1efd75a8-91de-498c-b3ee-24df7bde3a38', // Alternate History Powered Cube
+        '30cc9421-f719-41f3-a217-39f259c05e92', // da cube z0ne
         '87f695d4-ca23-4827-b4d2-b3db65c7fe35', // BARTIFACT - Boston Cube Party Edition
         '61454789685c83106293be3c', // Bodleian Cube
         '6c3eb882-71dc-4052-80f8-3a4483b33b53', // Boston Cube
