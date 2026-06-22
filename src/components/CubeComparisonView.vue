@@ -145,10 +145,12 @@ import { computed, inject } from 'vue';
 import type { Cube, CubeCard } from '../types';
 import {
     COLOR_COLUMN_DEFS,
+    COLOR_COMBO_NAMES,
+    COLOR_COMBO_ORDER,
     groupCardsByColorAndType,
     getColorColumnId,
     colorComboLabel,
-    type ColorColumn
+    type ColorColumn,
 } from '../util/CardGrouping';
 import { externalCubeId } from '../util/Snapshots';
 
@@ -247,20 +249,27 @@ function findColumn(grouped: ColorColumn[], colorId: string): ColorColumn | unde
     return grouped.find(c => c.id === colorId);
 }
 
+// Reverse lookup: color combo label → COLOR_COMBO_ORDER index
+const COMBO_NAME_TO_ORDER: Record<string, number> = {};
+for (const [key, name] of Object.entries(COLOR_COMBO_NAMES)) {
+    COMBO_NAME_TO_ORDER[name] = COLOR_COMBO_ORDER.indexOf(key);
+}
+
 // Union of type group labels for a given color across all three groups
 function getUnionTypeLabels(colorId: string): string[] {
-    const labels = new Map<string, number>();
-    let order = 0;
+    const labelSet = new Set<string>();
     for (const grouped of [groupedA.value, groupedBoth.value, groupedB.value]) {
         const col = findColumn(grouped, colorId);
         if (!col) continue;
         for (const group of col.groups) {
-            if (!labels.has(group.label)) {
-                labels.set(group.label, order++);
-            }
+            labelSet.add(group.label);
         }
     }
-    return [...labels.entries()].sort((a, b) => a[1] - b[1]).map(e => e[0]);
+    const labels = [...labelSet];
+    if (colorId === 'L' || colorId === 'M') {
+        labels.sort((a, b) => (COMBO_NAME_TO_ORDER[a] ?? 999) - (COMBO_NAME_TO_ORDER[b] ?? 999));
+    }
+    return labels;
 }
 
 // Get cards for a specific color+type from a grouped array
