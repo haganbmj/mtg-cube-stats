@@ -75,6 +75,7 @@
                                     popper-class="card-tooltip"
                                     :show-after="50"
                                     :hide-after="50"
+                                    :enterable="false"
                                     :offset="16"
                                 >
                                     <template #content>
