@@ -449,6 +449,16 @@
                             >
                                 Refresh
                             </el-button>
+                            <el-button
+                                :icon="Delete"
+                                size="small"
+                                type="danger"
+                                text
+                                @click="handleRemoveAndClose"
+                                style="margin-left: 8px;"
+                            >
+                                Remove
+                            </el-button>
                         </el-col>
                     </el-row>
                 </el-tab-pane>
@@ -703,6 +713,16 @@
                     >
                         Refresh
                     </el-button>
+                    <el-button
+                        :icon="Delete"
+                        size="small"
+                        type="danger"
+                        text
+                        @click="handleRemoveAndClose"
+                        style="margin-left: 8px;"
+                    >
+                        Remove
+                    </el-button>
                 </div>
                 <el-button @click="$emit('close')">Close</el-button>
             </div>
@@ -772,7 +792,7 @@ const props = defineProps({
     },
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
@@ -1029,6 +1049,13 @@ const handleRefresh = async () => {
     const id = activeCube.value?.id;
     if (!id || !refreshCube) return;
     await refreshCube(id);
+};
+
+const handleRemoveAndClose = () => {
+    const id = activeCube.value?.id;
+    if (!id || !removeCube) return;
+    removeCube(id);
+    emit('close');
 };
 
 // Reset activeCubeId whenever the dialog opens with a new cube
