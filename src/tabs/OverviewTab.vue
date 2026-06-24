@@ -943,8 +943,8 @@ const sortedData = computed(() => {
             return castInensitiveSort(normalizeSortName(a.name), normalizeSortName(b.name));
         }
 
-        // Use ratioSort for newCards and cardCounts ratios
-        if (prop === 'stats.newCards' || prop.startsWith('stats.cardCounts.')) {
+        // Use ratioSort for columns displayed as percentages of totalCards
+        if (prop === 'stats.newCards' || prop === 'stats.landCards' || prop === 'stats.creatureCards' || prop === 'stats.totalUniqueCards' || prop.startsWith('stats.cardCounts.')) {
             const aRatio = getNestedProp(a, prop) / a.stats.totalCards;
             const bRatio = getNestedProp(b, prop) / b.stats.totalCards;
             if (aRatio !== bRatio) return (aRatio - bRatio) * dir;
