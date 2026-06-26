@@ -274,6 +274,9 @@ const stripped = cards.filter((card: any) => {
         isDigital: card.digital,
         isPromo: !customNotPromoSets.includes(card.set) && (card.promo || applicablePromoTypes.length > 0 || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
         isToken: card.layout === 'token' || card.layout === 'double_faced_token',
+        isHybrid: /\{[WUBRG2]\/[WUBRG]\}/.test(
+            card.mana_cost || (card.card_faces ?? []).map((f: any) => f.mana_cost || '').join(''),
+        ),
         imageUris: {
             front: `https://cards.scryfall.io/large/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.jpg`,
             back: cardBackUri,
@@ -358,6 +361,7 @@ const minimized = stripped.sort((a: any, b: any) => {
             isDigital: card.isDigital ? true : undefined,
             isPromo: card.isPromo ? true : undefined,
             isToken: card.isToken ? true : undefined,
+            isHybrid: card.isHybrid ? true : undefined,
             isUniversesBeyond: card.promoTypes.includes('universesbeyond') ? true : undefined,
             isSupplementalProduct: ['core', 'expansion'].includes(card.setType) ? undefined : true,
             // Apparently planeswalkers are "normal" layout?
