@@ -238,6 +238,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             toughness: scryfallCard?.toughness ?? undefined,
             minPriceUsd: scryfallCard?.minPriceUsd ?? null,
             minPriceTix: scryfallCard?.minPriceTix ?? null,
+            isHybrid: scryfallCard?.isHybrid ?? false,
             urlFront: scryfallCard?.urlFront ?? '',
             urlBack: scryfallCard?.urlBack ?? '',
         };
