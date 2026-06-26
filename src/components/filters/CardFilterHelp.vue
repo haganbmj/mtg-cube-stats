@@ -302,7 +302,7 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Boolean flags ──────────────────────────────────────────────────────────
     {
         keywords: ['is:', 'not:'],
-        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), token, digital, promo, dfc, hybrid, custom, removal, draw, ramp, counterspell, flicker, tutor.',
+        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, hybrid, custom, removal, draw, ramp, counterspell, flicker, tutor.',
         examples: ['is:hybrid', 'is:universesbeyond', 'not:supplemental', 'is:removal', 'is:dfc'],
     },
     // ── Sort directives ─────────────────────────────────────────────────────────
