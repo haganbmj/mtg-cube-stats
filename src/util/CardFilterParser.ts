@@ -144,6 +144,18 @@ const KEYWORD_ALIASES: Record<string, string> = {
     // Total power + toughness
     pt: 'pt',
     powtou: 'pt',
+    // Loyalty
+    loy: 'loyalty',
+    loyalty: 'loyalty',
+    // Mana cost
+    m: 'mana',
+    mana: 'mana',
+    cost: 'mana',
+    // Produced mana
+    produces: 'produces',
+    // Collector number
+    cn: 'number',
+    number: 'number',
     // Sort order
     order: 'order',
     sort: 'order',

@@ -267,6 +267,72 @@ function compareStrings(actual: string | undefined | null, op: string, target: s
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Mana cost comparison helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Parse a mana cost string into an array of symbol strings.
+ * Supports both braced `{W}{U}{2}` and shorthand `WU2` notation.
+ * Multi-char symbols like `{2/W}` or `{W/P}` are kept as-is (uppercased).
+ */
+function parseManaSymbols(cost: string): string[] {
+    const trimmed = cost.trim().toUpperCase();
+    if (!trimmed) return [];
+
+    // If it contains braces, extract brace contents
+    const braced = trimmed.match(/\{[^}]+\}/g);
+    if (braced) {
+        return braced.map(s => s.slice(1, -1)); // strip { }
+    }
+    // Shorthand: each character is a symbol
+    return trimmed.split('');
+}
+
+/**
+ * Compare a card's mana cost against a filter value.
+ * `:` — card cost contains all requested symbols (with multiplicity)
+ * `=` — exact symbol match (same multiset)
+ * Comparison ops work on total mana value (symbol count).
+ */
+function compareManaCost(cardCost: string, op: string, filterVal: string): boolean {
+    const cardSymbols = parseManaSymbols(cardCost);
+    const filterSymbols = parseManaSymbols(filterVal);
+
+    if (op === ':') {
+        // Contains: every filter symbol must appear in card (with multiplicity)
+        const remaining = [...cardSymbols];
+        for (const fs of filterSymbols) {
+            const idx = remaining.indexOf(fs);
+            if (idx === -1) return false;
+            remaining.splice(idx, 1);
+        }
+        return true;
+    }
+    if (op === '=') {
+        if (cardSymbols.length !== filterSymbols.length) return false;
+        const remaining = [...cardSymbols];
+        for (const fs of filterSymbols) {
+            const idx = remaining.indexOf(fs);
+            if (idx === -1) return false;
+            remaining.splice(idx, 1);
+        }
+        return true;
+    }
+    if (op === '!=') {
+        if (cardSymbols.length !== filterSymbols.length) return true;
+        const remaining = [...cardSymbols];
+        for (const fs of filterSymbols) {
+            const idx = remaining.indexOf(fs);
+            if (idx === -1) return true;
+            remaining.splice(idx, 1);
+        }
+        return false;
+    }
+    // For <, <=, >, >=: compare by symbol count
+    return compareValues(cardSymbols.length, op, filterSymbols.length);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // is: / not: flag evaluation
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -285,6 +351,11 @@ function evaluateFlag(flag: string, row: any): boolean {
             return !!row.isPromo;
         case 'dfc':
             return ['transform', 'modal_dfc', 'reversible_card'].includes(row.layout);
+        case 'mdfc':
+            return row.layout === 'modal_dfc';
+        case 'tdfc':
+        case 'transform':
+            return row.layout === 'transform';
         // Tag shorthands
         case 'removal':
         case 'draw':
@@ -295,6 +366,32 @@ function evaluateFlag(flag: string, row: any): boolean {
             return (row.tags ?? []).some((t: string) => t.toLowerCase() === f);
         case 'hybrid':
             return !!row.isHybrid;
+        case 'phyrexian':
+            return !!row.isPhyrexian;
+        case 'reserved':
+            return !!row.isReserved;
+        case 'booster':
+            return !!row.fromBooster;
+        case 'vanilla':
+            return (row.effectiveTypes ?? []).includes('Creature') && !(row.oracleText);
+        case 'spell':
+            return !(row.typeLine ?? '').toLowerCase().includes('land');
+        case 'permanent': {
+            const tl = (row.typeLine ?? '').toLowerCase();
+            return tl.includes('creature') || tl.includes('artifact') || tl.includes('enchantment')
+                || tl.includes('land') || tl.includes('planeswalker') || tl.includes('battle');
+        }
+        case 'commander':
+            return (row.typeLine ?? '').toLowerCase().includes('legendary')
+                && ((row.effectiveTypes ?? []).includes('Creature') || (row.effectiveTypes ?? []).includes('Planeswalker'));
+        case 'split':
+            return row.layout === 'split';
+        case 'flip':
+            return row.layout === 'flip';
+        case 'meld':
+            return row.layout === 'meld';
+        case 'leveler':
+            return row.layout === 'leveler';
         case 'custom':
             return !!row.isCustomCard;
         default:
@@ -334,12 +431,22 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         // ── Color ─────────────────────────────────────────────────────────────
         case 'color': {
-            const wantedColors = parseColorValue(strVal);
             const rowColors: string[] = (row.effectiveColors ?? []).map((c: string) => c.toUpperCase());
+            const colorCount = rowColors.filter(c => c !== 'C').length;
+
+            // Special: "m" / "multicolor" means 2+ colors
+            const lowerVal = strVal.toLowerCase();
+            if (lowerVal === 'm' || lowerVal === 'multicolor') {
+                const isMulti = colorCount >= 2;
+                if (op === ':' || op === '=') return isMulti;
+                if (op === '!=') return !isMulti;
+                return false;
+            }
+
+            const wantedColors = parseColorValue(strVal);
 
             // Numeric value → compare against color count (colorless = 0)
             if (!isNaN(numVal)) {
-                const colorCount = rowColors.filter(c => c !== 'C').length;
                 return compareValues(colorCount, op, numVal);
             }
 
@@ -381,13 +488,23 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         }
 
         case 'coloridentity': {
-            const wantedColors = parseColorValue(strVal);
             const rowId: string[] = (row.effectiveColorIdentity ?? []).map((c: string) => c.toUpperCase());
+            const idColorCount = rowId.filter(c => c !== 'C').length;
+
+            // Special: "m" / "multicolor" means 2+ colors in identity
+            const lowerIdVal = strVal.toLowerCase();
+            if (lowerIdVal === 'm' || lowerIdVal === 'multicolor') {
+                const isMulti = idColorCount >= 2;
+                if (op === ':' || op === '=') return isMulti;
+                if (op === '!=') return !isMulti;
+                return false;
+            }
+
+            const wantedColors = parseColorValue(strVal);
 
             // Numeric value → compare against color count (colorless = 0)
             if (!isNaN(numVal)) {
-                const colorCount = rowId.filter(c => c !== 'C').length;
-                return compareValues(colorCount, op, numVal);
+                return compareValues(idColorCount, op, numVal);
             }
 
             if (op === '=') {
@@ -421,8 +538,12 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         }
 
         // ── Numeric fields ─────────────────────────────────────────────────────
-        case 'cmc':
-            return compareValues(row.cmc, op, numVal);
+        case 'cmc': {
+            const cmc = row.cmc;
+            if (strVal === 'even') return cmc != null && cmc % 2 === 0;
+            if (strVal === 'odd') return cmc != null && cmc % 2 !== 0;
+            return compareValues(cmc, op, numVal);
+        }
 
         case 'power': {
             const rowPow = parsePT(row.power);
@@ -448,6 +569,51 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             const target = resolvePTValue(strVal, row);
             if (target === null) return false;
             return compareValues(total, op, target);
+        }
+
+        // ── Loyalty ────────────────────────────────────────────────────────────
+        case 'loyalty': {
+            const loy = parsePT(row.loyalty);
+            if (loy === null) return false;
+            return compareValues(loy, op, numVal);
+        }
+
+        // ── Mana cost ──────────────────────────────────────────────────────────
+        case 'mana': {
+            const cardCost = row.manaCost ?? '';
+            return compareManaCost(cardCost, op, strVal);
+        }
+
+        // ── Produced mana ──────────────────────────────────────────────────────
+        case 'produces': {
+            const produced: string[] = (row.producedMana ?? []).map((c: string) => c.toUpperCase());
+            const wantedColors = parseColorValue(strVal);
+
+            if (op === ':') {
+                return wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '=') {
+                if (wantedColors.length !== produced.length) return false;
+                return wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '!=') {
+                return !wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '>=') {
+                return wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '>') {
+                if (!wantedColors.every(wc => produced.includes(wc))) return false;
+                return produced.some(pc => !wantedColors.includes(pc));
+            }
+            if (op === '<=') {
+                return produced.every(pc => wantedColors.includes(pc));
+            }
+            if (op === '<') {
+                if (!produced.every(pc => wantedColors.includes(pc))) return false;
+                return wantedColors.some(wc => !produced.includes(wc));
+            }
+            return false;
         }
 
         case 'wordcount':
@@ -532,6 +698,17 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         case 'layout':
             return compareStrings(row.layout, op, strVal);
+
+        case 'number': {
+            const cn = row.collectorNumber ?? '';
+            // Numeric comparison when value is a number
+            if (!isNaN(numVal)) {
+                const cnNum = parseInt(cn, 10);
+                if (isNaN(cnNum)) return false;
+                return compareValues(cnNum, op, numVal);
+            }
+            return compareStrings(cn, op, strVal);
+        }
 
         // ── Format legality ────────────────────────────────────────────────────
         case 'legal': {

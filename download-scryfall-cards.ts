@@ -276,9 +276,18 @@ const stripped = cards.filter((card: any) => {
         isDigital: card.digital,
         isPromo: !customNotPromoSets.includes(card.set) && (card.promo || applicablePromoTypes.length > 0 || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
         isToken: card.layout === 'token' || card.layout === 'double_faced_token',
+        isReserved: card.reserved,
         isHybrid: /\{[WUBRG2]\/[WUBRG]\}/.test(
             card.mana_cost || (card.card_faces ?? []).map((f: any) => f.mana_cost || '').join(''),
         ),
+        isPhyrexian: /\{[WUBRGC2]*\/P\}|\{P\/[WUBRG]\}/.test(
+            card.mana_cost || (card.card_faces ?? []).map((f: any) => f.mana_cost || '').join(''),
+        ),
+        manaCost: (card.card_faces && card.layout !== 'split')
+            ? (card.card_faces[0].mana_cost ?? card.mana_cost ?? '')
+            : (card.mana_cost ?? ''),
+        loyalty: card.loyalty ?? card.card_faces?.[0]?.loyalty,
+        producedMana: card.produced_mana,
         imageUris: {
             front: `https://cards.scryfall.io/large/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.jpg`,
             back: cardBackUri,
@@ -364,6 +373,11 @@ const minimized = stripped.sort((a: any, b: any) => {
             isPromo: card.isPromo ? true : undefined,
             isToken: card.isToken ? true : undefined,
             isHybrid: card.isHybrid ? true : undefined,
+            isPhyrexian: card.isPhyrexian ? true : undefined,
+            isReserved: card.isReserved ? true : undefined,
+            manaCost: card.manaCost || undefined,
+            loyalty: card.loyalty,
+            producedMana: card.producedMana?.length ? card.producedMana : undefined,
             isUniversesBeyond: card.promoTypes.includes('universesbeyond') ? true : undefined,
             isSupplementalProduct: ['core', 'expansion'].includes(card.setType) ? undefined : true,
             // Apparently planeswalkers are "normal" layout?
