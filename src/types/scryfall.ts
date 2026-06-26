@@ -51,6 +51,7 @@ export interface ScryfallCard {
   isDigital?: boolean;
   isPromo?: boolean;
   isToken?: boolean;
+  isHybrid?: boolean;
   isUniversesBeyond?: boolean;
   isSupplementalProduct?: boolean;
   isNormalLayout?: boolean;
