@@ -20,7 +20,7 @@ const lexer = moo.compile({
     quotedString: { match: /"(?:[^"\\]|\\.)*"/u, value: (s: string) => s.slice(1, -1) },
     or_kw:       { match: /[oO][rR](?=\s|\(|$)/u, value: () => 'or' },
     and_kw:      { match: /[aA][nN][dD](?=\s|\(|$)/u, value: () => 'and' },
-    bareword:    /[\p{L}\p{N}_#'.\/\*\[\]\-]+/u,
+    bareword:    /[\p{L}\p{N}_#'.\/\*\[\]\-{}]+/u,
 });
 
 function id(x: unknown[]) { return x[0]; }

@@ -184,6 +184,21 @@ const FILTER_DOCS: FilterDoc[] = [
         examples: ['pt>=6', 'pt=2'],
     },
     {
+        keywords: ['loyalty', 'loy'],
+        description: 'Starting loyalty for planeswalkers. Numeric comparisons.',
+        examples: ['loy>=4', 'loyalty=3'],
+    },
+    {
+        keywords: ['mana', 'm', 'cost'],
+        description: 'Mana cost. ":" checks if cost contains symbols, "=" checks exact match. Supports shorthand (WU) and braced ({2/W}) notation. Comparison operators compare by symbol count.',
+        examples: ['m:WU', 'mana={2}{W}{W}', 'mana:{2/W}', 'cost:G'],
+    },
+    {
+        keywords: ['produces'],
+        description: 'Colors of mana a card can produce. Set comparison like color/coloridentity.',
+        examples: ['produces:G', 'produces=WU', 'produces>=RG'],
+    },
+    {
         keywords: ['wordcount', 'words', 'wc'],
         description: 'Oracle text word count, excluding reminder text in parentheses.',
         examples: ['words=0', 'words<=10', 'wc>30'],
@@ -302,8 +317,8 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Boolean flags ──────────────────────────────────────────────────────────
     {
         keywords: ['is:', 'not:'],
-        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, hybrid, custom, removal, draw, ramp, counterspell, flicker, tutor.',
-        examples: ['is:hybrid', 'is:universesbeyond', 'not:supplemental', 'is:removal', 'is:dfc'],
+        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, mdfc, tdfc (transform), hybrid, phyrexian, custom, removal, draw, ramp, counterspell, flicker, tutor.',
+        examples: ['is:hybrid', 'is:phyrexian', 'is:mdfc', 'is:tdfc', 'not:supplemental', 'is:removal', 'is:dfc'],
     },
     // ── Sort directives ─────────────────────────────────────────────────────────
     {

@@ -267,6 +267,72 @@ function compareStrings(actual: string | undefined | null, op: string, target: s
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Mana cost comparison helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Parse a mana cost string into an array of symbol strings.
+ * Supports both braced `{W}{U}{2}` and shorthand `WU2` notation.
+ * Multi-char symbols like `{2/W}` or `{W/P}` are kept as-is (uppercased).
+ */
+function parseManaSymbols(cost: string): string[] {
+    const trimmed = cost.trim().toUpperCase();
+    if (!trimmed) return [];
+
+    // If it contains braces, extract brace contents
+    const braced = trimmed.match(/\{[^}]+\}/g);
+    if (braced) {
+        return braced.map(s => s.slice(1, -1)); // strip { }
+    }
+    // Shorthand: each character is a symbol
+    return trimmed.split('');
+}
+
+/**
+ * Compare a card's mana cost against a filter value.
+ * `:` — card cost contains all requested symbols (with multiplicity)
+ * `=` — exact symbol match (same multiset)
+ * Comparison ops work on total mana value (symbol count).
+ */
+function compareManaCost(cardCost: string, op: string, filterVal: string): boolean {
+    const cardSymbols = parseManaSymbols(cardCost);
+    const filterSymbols = parseManaSymbols(filterVal);
+
+    if (op === ':') {
+        // Contains: every filter symbol must appear in card (with multiplicity)
+        const remaining = [...cardSymbols];
+        for (const fs of filterSymbols) {
+            const idx = remaining.indexOf(fs);
+            if (idx === -1) return false;
+            remaining.splice(idx, 1);
+        }
+        return true;
+    }
+    if (op === '=') {
+        if (cardSymbols.length !== filterSymbols.length) return false;
+        const remaining = [...cardSymbols];
+        for (const fs of filterSymbols) {
+            const idx = remaining.indexOf(fs);
+            if (idx === -1) return false;
+            remaining.splice(idx, 1);
+        }
+        return true;
+    }
+    if (op === '!=') {
+        if (cardSymbols.length !== filterSymbols.length) return true;
+        const remaining = [...cardSymbols];
+        for (const fs of filterSymbols) {
+            const idx = remaining.indexOf(fs);
+            if (idx === -1) return true;
+            remaining.splice(idx, 1);
+        }
+        return false;
+    }
+    // For <, <=, >, >=: compare by symbol count
+    return compareValues(cardSymbols.length, op, filterSymbols.length);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // is: / not: flag evaluation
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -285,6 +351,11 @@ function evaluateFlag(flag: string, row: any): boolean {
             return !!row.isPromo;
         case 'dfc':
             return ['transform', 'modal_dfc', 'reversible_card'].includes(row.layout);
+        case 'mdfc':
+            return row.layout === 'modal_dfc';
+        case 'tdfc':
+        case 'transform':
+            return row.layout === 'transform';
         // Tag shorthands
         case 'removal':
         case 'draw':
@@ -295,6 +366,8 @@ function evaluateFlag(flag: string, row: any): boolean {
             return (row.tags ?? []).some((t: string) => t.toLowerCase() === f);
         case 'hybrid':
             return !!row.isHybrid;
+        case 'phyrexian':
+            return !!row.isPhyrexian;
         case 'custom':
             return !!row.isCustomCard;
         default:
@@ -448,6 +521,51 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
             const target = resolvePTValue(strVal, row);
             if (target === null) return false;
             return compareValues(total, op, target);
+        }
+
+        // ── Loyalty ────────────────────────────────────────────────────────────
+        case 'loyalty': {
+            const loy = parsePT(row.loyalty);
+            if (loy === null) return false;
+            return compareValues(loy, op, numVal);
+        }
+
+        // ── Mana cost ──────────────────────────────────────────────────────────
+        case 'mana': {
+            const cardCost = row.manaCost ?? '';
+            return compareManaCost(cardCost, op, strVal);
+        }
+
+        // ── Produced mana ──────────────────────────────────────────────────────
+        case 'produces': {
+            const produced: string[] = (row.producedMana ?? []).map((c: string) => c.toUpperCase());
+            const wantedColors = parseColorValue(strVal);
+
+            if (op === ':') {
+                return wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '=') {
+                if (wantedColors.length !== produced.length) return false;
+                return wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '!=') {
+                return !wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '>=') {
+                return wantedColors.every(wc => produced.includes(wc));
+            }
+            if (op === '>') {
+                if (!wantedColors.every(wc => produced.includes(wc))) return false;
+                return produced.some(pc => !wantedColors.includes(pc));
+            }
+            if (op === '<=') {
+                return produced.every(pc => wantedColors.includes(pc));
+            }
+            if (op === '<') {
+                if (!produced.every(pc => wantedColors.includes(pc))) return false;
+                return wantedColors.some(wc => !produced.includes(wc));
+            }
+            return false;
         }
 
         case 'wordcount':
