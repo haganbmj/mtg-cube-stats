@@ -276,6 +276,7 @@ const stripped = cards.filter((card: any) => {
         isDigital: card.digital,
         isPromo: !customNotPromoSets.includes(card.set) && (card.promo || applicablePromoTypes.length > 0 || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
         isToken: card.layout === 'token' || card.layout === 'double_faced_token',
+        isReserved: card.reserved,
         isHybrid: /\{[WUBRG2]\/[WUBRG]\}/.test(
             card.mana_cost || (card.card_faces ?? []).map((f: any) => f.mana_cost || '').join(''),
         ),
@@ -373,6 +374,7 @@ const minimized = stripped.sort((a: any, b: any) => {
             isToken: card.isToken ? true : undefined,
             isHybrid: card.isHybrid ? true : undefined,
             isPhyrexian: card.isPhyrexian ? true : undefined,
+            isReserved: card.isReserved ? true : undefined,
             manaCost: card.manaCost || undefined,
             loyalty: card.loyalty,
             producedMana: card.producedMana?.length ? card.producedMana : undefined,

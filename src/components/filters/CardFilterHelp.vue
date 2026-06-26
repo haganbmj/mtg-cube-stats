@@ -154,8 +154,8 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Color ─────────────────────────────────────────────────────────────────
     {
         keywords: ['color', 'c'],
-        description: 'Card\'s colors. With color values: ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset (includes colorless); "<" = proper subset; ">" = proper superset. With a number: compares against the color count (colorless = 0).',
-        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c>1', 'c=0', 'c:azorius', '-c:b'],
+        description: 'Card\'s colors. With color values: ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset (includes colorless); "<" = proper subset; ">" = proper superset. With a number: compares against the color count (colorless = 0). Supports guild/shard/wedge names and "m"/"multicolor" for 2+ colors.',
+        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c>1', 'c=0', 'c:azorius', 'c:m', '-c:b'],
     },
     {
         keywords: ['identity', 'id'],
@@ -165,8 +165,8 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Numeric fields ─────────────────────────────────────────────────────────
     {
         keywords: ['cmc', 'mv', 'manavalue'],
-        description: 'Mana value (converted mana cost).',
-        examples: ['cmc=3', 'mv<=2', 'cmc>=6'],
+        description: 'Mana value (converted mana cost). Also supports "even" and "odd" as special values.',
+        examples: ['cmc=3', 'mv<=2', 'cmc>=6', 'mv:even', 'cmc:odd'],
     },
     {
         keywords: ['power', 'pow'],
@@ -250,6 +250,11 @@ const FILTER_DOCS: FilterDoc[] = [
         description: 'Card layout.',
         examples: ['layout:transform', '-layout:normal'],
     },
+    {
+        keywords: ['number', 'cn'],
+        description: 'Collector number within a set. Supports numeric comparisons.',
+        examples: ['cn:123', 'cn>200', 'cn<=50'],
+    },
     // ── Format legality ────────────────────────────────────────────────────────
     {
         keywords: ['format', 'f', 'legal'],
@@ -317,8 +322,8 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Boolean flags ──────────────────────────────────────────────────────────
     {
         keywords: ['is:', 'not:'],
-        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, mdfc, tdfc (transform), hybrid, phyrexian, custom, removal, draw, ramp, counterspell, flicker, tutor.',
-        examples: ['is:hybrid', 'is:phyrexian', 'is:mdfc', 'is:tdfc', 'not:supplemental', 'is:removal', 'is:dfc'],
+        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, mdfc, tdfc (transform), hybrid, phyrexian, reserved, booster, vanilla, spell, permanent, commander, split, flip, meld, leveler, custom, removal, draw, ramp, counterspell, flicker, tutor.',
+        examples: ['is:hybrid', 'is:phyrexian', 'is:mdfc', 'is:vanilla', 'is:reserved', 'not:supplemental', 'is:permanent', 'is:commander'],
     },
     // ── Sort directives ─────────────────────────────────────────────────────────
     {

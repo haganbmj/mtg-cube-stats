@@ -153,6 +153,9 @@ const KEYWORD_ALIASES: Record<string, string> = {
     cost: 'mana',
     // Produced mana
     produces: 'produces',
+    // Collector number
+    cn: 'number',
+    number: 'number',
     // Sort order
     order: 'order',
     sort: 'order',

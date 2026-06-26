@@ -368,6 +368,30 @@ function evaluateFlag(flag: string, row: any): boolean {
             return !!row.isHybrid;
         case 'phyrexian':
             return !!row.isPhyrexian;
+        case 'reserved':
+            return !!row.isReserved;
+        case 'booster':
+            return !!row.fromBooster;
+        case 'vanilla':
+            return (row.effectiveTypes ?? []).includes('Creature') && !(row.oracleText);
+        case 'spell':
+            return !(row.typeLine ?? '').toLowerCase().includes('land');
+        case 'permanent': {
+            const tl = (row.typeLine ?? '').toLowerCase();
+            return tl.includes('creature') || tl.includes('artifact') || tl.includes('enchantment')
+                || tl.includes('land') || tl.includes('planeswalker') || tl.includes('battle');
+        }
+        case 'commander':
+            return (row.typeLine ?? '').toLowerCase().includes('legendary')
+                && ((row.effectiveTypes ?? []).includes('Creature') || (row.effectiveTypes ?? []).includes('Planeswalker'));
+        case 'split':
+            return row.layout === 'split';
+        case 'flip':
+            return row.layout === 'flip';
+        case 'meld':
+            return row.layout === 'meld';
+        case 'leveler':
+            return row.layout === 'leveler';
         case 'custom':
             return !!row.isCustomCard;
         default:
@@ -407,12 +431,22 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         // ── Color ─────────────────────────────────────────────────────────────
         case 'color': {
-            const wantedColors = parseColorValue(strVal);
             const rowColors: string[] = (row.effectiveColors ?? []).map((c: string) => c.toUpperCase());
+            const colorCount = rowColors.filter(c => c !== 'C').length;
+
+            // Special: "m" / "multicolor" means 2+ colors
+            const lowerVal = strVal.toLowerCase();
+            if (lowerVal === 'm' || lowerVal === 'multicolor') {
+                const isMulti = colorCount >= 2;
+                if (op === ':' || op === '=') return isMulti;
+                if (op === '!=') return !isMulti;
+                return false;
+            }
+
+            const wantedColors = parseColorValue(strVal);
 
             // Numeric value → compare against color count (colorless = 0)
             if (!isNaN(numVal)) {
-                const colorCount = rowColors.filter(c => c !== 'C').length;
                 return compareValues(colorCount, op, numVal);
             }
 
@@ -454,13 +488,23 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         }
 
         case 'coloridentity': {
-            const wantedColors = parseColorValue(strVal);
             const rowId: string[] = (row.effectiveColorIdentity ?? []).map((c: string) => c.toUpperCase());
+            const idColorCount = rowId.filter(c => c !== 'C').length;
+
+            // Special: "m" / "multicolor" means 2+ colors in identity
+            const lowerIdVal = strVal.toLowerCase();
+            if (lowerIdVal === 'm' || lowerIdVal === 'multicolor') {
+                const isMulti = idColorCount >= 2;
+                if (op === ':' || op === '=') return isMulti;
+                if (op === '!=') return !isMulti;
+                return false;
+            }
+
+            const wantedColors = parseColorValue(strVal);
 
             // Numeric value → compare against color count (colorless = 0)
             if (!isNaN(numVal)) {
-                const colorCount = rowId.filter(c => c !== 'C').length;
-                return compareValues(colorCount, op, numVal);
+                return compareValues(idColorCount, op, numVal);
             }
 
             if (op === '=') {
@@ -494,8 +538,12 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
         }
 
         // ── Numeric fields ─────────────────────────────────────────────────────
-        case 'cmc':
-            return compareValues(row.cmc, op, numVal);
+        case 'cmc': {
+            const cmc = row.cmc;
+            if (strVal === 'even') return cmc != null && cmc % 2 === 0;
+            if (strVal === 'odd') return cmc != null && cmc % 2 !== 0;
+            return compareValues(cmc, op, numVal);
+        }
 
         case 'power': {
             const rowPow = parsePT(row.power);
@@ -650,6 +698,17 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
 
         case 'layout':
             return compareStrings(row.layout, op, strVal);
+
+        case 'number': {
+            const cn = row.collectorNumber ?? '';
+            // Numeric comparison when value is a number
+            if (!isNaN(numVal)) {
+                const cnNum = parseInt(cn, 10);
+                if (isNaN(cnNum)) return false;
+                return compareValues(cnNum, op, numVal);
+            }
+            return compareStrings(cn, op, strVal);
+        }
 
         // ── Format legality ────────────────────────────────────────────────────
         case 'legal': {
