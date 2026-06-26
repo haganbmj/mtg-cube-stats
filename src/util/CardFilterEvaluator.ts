@@ -279,8 +279,6 @@ function evaluateFlag(flag: string, row: any): boolean {
         case 'supplemental':
         case 'sp':
             return !!row.isSupplementalProduct;
-        case 'token':
-            return !!row.isToken;
         case 'digital':
             return !!row.isDigital;
         case 'promo':

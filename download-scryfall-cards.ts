@@ -154,6 +154,8 @@ const excludedSetTypes = [
 
 const excludedLayouts = [
     'art_series',
+    'token',
+    'double_faced_token',
 ];
 
 const taggerOracleIds: Record<string, Set<string>> = {};
