@@ -76,6 +76,9 @@ const manifest: Manifest = {
         'b059cecd-c525-4d1f-9d22-e75cb767ea40', // Triptych Cube
         'b3298474-c560-46ec-af3c-cf65e1421c78', // Grixis Desert Cube
         '6622ab33-89cb-40f9-b80b-fe056d9ca5bd', // The Chrome Wars
+        '625d6fc351186a0fe97fd370', // Mono White
+        'acf0bb88-6a3d-4990-af63-026e8e5f3caf', // game zones cube
+        '73dc76ca-f2c1-4020-903c-d8e3bf624e60', // Curated by Kiwi
     ],
 };
 
