@@ -79,6 +79,8 @@ const manifest: Manifest = {
         '625d6fc351186a0fe97fd370', // Mono White
         'acf0bb88-6a3d-4990-af63-026e8e5f3caf', // game zones cube
         '73dc76ca-f2c1-4020-903c-d8e3bf624e60', // Curated by Kiwi
+        '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
+        '03e496c1-3fb2-4437-9004-07f727256de6', // Gingercube 2026
     ],
 };
 
