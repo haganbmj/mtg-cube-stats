@@ -1,22 +1,30 @@
 import fs from 'fs';
+import { createInterface } from 'readline';
+import { createGunzip } from 'zlib';
 import axios from 'axios';
 import { strict as assert } from 'assert';
-import { createRequire } from 'module';
-const _require = createRequire(import.meta.url);
-const { chain } = _require('stream-chain');
-const { parser } = _require('stream-json');
-const { streamArray } = _require('stream-json/streamers/stream-array');
 import { detectCardArchetypes } from './src/util/ArchetypeDetection';
 import { flatMapTypes } from './src/util/TypeLine';
 import type { CubeCard } from './src/types';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
 
-if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update" || refresh.toLowerCase() === 'true') {
+if (!fs.existsSync('./data/default-cards.jsonl') || process.argv[2] == "--update" || refresh.toLowerCase() === 'true') {
     console.log('Downloading fresh card data.');
 
+    // Fetch the bulk data metadata to get the JSONL download URI.
+    const bulkDataResp = await axios({
+        url: 'https://api.scryfall.com/bulk-data/default-cards',
+        method: 'GET',
+        headers: {
+            'User-Agent': 'Griselbrand/0.1.0',
+        },
+    });
+    const jsonlDownloadUri = bulkDataResp.data.jsonl_download_uri;
+    console.log(`Downloading from ${jsonlDownloadUri}`);
+
     const dataResp = await axios({
-        url: `https://api.scryfall.com/bulk-data/default-cards?format=file`,
+        url: jsonlDownloadUri,
         method: 'GET',
         responseType: 'stream',
         headers: {
@@ -24,8 +32,9 @@ if (!fs.existsSync('./data/default-cards.json') || process.argv[2] == "--update"
         },
     });
 
-    const write = fs.createWriteStream('./data/default-cards.json');
-    dataResp.data.pipe(write);
+    // Download the .jsonl.gz and decompress directly to .jsonl on disk.
+    const write = fs.createWriteStream('./data/default-cards.jsonl');
+    dataResp.data.pipe(createGunzip()).pipe(write);
     await new Promise((res, rej) => {
         write.on('finish', res);
         write.on('error', rej);
@@ -91,18 +100,12 @@ if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" |
     console.log('Using existing tagger data.');
 }
 
-// default-cards.json exceeds V8's ~512MB string limit so it must be parsed as a stream.
-const cards: any[] = await new Promise((resolve, reject) => {
-    const result: any[] = [];
-    const pipeline = chain([
-        fs.createReadStream('./data/default-cards.json'),
-        parser(),
-        streamArray(),
-    ]);
-    pipeline.on('data', ({ value }: { value: any }) => result.push(value));
-    pipeline.on('end', () => resolve(result));
-    pipeline.on('error', reject);
-});
+// Parse JSONL: each line is a standalone JSON object, no streaming JSON parser needed.
+const cards: any[] = [];
+const rl = createInterface({ input: fs.createReadStream('./data/default-cards.jsonl') });
+for await (const line of rl) {
+    if (line.trim()) cards.push(JSON.parse(line));
+}
 const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json', 'utf8'));
 const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8'));
 const setsData = JSON.parse(fs.readFileSync('./data/sets.json', 'utf8'));

@@ -63,7 +63,7 @@ jobs:
         uses: actions/cache/restore@v6.0.0
         with:
           path: |
-            data/default-cards.json
+            data/default-cards.jsonl
             data/flavor-words.json
             data/sets.json
             data/tagger-data.json
@@ -88,7 +88,7 @@ jobs:
         uses: actions/cache/save@v6.0.0
         with:
           path: |
-            data/default-cards.json
+            data/default-cards.jsonl
             data/flavor-words.json
             data/sets.json
             data/tagger-data.json
