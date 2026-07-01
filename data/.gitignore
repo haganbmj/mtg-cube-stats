@@ -1,4 +1,5 @@
 *.json
+*.jsonl
 */*
 !cubecobra-card-frequency.json
 !cubecobra-card-stats.json

@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache/restore@v6.0.0
         with:
           path: |
-            data/default-cards.json
+            data/default-cards.jsonl
             data/flavor-words.json
             data/tagger-data.json
           key: scryfall-json-${{ github.run_id }}
