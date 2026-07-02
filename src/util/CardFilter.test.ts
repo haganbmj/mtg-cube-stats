@@ -339,3 +339,35 @@ describe('date filter — now/today', () => {
         expect(evaluateWithSets('date<=today', makeCard({ releaseDate: '2015-06-19', releaseYear: 2015 }))).toBe(true);
     });
 });
+
+describe('split-card mana cost filter', () => {
+    // Split cards store manaCost as the top-level Scryfall string with a `//` separator
+    // between face costs. The parser's brace-extraction regex skips the separator, so
+    // the filter treats splits as the combined multiset of both faces.
+    const splitCard = makeCard({
+        name: 'Fire // Ice',
+        typeLine: 'Instant // Instant',
+        layout: 'split',
+        colorIdentity: ['U', 'R'],
+        manaCost: '{1}{R} // {1}{U}',
+        cmc: 4,
+    });
+
+    it('matches a face color via mana:', () => {
+        expect(evaluate('mana:U', splitCard)).toBe(true);
+        expect(evaluate('mana:R', splitCard)).toBe(true);
+    });
+
+    it('does not match an absent color', () => {
+        expect(evaluate('mana:G', splitCard)).toBe(false);
+        expect(evaluate('mana:B', splitCard)).toBe(false);
+    });
+
+    it('matches the combined multiset via mana=', () => {
+        expect(evaluate('mana={1}{R}{1}{U}', splitCard)).toBe(true);
+    });
+
+    it('does not match a single-face-only cost via mana=', () => {
+        expect(evaluate('mana={1}{R}', splitCard)).toBe(false);
+    });
+});
