@@ -5,7 +5,7 @@
 The Scryfall preprocessing pipeline (`download-scryfall-cards.ts`) produces `data/cards-minimized.json`, the largest bundled JSON in the app. A review of the pipeline against actual consumer usage in `src/` surfaced two classes of issues:
 
 1. **Extraneous fields** emitted to the output but never read anywhere (only appear in type declarations). These inflate bundle size for no benefit.
-2. **Consistency and correctness issues** in per-card field handling — including at least one likely latent bug in split-card mana-cost handling.
+2. **Consistency and correctness issues** in per-card field handling — including a split-card mana-cost representation that works today only because the filter's brace-extraction regex happens to skip the `//` separator.
 
 The preprocessing code even carries a `FIXME` at the top of the reduce block flagging "trim this model even more", confirming this cleanup is overdue.
 
@@ -14,7 +14,7 @@ This spec defines five independent tasks that address the review findings. Each 
 ## Goals
 
 - Reduce `cards-minimized.json` size by removing dead fields
-- Fix a latent split-card `manaCost` bug that could silently break `cost:` filter queries
+- Lock in current split-card `mana:` filter behavior with a regression test
 - Normalize a shape inconsistency in `producedMana` across pipeline stages
 - Clean up two trivial code-quality issues (dead regex alternative, missing comment)
 
@@ -53,29 +53,25 @@ This spec defines five independent tasks that address the review findings. Each 
 
 ---
 
-### Task 2 — Fix split-card `manaCost` handling
+### Task 2 — Lock in split-card `mana:` filter behavior with a regression test
 
-**Current behavior** ([download-scryfall-cards.ts#L289-L291](../../../download-scryfall-cards.ts#L289)):
-
-```ts
-manaCost: (card.card_faces && card.layout !== 'split')
-    ? (card.card_faces[0].mana_cost ?? card.mana_cost ?? '')
-    : (card.mana_cost ?? ''),
-```
-
-For split cards this falls through to top-level `card.mana_cost`, which Scryfall returns as a joined string like `{2}{U} // {3}{B}`. The filter DSL's `cost:` predicate in `CardFilterEvaluator.ts` reads `row.manaCost` directly, and does not appear to special-case `//`, so cost predicates may silently misbehave on split cards.
+**Investigation result:** No code change needed. Split cards store `manaCost` as the top-level `card.mana_cost` string (e.g. `{2}{U} // {3}{B}`). The `mana:` filter uses `parseManaSymbols()` in [CardFilterEvaluator.ts#L278](../../../src/util/CardFilterEvaluator.ts#L278), which extracts brace groups via `/\{[^}]+\}/g` — the `//` separator is silently skipped, producing `['2', 'U', '3', 'B']`. This matches the "combined faces" semantics already used for `colors` and `cmc` on split cards.
 
 **Approach:**
 
-1. Verify actual behavior: inspect the current `manaCost` value for a known split card (e.g., Fire // Ice) in `cards-minimized.json`, then trace how `CardFilterEvaluator` handles that value for representative cost queries.
-2. If broken, prefer concatenating face mana costs (`{2}{U}{3}{B}`) in preprocessing — this matches how `colors` is already aggregated for split cards (union of both faces). Update the split branch to compute `card_faces.map(f => f.mana_cost).join('')`.
-3. Add a regression test in `src/util/CardFilter.test.ts` with a split-card fixture, exercising a `cost:` predicate.
+Add a regression test in `src/util/CardFilter.test.ts` with a split-card fixture (e.g., `manaCost: '{2}{U} // {3}{B}'`) exercising `mana:` queries. This locks in current behavior and protects against future changes to either the preprocessing shape or the parser regex.
+
+**Test cases to cover:**
+
+- `mana:U` matches a split card containing `{U}` on either face
+- `mana:B` matches the same card
+- `mana:G` does not match (color absent from both faces)
+- `mana={2}{U}{3}{B}` matches (exact multiset, `//` ignored)
 
 **Verification:**
 
-- New regression test passes
+- New tests pass
 - Existing filter tests still pass
-- `npm run cards && npm run build` both succeed
 
 ---
 
@@ -137,7 +133,7 @@ The vintage legality derivation includes `=== 'legal' || === 'restricted'`, unli
 ## Test Strategy
 
 - Tasks 1, 3, 4: rely on existing test suite + `tsc` + `npm run build` to catch regressions
-- Task 2: adds a targeted regression test for split-card cost handling
+- Task 2: adds a targeted regression test locking in split-card `mana:` filter behavior
 - Task 5: no test needed (comment-only)
 
 ## Rollout
@@ -146,8 +142,8 @@ All tasks are independently mergeable and can proceed in any order. Suggested or
 
 1. Task 5 (comment-only)
 2. Task 4 (regex simplification)
-3. Task 1 (field removals — pure size win)
-4. Task 3 (shape normalization)
-5. Task 2 (split-card fix — highest risk due to actual behavior change and test authoring)
+3. Task 2 (test-only, no behavior change)
+4. Task 1 (field removals — pure size win)
+5. Task 3 (shape normalization)
 
 Each task lands in its own commit for easy revert if regressions surface.
