@@ -14,7 +14,7 @@ Scryfall API (bulk-data, catalog, tagger) → download-scryfall-cards.ts → dat
 
 **Key files:**
 - `download-scryfall-cards.ts` — the entire pipeline; run via `npm run cards` or `npm run cards:update`
-- `data/default-cards.json` — raw Scryfall bulk export (~100MB, not checked in)
+- `data/default-cards.jsonl` — raw Scryfall bulk export, decompressed from `.jsonl.gz` (not checked in)
 - `data/flavor-words.json` — Scryfall flavor keyword catalog (used to filter `keywords`)
 - `data/tagger-data.json` — Scryfall Tagger oracle tag database (source of `tags` like `removal`)
 - `data/sets.json` — Scryfall set list (used to build `setCode → releaseDate` map)
@@ -28,13 +28,11 @@ npm run cards:update     # Force re-download all Scryfall data (passes --update 
 REFRESH_SCRYFALL=true npm run cards   # Same as --update via env var
 ```
 
-**Memory note**: The script processes ~100MB of JSON. If you hit OOM errors, the `package.json` `cards` script passes `--max-old-space-size` — check and increase if needed.
-
 ## Data Sources Downloaded
 
 | File | Scryfall Endpoint | Notes |
 |------|-------------------|-------|
-| `default-cards.json` | `GET /bulk-data/default-cards?format=file` | Streamed; ~100MB |
+| `default-cards.jsonl` | `GET /bulk-data/default-cards` (metadata) → `jsonl_download_uri` | Downloads `.jsonl.gz`, gunzips to disk, parses line-by-line with `readline` |
 | `flavor-words.json` | `GET /catalog/flavor-words?format=file` | Used to strip flavor keywords from `card.keywords` |
 | `tagger-data.json` | `GET /private/tags/oracle` | Streamed; used to populate `tags` per oracle ID |
 | `sets.json` | `GET /sets` | Used to build `setCode → releaseDate` lookup |
@@ -46,7 +44,7 @@ All requests include `User-Agent: Griselbrand/0.1.0`.
 Cards are **excluded** by default and filtered through several layers:
 
 **Excluded set types** (`excludedSetTypes`): `token`  
-**Excluded layouts** (`excludedLayouts`): `art_series`  
+**Excluded layouts** (`excludedLayouts`): `art_series`, `token`, `double_faced_token`  
 **Excluded sets** (`excludedSets`): `fbb`, `4bb`, `rin`, `ren` (foreign black/white bordered sets)  
 **Force-included sets** (`includedSets`): `sunf` (Unfinity sticker sheets)  
 
@@ -56,26 +54,35 @@ Reversible card layouts are currently skipped (stubbed out with a `return []`).
 
 ## Output Shape (`cards-minimized.json`)
 
-The output is an object keyed by **oracle ID** (`card.oracle_id`), where each value is an **array of printings** sorted oldest→newest (so the first entry is the original printing). Each printing contains:
+The output is an object with three top-level keys:
+- `cards`: keyed by **oracle ID** (`card.oracle_id`) — the "best" representative printing (see below)
+- `sets`: `setCode → setName` lookup
+- `setDates`: `setCode → ISO release date` lookup
+- `tokens`: keyed by token oracle ID, holds the earliest printing of each token
+
+During the pipeline each oracle ID accumulates an array of printings (sorted oldest→newest), then a `.reduce()` collapses to a single "best" printing — the first non-digital, non-promo, non-token printing (falls back to the first entry). Aggregate fields (`minPriceUsd`, `minPriceTix`, `rarities`, `minRarity`, unioned `games`, computed `archetypes`) are merged onto that best printing.
+
+Each card entry contains:
 
 ```typescript
 {
     setCode, collectorNumber, releaseDate,
-    name, cmc, colors, colorIdentity, typeLine, effectiveTypes,
+    name, cmc, colors, colorIdentity, typeLine, effectiveTypes, primaryType,
     oracleText, oracleTextWordCount, oracleTextWordCountMinusParen,
     keywords,   // flavor words stripped out
     games, tags, archetypes, rarity, setType,
     fromBooster, promoTypes, layout, power, toughness,
-    isDigital, isPromo, isToken, isUniversesBeyond, isSupplementalProduct,
-    isNormalLayout, makesTokens, tokenOracleIds,
+    isDigital, isPromo, isToken, isHybrid, isPhyrexian, isReserved,
+    isUniversesBeyond, isSupplementalProduct, isNormalLayout,
+    makesTokens, tokenOracleIds,
+    manaCost, loyalty, producedMana,
     legality: { standard, pioneer, modern, legacy, vintage },  // only 'legal'/'restricted' → true; absent = not legal
     urlFront, urlBack,      // Scryfall CDN image URLs
-    priceUsd, priceTix,     // minimum prices from prices.usd / prices.tix
-    minRarity,              // lowest rarity across all printings ('common' | 'uncommon' | 'rare' | 'mythic')
+    priceUsd, priceTix,     // prices from the best printing
+    minPriceUsd, minPriceTix, // minimum across all printings of this oracle id
+    rarities, minRarity,    // all rarities seen + lowest ('common' | 'uncommon' | 'rare' | 'mythic' | 'special' | 'bonus')
 }
 ```
-
-**`minRarity`** is computed after grouping all printings by oracle ID, using `minRarityOrder = ['common', 'uncommon', 'rare', 'mythic', 'special', 'bonus']`.
 
 **Sorting**: Within each oracle ID's printing array, oldest release date first; ties broken by numeric collector number then alpha.
 
