@@ -244,7 +244,7 @@ function enrichCubeContents(cards: CubeCard[]): CubeCard[] {
             fromBooster: scryfallCard?.fromBooster ?? false,
             manaCost: scryfallCard?.manaCost ?? '',
             loyalty: scryfallCard?.loyalty ?? undefined,
-            producedMana: scryfallCard?.producedMana ?? [],
+            producedMana: scryfallCard?.producedMana,
             urlFront: scryfallCard?.urlFront ?? '',
             urlBack: scryfallCard?.urlBack ?? '',
         };
