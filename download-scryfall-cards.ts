@@ -283,7 +283,7 @@ const stripped = cards.filter((card: any) => {
         isHybrid: /\{[WUBRG2]\/[WUBRG]\}/.test(
             card.mana_cost || (card.card_faces ?? []).map((f: any) => f.mana_cost || '').join(''),
         ),
-        isPhyrexian: /\{[WUBRGC2]*\/P\}|\{P\/[WUBRG]\}/.test(
+        isPhyrexian: /\{[WUBRGC2]*\/P\}/.test(
             card.mana_cost || (card.card_faces ?? []).map((f: any) => f.mana_cost || '').join(''),
         ),
         manaCost: (card.card_faces && card.layout !== 'split')
