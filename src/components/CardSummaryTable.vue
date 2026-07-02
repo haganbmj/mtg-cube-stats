@@ -170,6 +170,7 @@
             <el-image
                 :src="card.urlFront"
                 fit="contain"
+                loading="lazy"
                 :alt="card.name"
                 :class="['card-image', card.setCode?.toLowerCase(), { 'card-image--dimmed': highlightedOracleIds && !highlightedOracleIds.has(card.oracleId) }]"
                 style="width: 100%; aspect-ratio: 63 / 88;"

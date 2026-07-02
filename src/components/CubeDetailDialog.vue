@@ -524,7 +524,7 @@
                                 :src="entry.token!.urlFront"
                                 fit="contain"
                                 class="token-image"
-                                lazy
+                                loading="lazy"
                             >
                                 <template #placeholder>
                                     <div class="token-image-placeholder" />

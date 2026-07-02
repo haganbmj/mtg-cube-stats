@@ -221,7 +221,7 @@
                 @click="openCubeDetailDialog(row.id)"
             >
                 <div class="cube-tile-thumbnail-wrapper">
-                    <el-image :src="row.thumbnail" fit="cover" class="cube-tile-thumbnail" :class="{ 'cube-tile-thumbnail--snapshot': isSnapshot(row) }" />
+                    <el-image :src="row.thumbnail" fit="cover" loading="lazy" class="cube-tile-thumbnail" :class="{ 'cube-tile-thumbnail--snapshot': isSnapshot(row) }" />
                     <el-icon v-if="isSnapshot(row)" class="cube-tile-snapshot-badge" title="Snapshot"><Clock /></el-icon>
                     <div class="cube-tile-categories">
                         <el-tag
@@ -277,7 +277,7 @@
             @sort-change="handleTableSortChange"
         >
             <template #cell-thumbnail="{ row }">
-                <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" style="width: 50px; height: 35px; border-radius: 8px;" />
+                <el-image :src="row.thumbnail" class="remove-thumbnail" fit="contain" loading="lazy" style="width: 50px; height: 35px; border-radius: 8px;" />
                 <el-button class="remove-button" size="small" type="danger" @click="removeCube(row.id)">
                     <el-icon><Delete /></el-icon>
                 </el-button>

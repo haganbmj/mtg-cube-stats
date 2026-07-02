@@ -35,7 +35,7 @@
                     :alt="card.name"
                     :class="['card-image', card.setCode?.toLowerCase()]"
                     style="width: 100%; aspect-ratio: 745 / 1040;"
-                    lazy
+                    loading="lazy"
                 />
             </div>
         </div>
