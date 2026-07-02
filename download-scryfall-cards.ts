@@ -393,6 +393,7 @@ const minimized = stripped.sort((a: any, b: any) => {
                 pioneer: card.legalities?.pioneer === 'legal' ? true : undefined,
                 modern: card.legalities?.modern === 'legal' ? true : undefined,
                 legacy: card.legalities?.legacy === 'legal' ? true : undefined,
+                // Restricted cards are legal in Vintage (limited to 1 copy) so count them as legal.
                 vintage: (card.legalities?.vintage === 'legal' || card.legalities?.vintage === 'restricted') ? true : undefined,
             },
 
