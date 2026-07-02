@@ -18,7 +18,7 @@
         </div>
         <div class="cube-list-filter-status">
             <div class="cube-list-match-count">
-                <el-text size="small" type="info">Filtered to {{ matchingOracleIds ? `${matchingOracleIds.size} / ${props.cards.length}` : props.cards.length }} cards</el-text>
+                <el-text size="small" type="info">Filtered to {{ matchingOracleIds ? `${matchingCardCount} / ${props.cards.length}` : props.cards.length }} cards</el-text>
             </div>
         </div>
         <div v-if="visualDisplayVisible" class="cube-list-image-grid">
@@ -142,6 +142,11 @@ const matchingOracleIds = computed<Set<string> | null>(() => {
         if (evaluateCard(ast, row, ctx)) ids.add(card.oracleId);
     }
     return ids;
+});
+
+const matchingCardCount = computed(() => {
+    if (!matchingOracleIds.value) return 0;
+    return props.cards.filter(c => matchingOracleIds.value!.has(c.oracleId)).length;
 });
 
 const columns = computed(() => {
