@@ -341,6 +341,17 @@ const minimized = stripped.sort((a: any, b: any) => {
                 .map((part: any) => idToOracleId[part.id])
                 .filter(Boolean),
         )] as string[];
+
+        // Track minimum prices per oracle id as we go, so we don't have to store
+        // per-printing prices on every card just to compute the min later.
+        store.minPrices[key] = store.minPrices[key] || { usd: Number.MAX_SAFE_INTEGER, tix: Number.MAX_SAFE_INTEGER };
+        if (card.priceUsd != null) {
+            store.minPrices[key].usd = Math.min(store.minPrices[key].usd, card.priceUsd);
+        }
+        if (card.priceTix != null) {
+            store.minPrices[key].tix = Math.min(store.minPrices[key].tix, card.priceTix);
+        }
+
         store.cards[key] = store.cards[key] || [];
         store.cards[key].push({
             setCode: card.set.code,
@@ -367,14 +378,12 @@ const minimized = stripped.sort((a: any, b: any) => {
             rarity: card.rarity,
             setType: card.setType,
             fromBooster: card.fromBooster,
-            promoTypes: card.promoTypes,
             layout: card.layout,
             power: card.power,
             toughness: card.toughness,
 
             isDigital: card.isDigital ? true : undefined,
             isPromo: card.isPromo ? true : undefined,
-            isToken: card.isToken ? true : undefined,
             isHybrid: card.isHybrid ? true : undefined,
             isPhyrexian: card.isPhyrexian ? true : undefined,
             isReserved: card.isReserved ? true : undefined,
@@ -399,8 +408,6 @@ const minimized = stripped.sort((a: any, b: any) => {
 
             urlFront: card.imageUris.front,
             urlBack: card.imageUris.back,
-            priceUsd: card.priceUsd,
-            priceTix: card.priceTix,
         });
 
         store.sets[card.set.code] = card.set.name;
@@ -410,29 +417,24 @@ const minimized = stripped.sort((a: any, b: any) => {
         console.log(`Failure during card: ${JSON.stringify(card)}`, e);
         throw e;
     }
-}, { cards: {}, sets: {} });
+}, { cards: {}, sets: {}, minPrices: {} });
 
 // Remap that to just the "original" printing of each card.
 const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
     const card = minimized.cards[key];
     store[key] = card.filter((printing: any) => {
-        return !printing.isDigital && !printing.isPromo && !printing.isToken;
+        return !printing.isDigital && !printing.isPromo;
     })?.[0] ?? card[0];
 
-    // FIXME: Should this store off which printing is the cheapest?
-    const minPriceUsd = Math.min(...card.map((c: any) => c.priceUsd ?? Number.MAX_SAFE_INTEGER));
-    if (minPriceUsd != Number.MAX_SAFE_INTEGER) {
-        store[key].minPriceUsd = minPriceUsd;
+    const collectedPrices = minimized.minPrices[key];
+    if (collectedPrices.usd !== Number.MAX_SAFE_INTEGER) {
+        store[key].minPriceUsd = collectedPrices.usd;
     }
-
-    const minPriceTix = Math.min(...card.map((c: any) => c.priceTix ?? Number.MAX_SAFE_INTEGER));
-    if (minPriceTix != Number.MAX_SAFE_INTEGER) {
-        store[key].minPriceTix = minPriceTix;
+    if (collectedPrices.tix !== Number.MAX_SAFE_INTEGER) {
+        store[key].minPriceTix = collectedPrices.tix;
     }
 
     const allRarities = Array.from(new Set(card.map((c: any) => c.rarity)));
-    store[key].rarities = allRarities;
-
     const minRarity = allRarities.sort((a: string, b: string) => {
         return minRarityOrder.indexOf(a) - minRarityOrder.indexOf(b);
     })[0];
@@ -448,6 +450,7 @@ const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
 }, {});
 
 minimized.cards = best;
+delete minimized.minPrices;
 
 minimized.setDates = setDates;
 

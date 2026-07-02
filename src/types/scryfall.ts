@@ -33,24 +33,19 @@ export interface ScryfallCard {
   rarity: string;
   setType: string;
   fromBooster: boolean;
-  promoTypes: string[];
   layout: string;
   legality: ScryfallLegality;
   urlFront: string;
   urlBack?: string;
-  priceUsd?: number;
-  priceTix?: number;
 
   // Computed/aggregated fields
   minPriceUsd?: number;
   minPriceTix?: number;
-  rarities: string[];
   minRarity: string;
 
   // Optional boolean flags (undefined when false for space efficiency)
   isDigital?: boolean;
   isPromo?: boolean;
-  isToken?: boolean;
   isHybrid?: boolean;
   isPhyrexian?: boolean;
   isReserved?: boolean;
