@@ -20,6 +20,7 @@ const manifest: Manifest = {
         '5f089f4fda10250fbdd5c160', // The Blink Cube
         '955dfa62-31bd-4c03-9a4c-03b9048ee82b', // The Conversion Cube
         'a9fe75b7-d00b-4342-899b-9d2bd25f8a66', // The Desert Bird
+        '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
         'd5c56175-4e10-4e41-9e4e-08fc01439c4b', // The Legacy of Bloodwake Atoll
         '216fe320-4d78-4d1f-aae4-b36231f59a9e', // The Library of Babel
         'f907f0a5-8e95-474a-a879-6cced27aaeb3', // The Middle School
