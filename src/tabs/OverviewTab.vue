@@ -258,9 +258,9 @@
                             <el-text size="small" tag="b">{{ getChecksPassCount(row.id) }}/{{ activeCheckCount }}</el-text>
                             <el-text size="small" type="info">&nbsp;checks</el-text>
                         </span>
-                        <span v-if="sortedData.length > 1" class="cube-tile-stat">
-                            <el-text size="small" tag="b">{{ (row.avgSimilarityScore * 100).toFixed(1) }}%</el-text>
-                            <el-text size="small" type="info">&nbsp;similarity</el-text>
+                        <span class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ getTileSortStat(row).value }}</el-text>
+                            <el-text size="small" type="info">&nbsp;{{ getTileSortStat(row).label }}</el-text>
                         </span>
                     </div>
                 </div>
@@ -899,6 +899,26 @@ const columnDefsMap: Record<string, StickyTableColumn> = {
     'stats.cardCounts.supplementalProduct': { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)' },
     'checks': { key: 'checks', prop: 'checksPassCount', label: 'Checks', minWidth: '70px', sortable: true, tooltip: 'Checks passed / total from active collection' },
 };
+
+const tileRepresentedSorts = new Set(['name', 'owner', 'stats.totalCards', 'stats.averageNonLandCmc', 'checksPassCount']);
+
+function getTileSortStat(row: any): { label: string; value: string } {
+    const prop = resolvedSortProp.value;
+
+    if (tileRepresentedSorts.has(prop)) {
+        const col = columnDefsMap['lastModified'];
+        return { label: col.label, value: col.formatter!(row) };
+    }
+
+    const col = columnDefsMap[prop];
+    if (col) {
+        const value = col.formatter ? col.formatter(row) : String(getNestedProp(row, prop) ?? '');
+        return { label: col.label, value };
+    }
+
+    const fallback = columnDefsMap['lastModified'];
+    return { label: fallback.label, value: fallback.formatter!(row) };
+}
 
 const tableColumns = computed<StickyTableColumn[]>(() => {
     const pinnedColumns: StickyTableColumn[] = [
