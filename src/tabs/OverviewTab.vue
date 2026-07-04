@@ -248,19 +248,19 @@
                     <div class="cube-tile-stats">
                         <span class="cube-tile-stat">
                             <el-text size="small" tag="b">{{ row.stats.totalCards }}</el-text>
-                            <el-text size="small" type="info">&nbsp;cards</el-text>
+                            <el-text size="small" type="info">&nbsp;Cards</el-text>
                         </span>
                         <span class="cube-tile-stat">
                             <el-text size="small" tag="b">{{ (row.stats.averageNonLandCmc ?? 0).toFixed(2) }}</el-text>
-                            <el-text size="small" type="info">&nbsp;avg MV</el-text>
+                            <el-text size="small" type="info">&nbsp;Avg. MV</el-text>
                         </span>
                         <span v-if="activeCheckCount > 0" class="cube-tile-stat">
                             <el-text size="small" tag="b">{{ getChecksPassCount(row.id) }}/{{ activeCheckCount }}</el-text>
-                            <el-text size="small" type="info">&nbsp;checks</el-text>
+                            <el-text size="small" type="info">&nbsp;Checks</el-text>
                         </span>
-                        <span v-if="sortedData.length > 1" class="cube-tile-stat">
-                            <el-text size="small" tag="b">{{ (row.avgSimilarityScore * 100).toFixed(1) }}%</el-text>
-                            <el-text size="small" type="info">&nbsp;similarity</el-text>
+                        <span class="cube-tile-stat">
+                            <el-text size="small" tag="b">{{ getTileSortStat(row).value }}</el-text>
+                            <el-text size="small" type="info">&nbsp;{{ getTileSortStat(row).label }}</el-text>
                         </span>
                     </div>
                 </div>
@@ -899,6 +899,34 @@ const columnDefsMap: Record<string, StickyTableColumn> = {
     'stats.cardCounts.supplementalProduct': { key: 'supplementalProduct', prop: 'stats.cardCounts.supplementalProduct', label: 'Supp.', minWidth: '60px', sortable: true, tooltip: 'Supplemental Product — cards originally from supplemental products (includes Portal)' },
     'checks': { key: 'checks', prop: 'checksPassCount', label: 'Checks', minWidth: '70px', sortable: true, tooltip: 'Checks passed / total from active collection' },
 };
+
+const tileRepresentedSorts = new Set(['name', 'owner', 'stats.totalCards', 'stats.averageNonLandCmc', 'checksPassCount']);
+
+function isRatioSortProp(prop: string): boolean {
+    return prop === 'stats.newCards' || prop === 'stats.landCards' || prop === 'stats.creatureCards' || prop === 'stats.totalUniqueCards' || prop.startsWith('stats.cardCounts.');
+}
+
+function getTileSortStat(row: any): { label: string; value: string } {
+    const prop = resolvedSortProp.value;
+
+    if (tileRepresentedSorts.has(prop)) {
+        const col = columnDefsMap['lastModified'];
+        return { label: col.label, value: col.formatter!(row) };
+    }
+
+    const col = columnDefsMap[prop];
+    if (col) {
+        if (isRatioSortProp(prop)) {
+            const ratio = (getNestedProp(row, prop) ?? 0) / (row.stats.totalCards || 1);
+            return { label: col.label, value: formatters.percentageFormatter(ratio) };
+        }
+        const value = col.formatter ? col.formatter(row) : String(getNestedProp(row, prop) ?? '');
+        return { label: col.label, value };
+    }
+
+    const fallback = columnDefsMap['lastModified'];
+    return { label: fallback.label, value: fallback.formatter!(row) };
+}
 
 const tableColumns = computed<StickyTableColumn[]>(() => {
     const pinnedColumns: StickyTableColumn[] = [
