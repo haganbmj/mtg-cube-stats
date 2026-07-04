@@ -101,7 +101,7 @@ const manifest: Manifest = {
         '614788f7076b331a38983787', // richardgc - New Frontier
         '5e646fe670240a58539a3fee', // Narvuntien - Cards I Own Cube
         '3763af72-6ad9-4f01-9264-318c57df3aa7', // Uteqoute - Uteqoute's 360 Peasant C/Ube [No UB]
-        '375a3eb7-33bc-45e9-821e-e699cf196ace', // PepperMyr - PepperMyr's 360 Peasant Cube
+        '06549d76-24ae-44e1-bd33-608d8f63dc6f', // PepperMyr - Trinkey Synergy Peasant Cube
         '5f1c4ebcbb7e6b105ca59780', // rancoredmalone - Peasant Snow CUbe
         '315272ac-9bc6-45ee-82d4-2e2279b034fe', // SultanYakub - Resource Cube (Open Beta)
         '8cf14ff3-b9fa-486e-9faf-ce37c1a8ccb1', // emielboven - Emiel's Peasant Cube
