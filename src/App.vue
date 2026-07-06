@@ -491,7 +491,7 @@ const peerStats = computed(() => {
         abnormalLayoutRatio:        ms(ratio(c => c.stats?.cardCounts?.abnormalLayout ?? 0)),
         universesBeyondRatio:       ms(ratio(c => c.stats?.cardCounts?.universesBeyond ?? 0)),
         supplementalProductRatio:   ms(ratio(c => c.stats?.cardCounts?.supplementalProduct ?? 0)),
-        uniqueTokenCount:           ms(ratio(c => c.stats?.uniqueTokenCount ?? 0)),
+        uniqueTokenCount:           ms(cubes.map(c => c.stats?.uniqueTokenCount ?? 0)),
         avgSimilarityScore:         ms(cubes.map(c => c.avgSimilarityScore ?? 0)),
         averageNonLandCmc:          ms(cubes.map(c => c.stats?.averageNonLandCmc ?? 0)),
         averageElo:                 ms(cubes.map(c => c.stats?.averageElo ?? 0)),
