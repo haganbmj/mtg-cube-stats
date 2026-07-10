@@ -1104,7 +1104,7 @@ const activeCubeComparisons = computed((): Record<string, ComparisonResult | nul
         abnormalLayoutRatio:        cmp((stats?.cardCounts?.abnormalLayout ?? 0) / t, 'abnormalLayoutRatio'),
         universesBeyondRatio:       cmp((stats?.cardCounts?.universesBeyond ?? 0) / t, 'universesBeyondRatio'),
         supplementalProductRatio:   cmp((stats?.cardCounts?.supplementalProduct ?? 0) / t, 'supplementalProductRatio'),
-        uniqueTokenCount:           cmp((stats?.uniqueTokenCount ?? 0) / t, 'uniqueTokenCount'),
+        uniqueTokenCount:           cmp(stats?.uniqueTokenCount ?? 0, 'uniqueTokenCount'),
         avgSimilarityScore:         cmp(avgSimilarityScore.value, 'avgSimilarityScore'),
         averageNonLandCmc:          cmp(stats?.averageNonLandCmc ?? 0, 'averageNonLandCmc'),
         averageElo:                 cmp(stats?.averageElo ?? 0, 'averageElo'),

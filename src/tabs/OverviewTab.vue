@@ -389,7 +389,7 @@
 
             <template #cell-uniqueTokenCount="{ row }">
                 <el-text class="cell-primary">{{ row.stats.uniqueTokenCount }}</el-text>
-                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.uniqueTokenCount / row.stats.totalCards, 'uniqueTokenCount')" />
+                <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats.uniqueTokenCount, 'uniqueTokenCount')" />
             </template>
 
             <template #cell-removal="{ row }">
