@@ -105,6 +105,11 @@
                         <el-dropdown-menu>
                             <el-dropdown-item @click="bulkEntryVisible = true">Bulk Entry</el-dropdown-item>
                             <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
+                            <el-dropdown-item
+                                divided
+                                :disabled="Object.keys(props.loadedCubes).length === 0"
+                                @click="props.clearCubes()"
+                            >Remove All Cubes</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
@@ -480,15 +485,6 @@
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp((row.stats?.uniqueNonEvergreenKeywords ?? 0) / row.stats.totalCards, 'uniqueNonEvergreenKeywords')" />
             </template>
         </StickyTable>
-
-        <div v-if="Object.keys(props.loadedCubes).length > 0" class="overview-remove-all">
-            <el-button
-                type="danger"
-                plain
-                :disabled="Object.keys(props.loadedCubes).length === 0"
-                @click="props.clearCubes()"
-            >Remove All Cubes</el-button>
-        </div>
     </div>
 </template>
 
@@ -1236,14 +1232,6 @@ const formatters = {
 
 .overview-progress {
     margin-bottom: 8px;
-}
-
-.overview-remove-all {
-    display: flex;
-    justify-content: center;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .overview-loading-container {
