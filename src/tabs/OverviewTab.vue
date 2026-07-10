@@ -22,6 +22,26 @@
     </ColumnCustomizer>
 
     <el-dialog
+        v-model="bulkEntryVisible"
+        title="Bulk Entry"
+        width="500"
+        align-center
+        destroy-on-close
+        @open="handleBulkEntryOpen"
+    >
+        <el-input
+            v-model="bulkEntryText"
+            type="textarea"
+            :rows="12"
+            placeholder="Enter cube IDs, one per line"
+        />
+        <template #footer>
+            <el-button @click="bulkEntryVisible = false">Cancel</el-button>
+            <el-button type="primary" @click="handleBulkEntrySubmit">Submit</el-button>
+        </template>
+    </el-dialog>
+
+    <el-dialog
         v-model="saveDialogVisible"
         title="Save Collection"
         width="400"
@@ -83,6 +103,7 @@
                     <el-button :icon="Menu" circle />
                     <template #dropdown>
                         <el-dropdown-menu>
+                            <el-dropdown-item @click="bulkEntryVisible = true">Bulk Entry</el-dropdown-item>
                             <el-dropdown-item @click="columnCustomizationVisible = true">Customize Columns</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
@@ -677,6 +698,41 @@ const config = bindStorage('cube-app-config', (v) => {
 
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
+
+const bulkEntryVisible = ref(false);
+useBackDismiss(bulkEntryVisible, () => { bulkEntryVisible.value = false; });
+const bulkEntryText = ref('');
+
+const handleBulkEntryOpen = () => {
+    const keys = Object.keys(props.loadedCubes);
+    bulkEntryText.value = keys.join('\n');
+};
+
+const handleBulkEntrySubmit = async () => {
+    const newIds = bulkEntryText.value
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+    const newIdSet = new Set(newIds);
+    const currentKeys = Object.keys(props.loadedCubes);
+
+    // Remove cubes no longer in the list
+    for (const key of currentKeys) {
+        if (!newIdSet.has(key)) {
+            props.removeCube(key);
+        }
+    }
+
+    // Add new cubes not already loaded
+    const currentKeySet = new Set(currentKeys);
+    for (const id of newIds) {
+        if (!currentKeySet.has(id)) {
+            await props.addCube(id, { refresh: true });
+        }
+    }
+
+    bulkEntryVisible.value = false;
+};
 const visualDisplayVisible = bindStorage('overview-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
 const displayModeValue = computed({
     get: () => visualDisplayVisible.value ? 'grid' : 'table',
