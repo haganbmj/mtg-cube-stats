@@ -9,7 +9,7 @@ const manifest: Manifest = {
     ],
     fetch: { staleThreshold: '1d', shardCount: 4 },
     cubes: [
-        '5d5f69612af66a30f9bb9b10', // The Ham Sandwich
+        '5d5f69612af66a30f9bb9b10', // Crunchwrap Supreme
         '61f51c3df1d9250f21664d1a', // AlfonsoGallegoF - 450 Peasant+
         '5d838062b656d33b0d553226', // ArBoR4817 - Peasant Cube
         '5ef783a507ee7f4bdce2bd3d', // CSabor9 - Peasant Cube
@@ -110,6 +110,7 @@ const manifest: Manifest = {
         '3f208867-323a-46c9-9fd2-97a9fdfe7100', // nomadmtg - The Limitless Peasant Cube
         '5f54080fa382126d07a3f2d3', // CivesPDX - Valhalla Peasant Cube 2026
         '637b9e8cd7d17f14ab27f4c9', // RoroLeZozo - Synergy Peasant Cube
+        '5dbcbd2a44e9cb7a6c8097cf', // ahhabee - C/U be
     ],
 };
 
