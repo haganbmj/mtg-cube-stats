@@ -11,7 +11,11 @@
             label="Set Code"
             min-width="80"
             sortable
-        />
+        >
+            <template #default="{ row }">
+                <el-link underline="never" @click="emit('filter', `set=&quot;${row.setCode}&quot;`)">{{ row.setCode }}</el-link>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="setName"
             label="Set Name"
@@ -38,6 +42,8 @@
 import { computed } from 'vue';
 import { castInensitiveSort } from '../util/HelperFunctions';
 import { getSetName } from '../util/CubeFunctions';
+
+const emit = defineEmits(['filter']);
 
 const props = defineProps({
     setCodeDistribution: {
