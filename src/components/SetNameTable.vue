@@ -21,7 +21,11 @@
             label="Set Name"
             min-width="200"
             sortable
-        />
+        >
+            <template #default="{ row }">
+                <el-link underline="never" @click="emit('filter', `set=&quot;${row.setCode}&quot;`)">{{ row.setName }}</el-link>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="count"
             label="Count"
