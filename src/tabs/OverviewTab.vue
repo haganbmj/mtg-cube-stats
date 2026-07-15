@@ -173,6 +173,7 @@
                         :trigger-on-focus="true"
                         placeholder="Search history or enter Cube ID"
                         @select="handleAutocompleteSelect"
+                        @keyup.enter="submitAddCubeForm"
                         clearable
                     >
                         <template #default="{ item }">
@@ -514,7 +515,7 @@ import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories'
 import { bindStorage } from '../util/VueLocalStorage';
 import { useWindowSize } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
-import type { UserCollection } from '../types';
+import type { UserCollection, Cube } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import ColumnCustomizer from '../components/ColumnCustomizer.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
@@ -716,8 +717,8 @@ interface CubeHistoryEntry {
 const cubeAddHistory = bindStorage<CubeHistoryEntry[]>('cube-add-history', v => Array.isArray(v) ? v : []);
 
 function recordCubeHistory(cubeId: string) {
-    const cube = Object.values(props.loadedCubes).find(
-        (c: any) => c.id === cubeId || c.shortId === cubeId,
+    const cube = (Object.values(props.loadedCubes) as Cube[]).find(
+        c => c.id === cubeId || c.shortId === cubeId,
     );
     if (!cube) return;
     const entry: CubeHistoryEntry = {
