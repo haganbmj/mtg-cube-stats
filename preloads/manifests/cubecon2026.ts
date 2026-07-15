@@ -83,6 +83,7 @@ const manifest: Manifest = {
         '03e496c1-3fb2-4437-9004-07f727256de6', // Gingercube 2026
         '95e54429-d20a-43e8-accc-806f20890123', // The Monored Cube, by WOTC Game Designer bsweitz
         '6e43c785-3861-43c3-bba1-4370a26e34b3', // The Combo Cube, by WOTC Game Designer bsweitz
+        'eef7f190-d3b0-4c53-8c03-c97f1dcbfbf2', // Bourbon Cube
     ],
 };
 
