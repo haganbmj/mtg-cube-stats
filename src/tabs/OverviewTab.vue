@@ -167,7 +167,21 @@
                 <span class="overview-or-divider">OR</span>
 
                 <div class="overview-cube-id-row">
-                    <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                    <el-autocomplete
+                        v-model="addCubeForm.cubeId"
+                        :fetch-suggestions="autocompleteQuerySearch"
+                        :trigger-on-focus="true"
+                        placeholder="Search history or enter Cube ID"
+                        @select="handleAutocompleteSelect"
+                        clearable
+                    >
+                        <template #default="{ item }">
+                            <div class="cube-autocomplete-item">
+                                <span class="cube-autocomplete-name">{{ item.name }}</span>
+                                <span class="cube-autocomplete-owner">{{ item.owner }}</span>
+                            </div>
+                        </template>
+                    </el-autocomplete>
                     <el-button type="primary" @click="submitAddCubeForm" :disabled="isLoading">Add</el-button>
                     <input type="submit" style="display: none;" />
                 </div>
@@ -718,6 +732,28 @@ function recordCubeHistory(cubeId: string) {
     cubeAddHistory.value = [entry, ...filtered].slice(0, 100);
 }
 
+function autocompleteQuerySearch(queryString: string, cb: (results: any[]) => void) {
+    const loadedIds = new Set(Object.keys(props.loadedCubes));
+    const available = cubeAddHistory.value.filter(e => !loadedIds.has(e.id));
+    if (!queryString) {
+        cb(available.map(e => ({ value: e.name, ...e })));
+        return;
+    }
+    const q = queryString.toLowerCase();
+    const filtered = available.filter(
+        e => e.name.toLowerCase().includes(q) || e.owner.toLowerCase().includes(q),
+    );
+    cb(filtered.map(e => ({ value: e.name, ...e })));
+}
+
+async function handleAutocompleteSelect(item: CubeHistoryEntry & { value: string }) {
+    addCubeForm.loading = true;
+    await props.addCube(item.id, { refresh: true });
+    recordCubeHistory(item.id);
+    addCubeForm.cubeId = '';
+    addCubeForm.loading = false;
+}
+
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 
@@ -1211,6 +1247,26 @@ const formatters = {
     align-items: center;
     gap: 8px;
     flex: 1 1 200px;
+}
+
+.cube-autocomplete-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.cube-autocomplete-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cube-autocomplete-owner {
+    color: var(--el-text-color-placeholder);
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 @media (max-width: 600px) {
