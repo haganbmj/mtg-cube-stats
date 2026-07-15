@@ -692,6 +692,32 @@ const config = bindStorage('cube-app-config', (v) => {
     return { columnOrder, visibleColumns, peerComparisons };
 });
 
+interface CubeHistoryEntry {
+    id: string;
+    shortId?: string;
+    name: string;
+    owner: string;
+}
+
+const cubeAddHistory = bindStorage<CubeHistoryEntry[]>('cube-add-history', v => Array.isArray(v) ? v : []);
+
+function recordCubeHistory(cubeId: string) {
+    const cube = Object.values(props.loadedCubes).find(
+        (c: any) => c.id === cubeId || c.shortId === cubeId,
+    );
+    if (!cube) return;
+    const entry: CubeHistoryEntry = {
+        id: cube.id,
+        shortId: cube.shortId,
+        name: cube.name,
+        owner: cube.owner,
+    };
+    // Remove existing entry for this cube (by id) so we can move it to front
+    const filtered = cubeAddHistory.value.filter(e => e.id !== entry.id);
+    // Prepend and cap at 100
+    cubeAddHistory.value = [entry, ...filtered].slice(0, 100);
+}
+
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 
@@ -776,7 +802,11 @@ function getChecksPassCount(cubeId: string): number {
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
-    await props.addCube(addCubeForm.cubeId, { refresh: true });
+    const inputId = addCubeForm.cubeId.trim();
+    await props.addCube(inputId, { refresh: true });
+    if (inputId) {
+        recordCubeHistory(inputId);
+    }
     addCubeForm.cubeId = '';
     addCubeForm.loading = false;
 };
