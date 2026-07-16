@@ -70,8 +70,8 @@
                 </span>
             </div>
             <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
-            <el-tabs tab-position="top">
-                <el-tab-pane label="Details">
+            <el-tabs v-model="activeTab" tab-position="top">
+                <el-tab-pane label="Details" name="details">
                     <el-row class="details-tab">
                         <el-col :span="24">
                             <h4 class="stat-section-title">Key Information</h4>
@@ -463,11 +463,11 @@
                     </el-row>
                 </el-tab-pane>
 
-                <el-tab-pane label="List" :lazy="true">
-                    <CubeListView :cards="activeCubeCards" />
+                <el-tab-pane label="List" name="list" :lazy="true">
+                    <CubeListView :cards="activeCubeCards" :initial-query="listInitialQuery" />
                 </el-tab-pane>
 
-                <el-tab-pane label="Charts">
+                <el-tab-pane label="Charts" name="charts">
                     <el-row justify="space-between" class="chart-row" :gutter="20">
                         <el-col :span="12" :xs="24" :md="12" :xl="8">
                             <div style="height: 300px;">
@@ -509,15 +509,15 @@
                     </el-row>
                 </el-tab-pane>
 
-                <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`">
-                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" />
+                <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`" name="keywords">
+                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" @filter="applyListFilter" />
                 </el-tab-pane>
 
-                <el-tab-pane :label="`Sets (${Object.keys(activeCube.stats?.setCodeDistribution || {}).length})`">
-                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" />
+                <el-tab-pane :label="`Sets (${Object.keys(activeCube.stats?.setCodeDistribution || {}).length})`" name="sets">
+                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" @filter="applyListFilter" />
                 </el-tab-pane>
 
-                <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" :lazy="true">
+                <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" name="tokens" :lazy="true">
                     <div class="tokens-tab">
                         <div v-for="entry in tokensTabData" :key="entry.tokenId" class="token-entry">
                             <el-image
@@ -563,7 +563,7 @@
                     </div>
                 </el-tab-pane>
 
-                <el-tab-pane label="Similar Cubes">
+                <el-tab-pane label="Similar Cubes" name="similar">
                     <SimilarCubesTable
                         :similarityMatrix="similarityMatrix"
                         :loadedCubes="overviewTableData"
@@ -575,7 +575,7 @@
                     <ArchetypeAnalysis :cubeCards="activeCubeCards" />
                 </el-tab-pane> -->
 
-                <el-tab-pane :label="historyTabLabel">
+                <el-tab-pane :label="historyTabLabel" name="history">
                     <div class="history-tab">
                         <section class="history-presets">
                             <h4 class="history-section-title">Load snapshot from…</h4>
@@ -674,7 +674,7 @@
                     </div>
                 </el-tab-pane>
 
-                <el-tab-pane label="Sample Pack" :lazy="true">
+                <el-tab-pane label="Sample Pack" name="samplepack" :lazy="true">
                     <div class="sample-pack">
                         <el-button @click="generateNewPack" style="margin-bottom: 1em;">Generate New Pack</el-button>
                         <div class="sample-pack-image-container">
@@ -809,6 +809,8 @@ const popDetail = inject<() => void>('popDetail');
 // Convert loadedCubes prop to Ref for computed properties
 const loadedCubesRef = toRef(props, 'loadedCubes');
 
+const activeTab = ref('details');
+const listInitialQuery = ref('');
 const activeCubeId = ref<string | null>(null);
 
 const activeCube = computed(() => {
@@ -1169,6 +1171,11 @@ const samplePackUrl = computed(() => {
 
 const generateNewPack = () => {
     samplePackSeed.value = Date.now();
+};
+
+const applyListFilter = (query: string) => {
+    listInitialQuery.value = query;
+    activeTab.value = 'list';
 };
 
 // Tokens tab: unique tokens from the active cube, sorted alphabetically, with the cards that produce each

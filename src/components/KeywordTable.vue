@@ -11,7 +11,11 @@
             label="Keyword"
             min-width="150"
             sortable
-        />
+        >
+            <template #default="{ row }">
+                <el-link underline="never" @click="emit('filter', `keyword=&quot;${row.keyword}&quot;`)">{{ row.keyword }}</el-link>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="evergreen"
             label="Evergreen"
@@ -42,6 +46,8 @@
 import { computed } from 'vue';
 import { isEvergreenKeyword } from '../util/Keywords';
 import { castInensitiveSort } from '../util/HelperFunctions';
+
+const emit = defineEmits(['filter']);
 
 const props = defineProps({
     keywords: {

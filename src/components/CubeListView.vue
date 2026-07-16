@@ -120,11 +120,19 @@ const props = defineProps({
         type: Array as () => CubeCard[],
         required: true,
     },
+    initialQuery: {
+        type: String,
+        default: '',
+    },
 });
 
 const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
 
 const activeQuery = ref('');
+
+watch(() => props.initialQuery, (val) => {
+    if (val) activeQuery.value = val;
+}, { immediate: true });
 
 const visualDisplayVisible = bindStorage('cube-list-display-mode-visual', (v) => typeof v === 'boolean' ? v : false);
 
