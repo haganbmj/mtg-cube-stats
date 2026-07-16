@@ -167,7 +167,22 @@
                 <span class="overview-or-divider">OR</span>
 
                 <div class="overview-cube-id-row">
-                    <el-input v-model="addCubeForm.cubeId" placeholder="Enter Cube ID" autofocus />
+                    <el-autocomplete
+                        v-model="addCubeForm.cubeId"
+                        :fetch-suggestions="autocompleteQuerySearch"
+                        :trigger-on-focus="true"
+                        placeholder="Search history or enter Cube ID"
+                        @select="handleAutocompleteSelect"
+                        @keyup.enter="submitAddCubeForm"
+                        clearable
+                    >
+                        <template #default="{ item }">
+                            <div class="cube-autocomplete-item">
+                                <span class="cube-autocomplete-name">{{ item.name }}</span>
+                                <span class="cube-autocomplete-owner">{{ item.owner }}</span>
+                            </div>
+                        </template>
+                    </el-autocomplete>
                     <el-button type="primary" @click="submitAddCubeForm" :disabled="isLoading">Add</el-button>
                     <input type="submit" style="display: none;" />
                 </div>
@@ -500,7 +515,7 @@ import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories'
 import { bindStorage } from '../util/VueLocalStorage';
 import { useWindowSize } from '@vueuse/core';
 import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
-import type { UserCollection } from '../types';
+import type { UserCollection, Cube } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import ColumnCustomizer from '../components/ColumnCustomizer.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
@@ -692,6 +707,54 @@ const config = bindStorage('cube-app-config', (v) => {
     return { columnOrder, visibleColumns, peerComparisons };
 });
 
+interface CubeHistoryEntry {
+    id: string;
+    shortId?: string;
+    name: string;
+    owner: string;
+}
+
+const cubeAddHistory = bindStorage<CubeHistoryEntry[]>('cube-add-history', v => Array.isArray(v) ? v : []);
+
+function recordCubeHistory(cubeId: string) {
+    const cube = (Object.values(props.loadedCubes) as Cube[]).find(
+        c => c.id === cubeId || c.shortId === cubeId,
+    );
+    if (!cube) return;
+    const entry: CubeHistoryEntry = {
+        id: cube.id,
+        shortId: cube.shortId,
+        name: cube.name,
+        owner: cube.owner,
+    };
+    // Remove existing entry for this cube (by id) so we can move it to front
+    const filtered = cubeAddHistory.value.filter(e => e.id !== entry.id);
+    // Prepend and cap at 100
+    cubeAddHistory.value = [entry, ...filtered].slice(0, 100);
+}
+
+function autocompleteQuerySearch(queryString: string, cb: (results: any[]) => void) {
+    const loadedIds = new Set(Object.keys(props.loadedCubes));
+    const available = cubeAddHistory.value.filter(e => !loadedIds.has(e.id));
+    if (!queryString) {
+        cb(available.map(e => ({ value: e.name, ...e })));
+        return;
+    }
+    const q = queryString.toLowerCase();
+    const filtered = available.filter(
+        e => e.name.toLowerCase().includes(q) || e.owner.toLowerCase().includes(q),
+    );
+    cb(filtered.map(e => ({ value: e.name, ...e })));
+}
+
+async function handleAutocompleteSelect(item: CubeHistoryEntry & { value: string }) {
+    addCubeForm.loading = true;
+    await props.addCube(item.id, { refresh: true });
+    recordCubeHistory(item.id);
+    addCubeForm.cubeId = '';
+    addCubeForm.loading = false;
+}
+
 const columnCustomizationVisible = ref(false);
 useBackDismiss(columnCustomizationVisible, () => { columnCustomizationVisible.value = false; });
 
@@ -776,7 +839,11 @@ function getChecksPassCount(cubeId: string): number {
 
 const submitAddCubeForm = async () => {
     addCubeForm.loading = true;
-    await props.addCube(addCubeForm.cubeId, { refresh: true });
+    const inputId = addCubeForm.cubeId.trim();
+    await props.addCube(inputId, { refresh: true });
+    if (inputId) {
+        recordCubeHistory(inputId);
+    }
     addCubeForm.cubeId = '';
     addCubeForm.loading = false;
 };
@@ -1181,6 +1248,26 @@ const formatters = {
     align-items: center;
     gap: 8px;
     flex: 1 1 200px;
+}
+
+.cube-autocomplete-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.cube-autocomplete-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cube-autocomplete-owner {
+    color: var(--el-text-color-placeholder);
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 @media (max-width: 600px) {
