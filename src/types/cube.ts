@@ -128,7 +128,7 @@ export interface Cube {
   thumbnail?: string;
   category?: string;
   categoryPrefixes?: string[];
-  lastModified?: string;
+  lastModified?: string | number;
   followerCount?: number;
   brief?: string;
   fetchedAt?: string;
