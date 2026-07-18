@@ -213,9 +213,9 @@ function compareStrings(actual: string | undefined | null, op: string, target: s
     }
 }
 
-function compareDates(actual: string | undefined | null, op: string, target: string): boolean {
-    if (!actual) return false;
-    const actualDate = actual.slice(0, 10);
+function compareDates(actual: string | number | undefined | null, op: string, target: string): boolean {
+    if (actual == null) return false;
+    const actualDate = (typeof actual === 'number' ? new Date(actual).toISOString() : String(actual)).slice(0, 10);
     const targetDate = target.slice(0, 10);
     switch (op) {
         case ':':
