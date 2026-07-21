@@ -742,7 +742,7 @@ function autocompleteQuerySearch(queryString: string, cb: (results: any[]) => vo
     }
     const q = queryString.toLowerCase();
     const filtered = available.filter(
-        e => e.name.toLowerCase().includes(q) || e.owner.toLowerCase().includes(q),
+        e => e.name.toLowerCase().includes(q) || e.owner.toLowerCase().includes(q) || e.id.toLowerCase().includes(q) || (e.shortId && e.shortId.toLowerCase().includes(q)),
     );
     cb(filtered.map(e => ({ value: e.name, ...e })));
 }
