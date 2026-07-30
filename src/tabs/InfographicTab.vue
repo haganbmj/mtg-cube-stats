@@ -171,8 +171,14 @@
                 width="900px"
                 destroy-on-close
             >
+                <p v-if="activeListModal === 'tokens'" style="margin: 0 0 12px; color: var(--el-text-color-secondary); font-size: 0.875rem;">
+                    {{ tokenModalSummary.uniqueTokens.toLocaleString() }} Unique Tokens, {{ tokenModalSummary.totalCards.toLocaleString() }} Total Effects
+                </p>
                 <el-table :data="activeListData" style="width: 100%" max-height="500">
                     <el-table-column type="index" width="50" align="right" />
+                    <el-table-column v-if="activeListModal === 'tokens'" label="P/T" width="60" align="center">
+                        <template #default="{ row }">{{ row.power != null && row.toughness != null ? `${row.power}/${row.toughness}` : '—' }}</template>
+                    </el-table-column>
                     <el-table-column v-if="activeListModal !== 'sets' && activeListModal !== 'keywords'" label="Name" min-width="160">
                         <template #default="{ row }">
                             <el-tooltip
@@ -189,6 +195,11 @@
                                 <a v-if="activeListModal !== 'tokens'" href="#" style="color: inherit; text-decoration: none; cursor: pointer;" @click.prevent="openCardDetailDialog(row.oracleId); activeListModal = null">{{ row.name?.split('//')[0].trim() }}</a>
                                 <span v-else>{{ row.name }}</span>
                             </el-tooltip>
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Color" width="90" align="center">
+                        <template #default="{ row }">
+                            <i v-for="color in row.colors" :key="color" :class="'ms ms-' + color.toLowerCase() + ' ms-cost'" style="margin-right: 2px;" />
                         </template>
                     </el-table-column>
                     <el-table-column v-if="activeListModal !== 'sets' && activeListModal !== 'keywords'" label="Cubes" width="130" align="right">
@@ -690,6 +701,12 @@ const activeListData = computed(() => {
     if (activeListModal.value === 'keywords') return topPopularKeywords.value;
     return [];
 });
+
+const tokenModalSummary = computed(() => ({
+    uniqueTokens: topTokens.value.length,
+    totalCards: topTokens.value.reduce((sum, t) => sum + t.effectCount, 0),
+    uniqueCards: topTokens.value.reduce((sum, t) => sum + t.uniqueCardCount, 0),
+}));
 
 const currentYear = computed(() => new Date().getFullYear());
 
