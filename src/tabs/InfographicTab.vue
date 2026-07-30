@@ -131,6 +131,75 @@
                 </el-col>
             </el-row>
 
+            <el-row :gutter="20" class="content-sections">
+                <!-- Top 10 Most Used Tokens (Left) -->
+                <el-col :span="12" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>Most Used Tokens</h3>
+                            <p class="subtitle">By total number of effects that produce them</p>
+                        </template>
+                        <div class="card-list two-column">
+                            <div v-for="(token, index) in topTokens1" :key="token.oracleId" class="card-item" v-show="!isMobile || index < 3 || topTokensExpanded">
+                                <div class="card-rank">{{ index + 1 }}</div>
+                                <el-tooltip
+                                    placement="right"
+                                    effect="light"
+                                    popper-class="card-tooltip"
+                                    :show-after="50"
+                                    :hide-after="50"
+                                    :enterable="false"
+                                    :offset="16"
+                                >
+                                    <template #content>
+                                        <img :src="token.urlFront" class="card-image" loading="lazy" />
+                                    </template>
+                                    <img :src="token.urlFront" class="card-image list-image" loading="lazy" />
+                                </el-tooltip>
+                                <div class="card-info">
+                                    <span class="card-name">{{ token.name }}</span>
+                                    <div class="card-stats">{{ token.effectCount }} effects in {{ token.cubeCount }} cubes</div>
+                                </div>
+                            </div>
+                            <a v-if="isMobile && !topTokensExpanded && topTokens.length > 3" class="see-more-link" @click="topTokensExpanded = true">see more</a>
+                        </div>
+                    </el-card>
+                </el-col>
+
+                <!-- Top 10 Most Used Tokens (Right) -->
+                <el-col :span="12" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>&nbsp;</h3>
+                            <p class="subtitle">&nbsp;</p>
+                        </template>
+                        <div class="card-list two-column">
+                            <div v-for="(token, index) in topTokens2" :key="token.oracleId" class="card-item" v-show="!isMobile || topTokensExpanded">
+                                <div class="card-rank">{{ index + 6 }}</div>
+                                <el-tooltip
+                                    placement="right"
+                                    effect="light"
+                                    popper-class="card-tooltip"
+                                    :show-after="50"
+                                    :hide-after="50"
+                                    :enterable="false"
+                                    :offset="16"
+                                >
+                                    <template #content>
+                                        <img :src="token.urlFront" class="card-image" loading="lazy" />
+                                    </template>
+                                    <img :src="token.urlFront" class="card-image list-image" loading="lazy" />
+                                </el-tooltip>
+                                <div class="card-info">
+                                    <span class="card-name">{{ token.name }}</span>
+                                    <div class="card-stats">{{ token.effectCount }} effects in {{ token.cubeCount }} cubes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-row>
+
             <el-row :gutter="20" class="content-sections" style="row-gap: 20px;">
                 <el-col :span="8" :xs="24" :sm="12" :md="8">
                     <el-card class="content-card" v-if="mostUniqueCube">
@@ -412,7 +481,7 @@
 <script setup lang="ts">
 import { computed, ref, inject } from 'vue';
 import { useWindowSize } from '@vueuse/core';
-import { getSetName } from '../util/CubeFunctions';
+import { getSetName, getTokens } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
 import { displayName, externalCubeId } from '../util/Snapshots';
 import PresetHeader from '../components/PresetHeader.vue';
@@ -421,6 +490,7 @@ const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 const popularCardsExpanded = ref(false);
 const lowEloCardsExpanded = ref(false);
+const topTokensExpanded = ref(false);
 const popularSetsExpanded = ref(false);
 const popularKeywordsExpanded = ref(false);
 
@@ -518,6 +588,40 @@ const topPopularCards = computed(() => {
 
     return cards;
 });
+
+const topTokens = computed(() => {
+    const tokenEffectCounts = new Map<string, { effectCount: number; cubeSet: Set<string> }>();
+
+    Object.entries(props.loadedCubes).forEach(([cubeId, cube]: [string, any]) => {
+        cube.cards.forEach((card: any) => {
+            if (!card.tokenOracleIds || card.isCustomCard) return;
+            card.tokenOracleIds.forEach((tokenId: string) => {
+                if (!tokenEffectCounts.has(tokenId)) {
+                    tokenEffectCounts.set(tokenId, { effectCount: 0, cubeSet: new Set() });
+                }
+                const entry = tokenEffectCounts.get(tokenId)!;
+                entry.effectCount++;
+                entry.cubeSet.add(cubeId);
+            });
+        });
+    });
+
+    const tokenMap = getTokens();
+
+    return Array.from(tokenEffectCounts.entries())
+        .filter(([tokenId]) => tokenMap[tokenId] !== undefined)
+        .map(([tokenId, data]) => ({
+            oracleId: tokenId,
+            ...tokenMap[tokenId],
+            effectCount: data.effectCount,
+            cubeCount: data.cubeSet.size,
+        }))
+        .sort((a, b) => b.effectCount - a.effectCount)
+        .slice(0, 10);
+});
+
+const topTokens1 = computed(() => topTokens.value.slice(0, 5));
+const topTokens2 = computed(() => topTokens.value.slice(5, 10));
 
 const topLowEloCards = computed(() => {
     const cardCubeMap = new Map<string, { card: any; cubes: any[] }>();
