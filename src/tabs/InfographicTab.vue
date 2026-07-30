@@ -56,15 +56,15 @@
             </el-row>
 
             <el-row :gutter="20" class="content-sections">
-                <!-- Top 10 Popular Cards -->
-                <el-col :span="12" :xs="24">
+                <!-- Most Popular Non-Land Cards -->
+                <el-col :span="8" :xs="24">
                     <el-card class="content-card">
                         <template #header>
                             <h3>Most Popular Non-Land Cards</h3>
                             <p class="subtitle">By number of cubes containing them</p>
                         </template>
-                        <div class="card-list two-column">
-                            <div v-for="(card, index) in topPopularCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || popularCardsExpanded">
+                        <div class="card-list">
+                            <div v-for="(card, index) in topPopularCards.slice(0, 5)" :key="card.oracleId" class="card-item">
                                 <div class="card-rank">{{ index + 1 }}</div>
                                 <el-tooltip
                                     placement="right"
@@ -85,20 +85,22 @@
                                     <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !popularCardsExpanded && topPopularCards.length > 3" class="see-more-link" @click="popularCardsExpanded = true">see more</a>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'popular'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
 
-                <!-- Top 10 Lowest Elo Cards -->
-                <el-col :span="12" :xs="24">
+                <!-- Lowest Elo Cards -->
+                <el-col :span="8" :xs="24">
                     <el-card class="content-card">
                         <template #header>
                             <h3>Lowest Elo Cards</h3>
                             <p class="subtitle">By CubeCobra Elo rating</p>
                         </template>
-                        <div class="card-list two-column">
-                            <div v-for="(card, index) in topLowEloCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || lowEloCardsExpanded">
+                        <div class="card-list">
+                            <div v-for="(card, index) in topLowEloCards.slice(0, 5)" :key="card.oracleId" class="card-item">
                                 <div class="card-rank">{{ index + 1 }}</div>
                                 <el-tooltip
                                     placement="right"
@@ -111,12 +113,6 @@
                                 >
                                     <template #content>
                                         <img :src="card.urlFront" class="card-image" loading="lazy" />
-                                    <!-- <div class="cube-list">
-                                        <strong>Found in cubes:</strong>
-                                        <div v-for="cube in card.containingCubes" :key="cube.id" class="cube-name">
-                                            {{ cube.name }} ({{ cube.owner }})
-                                        </div>
-                                    </div> -->
                                     </template>
                                     <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
                                 </el-tooltip>
@@ -125,11 +121,116 @@
                                     <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !lowEloCardsExpanded && topLowEloCards.length > 3" class="see-more-link" @click="lowEloCardsExpanded = true">see more</a>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'elo'">Show More</el-button>
+                        </div>
+                    </el-card>
+                </el-col>
+
+                <!-- Most Used Tokens -->
+                <el-col :span="8" :xs="24">
+                    <el-card class="content-card">
+                        <template #header>
+                            <h3>Most Used Tokens</h3>
+                            <p class="subtitle">By total number of effects that produce them</p>
+                        </template>
+                        <div class="card-list">
+                            <div v-for="(token, index) in topTokens.slice(0, 5)" :key="token.oracleId" class="card-item">
+                                <div class="card-rank">{{ index + 1 }}</div>
+                                <el-tooltip
+                                    placement="right"
+                                    effect="light"
+                                    popper-class="card-tooltip"
+                                    :show-after="50"
+                                    :hide-after="50"
+                                    :enterable="false"
+                                    :offset="16"
+                                >
+                                    <template #content>
+                                        <img :src="token.urlFront" class="card-image" loading="lazy" />
+                                    </template>
+                                    <img :src="token.urlFront" class="card-image list-image" loading="lazy" />
+                                </el-tooltip>
+                                <div class="card-info">
+                                    <span class="card-name">{{ token.name }}</span>
+                                    <div class="card-stats">{{ token.effectCount }} cards in {{ token.cubeCount }} cubes</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'tokens'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
             </el-row>
+
+            <el-dialog
+                v-model="modalOpen"
+                :title="modalTitle"
+                width="900px"
+                destroy-on-close
+            >
+                <p v-if="activeListModal === 'tokens'" style="margin: 0 0 12px; color: var(--el-text-color-secondary); font-size: 0.875rem;">
+                    {{ tokenModalSummary.uniqueTokens.toLocaleString() }} Unique Tokens, {{ tokenModalSummary.totalCards.toLocaleString() }} Total Effects
+                </p>
+                <el-table :data="activeListData" style="width: 100%" max-height="500">
+                    <el-table-column type="index" width="50" align="right" />
+                    <el-table-column v-if="activeListModal === 'tokens'" label="P/T" width="60" align="center">
+                        <template #default="{ row }">{{ row.power != null && row.toughness != null ? `${row.power}/${row.toughness}` : '—' }}</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal !== 'sets' && activeListModal !== 'keywords'" label="Name" min-width="160">
+                        <template #default="{ row }">
+                            <el-tooltip
+                                placement="right"
+                                effect="light"
+                                popper-class="card-tooltip"
+                                :show-after="50"
+                                :hide-after="50"
+                                :enterable="false"
+                            >
+                                <template #content>
+                                    <img :src="row.urlFront" class="card-image" loading="lazy" />
+                                </template>
+                                <a v-if="activeListModal !== 'tokens'" href="#" style="color: inherit; text-decoration: none; cursor: pointer;" @click.prevent="openCardDetailDialog(row.oracleId); activeListModal = null">{{ row.name?.split('//')[0].trim() }}</a>
+                                <span v-else>{{ row.name }}</span>
+                            </el-tooltip>
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Color" width="90" align="center">
+                        <template #default="{ row }">
+                            <i v-for="color in row.colors" :key="color" :class="'ms ms-' + color.toLowerCase() + ' ms-cost'" style="margin-right: 2px;" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal !== 'sets' && activeListModal !== 'keywords'" label="Cubes" width="130" align="right">
+                        <template #default="{ row }">
+                            {{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal !== 'tokens' && activeListModal !== 'sets' && activeListModal !== 'keywords'" label="Elo" width="80" align="right">
+                        <template #default="{ row }">{{ row.elo?.toFixed(0) || '—' }}</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Cards" width="90" align="right" prop="effectCount" />
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
+                    <el-table-column v-if="activeListModal === 'sets'" label="Set" min-width="160" prop="setName" />
+                    <el-table-column v-if="activeListModal === 'sets'" label="Code" width="70" prop="setCode" />
+                    <el-table-column v-if="activeListModal === 'sets'" label="Cubes" width="130" align="right">
+                        <template #default="{ row }">{{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'sets'" label="Cards" width="110" align="right">
+                        <template #default="{ row }">{{ row.cardCount.toLocaleString() }}</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'sets'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
+                    <el-table-column v-if="activeListModal === 'keywords'" label="Keyword" min-width="160" prop="name" />
+                    <el-table-column v-if="activeListModal === 'keywords'" label="Cubes" width="130" align="right">
+                        <template #default="{ row }">{{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'keywords'" label="Cards" width="120" align="right">
+                        <template #default="{ row }">{{ row.count.toLocaleString() }}</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'keywords'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
+                </el-table>
+            </el-dialog>
 
             <el-row :gutter="20" class="content-sections" style="row-gap: 20px;">
                 <el-col :span="8" :xs="24" :sm="12" :md="8">
@@ -372,14 +473,16 @@
                             <p class="subtitle">By total number of non-land cards across all cubes; original release only</p>
                         </template>
                         <div class="set-list two-column">
-                            <div v-for="(set, index) in topPopularSets" :key="set.setCode" class="set-item" v-show="!isMobile || index < 3 || popularSetsExpanded">
+                            <div v-for="(set, index) in topPopularSets.slice(0, 10)" :key="set.setCode" class="set-item">
                                 <div class="set-rank">{{ index + 1 }}</div>
                                 <div class="set-info">
                                     <div class="set-name">{{ set.setName }}</div>
                                     <div class="set-stats">{{ set.cardCount.toLocaleString() }} cards</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !popularSetsExpanded && topPopularSets.length > 3" class="see-more-link" @click="popularSetsExpanded = true">see more</a>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'sets'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
@@ -392,14 +495,16 @@
                             <p class="subtitle">By total occurrences across all cubes (excluding evergreen)</p>
                         </template>
                         <div class="keyword-list two-column">
-                            <div v-for="(keyword, index) in topPopularKeywords" :key="keyword.name" class="keyword-item" v-show="!isMobile || index < 3 || popularKeywordsExpanded">
+                            <div v-for="(keyword, index) in topPopularKeywords.slice(0, 10)" :key="keyword.name" class="keyword-item">
                                 <div class="keyword-rank">{{ index + 1 }}</div>
                                 <div class="keyword-info">
                                     <div class="keyword-name">{{ keyword.name }}</div>
-                                    <div class="keyword-stats">{{ keyword.count.toLocaleString() }} occurrences</div>
+                                    <div class="keyword-stats">{{ keyword.count.toLocaleString() }} cards</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !popularKeywordsExpanded && topPopularKeywords.length > 3" class="see-more-link" @click="popularKeywordsExpanded = true">see more</a>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'keywords'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
@@ -411,19 +516,24 @@
 
 <script setup lang="ts">
 import { computed, ref, inject } from 'vue';
-import { useWindowSize } from '@vueuse/core';
-import { getSetName } from '../util/CubeFunctions';
+import { getSetName, getTokens } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
 import { displayName, externalCubeId } from '../util/Snapshots';
 import PresetHeader from '../components/PresetHeader.vue';
 
-const { width: windowWidth } = useWindowSize();
-const isMobile = computed(() => windowWidth.value <= 760);
-const popularCardsExpanded = ref(false);
-const lowEloCardsExpanded = ref(false);
-const popularSetsExpanded = ref(false);
-const popularKeywordsExpanded = ref(false);
-
+const activeListModal = ref<'popular' | 'elo' | 'tokens' | 'sets' | 'keywords' | null>(null);
+const modalOpen = computed({
+    get: () => activeListModal.value !== null,
+    set: (v: boolean) => { if (!v) activeListModal.value = null; },
+});
+const modalTitle = computed(() => {
+    if (activeListModal.value === 'popular') return 'Most Popular Non-Land Cards';
+    if (activeListModal.value === 'elo') return 'Lowest Elo Cards';
+    if (activeListModal.value === 'tokens') return 'Most Used Tokens';
+    if (activeListModal.value === 'sets') return 'Most Popular Sets';
+    if (activeListModal.value === 'keywords') return 'Most Popular Keywords';
+    return '';
+});
 const props = defineProps({
     loadedCubes: {
         type: Object,
@@ -514,9 +624,41 @@ const topPopularCards = computed(() => {
         }))
         .sort((a, b) => a.popularity - b.popularity) // Reverse sort by popularity.
         .sort((a, b) => b.cubeCount - a.cubeCount)
-        .slice(0, 10);
+        .slice(0, 100);
 
     return cards;
+});
+
+const topTokens = computed(() => {
+    const tokenEffectCounts = new Map<string, { effectCount: number; cubeSet: Set<string>; cardSet: Set<string> }>();
+
+    Object.entries(props.loadedCubes).forEach(([cubeId, cube]: [string, any]) => {
+        cube.cards.forEach((card: any) => {
+            if (!card.tokenOracleIds || card.isCustomCard) return;
+            card.tokenOracleIds.forEach((tokenId: string) => {
+                if (!tokenEffectCounts.has(tokenId)) {
+                    tokenEffectCounts.set(tokenId, { effectCount: 0, cubeSet: new Set(), cardSet: new Set() });
+                }
+                const entry = tokenEffectCounts.get(tokenId)!;
+                entry.effectCount++;
+                entry.cubeSet.add(cubeId);
+                entry.cardSet.add(card.oracleId);
+            });
+        });
+    });
+
+    const tokenMap = getTokens();
+
+    return Array.from(tokenEffectCounts.entries())
+        .filter(([tokenId]) => tokenMap[tokenId] !== undefined)
+        .map(([tokenId, data]) => ({
+            oracleId: tokenId,
+            ...tokenMap[tokenId],
+            effectCount: data.effectCount,
+            cubeCount: data.cubeSet.size,
+            uniqueCardCount: data.cardSet.size,
+        }))
+        .sort((a, b) => b.effectCount - a.effectCount);
 });
 
 const topLowEloCards = computed(() => {
@@ -545,10 +687,26 @@ const topLowEloCards = computed(() => {
         .map(entry => ({
             ...entry.card,
             containingCubes: entry.cubes,
+            cubeCount: entry.cubes.length,
         }))
         .sort((a, b) => a.elo - b.elo)
-        .slice(0, 10);
+        .slice(0, 100);
 });
+
+const activeListData = computed(() => {
+    if (activeListModal.value === 'popular') return topPopularCards.value;
+    if (activeListModal.value === 'elo') return topLowEloCards.value;
+    if (activeListModal.value === 'tokens') return topTokens.value;
+    if (activeListModal.value === 'sets') return topPopularSets.value;
+    if (activeListModal.value === 'keywords') return topPopularKeywords.value;
+    return [];
+});
+
+const tokenModalSummary = computed(() => ({
+    uniqueTokens: topTokens.value.length,
+    totalCards: topTokens.value.reduce((sum, t) => sum + t.effectCount, 0),
+    uniqueCards: topTokens.value.reduce((sum, t) => sum + t.uniqueCardCount, 0),
+}));
 
 const currentYear = computed(() => new Date().getFullYear());
 
@@ -705,44 +863,61 @@ const mostUniqueCube = computed(() => {
 });
 
 const topPopularSets = computed(() => {
-    const setCounts = new Map<string, number>();
+    const setData = new Map<string, { cardCount: number; cubeSet: Set<string>; cardSet: Set<string> }>();
 
-    Object.values(props.loadedCubes).forEach((cube: any) => {
+    Object.entries(props.loadedCubes).forEach(([cubeId, cube]: [string, any]) => {
         cube.cards.forEach((card: any) => {
-            // Exclude lands
             if (!card.effectiveTypes?.includes('Land') && card.setCode) {
-                const count = setCounts.get(card.setCode) || 0;
-                setCounts.set(card.setCode, count + 1);
+                if (!setData.has(card.setCode)) {
+                    setData.set(card.setCode, { cardCount: 0, cubeSet: new Set(), cardSet: new Set() });
+                }
+                const entry = setData.get(card.setCode)!;
+                entry.cardCount++;
+                entry.cubeSet.add(cubeId);
+                entry.cardSet.add(card.oracleId);
             }
         });
     });
 
-    return Array.from(setCounts.entries())
-        .map(([setCode, count]) => ({
+    return Array.from(setData.entries())
+        .map(([setCode, data]) => ({
             setCode,
             setName: getSetName(setCode),
-            cardCount: count,
+            cardCount: data.cardCount,
+            cubeCount: data.cubeSet.size,
+            uniqueCardCount: data.cardSet.size,
         }))
-        .sort((a, b) => b.cardCount - a.cardCount)
-        .slice(0, 10);
+        .sort((a, b) => b.cardCount - a.cardCount);
 });
 
 const topPopularKeywords = computed(() => {
-    const keywordCounts = new Map<string, number>();
+    const kwData = new Map<string, { count: number; cubeSet: Set<string>; cardSet: Set<string> }>();
 
-    Object.values(props.loadedCubes).forEach((cube: any) => {
-        Object.entries(cube.stats.keywords || {}).forEach(([keyword, count]: [string, any]) => {
-            if (!isEvergreenKeyword(keyword)) {
-                const totalCount = keywordCounts.get(keyword) || 0;
-                keywordCounts.set(keyword, totalCount + count);
-            }
+    Object.entries(props.loadedCubes).forEach(([cubeId, cube]: [string, any]) => {
+        cube.cards.forEach((card: any) => {
+            if (!card.keywords) return;
+            card.keywords.forEach((keyword: string) => {
+                if (!isEvergreenKeyword(keyword)) {
+                    if (!kwData.has(keyword)) {
+                        kwData.set(keyword, { count: 0, cubeSet: new Set(), cardSet: new Set() });
+                    }
+                    const entry = kwData.get(keyword)!;
+                    entry.count++;
+                    entry.cubeSet.add(cubeId);
+                    entry.cardSet.add(card.oracleId);
+                }
+            });
         });
     });
 
-    return Array.from(keywordCounts.entries())
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
+    return Array.from(kwData.entries())
+        .map(([name, data]) => ({
+            name,
+            count: data.count,
+            cubeCount: data.cubeSet.size,
+            uniqueCardCount: data.cardSet.size,
+        }))
+        .sort((a, b) => b.count - a.count);
 });
 
 const lowestRarityScoreCube = computed(() => {
@@ -869,6 +1044,14 @@ const lowestRarityScoreCube = computed(() => {
                 color: var(--el-text-color-secondary);
             }
         }
+    }
+
+    .card-list-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--el-border-color-lighter);
     }
 }
 
