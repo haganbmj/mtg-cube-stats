@@ -56,15 +56,15 @@
             </el-row>
 
             <el-row :gutter="20" class="content-sections">
-                <!-- Top 10 Popular Cards -->
-                <el-col :span="12" :xs="24">
+                <!-- Most Popular Non-Land Cards -->
+                <el-col :span="8" :xs="24">
                     <el-card class="content-card">
                         <template #header>
                             <h3>Most Popular Non-Land Cards</h3>
                             <p class="subtitle">By number of cubes containing them</p>
                         </template>
-                        <div class="card-list two-column">
-                            <div v-for="(card, index) in topPopularCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || popularCardsExpanded">
+                        <div class="card-list">
+                            <div v-for="(card, index) in topPopularCards.slice(0, 5)" :key="card.oracleId" class="card-item">
                                 <div class="card-rank">{{ index + 1 }}</div>
                                 <el-tooltip
                                     placement="right"
@@ -85,20 +85,22 @@
                                     <div class="card-stats">{{ card.cubeCount }} cubes ({{ ((card.cubeCount / totalCubes) * 100).toFixed(1) }}%)</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !popularCardsExpanded && topPopularCards.length > 3" class="see-more-link" @click="popularCardsExpanded = true">see more</a>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'popular'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
 
-                <!-- Top 10 Lowest Elo Cards -->
-                <el-col :span="12" :xs="24">
+                <!-- Lowest Elo Cards -->
+                <el-col :span="8" :xs="24">
                     <el-card class="content-card">
                         <template #header>
                             <h3>Lowest Elo Cards</h3>
                             <p class="subtitle">By CubeCobra Elo rating</p>
                         </template>
-                        <div class="card-list two-column">
-                            <div v-for="(card, index) in topLowEloCards" :key="card.oracleId" class="card-item" v-show="!isMobile || index < 3 || lowEloCardsExpanded">
+                        <div class="card-list">
+                            <div v-for="(card, index) in topLowEloCards.slice(0, 5)" :key="card.oracleId" class="card-item">
                                 <div class="card-rank">{{ index + 1 }}</div>
                                 <el-tooltip
                                     placement="right"
@@ -111,12 +113,6 @@
                                 >
                                     <template #content>
                                         <img :src="card.urlFront" class="card-image" loading="lazy" />
-                                    <!-- <div class="cube-list">
-                                        <strong>Found in cubes:</strong>
-                                        <div v-for="cube in card.containingCubes" :key="cube.id" class="cube-name">
-                                            {{ cube.name }} ({{ cube.owner }})
-                                        </div>
-                                    </div> -->
                                     </template>
                                     <img :src="card.urlFront" class="card-image list-image" loading="lazy" />
                                 </el-tooltip>
@@ -125,22 +121,22 @@
                                     <div class="card-stats">Elo: {{ card.elo?.toFixed(0) || 'N/A' }}</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !lowEloCardsExpanded && topLowEloCards.length > 3" class="see-more-link" @click="lowEloCardsExpanded = true">see more</a>
+                        </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'elo'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
-            </el-row>
 
-            <el-row :gutter="20" class="content-sections">
-                <!-- Top 10 Most Used Tokens (Left) -->
-                <el-col :span="12" :xs="24">
+                <!-- Most Used Tokens -->
+                <el-col :span="8" :xs="24">
                     <el-card class="content-card">
                         <template #header>
                             <h3>Most Used Tokens</h3>
                             <p class="subtitle">By total number of effects that produce them</p>
                         </template>
-                        <div class="card-list two-column">
-                            <div v-for="(token, index) in topTokens1" :key="token.oracleId" class="card-item" v-show="!isMobile || index < 3 || topTokensExpanded">
+                        <div class="card-list">
+                            <div v-for="(token, index) in topTokens.slice(0, 5)" :key="token.oracleId" class="card-item">
                                 <div class="card-rank">{{ index + 1 }}</div>
                                 <el-tooltip
                                     placement="right"
@@ -161,44 +157,52 @@
                                     <div class="card-stats">{{ token.effectCount }} effects in {{ token.cubeCount }} cubes</div>
                                 </div>
                             </div>
-                            <a v-if="isMobile && !topTokensExpanded && topTokens.length > 3" class="see-more-link" @click="topTokensExpanded = true">see more</a>
                         </div>
-                    </el-card>
-                </el-col>
-
-                <!-- Top 10 Most Used Tokens (Right) -->
-                <el-col :span="12" :xs="24">
-                    <el-card class="content-card">
-                        <template #header>
-                            <h3>&nbsp;</h3>
-                            <p class="subtitle">&nbsp;</p>
-                        </template>
-                        <div class="card-list two-column">
-                            <div v-for="(token, index) in topTokens2" :key="token.oracleId" class="card-item" v-show="!isMobile || topTokensExpanded">
-                                <div class="card-rank">{{ index + 6 }}</div>
-                                <el-tooltip
-                                    placement="right"
-                                    effect="light"
-                                    popper-class="card-tooltip"
-                                    :show-after="50"
-                                    :hide-after="50"
-                                    :enterable="false"
-                                    :offset="16"
-                                >
-                                    <template #content>
-                                        <img :src="token.urlFront" class="card-image" loading="lazy" />
-                                    </template>
-                                    <img :src="token.urlFront" class="card-image list-image" loading="lazy" />
-                                </el-tooltip>
-                                <div class="card-info">
-                                    <span class="card-name">{{ token.name }}</span>
-                                    <div class="card-stats">{{ token.effectCount }} effects in {{ token.cubeCount }} cubes</div>
-                                </div>
-                            </div>
+                        <div class="card-list-footer">
+                            <el-button link @click="activeListModal = 'tokens'">Show More</el-button>
                         </div>
                     </el-card>
                 </el-col>
             </el-row>
+
+            <!-- Show More Modal -->
+            <el-dialog
+                v-model="modalOpen"
+                :title="modalTitle"
+                width="700px"
+                destroy-on-close
+            >
+                <el-table :data="activeListData" style="width: 100%" max-height="500">
+                    <el-table-column label="Name" min-width="160">
+                        <template #default="{ row }">
+                            <el-tooltip
+                                placement="right"
+                                effect="light"
+                                popper-class="card-tooltip"
+                                :show-after="50"
+                                :hide-after="50"
+                                :enterable="false"
+                            >
+                                <template #content>
+                                    <img :src="row.urlFront" class="card-image" loading="lazy" />
+                                </template>
+                                <a v-if="activeListModal !== 'tokens'" href="#" @click.prevent="openCardDetailDialog(row.oracleId); activeListModal = null">{{ row.name?.split('//')[0].trim() }}</a>
+                                <span v-else>{{ row.name }}</span>
+                            </el-tooltip>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="Cubes" width="130" align="right">
+                        <template #default="{ row }">
+                            {{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal !== 'tokens'" label="Elo" width="80" align="right">
+                        <template #default="{ row }">{{ row.elo?.toFixed(0) || '—' }}</template>
+                    </el-table-column>
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Effects" width="90" align="right" prop="effectCount" />
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
+                </el-table>
+            </el-dialog>
 
             <el-row :gutter="20" class="content-sections" style="row-gap: 20px;">
                 <el-col :span="8" :xs="24" :sm="12" :md="8">
@@ -488,9 +492,17 @@ import PresetHeader from '../components/PresetHeader.vue';
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
-const popularCardsExpanded = ref(false);
-const lowEloCardsExpanded = ref(false);
-const topTokensExpanded = ref(false);
+const activeListModal = ref<'popular' | 'elo' | 'tokens' | null>(null);
+const modalOpen = computed({
+    get: () => activeListModal.value !== null,
+    set: (v: boolean) => { if (!v) activeListModal.value = null; },
+});
+const modalTitle = computed(() => {
+    if (activeListModal.value === 'popular') return 'Most Popular Non-Land Cards';
+    if (activeListModal.value === 'elo') return 'Lowest Elo Cards';
+    if (activeListModal.value === 'tokens') return 'Most Used Tokens';
+    return '';
+});
 const popularSetsExpanded = ref(false);
 const popularKeywordsExpanded = ref(false);
 
@@ -584,24 +596,25 @@ const topPopularCards = computed(() => {
         }))
         .sort((a, b) => a.popularity - b.popularity) // Reverse sort by popularity.
         .sort((a, b) => b.cubeCount - a.cubeCount)
-        .slice(0, 10);
+        .slice(0, 100);
 
     return cards;
 });
 
 const topTokens = computed(() => {
-    const tokenEffectCounts = new Map<string, { effectCount: number; cubeSet: Set<string> }>();
+    const tokenEffectCounts = new Map<string, { effectCount: number; cubeSet: Set<string>; cardSet: Set<string> }>();
 
     Object.entries(props.loadedCubes).forEach(([cubeId, cube]: [string, any]) => {
         cube.cards.forEach((card: any) => {
             if (!card.tokenOracleIds || card.isCustomCard) return;
             card.tokenOracleIds.forEach((tokenId: string) => {
                 if (!tokenEffectCounts.has(tokenId)) {
-                    tokenEffectCounts.set(tokenId, { effectCount: 0, cubeSet: new Set() });
+                    tokenEffectCounts.set(tokenId, { effectCount: 0, cubeSet: new Set(), cardSet: new Set() });
                 }
                 const entry = tokenEffectCounts.get(tokenId)!;
                 entry.effectCount++;
                 entry.cubeSet.add(cubeId);
+                entry.cardSet.add(card.oracleId);
             });
         });
     });
@@ -615,13 +628,10 @@ const topTokens = computed(() => {
             ...tokenMap[tokenId],
             effectCount: data.effectCount,
             cubeCount: data.cubeSet.size,
+            uniqueCardCount: data.cardSet.size,
         }))
-        .sort((a, b) => b.effectCount - a.effectCount)
-        .slice(0, 10);
+        .sort((a, b) => b.effectCount - a.effectCount);
 });
-
-const topTokens1 = computed(() => topTokens.value.slice(0, 5));
-const topTokens2 = computed(() => topTokens.value.slice(5, 10));
 
 const topLowEloCards = computed(() => {
     const cardCubeMap = new Map<string, { card: any; cubes: any[] }>();
@@ -649,9 +659,17 @@ const topLowEloCards = computed(() => {
         .map(entry => ({
             ...entry.card,
             containingCubes: entry.cubes,
+            cubeCount: entry.cubes.length,
         }))
         .sort((a, b) => a.elo - b.elo)
-        .slice(0, 10);
+        .slice(0, 100);
+});
+
+const activeListData = computed(() => {
+    if (activeListModal.value === 'popular') return topPopularCards.value;
+    if (activeListModal.value === 'elo') return topLowEloCards.value;
+    if (activeListModal.value === 'tokens') return topTokens.value;
+    return [];
 });
 
 const currentYear = computed(() => new Date().getFullYear());
@@ -973,6 +991,14 @@ const lowestRarityScoreCube = computed(() => {
                 color: var(--el-text-color-secondary);
             }
         }
+    }
+
+    .card-list-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--el-border-color-lighter);
     }
 }
 
