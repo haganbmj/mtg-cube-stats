@@ -154,7 +154,7 @@
                                 </el-tooltip>
                                 <div class="card-info">
                                     <span class="card-name">{{ token.name }}</span>
-                                    <div class="card-stats">{{ token.effectCount }} effects in {{ token.cubeCount }} cubes</div>
+                                    <div class="card-stats">{{ token.effectCount }} cards in {{ token.cubeCount }} cubes</div>
                                 </div>
                             </div>
                         </div>
@@ -199,14 +199,14 @@
                     <el-table-column v-if="activeListModal !== 'tokens' && activeListModal !== 'sets' && activeListModal !== 'keywords'" label="Elo" width="80" align="right">
                         <template #default="{ row }">{{ row.elo?.toFixed(0) || '—' }}</template>
                     </el-table-column>
-                    <el-table-column v-if="activeListModal === 'tokens'" label="Effects" width="90" align="right" prop="effectCount" />
+                    <el-table-column v-if="activeListModal === 'tokens'" label="Cards" width="90" align="right" prop="effectCount" />
                     <el-table-column v-if="activeListModal === 'tokens'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
                     <el-table-column v-if="activeListModal === 'sets'" label="Set" min-width="160" prop="setName" />
                     <el-table-column v-if="activeListModal === 'sets'" label="Code" width="70" prop="setCode" />
                     <el-table-column v-if="activeListModal === 'sets'" label="Cubes" width="130" align="right">
                         <template #default="{ row }">{{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)</template>
                     </el-table-column>
-                    <el-table-column v-if="activeListModal === 'sets'" label="Total Cards" width="110" align="right">
+                    <el-table-column v-if="activeListModal === 'sets'" label="Cards" width="110" align="right">
                         <template #default="{ row }">{{ row.cardCount.toLocaleString() }}</template>
                     </el-table-column>
                     <el-table-column v-if="activeListModal === 'sets'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
@@ -214,7 +214,7 @@
                     <el-table-column v-if="activeListModal === 'keywords'" label="Cubes" width="130" align="right">
                         <template #default="{ row }">{{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)</template>
                     </el-table-column>
-                    <el-table-column v-if="activeListModal === 'keywords'" label="Occurrences" width="120" align="right">
+                    <el-table-column v-if="activeListModal === 'keywords'" label="Cards" width="120" align="right">
                         <template #default="{ row }">{{ row.count.toLocaleString() }}</template>
                     </el-table-column>
                     <el-table-column v-if="activeListModal === 'keywords'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
@@ -488,7 +488,7 @@
                                 <div class="keyword-rank">{{ index + 1 }}</div>
                                 <div class="keyword-info">
                                     <div class="keyword-name">{{ keyword.name }}</div>
-                                    <div class="keyword-stats">{{ keyword.count.toLocaleString() }} occurrences</div>
+                                    <div class="keyword-stats">{{ keyword.count.toLocaleString() }} cards</div>
                                 </div>
                             </div>
                         </div>
