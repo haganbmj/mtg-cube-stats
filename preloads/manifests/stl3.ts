@@ -3,7 +3,7 @@ import type { Manifest } from './types';
 const manifest: Manifest = {
     name: 'stl3',
     label: "St. Louis Cubed 3",
-    description: 'St. Louis, MO - October 24-25, 2026',
+    description: 'Saint Charles, MO - October 24-25, 2026',
     icon: 'https://stl3cu.be/logo.png',
     links: [
         { label: 'Event Website', url: 'https://stl3cu.be', type: 'website' },
