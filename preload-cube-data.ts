@@ -261,52 +261,48 @@ async function phaseAssemble(manifests: Manifest[]) {
 async function phasePrune(manifests: Manifest[]) {
     console.log('\n=== Phase 3: Prune ===\n');
 
-    // Collect all cube IDs referenced by any manifest (including dynamic sources)
-    const referencedIds = new Set<string>();
+    // IDs referenced by any manifest (raw list; filter-agnostic).
+    const manifestIds = new Set<string>();
     for (const manifest of manifests) {
         const cubeIds = await resolveManifestCubes(manifest);
-        for (const id of cubeIds) {
-            referencedIds.add(id);
-        }
+        for (const id of cubeIds) manifestIds.add(id);
     }
 
-    // Also include canonical IDs from generated cubes (remapCube may change IDs)
-    // Read the presets.json to get the canonical IDs that were actually written
+    // Canonical IDs actually written to generated/ this run (post-filter).
+    const generatedIds = new Set<string>();
     const presetsPath = path.join(GENERATED_DIR, 'presets.json');
     if (fs.existsSync(presetsPath)) {
         const presets: PresetCollection[] = JSON.parse(fs.readFileSync(presetsPath, 'utf-8'));
         for (const preset of presets) {
-            for (const id of Object.keys(preset.cubes)) {
-                referencedIds.add(id);
-            }
+            for (const id of Object.keys(preset.cubes)) generatedIds.add(id);
         }
     }
 
-    // Prune cache/cubes/
+    // Prune cache/cubes/ — keep anything referenced by a manifest.
     let cacheRemoved = 0;
     if (fs.existsSync(CACHE_CUBES_DIR)) {
         for (const file of fs.readdirSync(CACHE_CUBES_DIR)) {
             const id = file.replace('.json', '');
-            if (!referencedIds.has(id)) {
+            if (!manifestIds.has(id)) {
                 fs.unlinkSync(path.join(CACHE_CUBES_DIR, file));
                 cacheRemoved++;
             }
         }
     }
 
-    // Prune generated/cubes/
+    // Prune generated/cubes/ — keep only IDs present in presets.json.
     let generatedRemoved = 0;
     if (fs.existsSync(GENERATED_CUBES_DIR)) {
         for (const file of fs.readdirSync(GENERATED_CUBES_DIR)) {
             const id = file.replace('.json', '');
-            if (!referencedIds.has(id)) {
+            if (!generatedIds.has(id)) {
                 fs.unlinkSync(path.join(GENERATED_CUBES_DIR, file));
                 generatedRemoved++;
             }
         }
     }
 
-    // Prune generated/similarities/ (remove matrices for manifests that no longer exist)
+    // Prune generated/similarities/ — keep only current manifest names.
     let simRemoved = 0;
     const manifestNames = new Set(manifests.map(m => m.name));
     if (fs.existsSync(GENERATED_SIMILARITIES_DIR)) {
