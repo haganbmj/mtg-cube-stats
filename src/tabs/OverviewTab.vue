@@ -523,6 +523,7 @@ import { parseQuery } from '../util/CardFilterParser';
 import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
+import { parseCubeIdInput } from '../util/CubeCobra';
 import type { ChecksState, CheckResult } from '../types/checks';
 
 const { width: windowWidth } = useWindowSize();
@@ -842,7 +843,7 @@ const submitAddCubeForm = async () => {
     const inputId = addCubeForm.cubeId.trim();
     await props.addCube(inputId, { refresh: true });
     if (inputId) {
-        recordCubeHistory(inputId);
+        recordCubeHistory(parseCubeIdInput(inputId));
     }
     addCubeForm.cubeId = '';
     addCubeForm.loading = false;

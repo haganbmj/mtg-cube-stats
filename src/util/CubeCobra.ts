@@ -6,6 +6,18 @@ interface CubeCobraResponse {
     [key: string]: any;
 }
 
+/**
+ * Extracts a cube identifier from raw user input. Accepts a bare short/long ID,
+ * an ID with a timestamp suffix, or a CubeCobra URL (with or without trailing
+ * slash and query string). Returns the input unchanged if no path segment
+ * matches (shouldn't happen for non-empty input, but kept as a safe fallback).
+ */
+export function parseCubeIdInput(input: string): string {
+    const trimmed = input.split('?')[0].trim();
+    const match = trimmed.match(/([^\/]+)\/?$/);
+    return match ? match[1] : trimmed;
+}
+
 // TODO: Handle errors...
 export async function getCubeData(
     cubeId: string,

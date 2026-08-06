@@ -167,6 +167,7 @@ import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
 import { Sort, Hide, BrushFilled } from '@element-plus/icons-vue';
 import { normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
+import { parseCubeIdInput } from '../util/CubeCobra';
 
 const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
 
@@ -244,10 +245,7 @@ watch([cubeAId, cubeBId], ([a, b]) => {
 
 const onCubeSelect = async (value: string, side: 'A' | 'B') => {
     if (props.loadedCubes[value]) return;
-    // Extract the cube ID from the input the same way addCube does
-    const input = value.split('?')[0].trim();
-    const match = input.match(/([^\/]+)\/?$/);
-    const id = match ? match[1] : value;
+    const id = parseCubeIdInput(value);
     // Check if already loaded under a different key
     const existing = Object.entries(props.loadedCubes).find(
         ([, cube]) => cube.id === id || cube.shortId === id,
