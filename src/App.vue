@@ -125,7 +125,7 @@ import { evaluateCheck } from './util/CheckEvaluator';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
-import { getCubeData } from './util/CubeCobra';
+import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
@@ -691,9 +691,7 @@ const addAny = async (key: string): Promise<void> => {
 };
 
 const addCube = async (cubeId: string, { refresh = false, hidden = false }: { refresh?: boolean; hidden?: boolean } = {}) => {
-    // Attempt to take just the Cube ID based on multiple possible input formats.
-    const input = cubeId.split('?')[0].trim();
-    const [ id ] = input.match(/([^\/]+)\/?$/);
+    const id = parseCubeIdInput(cubeId);
 
     // If the cube is already loaded, skip it.
     if (!Object.values(loadedCubes.value).some(cube => cube.id === id || cube.shortId === id)) {
