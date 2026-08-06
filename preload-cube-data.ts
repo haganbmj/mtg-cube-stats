@@ -36,6 +36,8 @@ function isStale(filePath: string, thresholdMs: number): boolean {
 }
 
 async function loadManifests(): Promise<Manifest[]> {
+    // Only manifest modules live at the top level of MANIFESTS_DIR.
+    // Shared types, helpers, and tests are excluded from auto-loading.
     const files = fs.readdirSync(MANIFESTS_DIR).filter(f =>
         f.endsWith('.ts') && f !== 'types.ts' && f !== 'filters.ts' && !f.endsWith('.test.ts'),
     );
@@ -291,8 +293,10 @@ async function phasePrune(manifests: Manifest[]) {
     }
 
     // Prune generated/cubes/ — keep only IDs present in presets.json.
+    // Skip if presets.json is missing (e.g. --fetch-only before any assemble)
+    // so we never wipe generated/ based on an empty ID set.
     let generatedRemoved = 0;
-    if (fs.existsSync(GENERATED_CUBES_DIR)) {
+    if (fs.existsSync(presetsPath) && fs.existsSync(GENERATED_CUBES_DIR)) {
         for (const file of fs.readdirSync(GENERATED_CUBES_DIR)) {
             const id = file.replace('.json', '');
             if (!generatedIds.has(id)) {
