@@ -1,3 +1,4 @@
+import { modifiedSince } from './filters';
 import type { Manifest } from './types';
 
 const manifest: Manifest = {
@@ -8,6 +9,7 @@ const manifest: Manifest = {
         { label: 'Discord', url: 'https://discord.gg/D7EB3PSJtN', type: 'discord' },
     ],
     fetch: { staleThreshold: '1d', shardCount: 4 },
+    include: [modifiedSince('6mo')],
     cubes: [
         '5d5f69612af66a30f9bb9b10', // Crunchwrap Supreme
         '61f51c3df1d9250f21664d1a', // AlfonsoGallegoF - 450 Peasant+
