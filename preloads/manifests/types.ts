@@ -1,3 +1,7 @@
+import type { Cube } from '../../src/types';
+
+export type CubePredicate = (cube: Cube) => boolean;
+
 export interface ManifestFetch {
     staleThreshold: string;
     shardCount: number;
