@@ -1,3 +1,7 @@
+import type { Cube } from '../../src/types';
+
+export type CubePredicate = (cube: Cube) => boolean;
+
 export interface ManifestFetch {
     staleThreshold: string;
     shardCount: number;
@@ -12,4 +16,5 @@ export interface Manifest {
     links?: Array<{ label: string; url: string; type?: string }>;
     fetch: ManifestFetch | null;
     cubes: string[];
+    include?: CubePredicate | CubePredicate[];
 }

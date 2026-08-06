@@ -4,7 +4,8 @@ import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions';
 import { getCubeData, fetchTopCubeIds } from './src/util/CubeCobra';
 import type { Cube } from './src/types';
 import type { PresetCollection } from './src/types/presets';
-import type { Manifest } from './preloads/manifests/types';
+import type { CubePredicate, Manifest } from './preloads/manifests/types';
+import { parseDuration } from './preloads/manifests/filters';
 
 // --- Configuration ---
 
@@ -27,19 +28,6 @@ const assembleOnly = args.includes('--assemble-only');
 
 // --- Helpers ---
 
-function parseThreshold(threshold: string): number {
-    const match = threshold.match(/^(\d+)([dhm])$/);
-    if (!match) throw new Error(`Invalid staleThreshold format: "${threshold}"`);
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
-    switch (unit) {
-        case 'd': return value * 24 * 60 * 60 * 1000;
-        case 'h': return value * 60 * 60 * 1000;
-        case 'm': return value * 60 * 1000;
-        default: throw new Error(`Unknown unit: ${unit}`);
-    }
-}
-
 function isStale(filePath: string, thresholdMs: number): boolean {
     if (!fs.existsSync(filePath)) return true;
     const stats = fs.statSync(filePath);
@@ -48,7 +36,11 @@ function isStale(filePath: string, thresholdMs: number): boolean {
 }
 
 async function loadManifests(): Promise<Manifest[]> {
-    const files = fs.readdirSync(MANIFESTS_DIR).filter(f => f.endsWith('.ts') && f !== 'types.ts');
+    // Only manifest modules live at the top level of MANIFESTS_DIR.
+    // Shared types, helpers, and tests are excluded from auto-loading.
+    const files = fs.readdirSync(MANIFESTS_DIR).filter(f =>
+        f.endsWith('.ts') && f !== 'types.ts' && f !== 'filters.ts' && !f.endsWith('.test.ts'),
+    );
     const manifests: Manifest[] = [];
     for (const f of files) {
         const mod = await import(path.resolve(MANIFESTS_DIR, f));
@@ -128,7 +120,7 @@ async function phaseFetch(manifests: Manifest[]) {
                     continue;
                 }
 
-                const thresholdMs = parseThreshold(manifest.fetch.staleThreshold);
+                const thresholdMs = parseDuration(manifest.fetch.staleThreshold);
 
                 // CI without REFRESH_PRELOADS: skip all fetches
                 if (isCI && !refresh) {
@@ -177,6 +169,11 @@ async function phaseFetch(manifests: Manifest[]) {
 
 // --- Phase 2: Assemble ---
 
+function normalizeIncludes(include: Manifest['include']): CubePredicate[] {
+    if (!include) return [];
+    return Array.isArray(include) ? include : [include];
+}
+
 async function phaseAssemble(manifests: Manifest[]) {
     console.log('\n=== Phase 2: Assemble ===\n');
 
@@ -208,6 +205,12 @@ async function phaseAssemble(manifests: Manifest[]) {
             try {
                 const raw = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
                 const cube = remapCube(raw, false, fetchedAt);
+
+                const predicates = normalizeIncludes(manifest.include);
+                if (predicates.length && !predicates.every(p => p(cube))) {
+                    console.log(`[${cubeId}] Filtered out by include predicates.`);
+                    continue;
+                }
 
                 // Use the canonical cube.id as the key
                 remappedCubes[cube.id] = cube;
@@ -260,52 +263,50 @@ async function phaseAssemble(manifests: Manifest[]) {
 async function phasePrune(manifests: Manifest[]) {
     console.log('\n=== Phase 3: Prune ===\n');
 
-    // Collect all cube IDs referenced by any manifest (including dynamic sources)
-    const referencedIds = new Set<string>();
+    // IDs referenced by any manifest (raw list; filter-agnostic).
+    const manifestIds = new Set<string>();
     for (const manifest of manifests) {
         const cubeIds = await resolveManifestCubes(manifest);
-        for (const id of cubeIds) {
-            referencedIds.add(id);
-        }
+        for (const id of cubeIds) manifestIds.add(id);
     }
 
-    // Also include canonical IDs from generated cubes (remapCube may change IDs)
-    // Read the presets.json to get the canonical IDs that were actually written
+    // Canonical IDs actually written to generated/ this run (post-filter).
+    const generatedIds = new Set<string>();
     const presetsPath = path.join(GENERATED_DIR, 'presets.json');
     if (fs.existsSync(presetsPath)) {
         const presets: PresetCollection[] = JSON.parse(fs.readFileSync(presetsPath, 'utf-8'));
         for (const preset of presets) {
-            for (const id of Object.keys(preset.cubes)) {
-                referencedIds.add(id);
-            }
+            for (const id of Object.keys(preset.cubes)) generatedIds.add(id);
         }
     }
 
-    // Prune cache/cubes/
+    // Prune cache/cubes/ — keep anything referenced by a manifest.
     let cacheRemoved = 0;
     if (fs.existsSync(CACHE_CUBES_DIR)) {
         for (const file of fs.readdirSync(CACHE_CUBES_DIR)) {
             const id = file.replace('.json', '');
-            if (!referencedIds.has(id)) {
+            if (!manifestIds.has(id)) {
                 fs.unlinkSync(path.join(CACHE_CUBES_DIR, file));
                 cacheRemoved++;
             }
         }
     }
 
-    // Prune generated/cubes/
+    // Prune generated/cubes/ — keep only IDs present in presets.json.
+    // Skip if presets.json is missing (e.g. --fetch-only before any assemble)
+    // so we never wipe generated/ based on an empty ID set.
     let generatedRemoved = 0;
-    if (fs.existsSync(GENERATED_CUBES_DIR)) {
+    if (fs.existsSync(presetsPath) && fs.existsSync(GENERATED_CUBES_DIR)) {
         for (const file of fs.readdirSync(GENERATED_CUBES_DIR)) {
             const id = file.replace('.json', '');
-            if (!referencedIds.has(id)) {
+            if (!generatedIds.has(id)) {
                 fs.unlinkSync(path.join(GENERATED_CUBES_DIR, file));
                 generatedRemoved++;
             }
         }
     }
 
-    // Prune generated/similarities/ (remove matrices for manifests that no longer exist)
+    // Prune generated/similarities/ — keep only current manifest names.
     let simRemoved = 0;
     const manifestNames = new Set(manifests.map(m => m.name));
     if (fs.existsSync(GENERATED_SIMILARITIES_DIR)) {

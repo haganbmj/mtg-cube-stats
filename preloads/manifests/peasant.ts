@@ -1,3 +1,4 @@
+import { modifiedSince } from './filters';
 import type { Manifest } from './types';
 
 const manifest: Manifest = {
@@ -8,6 +9,7 @@ const manifest: Manifest = {
         { label: 'Discord', url: 'https://discord.gg/D7EB3PSJtN', type: 'discord' },
     ],
     fetch: { staleThreshold: '1d', shardCount: 4 },
+    include: [modifiedSince('6mo')],
     cubes: [
         '5d5f69612af66a30f9bb9b10', // Crunchwrap Supreme
         '61f51c3df1d9250f21664d1a', // AlfonsoGallegoF - 450 Peasant+
@@ -112,6 +114,7 @@ const manifest: Manifest = {
         '637b9e8cd7d17f14ab27f4c9', // RoroLeZozo - Synergy Peasant Cube
         '5dbcbd2a44e9cb7a6c8097cf', // ahhabee - C/U be
         '5e539a45e74a617cdd462f32', // gsethi - Gsethi 360 Peasant Cube
+        '9bd7c4dc-408d-4ebb-b08a-039528a4a50e', // CloudedBirb - Peasant Vintage PowerMax!
     ],
 };
 
