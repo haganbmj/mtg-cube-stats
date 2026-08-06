@@ -147,6 +147,7 @@ import {
     COLOR_COLUMN_DEFS,
     COLOR_COMBO_NAMES,
     COLOR_COMBO_ORDER,
+    PRIMARY_TYPE_ORDER,
     groupCardsByColorAndType,
     getColorColumnId,
     colorComboLabel,
@@ -269,6 +270,15 @@ function getUnionTypeLabels(colorId: string): string[] {
     const labels = [...labelSet];
     if (colorId === 'L' || colorId === 'M') {
         labels.sort((a, b) => (COMBO_NAME_TO_ORDER[a] ?? 999) - (COMBO_NAME_TO_ORDER[b] ?? 999));
+    } else {
+        labels.sort((a, b) => {
+            const ai = PRIMARY_TYPE_ORDER.indexOf(a);
+            const bi = PRIMARY_TYPE_ORDER.indexOf(b);
+            if (ai === -1 && bi === -1) return a.localeCompare(b);
+            if (ai === -1) return 1;
+            if (bi === -1) return -1;
+            return ai - bi;
+        });
     }
     return labels;
 }
