@@ -16,4 +16,5 @@ export interface Manifest {
     links?: Array<{ label: string; url: string; type?: string }>;
     fetch: ManifestFetch | null;
     cubes: string[];
+    include?: CubePredicate | CubePredicate[];
 }

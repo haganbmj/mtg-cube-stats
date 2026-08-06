@@ -4,7 +4,8 @@ import { remapCube, computeSimilarityMatrix } from './src/util/CubeFunctions';
 import { getCubeData, fetchTopCubeIds } from './src/util/CubeCobra';
 import type { Cube } from './src/types';
 import type { PresetCollection } from './src/types/presets';
-import type { Manifest } from './preloads/manifests/types';
+import type { CubePredicate, Manifest } from './preloads/manifests/types';
+import { parseDuration } from './preloads/manifests/filters';
 
 // --- Configuration ---
 
@@ -27,19 +28,6 @@ const assembleOnly = args.includes('--assemble-only');
 
 // --- Helpers ---
 
-function parseThreshold(threshold: string): number {
-    const match = threshold.match(/^(\d+)([dhm])$/);
-    if (!match) throw new Error(`Invalid staleThreshold format: "${threshold}"`);
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
-    switch (unit) {
-        case 'd': return value * 24 * 60 * 60 * 1000;
-        case 'h': return value * 60 * 60 * 1000;
-        case 'm': return value * 60 * 1000;
-        default: throw new Error(`Unknown unit: ${unit}`);
-    }
-}
-
 function isStale(filePath: string, thresholdMs: number): boolean {
     if (!fs.existsSync(filePath)) return true;
     const stats = fs.statSync(filePath);
@@ -48,7 +36,9 @@ function isStale(filePath: string, thresholdMs: number): boolean {
 }
 
 async function loadManifests(): Promise<Manifest[]> {
-    const files = fs.readdirSync(MANIFESTS_DIR).filter(f => f.endsWith('.ts') && f !== 'types.ts');
+    const files = fs.readdirSync(MANIFESTS_DIR).filter(f =>
+        f.endsWith('.ts') && f !== 'types.ts' && f !== 'filters.ts' && !f.endsWith('.test.ts'),
+    );
     const manifests: Manifest[] = [];
     for (const f of files) {
         const mod = await import(path.resolve(MANIFESTS_DIR, f));
@@ -128,7 +118,7 @@ async function phaseFetch(manifests: Manifest[]) {
                     continue;
                 }
 
-                const thresholdMs = parseThreshold(manifest.fetch.staleThreshold);
+                const thresholdMs = parseDuration(manifest.fetch.staleThreshold);
 
                 // CI without REFRESH_PRELOADS: skip all fetches
                 if (isCI && !refresh) {
@@ -177,6 +167,11 @@ async function phaseFetch(manifests: Manifest[]) {
 
 // --- Phase 2: Assemble ---
 
+function normalizeIncludes(include: Manifest['include']): CubePredicate[] {
+    if (!include) return [];
+    return Array.isArray(include) ? include : [include];
+}
+
 async function phaseAssemble(manifests: Manifest[]) {
     console.log('\n=== Phase 2: Assemble ===\n');
 
@@ -208,6 +203,12 @@ async function phaseAssemble(manifests: Manifest[]) {
             try {
                 const raw = JSON.parse(fs.readFileSync(cachePath, 'utf-8'));
                 const cube = remapCube(raw, false, fetchedAt);
+
+                const predicates = normalizeIncludes(manifest.include);
+                if (predicates.length && !predicates.every(p => p(cube))) {
+                    console.log(`[${cubeId}] Filtered out by include predicates.`);
+                    continue;
+                }
 
                 // Use the canonical cube.id as the key
                 remappedCubes[cube.id] = cube;
