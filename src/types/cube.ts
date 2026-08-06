@@ -139,6 +139,17 @@ export interface Cube {
   stats?: CubeStats;
 }
 
+/**
+ * Shape emitted by App.vue's `overviewTableData` computed. Strips `cards` and
+ * `suffixedCardIds` to reduce reactive footprint during table rendering, and
+ * adds the precomputed `avgSimilarityScore`.
+ */
+export type CubeOverviewRow = Omit<Cube, 'cards' | 'suffixedCardIds'> & {
+  cards?: undefined;
+  suffixedCardIds?: undefined;
+  avgSimilarityScore: number;
+};
+
 export interface UserCollection {
   name: string;
   cubeIds: string[];

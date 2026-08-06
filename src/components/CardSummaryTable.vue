@@ -450,6 +450,7 @@ import { evaluateCard, computeHighlightedOracleIds, collectHighlightCubeKeys, co
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
 import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates } from '../util/CubeCobraFrequency';
 import { getCardStats, cardStatsReady } from '../util/CubeCobraCardStats';
+import { openCardDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({
     loadedCubes: {
@@ -466,7 +467,7 @@ const props = defineProps({
     },
 });
 
-const openCardDetailDialog = inject<(id: string) => void>('openCardDetailDialog');
+const openCardDetailDialog = inject(openCardDetailDialogKey);
 const showAllCards = inject<Ref<boolean>>('showAllCards', ref(false));
 
 const cardResultsTop = useTemplateRef<HTMLElement>('cardResultsTop');

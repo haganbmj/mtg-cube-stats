@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { displayName, externalCubeId } from '../util/Snapshots';
+import { openCubeDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({
     similarityMatrix: {
@@ -76,7 +77,7 @@ const props = defineProps({
     },
 });
 
-const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
+const openCubeDetailDialog = inject(openCubeDetailDialogKey);
 const navigateToComparison = inject<(cubeAId: string, cubeBId: string) => void>('navigateToComparison');
 
 const tableData = computed(() => {

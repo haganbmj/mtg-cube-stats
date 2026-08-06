@@ -52,7 +52,7 @@
                         </el-tab-pane>
 
                         <!-- <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
-                            <ArchetypeAnalysisTab :loadedCubes="visibleLoadedCubes" :similarityMatrix="similarityMatrix" :overviewTableData="overviewTableData" />
+                            ArchetypeAnalysisTab was removed; restore from git history if reintroducing.
                         </el-tab-pane> -->
 
                         <el-tab-pane label="Compare" name="compare" :lazy="true">
@@ -116,7 +116,7 @@ import { useDetailNavigation, suppressHashReconcile } from './util/useDetailNavi
 import { ElMessage, ElNotification } from 'element-plus';
 import type { PresetCollection } from './types';
 import presetsJson from '../preloads/generated/presets.json';
-const presetCollections: PresetCollection[] = presetsJson as PresetCollection[];
+const presetCollections: PresetCollection[] = presetsJson as unknown as PresetCollection[];
 import { bindStorage } from './util/VueLocalStorage';
 import type { UserCollection, Cube } from './types';
 import type { ChecksState, CheckResult } from './types';
@@ -126,6 +126,7 @@ import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
 import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
 import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
+import { openCubeDetailDialogKey, openCardDetailDialogKey } from './types/injectionKeys';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
 import { initFrequencyData } from './util/CubeCobraFrequency';
@@ -136,7 +137,6 @@ import About from './components/About.vue';
 import CubeDetailDialog from './components/CubeDetailDialog.vue';
 import CardDetailDialog from './components/CardDetailDialog.vue';
 import OverviewTab from './tabs/OverviewTab.vue';
-import ArchetypeAnalysisTab from './tabs/ArchetypeAnalysisTab.vue';
 import StatisticsTab from './tabs/StatisticsTab.vue';
 import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
@@ -147,7 +147,7 @@ registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
 
 // Track scryfall initialization promise
-let scryfallInitPromise = null;
+let scryfallInitPromise: Promise<void> | null = null;
 
 const ensureScryfallInitialized = async () => {
     if (scryfallInitPromise === null) {
@@ -167,11 +167,11 @@ const availablePresets = new Set(
         .map(preset => preset.label),
 );
 
-const loadedCubes = ref({});
+const loadedCubes = ref<Record<string, Cube>>({});
 
 const visibleLoadedCubes = computed(() =>
     Object.fromEntries(
-        Object.entries(loadedCubes.value).filter(([, cube]: [string, any]) => !cube.hidden),
+        Object.entries(loadedCubes.value).filter(([, cube]) => !cube.hidden),
     ),
 );
 
@@ -211,8 +211,8 @@ const getCubeCards = (cubeId: string) => {
 const openCubeDetailDialog = (cubeId: string) => pushDetail({ type: 'cube', id: cubeId });
 const openCardDetailDialog = (oracleId: string) => pushDetail({ type: 'card', oracleId });
 
-provide('openCubeDetailDialog', openCubeDetailDialog);
-provide('openCardDetailDialog', openCardDetailDialog);
+provide(openCubeDetailDialogKey, openCubeDetailDialog);
+provide(openCardDetailDialogKey, openCardDetailDialog);
 provide('popDetail', popDetail);
 
 const comparePair = ref<{ cubeAId: string; cubeBId: string } | null>(null);

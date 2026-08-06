@@ -737,7 +737,7 @@ import { Loading, Link, Refresh, Clock, InfoFilled, Delete, CircleCheck, CircleC
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import type { Cube, CubeCard, SimilarityMatrix } from '../types';
+import type { Cube, CubeCard, CubeOverviewRow, SimilarityMatrix } from '../types';
 import type { ChecksState, CheckResult } from '../types/checks';
 import type { ScryfallToken } from '../types/scryfall';
 import { formatPrice } from '../util/HelperFunctions';
@@ -756,6 +756,7 @@ import SetNameTable from './SetNameTable.vue';
 import StatCmpIndicator from './StatCmpIndicator.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
 import CubeListView from './CubeListView.vue';
+import { openCardDetailDialogKey, openCubeDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({
     visible: {
@@ -767,7 +768,7 @@ const props = defineProps({
         default: true,
     },
     cubeRow: {
-        type: Object as () => Cube | null,
+        type: Object as () => CubeOverviewRow | null,
         default: null,
     },
     cubeCards: {
@@ -779,7 +780,7 @@ const props = defineProps({
         required: true,
     },
     overviewTableData: {
-        type: Array as () => Cube[],
+        type: Array as () => CubeOverviewRow[],
         required: true,
     },
     loadedCubes: {
@@ -797,8 +798,8 @@ const emit = defineEmits(['close']);
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 
-const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
-const openCubeDetailDialog = inject<(id: string) => void>('openCubeDetailDialog');
+const openCardDetailDialog = inject(openCardDetailDialogKey);
+const openCubeDetailDialog = inject(openCubeDetailDialogKey);
 const refreshCube = inject<(id: string) => Promise<void>>('refreshCube');
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
 const checksState = inject<Ref<ChecksState>>('checksState')!;
