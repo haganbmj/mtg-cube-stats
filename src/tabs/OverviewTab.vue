@@ -247,7 +247,7 @@
                 :striped="true"
                 :striped-flow="true"
                 :duration="10"
-                :format="() => `${props.loadingProgress.loaded} / ${props.loadingProgress.total}`"
+                :format="() => `${props.loadingProgress?.loaded ?? 0} / ${props.loadingProgress?.total ?? 0}`"
             />
         </div>
 
@@ -259,7 +259,7 @@
                 v-for="row in sortedData"
                 :key="row.id"
                 class="overview-cube-tile"
-                @click="openCubeDetailDialog(row.id)"
+                @click="openCubeDetailDialog?.(row.id)"
             >
                 <div class="cube-tile-thumbnail-wrapper">
                     <el-image :src="row.thumbnail" fit="cover" loading="lazy" class="cube-tile-thumbnail" :class="{ 'cube-tile-thumbnail--snapshot': isSnapshot(row) }" />
@@ -330,7 +330,7 @@
 
             <template #cell-name="{ row }">
                 <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog(row.id)">{{ displayName(row) }}</el-link>
+                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ displayName(row) }}</el-link>
                 <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
             </template>
 
@@ -514,7 +514,7 @@ import type { SortDirection } from '../util/SortConfig';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { bindStorage } from '../util/VueLocalStorage';
 import { useWindowSize } from '@vueuse/core';
-import { Delete, WarnTriangleFilled, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
+import { Delete, InfoFilled, Menu, Grid, List, Loading, Clock } from '@element-plus/icons-vue';
 import type { UserCollection, Cube } from '../types';
 import StickyTable from '../components/StickyTable.vue';
 import ColumnCustomizer from '../components/ColumnCustomizer.vue';
@@ -524,6 +524,7 @@ import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 import { parseCubeIdInput } from '../util/CubeCobra';
+import { openCubeDetailDialogKey } from '../types/injectionKeys';
 import type { ChecksState, CheckResult } from '../types/checks';
 
 const { width: windowWidth } = useWindowSize();
@@ -546,7 +547,7 @@ const props = defineProps({
         required: true,
     },
     presetComparisonsSelect: {
-        type: Array,
+        type: Array as () => { label: string; value: string }[],
         required: true,
     },
     addCube: {
@@ -820,7 +821,7 @@ const loadingProgressPercent = computed(() => {
     return Math.round((loaded / total) * 100);
 });
 
-const openCubeDetailDialog = inject('openCubeDetailDialog');
+const openCubeDetailDialog = inject(openCubeDetailDialogKey);
 const refreshingCubeIds = inject<Ref<Set<string>>>('refreshingCubeIds', ref(new Set()));
 const checksState = inject<Ref<ChecksState>>('checksState')!;
 const checkResults = inject<ComputedRef<Map<string, Map<string, CheckResult>>>>('checkResults')!;

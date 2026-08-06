@@ -103,6 +103,7 @@ import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
+import { openCardDetailDialogKey } from '../types/injectionKeys';
 import { Hide, BrushFilled, Grid, List } from '@element-plus/icons-vue';
 import {
     PRIMARY_TYPE_ORDER,
@@ -126,7 +127,7 @@ const props = defineProps({
     },
 });
 
-const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
+const openCardDetailDialog = inject(openCardDetailDialogKey);
 
 const activeQuery = ref('');
 

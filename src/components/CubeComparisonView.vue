@@ -150,9 +150,10 @@ import {
     groupCardsByColorAndType,
     getColorColumnId,
     colorComboLabel,
-    type ColorColumn,
+    type ColorColumn
 } from '../util/CardGrouping';
 import { externalCubeId } from '../util/Snapshots';
+import { openCardDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({
     onlyA: {
@@ -185,7 +186,7 @@ const props = defineProps({
     },
 });
 
-const openCardDetailDialog = inject<(oracleId: string) => void>('openCardDetailDialog');
+const openCardDetailDialog = inject(openCardDetailDialogKey);
 
 const sameBaseCube = computed(
     () => externalCubeId(props.cubeA) === externalCubeId(props.cubeB),

@@ -520,6 +520,7 @@ import { getSetName, getTokens } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
 import { displayName, externalCubeId } from '../util/Snapshots';
 import PresetHeader from '../components/PresetHeader.vue';
+import { openCubeDetailDialogKey, openCardDetailDialogKey } from '../types/injectionKeys';
 
 const activeListModal = ref<'popular' | 'elo' | 'tokens' | 'sets' | 'keywords' | null>(null);
 const modalOpen = computed({
@@ -557,8 +558,8 @@ const props = defineProps({
     },
 });
 
-const openCubeDetailDialog = inject('openCubeDetailDialog');
-const openCardDetailDialog = inject('openCardDetailDialog');
+const openCubeDetailDialog = inject(openCubeDetailDialogKey);
+const openCardDetailDialog = inject(openCardDetailDialogKey);
 
 const totalCubes = computed(() => Object.keys(props.loadedCubes).length);
 

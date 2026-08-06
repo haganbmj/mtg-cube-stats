@@ -248,7 +248,8 @@ import { getScryfallCards } from '../util/CubeFunctions';
 import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
 import { getCardStats } from '../util/CubeCobraCardStats';
 import { displayName, externalCubeId } from '../util/Snapshots';
-import type { Cube } from '../types';
+import type { Cube, CubeOverviewRow } from '../types';
+import { openCubeDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({
     visible: {
@@ -268,7 +269,7 @@ const props = defineProps({
         required: true,
     },
     overviewTableData: {
-        type: Array as () => Cube[],
+        type: Array as () => CubeOverviewRow[],
         required: true,
     },
 });
@@ -278,7 +279,7 @@ defineEmits(['close']);
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value <= 760);
 
-const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog', () => {});
+const openCubeDetailDialog = inject(openCubeDetailDialogKey, () => {});
 
 const cardTableQuery = inject<Ref<string>>('cardTableQuery');
 

@@ -168,8 +168,9 @@ import { bindStorage } from '../util/VueLocalStorage';
 import { Sort, Hide, BrushFilled } from '@element-plus/icons-vue';
 import { normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
 import { parseCubeIdInput } from '../util/CubeCobra';
+import { openCubeDetailDialogKey } from '../types/injectionKeys';
 
-const openCubeDetailDialog = inject<(cubeId: string) => void>('openCubeDetailDialog');
+const openCubeDetailDialog = inject(openCubeDetailDialogKey);
 
 const emit = defineEmits<{
     'update:comparePair': [pair: { cubeAId: string; cubeBId: string } | null];
