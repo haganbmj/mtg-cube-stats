@@ -141,13 +141,27 @@ const filterMode = bindStorage('cube-list-filter-mode', (v) => {
     return v === 'dim' ? 'dim' : 'hide';
 });
 
+const copyCounts = computed<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const card of props.cards) {
+        counts[card.oracleId] = (counts[card.oracleId] ?? 0) + 1;
+    }
+    return counts;
+});
+
 const matchingOracleIds = computed<Set<string> | null>(() => {
     const { ast } = parseQuery(activeQuery.value);
     if (!ast) return null;
     const ctx: FilterContext = { loadedCubes: {} };
     const ids = new Set<string>();
+    const counts = copyCounts.value;
     for (const card of props.cards) {
-        const row = { ...card, effectiveColors: card.colors, effectiveColorIdentity: card.colorIdentity };
+        const row = {
+            ...card,
+            effectiveColors: card.colors,
+            effectiveColorIdentity: card.colorIdentity,
+            count: counts[card.oracleId],
+        };
         if (evaluateCard(ast, row, ctx)) ids.add(card.oracleId);
     }
     return ids;

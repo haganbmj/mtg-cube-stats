@@ -311,7 +311,7 @@ const FILTER_DOCS: FilterDoc[] = [
     },
     {
         keywords: ['count'],
-        description: 'Total copies of this card across all loaded cubes.',
+        description: 'Copies of this card — total across all loaded cubes in the card table, or within the single cube in a cube list view.',
         examples: ['count>1'],
     },
     {
