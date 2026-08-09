@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
+import { consumeSignaledHistoryBack, hasNestedDismissDialog } from './dialogHistoryCoord';
 
 export type DetailEntry =
     | { type: 'cube'; id: string }
@@ -61,6 +62,16 @@ function closeAll(): void {
 function onPopState(): void {
     if (ignoreNextPop > 0) {
         ignoreNextPop--;
+        return;
+    }
+    // A useBackDismiss dialog triggered history.back() programmatically —
+    // don't treat that as a nav pop.
+    if (consumeSignaledHistoryBack()) {
+        return;
+    }
+    // A nested useBackDismiss dialog is still open; let its handler consume
+    // this popstate instead of closing the outer detail dialog.
+    if (hasNestedDismissDialog()) {
         return;
     }
     // Browser back pressed by user — pop top entry without triggering history.back()

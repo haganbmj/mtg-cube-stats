@@ -1,5 +1,10 @@
 import { watch, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
+import {
+    notifyNestedDismissOpen,
+    notifyNestedDismissClosed,
+    signalExternalHistoryBack,
+} from './dialogHistoryCoord';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Module-level globals — shared across all useBackDismiss instances so that
@@ -51,6 +56,7 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
     // from firing and calling history.back() a second time.
     const onBackPressed = () => {
         pushed = false;
+        notifyNestedDismissClosed();
         close();
     };
 
@@ -59,6 +65,7 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
             // Dialog opened: push a history entry and register the close callback.
             history.pushState({ backDismiss: true }, '');
             dismissStack.push(onBackPressed);
+            notifyNestedDismissOpen();
             pushed = true;
         } else if (!open && pushed) {
             // Dialog closed programmatically: remove the callback and consume
@@ -66,7 +73,9 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
             pushed = false;
             const idx = dismissStack.lastIndexOf(onBackPressed);
             if (idx !== -1) dismissStack.splice(idx, 1);
+            notifyNestedDismissClosed();
             ignoreNextPop++;
+            signalExternalHistoryBack();
             history.back();
         }
     });
@@ -78,7 +87,9 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
             pushed = false;
             const idx = dismissStack.lastIndexOf(onBackPressed);
             if (idx !== -1) dismissStack.splice(idx, 1);
+            notifyNestedDismissClosed();
             ignoreNextPop++;
+            signalExternalHistoryBack();
             history.back();
         }
     });
