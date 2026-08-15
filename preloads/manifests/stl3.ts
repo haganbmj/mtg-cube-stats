@@ -15,6 +15,8 @@ const manifest: Manifest = {
         '5fc9e578bada5f7f15feb582', // aquaone
         '9a317aa5-0b40-48d0-8691-c23c7f5a2288', // 100 Black Lotuses
         '12b2535f-0665-4e60-896f-54373ecc4583', // Reject Modernity
+        '041a13ba-b23c-4580-9550-0080b8fe29da', // Starship Troopers
+        'f43649bc-b213-4e62-b7d1-68dfb27af966', // The Arti Parti
     ],
 };
 
