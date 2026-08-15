@@ -7,6 +7,17 @@
                 :loaded-cubes="{}"
                 :collapse-cube-filter="true"
             />
+            <template v-if="visualDisplayVisible">
+                <label class="columns-label">Columns</label>
+                <el-input-number
+                    v-model="visualColumnCount"
+                    :min="1"
+                    :max="20"
+                    :step="1"
+                    controls-position="right"
+                    class="columns-input"
+                />
+            </template>
             <el-button-group>
                 <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
                 <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
@@ -21,7 +32,11 @@
                 <el-text size="small" type="info">Filtered to {{ matchingOracleIds ? `${matchingCardCount} / ${props.cards.length}` : props.cards.length }} cards</el-text>
             </div>
         </div>
-        <div v-if="visualDisplayVisible" class="cube-list-image-grid">
+        <div
+            v-if="visualDisplayVisible"
+            class="cube-list-image-grid"
+            :style="{ gridTemplateColumns: `repeat(${visualColumnCount}, 1fr)` }"
+        >
             <div
                 v-for="card in flatCards"
                 :key="card.oracleId"
@@ -104,6 +119,7 @@ import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
 import { openCardDetailDialogKey } from '../types/injectionKeys';
+import { useWindowSize } from '@vueuse/core';
 import { Hide, BrushFilled, Grid, List } from '@element-plus/icons-vue';
 import {
     PRIMARY_TYPE_ORDER,
@@ -140,6 +156,14 @@ const visualDisplayVisible = bindStorage('cube-list-display-mode-visual', (v) =>
 const filterMode = bindStorage('cube-list-filter-mode', (v) => {
     return v === 'dim' ? 'dim' : 'hide';
 });
+
+const { width: windowWidth } = useWindowSize();
+const isMobile = computed(() => windowWidth.value <= 760);
+const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
+
+const visualColumnCount = bindStorage<number>('cube-list-visual-column-count', (v) =>
+    typeof v === 'number' ? Math.min(20, Math.max(1, Math.round(v))) : defaultVisualColumnCount.value,
+);
 
 const copyCounts = computed<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
@@ -344,6 +368,22 @@ watch(columns, () => nextTick(updateScrollWidth));
     min-width: 0;
 }
 
+.columns-label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+}
+
+.columns-input {
+    width: 90px;
+}
+
+@media (max-width: 760px) {
+    .cube-list-filter .card-table-search {
+        flex-basis: 100%;
+    }
+}
+
 .cube-list-match-count {
     flex-shrink: 0;
     white-space: nowrap;
@@ -468,11 +508,9 @@ watch(columns, () => nextTick(updateScrollWidth));
 
 .cube-list-image-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
 
     @media (max-width: 760px) {
-        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
 }
