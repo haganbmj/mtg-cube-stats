@@ -168,6 +168,7 @@
 
                 <div class="overview-cube-id-row">
                     <el-autocomplete
+                        ref="cubeAutocompleteRef"
                         v-model="addCubeForm.cubeId"
                         :fetch-suggestions="autocompleteQuerySearch"
                         :trigger-on-focus="true"
@@ -504,7 +505,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, inject, watch } from 'vue';
+import { ref, reactive, computed, inject, watch, nextTick } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -718,6 +719,8 @@ interface CubeHistoryEntry {
 
 const cubeAddHistory = bindStorage<CubeHistoryEntry[]>('cube-add-history', v => Array.isArray(v) ? v : []);
 
+const cubeAutocompleteRef = ref<{ blur: () => void; focus: () => void; getData: (query: string) => void } | null>(null);
+
 function recordCubeHistory(cubeId: string) {
     const cube = (Object.values(props.loadedCubes) as Cube[]).find(
         c => c.id === cubeId || c.shortId === cubeId,
@@ -755,6 +758,11 @@ async function handleAutocompleteSelect(item: CubeHistoryEntry & { value: string
     recordCubeHistory(item.id);
     addCubeForm.cubeId = '';
     addCubeForm.loading = false;
+    // Re-open the suggestion popper; el-autocomplete closes it on select and won't
+    // reopen from a programmatic focus() call while the input still has native focus.
+    await nextTick();
+    cubeAutocompleteRef.value?.focus();
+    cubeAutocompleteRef.value?.getData('');
 }
 
 const columnCustomizationVisible = ref(false);
