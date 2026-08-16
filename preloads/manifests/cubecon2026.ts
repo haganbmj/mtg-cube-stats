@@ -66,7 +66,7 @@ const manifest: Manifest = {
         '6291a0072d25a32206e9e19a', // Good Old Days: The Classic Frame Experience
         '54cbb003-f636-4eed-bfeb-a5dd76516dd9', // The Fish Tank
         'a374e4bb-ad6e-4bf6-b9a7-5eadfce5c13b', // What if K'rrik were real?
-        '8f2e2e54-88b0-42f7-af64-943760d9d0e7', // Mazes in the Desert
+        // '8f2e2e54-88b0-42f7-af64-943760d9d0e7', // Mazes in the Desert
         '62e12d83-0030-4fef-b661-a277135bfe02', // Spy Games
         'e7e1e793-f89b-4db8-bc2f-9a35db34d76c', // Jank Diver Peasant Cube (Cubecon)
         '2dcf6fff-76c0-48bf-bc40-bd7ccb87b15d', // The Graveyard Shift
