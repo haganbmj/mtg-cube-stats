@@ -830,7 +830,6 @@ const loadCollection = async (presetName: string) => {
                     case 'cache': {
                         loadedCubes.value[id] = timed(profile, 'enrichCube', () => { bump(profile, 'enrichCount'); return enrichCube(cached!.data); });
                         timed(profile, 'warmSim', () => { bump(profile, 'warmSimCount'); warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value); });
-                        timed(profile, 'updateSim', () => { bump(profile, 'updateSimCount'); updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value); });
                         if (source.refresh === 'preload') void backgroundRefreshFromPreload(id, meta);
                         else if (source.refresh === 'live') void backgroundRefreshCube(cached!.id);
                         return;
@@ -841,7 +840,6 @@ const loadCollection = async (presetName: string) => {
                         void setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
                         loadedCubes.value[id] = timed(profile, 'enrichCube', () => { bump(profile, 'enrichCount'); return enrichCube(cube); });
                         timed(profile, 'warmSim', () => { bump(profile, 'warmSimCount'); warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value); });
-                        timed(profile, 'updateSim', () => { bump(profile, 'updateSimCount'); updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value); });
                         return;
                     }
                     case 'live': {
@@ -851,7 +849,6 @@ const loadCollection = async (presetName: string) => {
                         await setCachedCube(id, cube, fetchedAt);
                         loadedCubes.value[id] = timed(profile, 'enrichCube', () => { bump(profile, 'enrichCount'); return enrichCube(cube); });
                         timed(profile, 'warmSim', () => { bump(profile, 'warmSimCount'); warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value); });
-                        timed(profile, 'updateSim', () => { bump(profile, 'updateSimCount'); updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value); });
                         return;
                     }
                 }
@@ -886,6 +883,18 @@ const loadCollection = async (presetName: string) => {
         });
 
         await Promise.all([chunkedCubePromise, similarityLandingPromise]);
+
+        // Sweep for cubes not covered by the preloaded similarity matrix.
+        // In the common case (preset loaded, similarity JSON present) every cube's
+        // row is already populated by mergeSimilarityMatrices and this is a no-op.
+        // Only fires for cubes added to a preset since the preload was generated,
+        // or when the similarity fetch failed entirely.
+        for (const id of Object.keys(loadedCubes.value)) {
+            if (!similarityMatrix.value[id]) {
+                timed(profile, 'updateSim', () => { bump(profile, 'updateSimCount'); updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value); });
+            }
+        }
+
         bump(profile, 'cubePromisesTotal', performance.now() - profileStart);
     } finally {
         loadingProgress.active = false;
