@@ -1,4 +1,6 @@
 import { ref } from 'vue';
+import { loadJsonAsset, registerKnownAssetUrl } from './AssetCache';
+import cardStatsUrl from '../../data/cubecobra-card-stats.json?url';
 
 export interface CardStats {
     elo: number;
@@ -6,6 +8,8 @@ export interface CardStats {
     cubeCount: number;
     pickCount: number;
 }
+
+registerKnownAssetUrl(cardStatsUrl);
 
 let cardStatsMap: Record<string, CardStats> | null = null;
 let initPromise: Promise<void> | null = null;
@@ -20,8 +24,7 @@ export function initCardStats(): Promise<void> {
 
 async function doInit(): Promise<void> {
     try {
-        const mod = await import('../../data/cubecobra-card-stats.json') as { default: Record<string, CardStats> };
-        cardStatsMap = mod.default;
+        cardStatsMap = await loadJsonAsset<Record<string, CardStats>>(cardStatsUrl, 'cardStats');
         cardStatsReady.value = true;
         console.log(`Loaded CubeCobra card stats (${Object.keys(cardStatsMap).length} cards)`);
     } catch {

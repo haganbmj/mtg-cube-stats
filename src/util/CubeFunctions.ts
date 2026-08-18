@@ -6,6 +6,8 @@ import { detectCubeArchetypes } from './ArchetypeDetection';
 import { assumedCategories } from './CubeCategories';
 import { snapshotKey } from './Snapshots';
 import { flatMapTypes, primaryTypeOf } from './TypeLine';
+import { loadJsonAsset, registerKnownAssetUrl } from './AssetCache';
+import cardsUrl from '../../data/cards-minimized.json?url';
 import type {
     ScryfallDataStructure,
     ScryfallCard,
@@ -17,20 +19,43 @@ import type {
     SimilarityMatrix
 } from '../types';
 
-const scryfallLoad = () => import('../../data/cards-minimized.json') as Promise<{ default: ScryfallDataStructure }>;
+registerKnownAssetUrl(cardsUrl);
 
 let scryfall: ScryfallDataStructure | null = null;
 
 /** Reactive flag that becomes true once Scryfall card data has finished loading. */
 export const scryfallReady = ref(false);
 
+type ScryfallRefreshListener = () => void;
+const refreshListeners = new Set<ScryfallRefreshListener>();
+
+/** Subscribe to fresh Scryfall data landing after an initial stale render. Returns an unsubscribe fn. */
+export function onScryfallRefresh(cb: ScryfallRefreshListener): () => void {
+    refreshListeners.add(cb);
+    return () => refreshListeners.delete(cb);
+}
+
+function applyFreshScryfall(fresh: ScryfallDataStructure): void {
+    scryfall = fresh;
+    for (const cb of refreshListeners) {
+        try {
+            cb();
+        } catch (e) {
+            console.error('Scryfall refresh listener failed:', e);
+        }
+    }
+}
+
 /**
- * Initialize Scryfall card data from the minimized JSON file
+ * Initialize Scryfall card data from the minimized JSON file.
+ * Uses stale-then-fresh: renders cached data immediately, refreshes in the background.
  */
 export async function initScryfall(): Promise<void> {
     console.time('Loading Scryfall card data');
-    const module = await scryfallLoad();
-    scryfall = module.default;
+    const data = await loadJsonAsset<ScryfallDataStructure>(cardsUrl, 'cards', {
+        onStale: applyFreshScryfall,
+    });
+    scryfall = data;
     scryfallReady.value = true;
     console.timeEnd('Loading Scryfall card data');
 }
@@ -137,6 +162,52 @@ export function remapCube(
     } else {
         return remappedCube;
     }
+}
+
+/**
+ * Return a cube containing only the fields produced by `remapCube` (metadata + minimal card list).
+ * Enrichment-added fields on each card (name, cmc, colors, keywords, prices, etc.) are dropped so the
+ * result can be re-fed into `enrichCube` after a fresh Scryfall payload lands.
+ * Custom-card override fields on cards are preserved because `remapCube` sets them from CubeCobra input.
+ */
+export function stripToRawCube(cube: Cube): Cube {
+    return {
+        id: cube.id,
+        shortId: cube.shortId,
+        name: cube.name,
+        owner: cube.owner,
+        ownerId: cube.ownerId,
+        thumbnail: cube.thumbnail,
+        category: cube.category,
+        categoryPrefixes: cube.categoryPrefixes,
+        lastModified: cube.lastModified,
+        followerCount: cube.followerCount,
+        brief: cube.brief,
+        fetchedAt: cube.fetchedAt,
+        baseCubeId: cube.baseCubeId,
+        snapshotDate: cube.snapshotDate,
+        hidden: cube.hidden,
+        cards: cube.cards.map(c => c.isCustomCard
+            ? {
+                printingId: c.printingId,
+                oracleId: c.oracleId,
+                isCustomCard: true,
+                name: c.name,
+                cmc: c.cmc,
+                colors: c.colors,
+                typeLine: c.typeLine,
+                customImageUrl: c.customImageUrl,
+                elo: c.elo,
+                popularity: c.popularity,
+            }
+            : {
+                printingId: c.printingId,
+                oracleId: c.oracleId,
+                elo: c.elo,
+                popularity: c.popularity,
+            }),
+        suffixedCardIds: cube.suffixedCardIds,
+    };
 }
 
 /**

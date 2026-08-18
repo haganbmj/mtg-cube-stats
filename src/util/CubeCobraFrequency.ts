@@ -1,10 +1,14 @@
 import type { CubeCobraFrequencyData } from '../types';
 import { ref } from 'vue';
+import { loadJsonAsset, registerKnownAssetUrl } from './AssetCache';
+import frequencyUrl from '../../data/cubecobra-card-frequency.json?url';
 
 // ---------------------------------------------------------------------------
 // Lazy-load the frequency data file (Vite code-splits it into its own chunk).
 // The file may not exist if the export script hasn't been run yet.
 // ---------------------------------------------------------------------------
+
+registerKnownAssetUrl(frequencyUrl);
 
 let frequencyData: CubeCobraFrequencyData | null = null;
 let initPromise: Promise<void> | null = null;
@@ -19,8 +23,7 @@ export function initFrequencyData(): Promise<void> {
 
 async function doInit(): Promise<void> {
     try {
-        const mod = await import('../../data/cubecobra-card-frequency.json') as { default: CubeCobraFrequencyData };
-        const data = mod.default;
+        const data = await loadJsonAsset<CubeCobraFrequencyData>(frequencyUrl, 'frequency');
         // Validate that the loaded data matches the expected shape.
         if (!data?.cubeCount || !data?.broadGroups || !data?.cards) {
             console.warn('CubeCobra frequency data has unexpected format — re-run the export script.');

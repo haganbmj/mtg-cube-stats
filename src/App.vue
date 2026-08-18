@@ -124,7 +124,7 @@ import { parseCheckExpression } from './util/CheckExpressionParser';
 import { evaluateCheck } from './util/CheckEvaluator';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
-import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
+import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube, stripToRawCube, onScryfallRefresh } from './util/CubeFunctions';
 import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from './types/injectionKeys';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
@@ -844,6 +844,15 @@ onMounted(async () => {
     // Start data initialization in the background without blocking the UI
     ensureScryfallInitialized();
     pruneStaleEntries();
+
+    // Re-enrich loaded cubes if a fresh Scryfall payload lands after the stale render.
+    onScryfallRefresh(() => {
+        const reenriched: Record<string, Cube> = {};
+        for (const [id, cube] of Object.entries(loadedCubes.value)) {
+            reenriched[id] = enrichCube(stripToRawCube(cube));
+        }
+        loadedCubes.value = reenriched;
+    });
 
     // Apply initial state from URL hash
     activeTab.value = hashState.tab;
