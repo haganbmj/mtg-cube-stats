@@ -425,6 +425,10 @@ const _checkResultsCache = new Map<string, CheckResult>();
 
 watchEffect(() => {
     bump(getActiveLoadProfile(), 'checksFires');
+    // Suspend during a preset load — otherwise this fires once per streamed cube
+    // and walks every already-loaded cube each time. One final recompute runs when
+    // loadingProgress.active flips false at the end of loadCollection.
+    if (loadingProgress.active) return;
     const results = new Map<string, Map<string, CheckResult>>();
     const activeId = checksState.value.activeCollectionId;
     if (!activeId) {
