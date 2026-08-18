@@ -647,14 +647,17 @@ export const removeSimilarityForCube = (cubeId: string, matrix: SimilarityMatrix
     }
 };
 
-export const preloadSimiliarityMatrix = (matrix: SimilarityMatrix, cubes: Record<string, Cube>): void => {
-    Object.entries(matrix).forEach(([id, scores]) => {
-        Object.entries(scores).forEach(([otherId, score]) => {
-            const cubeA = cubes[id];
-            const cubeB = cubes[otherId];
-            if (cubeA && cubeB) {
-                determineCosineSimilarityScore.cache.set(versionedSimilarityScoreKey(cubeA, cubeB), score);
-            }
-        });
-    });
+/**
+ * Shallow merge two similarity matrices. Incoming rows win for overlapping outer keys;
+ * incoming pair scores win for overlapping inner keys.
+ */
+export const mergeSimilarityMatrices = (
+    existing: SimilarityMatrix,
+    incoming: SimilarityMatrix,
+): SimilarityMatrix => {
+    const merged: SimilarityMatrix = { ...existing };
+    for (const [id, row] of Object.entries(incoming)) {
+        merged[id] = { ...(merged[id] ?? {}), ...row };
+    }
+    return merged;
 };
