@@ -46,6 +46,16 @@ function applyFreshScryfall(fresh: ScryfallDataStructure): void {
     }
 }
 
+/** Test-only entry point that exercises the same swap + listener dispatch as the stale-then-fresh onStale callback. */
+export function _applyFreshScryfallForTesting(fresh: ScryfallDataStructure): void {
+    applyFreshScryfall(fresh);
+}
+
+/** Test-only reset of the refresh-listener set. */
+export function _clearScryfallRefreshListenersForTesting(): void {
+    refreshListeners.clear();
+}
+
 /**
  * Initialize Scryfall card data from the minimized JSON file.
  * Uses stale-then-fresh: renders cached data immediately, refreshes in the background.

@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { mergeSimilarityMatrices, stripToRawCube } from './CubeFunctions';
-import type { Cube, CubeCard, SimilarityMatrix, SimilarityScore } from '../types';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+    mergeSimilarityMatrices,
+    stripToRawCube,
+    onScryfallRefresh,
+    _applyFreshScryfallForTesting,
+    _clearScryfallRefreshListenersForTesting,
+    getScryfallCards,
+} from './CubeFunctions';
+import type { Cube, CubeCard, ScryfallDataStructure, SimilarityMatrix, SimilarityScore } from '../types';
 
 const score = (n: number): SimilarityScore => ({ cosineSimilarity: n, insersectionSize: 0 });
 
@@ -175,5 +182,73 @@ describe('stripToRawCube', () => {
         expect(result.cards).toHaveLength(2);
         expect(result.cards[0].isCustomCard).toBeUndefined();
         expect(result.cards[1].isCustomCard).toBe(true);
+    });
+});
+
+describe('onScryfallRefresh', () => {
+    const makeScryfall = (marker: string): ScryfallDataStructure => ({
+        cards: { [marker]: { name: marker } as any },
+        tokens: {},
+        sets: {},
+        setDates: {},
+    });
+
+    beforeEach(() => {
+        _clearScryfallRefreshListenersForTesting();
+    });
+
+    it('invokes registered listeners when fresh data lands', () => {
+        const listener = vi.fn();
+        onScryfallRefresh(listener);
+
+        _applyFreshScryfallForTesting(makeScryfall('a'));
+
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('invokes multiple listeners in registration order', () => {
+        const calls: string[] = [];
+        onScryfallRefresh(() => calls.push('first'));
+        onScryfallRefresh(() => calls.push('second'));
+        onScryfallRefresh(() => calls.push('third'));
+
+        _applyFreshScryfallForTesting(makeScryfall('a'));
+
+        expect(calls).toEqual(['first', 'second', 'third']);
+    });
+
+    it('returned unsubscribe removes the listener', () => {
+        const listener = vi.fn();
+        const unsubscribe = onScryfallRefresh(listener);
+
+        unsubscribe();
+        _applyFreshScryfallForTesting(makeScryfall('a'));
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('a throwing listener does not prevent later listeners from running', () => {
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const later = vi.fn();
+        onScryfallRefresh(() => { throw new Error('boom'); });
+        onScryfallRefresh(later);
+
+        expect(() => _applyFreshScryfallForTesting(makeScryfall('a'))).not.toThrow();
+        expect(later).toHaveBeenCalledTimes(1);
+        expect(consoleError).toHaveBeenCalled();
+        consoleError.mockRestore();
+    });
+
+    it('swaps the module-level Scryfall data before notifying listeners', () => {
+        const observed: Record<string, unknown>[] = [];
+        onScryfallRefresh(() => {
+            observed.push(getScryfallCards());
+        });
+
+        _applyFreshScryfallForTesting(makeScryfall('marker-a'));
+        _applyFreshScryfallForTesting(makeScryfall('marker-b'));
+
+        expect(Object.keys(observed[0])).toContain('marker-a');
+        expect(Object.keys(observed[1])).toContain('marker-b');
     });
 });
