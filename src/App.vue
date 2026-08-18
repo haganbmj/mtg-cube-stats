@@ -626,7 +626,12 @@ const saveCollection = (name: string) => {
 const loadUserCollection = async (name: string) => {
     const collection = userCollections.value.find(c => c.name === name);
     if (!collection) return;
+    // Clear preset state before addCubes runs — its own guard skips this reset
+    // when presetBaseIds is non-empty, leaving stale PresetHeader details visible.
+    activePresetName.value = null;
+    presetBaseIds.value = new Set();
     loadedCubes.value = {};
+    similarityMatrix.value = {};
     await addCubes(collection.cubeIds);
 };
 
