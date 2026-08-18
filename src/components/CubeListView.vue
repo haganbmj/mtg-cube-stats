@@ -1,12 +1,6 @@
 <template>
     <div class="cube-list-container">
         <div class="cube-list-filter">
-            <CardSearchInput
-                class="card-table-search"
-                v-model="activeQuery"
-                :loaded-cubes="{}"
-                :collapse-cube-filter="true"
-            />
             <template v-if="visualDisplayVisible">
                 <label class="columns-label">Columns</label>
                 <el-input-number
@@ -38,8 +32,8 @@
             :style="{ gridTemplateColumns: `repeat(${visualColumnCount}, 1fr)` }"
         >
             <div
-                v-for="card in flatCards"
-                :key="card.oracleId"
+                v-for="(card, i) in flatCards"
+                :key="`${card.oracleId}-${i}`"
                 class="cube-list-image-item"
                 :class="{ 'cube-list-image-item--dimmed': filterMode === 'dim' && matchingOracleIds && !matchingOracleIds.has(card.oracleId) }"
                 @click="openCardDetailDialog?.(card.oracleId)"
@@ -112,11 +106,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { ref, computed, inject, onMounted, onBeforeUnmount, nextTick, watch, type PropType } from 'vue';
 import type { CubeCard } from '../types';
-import CardSearchInput from './filters/CardSearchInput.vue';
-import { parseQuery } from '../util/CardFilterParser';
-import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { bindStorage } from '../util/VueLocalStorage';
 import { openCardDetailDialogKey } from '../types/injectionKeys';
 import { useWindowSize } from '@vueuse/core';
@@ -137,19 +128,13 @@ const props = defineProps({
         type: Array as () => CubeCard[],
         required: true,
     },
-    initialQuery: {
-        type: String,
-        default: '',
+    matchingOracleIds: {
+        type: Object as PropType<Set<string> | null>,
+        default: null,
     },
 });
 
 const openCardDetailDialog = inject(openCardDetailDialogKey);
-
-const activeQuery = ref('');
-
-watch(() => props.initialQuery, (val) => {
-    if (val) activeQuery.value = val;
-}, { immediate: true });
 
 const visualDisplayVisible = bindStorage('cube-list-display-mode-visual', (v) => typeof v === 'boolean' ? v : false);
 
@@ -165,31 +150,7 @@ const visualColumnCount = bindStorage<number>('cube-list-visual-column-count', (
     typeof v === 'number' ? Math.min(20, Math.max(1, Math.round(v))) : defaultVisualColumnCount.value,
 );
 
-const copyCounts = computed<Record<string, number>>(() => {
-    const counts: Record<string, number> = {};
-    for (const card of props.cards) {
-        counts[card.oracleId] = (counts[card.oracleId] ?? 0) + 1;
-    }
-    return counts;
-});
-
-const matchingOracleIds = computed<Set<string> | null>(() => {
-    const { ast } = parseQuery(activeQuery.value);
-    if (!ast) return null;
-    const ctx: FilterContext = { loadedCubes: {} };
-    const ids = new Set<string>();
-    const counts = copyCounts.value;
-    for (const card of props.cards) {
-        const row = {
-            ...card,
-            effectiveColors: card.colors,
-            effectiveColorIdentity: card.colorIdentity,
-            count: counts[card.oracleId],
-        };
-        if (evaluateCard(ast, row, ctx)) ids.add(card.oracleId);
-    }
-    return ids;
-});
+const matchingOracleIds = computed<Set<string> | null>(() => props.matchingOracleIds);
 
 const matchingCardCount = computed(() => {
     if (!matchingOracleIds.value) return 0;
@@ -363,11 +324,6 @@ watch(columns, () => nextTick(updateScrollWidth));
     margin-bottom: 4px;
 }
 
-.card-table-search {
-    flex: 1;
-    min-width: 0;
-}
-
 .columns-label {
     font-size: 13px;
     color: var(--el-text-color-regular);
@@ -376,12 +332,6 @@ watch(columns, () => nextTick(updateScrollWidth));
 
 .columns-input {
     width: 90px;
-}
-
-@media (max-width: 760px) {
-    .cube-list-filter .card-table-search {
-        flex-basis: 100%;
-    }
 }
 
 .cube-list-match-count {
