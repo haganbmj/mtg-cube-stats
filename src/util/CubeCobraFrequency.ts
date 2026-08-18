@@ -7,11 +7,17 @@ import { ref } from 'vue';
 // ---------------------------------------------------------------------------
 
 let frequencyData: CubeCobraFrequencyData | null = null;
+let initPromise: Promise<void> | null = null;
 
 /** Reactive flag that becomes true once CubeCobra frequency data has finished loading. */
 export const frequencyDataReady = ref(false);
 
-export async function initFrequencyData(): Promise<void> {
+export function initFrequencyData(): Promise<void> {
+    if (!initPromise) initPromise = doInit();
+    return initPromise;
+}
+
+async function doInit(): Promise<void> {
     try {
         const mod = await import('../../data/cubecobra-card-frequency.json') as { default: CubeCobraFrequencyData };
         const data = mod.default;

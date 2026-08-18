@@ -245,8 +245,11 @@ import { Link } from '@element-plus/icons-vue';
 import { capitalizeFirstLetter, getRarityColor, formatPrice, normalizeSortName, castInensitiveSort } from '../util/HelperFunctions';
 import { renderManaSymbols } from '../util/ManaSymbols';
 import { getScryfallCards } from '../util/CubeFunctions';
-import { frequencyDataReady, resolveCardCount, resolveCubeCount } from '../util/CubeCobraFrequency';
-import { getCardStats } from '../util/CubeCobraCardStats';
+import { frequencyDataReady, resolveCardCount, resolveCubeCount, initFrequencyData } from '../util/CubeCobraFrequency';
+import { getCardStats, initCardStats } from '../util/CubeCobraCardStats';
+
+initFrequencyData();
+initCardStats();
 import { displayName, externalCubeId } from '../util/Snapshots';
 import type { Cube, CubeOverviewRow } from '../types';
 import { openCubeDetailDialogKey } from '../types/injectionKeys';

@@ -8,11 +8,17 @@ export interface CardStats {
 }
 
 let cardStatsMap: Record<string, CardStats> | null = null;
+let initPromise: Promise<void> | null = null;
 
 /** Reactive flag — true once CubeCobra card stats have loaded. */
 export const cardStatsReady = ref(false);
 
-export async function initCardStats(): Promise<void> {
+export function initCardStats(): Promise<void> {
+    if (!initPromise) initPromise = doInit();
+    return initPromise;
+}
+
+async function doInit(): Promise<void> {
     try {
         const mod = await import('../../data/cubecobra-card-stats.json') as { default: Record<string, CardStats> };
         cardStatsMap = mod.default;

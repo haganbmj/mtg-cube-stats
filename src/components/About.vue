@@ -165,7 +165,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import katex from 'katex';
-import { getFrequencyData } from '../util/CubeCobraFrequency';
+import { getFrequencyData, initFrequencyData } from '../util/CubeCobraFrequency';
+
+initFrequencyData();
 
 const aboutRef = ref<HTMLElement>();
 

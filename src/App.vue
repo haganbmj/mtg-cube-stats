@@ -129,8 +129,6 @@ import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from './types/injectionKeys';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
-import { initFrequencyData } from './util/CubeCobraFrequency';
-import { initCardStats } from './util/CubeCobraCardStats';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme';
 import About from './components/About.vue';
@@ -846,8 +844,6 @@ onMounted(async () => {
     // Start data initialization in the background without blocking the UI
     ensureScryfallInitialized();
     pruneStaleEntries();
-    initFrequencyData();
-    initCardStats();
 
     // Apply initial state from URL hash
     activeTab.value = hashState.tab;
