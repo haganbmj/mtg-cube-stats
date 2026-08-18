@@ -16,8 +16,16 @@ function compare(lhs: number, op: string, rhs: number): boolean {
   }
 }
 
+// Cache the evaluator-shaped shadow object per card. Enriched cards are stable
+// after enrichCube; a single (~500 cards × cubes) allocation batch replaces
+// (cards × conditions × cubes) allocations at check-eval time.
+const evalRowCache = new WeakMap<object, any>();
 function toEvaluatorRow(card: CubeCard): any {
-  return { ...card, effectiveColors: card.colors, effectiveColorIdentity: card.colorIdentity };
+  const cached = evalRowCache.get(card as unknown as object);
+  if (cached) return cached;
+  const row = { ...card, effectiveColors: card.colors, effectiveColorIdentity: card.colorIdentity };
+  evalRowCache.set(card as unknown as object, row);
+  return row;
 }
 
 function countMatching(cardFilter: string, cards: CubeCard[], ctx: FilterContext): number {

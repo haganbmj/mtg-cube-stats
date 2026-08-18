@@ -36,6 +36,7 @@ export interface LoadProfile {
     similarityLoad: number;
     checksFires: number;
     checksEvals: number;
+    checks: number;
     cubePromisesTotal: number;
 }
 
@@ -52,6 +53,7 @@ export function makeLoadProfile(): LoadProfile {
         similarityLoad: 0,
         checksFires: 0,
         checksEvals: 0,
+        checks: 0,
         cubePromisesTotal: 0,
     };
 }

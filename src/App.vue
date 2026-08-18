@@ -429,55 +429,79 @@ const checkResults = shallowRef<Map<string, Map<string, CheckResult>>>(new Map()
 // Cache keyed by `cubeId::conditionId::expression` to avoid redundant evaluation.
 const _checkResultsCache = new Map<string, CheckResult>();
 
+// Evaluate all active-collection checks for a single cube and populate
+// _checkResultsCache. Called during the streaming load so tail-time reactive
+// work becomes an all-cache-hit sweep. Safe to call more than once per cube.
+const primeChecksForCube = (cubeId: string, cube: Cube): void => {
+    const activeId = checksState.value.activeCollectionId;
+    if (!activeId) return;
+    const collection = checksState.value.collections.find(c => c.id === activeId);
+    if (!collection) return;
+    const ctx = { loadedCubes: loadedCubes.value };
+    for (const cond of collection.conditions) {
+        const parsed = parseCheckExpression(cond.expression);
+        if (!parsed.expression) continue;
+        const cacheKey = `${cubeId}::${cond.id}::${cond.expression}`;
+        if (_checkResultsCache.has(cacheKey)) continue;
+        bump(getActiveLoadProfile(), 'checksEvals');
+        _checkResultsCache.set(cacheKey, evaluateCheck(parsed.expression, cube.cards, ctx));
+    }
+};
+
 watchEffect(() => {
     bump(getActiveLoadProfile(), 'checksFires');
-    // Suspend during a preset load — otherwise this fires once per streamed cube
-    // and walks every already-loaded cube each time. One final recompute runs when
-    // loadingProgress.active flips false at the end of loadCollection.
+    // Suspend during a preset load — otherwise the effect fires per streamed
+    // cube (each processCube's microtask boundary flushes Vue's scheduler) and
+    // each fire reassigns checkResults, retriggering downstream table renders.
+    // Instead, primeChecksForCube warms _checkResultsCache per cube as it lands,
+    // so the single tail fire (unblocked by nextTick after active flips false)
+    // sees a fully warm cache and completes in microseconds.
     if (loadingProgress.active) return;
-    const results = new Map<string, Map<string, CheckResult>>();
-    const activeId = checksState.value.activeCollectionId;
-    if (!activeId) {
-        checkResults.value = results;
-        return;
-    }
-    const collection = checksState.value.collections.find(c => c.id === activeId);
-    if (!collection) {
-        checkResults.value = results;
-        return;
-    }
-
-    const parsedConditions = collection.conditions
-        .map(cond => ({ id: cond.id, expression: cond.expression, parsed: parseCheckExpression(cond.expression) }))
-        .filter(c => c.parsed.expression !== null);
-
-    const usedKeys = new Set<string>();
-
-    for (const [cubeId, cube] of Object.entries(visibleLoadedCubes.value)) {
-        const cubeResults = new Map<string, CheckResult>();
-        const ctx = { loadedCubes: loadedCubes.value };
-        for (const { id, expression, parsed } of parsedConditions) {
-            if (parsed.expression) {
-                const cacheKey = `${cubeId}::${id}::${expression}`;
-                usedKeys.add(cacheKey);
-                let result = _checkResultsCache.get(cacheKey);
-                if (!result) {
-                    bump(getActiveLoadProfile(), 'checksEvals');
-                    result = evaluateCheck(parsed.expression, cube.cards, ctx);
-                    _checkResultsCache.set(cacheKey, result);
-                }
-                cubeResults.set(id, result);
-            }
+    timed(getActiveLoadProfile(), 'checks', () => {
+        const results = new Map<string, Map<string, CheckResult>>();
+        const activeId = checksState.value.activeCollectionId;
+        if (!activeId) {
+            checkResults.value = results;
+            return;
         }
-        results.set(cubeId, cubeResults);
-    }
+        const collection = checksState.value.collections.find(c => c.id === activeId);
+        if (!collection) {
+            checkResults.value = results;
+            return;
+        }
 
-    // Prune stale cache entries
-    for (const key of _checkResultsCache.keys()) {
-        if (!usedKeys.has(key)) _checkResultsCache.delete(key);
-    }
+        const parsedConditions = collection.conditions
+            .map(cond => ({ id: cond.id, expression: cond.expression, parsed: parseCheckExpression(cond.expression) }))
+            .filter(c => c.parsed.expression !== null);
 
-    checkResults.value = results;
+        const usedKeys = new Set<string>();
+
+        for (const [cubeId, cube] of Object.entries(visibleLoadedCubes.value)) {
+            const cubeResults = new Map<string, CheckResult>();
+            const ctx = { loadedCubes: loadedCubes.value };
+            for (const { id, expression, parsed } of parsedConditions) {
+                if (parsed.expression) {
+                    const cacheKey = `${cubeId}::${id}::${expression}`;
+                    usedKeys.add(cacheKey);
+                    let result = _checkResultsCache.get(cacheKey);
+                    if (!result) {
+                        bump(getActiveLoadProfile(), 'checksEvals');
+                        result = evaluateCheck(parsed.expression, cube.cards, ctx);
+                        _checkResultsCache.set(cacheKey, result);
+                    }
+                    cubeResults.set(id, result);
+                }
+            }
+            results.set(cubeId, cubeResults);
+        }
+
+        // Prune stale cache entries
+        for (const key of _checkResultsCache.keys()) {
+            if (!usedKeys.has(key)) _checkResultsCache.delete(key);
+        }
+
+        checkResults.value = results;
+    });
 });
 
 const peerStats = computed(() => {
@@ -836,6 +860,7 @@ const loadCollection = async (presetName: string) => {
                     case 'cache': {
                         loadedCubes.value[id] = timed(profile, 'enrichCube', () => { bump(profile, 'enrichCount'); return enrichCube(cached!.data); });
                         timed(profile, 'warmSim', () => { bump(profile, 'warmSimCount'); warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value); });
+                        timed(profile, 'checks', () => primeChecksForCube(id, loadedCubes.value[id]));
                         if (source.refresh === 'preload') void backgroundRefreshFromPreload(id, meta);
                         else if (source.refresh === 'live') void backgroundRefreshCube(cached!.id);
                         return;
@@ -846,6 +871,7 @@ const loadCollection = async (presetName: string) => {
                         void setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
                         loadedCubes.value[id] = timed(profile, 'enrichCube', () => { bump(profile, 'enrichCount'); return enrichCube(cube); });
                         timed(profile, 'warmSim', () => { bump(profile, 'warmSimCount'); warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value); });
+                        timed(profile, 'checks', () => primeChecksForCube(id, loadedCubes.value[id]));
                         return;
                     }
                     case 'live': {
@@ -855,6 +881,7 @@ const loadCollection = async (presetName: string) => {
                         await setCachedCube(id, cube, fetchedAt);
                         loadedCubes.value[id] = timed(profile, 'enrichCube', () => { bump(profile, 'enrichCount'); return enrichCube(cube); });
                         timed(profile, 'warmSim', () => { bump(profile, 'warmSimCount'); warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value); });
+                        timed(profile, 'checks', () => primeChecksForCube(id, loadedCubes.value[id]));
                         return;
                     }
                 }
@@ -904,6 +931,10 @@ const loadCollection = async (presetName: string) => {
         bump(profile, 'cubePromisesTotal', performance.now() - profileStart);
     } finally {
         loadingProgress.active = false;
+        // Wait for the reactive flush so the end-of-load checkResults watchEffect
+        // (gated on loadingProgress.active) can attribute its cost to this profile
+        // before we clear the active profile.
+        await nextTick();
         console.timeEnd(`Load Collection: ${presetName}`);
         reportLoadProfile(presetName, profile);
         setActiveLoadProfile(null);

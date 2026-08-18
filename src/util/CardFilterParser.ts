@@ -191,28 +191,50 @@ function normalizeNode(node: QueryNode): QueryNode {
     return node;
 }
 
+// Memoize by trimmed input. parseQuery is called per-card in filter hot paths and
+// per-cube in the checks recompute; instantiating a nearley Parser + walking the
+// grammar dominated `evaluateCheck` cost before this cache landed.
+const PARSE_CACHE_LIMIT = 500;
+const parseCache = new Map<string, ParseResult>();
+
 export function parseQuery(input: string): ParseResult {
     const trimmed = input.trim();
     if (!trimmed) {
         return { ast: null, error: null };
     }
 
+    const cached = parseCache.get(trimmed);
+    if (cached) return cached;
+
+    let result: ParseResult;
     try {
         const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
         parser.feed(trimmed);
         const results = parser.results;
 
         if (!results || results.length === 0) {
-            return { ast: null, error: 'Incomplete query — check for missing values after operators.' };
+            result = { ast: null, error: 'Incomplete query — check for missing values after operators.' };
+        } else {
+            // Nearley can return multiple parse trees for ambiguous grammars; take the first.
+            const ast = normalizeNode(results[0] as QueryNode);
+            result = { ast, error: null };
         }
-
-        // Nearley can return multiple parse trees for ambiguous grammars; take the first.
-        const ast = normalizeNode(results[0] as QueryNode);
-        return { ast, error: null };
     } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         // Trim nearley's verbose token dumps to a short user-facing message
         const shortMsg = msg.split('\n')[0].replace(/^Error: /, '');
-        return { ast: null, error: `Parse error: ${shortMsg}` };
+        result = { ast: null, error: `Parse error: ${shortMsg}` };
     }
+
+    if (parseCache.size >= PARSE_CACHE_LIMIT) {
+        // Evict oldest quarter to keep the cache bounded under adversarial input.
+        const evict = Math.floor(PARSE_CACHE_LIMIT / 4);
+        let i = 0;
+        for (const k of parseCache.keys()) {
+            if (i++ >= evict) break;
+            parseCache.delete(k);
+        }
+    }
+    parseCache.set(trimmed, result);
+    return result;
 }
