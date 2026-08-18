@@ -27,7 +27,9 @@ npm run cards:update
 
 ## Load-time Profiling
 
-Set `VITE_LOAD_PROFILE=1` to log per-phase timings during preset loads. When unset, the profiler compiles out entirely.
+Enable via either mechanism to log per-phase timings during preset loads.
+
+**Build-time (dev):**
 
 ```sh
 # One-off run
@@ -35,6 +37,18 @@ VITE_LOAD_PROFILE=1 npm run serve
 
 # Or add to .env.local (gitignored)
 echo 'VITE_LOAD_PROFILE=1' >> .env.local
+```
+
+**Runtime (any build, including production):** set a localStorage flag and reload.
+
+```js
+// In the browser DevTools console
+localStorage.setItem('loadProfile', '1');
+location.reload();
+
+// To disable:
+localStorage.removeItem('loadProfile');
+location.reload();
 ```
 
 Each `loadCollection` emits a `LOAD PROFILE <preset name> { ... }` line with buckets for `enrichCube`, `updateSim`, `warmSim`, `getCached`, `mergeMatrix`, `similarityLoad`, `checksFires`, `checksEvals`, and `cubePromisesTotal`.

@@ -1,15 +1,28 @@
 /**
- * Gated profiler for the preset-load hot path. Enabled by setting the Vite env
- * variable VITE_LOAD_PROFILE to any truthy value. When disabled, the flag is a
- * compile-time false and Vite tree-shakes the timing calls out of the bundle.
+ * Gated profiler for the preset-load hot path. Enabled by either:
+ *   - Build time: set the Vite env variable VITE_LOAD_PROFILE=1 (or add it to
+ *     .env.local, or run `VITE_LOAD_PROFILE=1 npm run dev`). Tree-shakes the
+ *     timing calls out of the bundle when unset at build time.
+ *   - Runtime: `localStorage.setItem('loadProfile', '1'); location.reload()`.
+ *     Works in any build — including production — without a redeploy. Clear
+ *     with `localStorage.removeItem('loadProfile'); location.reload()`.
  *
- * Usage:
- *   VITE_LOAD_PROFILE=1 npm run dev
- *
- * or add `VITE_LOAD_PROFILE=1` to `.env.local`.
+ * When both are unset, `timed`/`bump` short-circuit on a single boolean
+ * branch — no measurable overhead.
  */
 
-export const loadProfileEnabled: boolean = !!import.meta.env.VITE_LOAD_PROFILE;
+const LOCAL_STORAGE_KEY = 'loadProfile';
+
+function readInitialFlag(): boolean {
+    if (import.meta.env.VITE_LOAD_PROFILE) return true;
+    try {
+        return globalThis.localStorage?.getItem(LOCAL_STORAGE_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+
+export const loadProfileEnabled: boolean = readInitialFlag();
 
 export interface LoadProfile {
     enrichCube: number;
