@@ -124,7 +124,7 @@ import { parseCheckExpression } from './util/CheckExpressionParser';
 import { evaluateCheck } from './util/CheckEvaluator';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
-import { initScryfall, remapCube, enrichCube, mergeSimilarityMatrices, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube, stripToRawCube, onScryfallRefresh } from './util/CubeFunctions';
+import { initScryfall, remapCube, enrichCube, mergeSimilarityMatrices, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube, stripToRawCube, onScryfallRefresh, warmSimilarityCacheForCube } from './util/CubeFunctions';
 import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from './types/injectionKeys';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
@@ -803,6 +803,7 @@ const loadCollection = async (presetName: string) => {
                 switch (source.tier) {
                     case 'cache': {
                         loadedCubes.value[id] = enrichCube(cached!.data);
+                        warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value);
                         updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
                         if (source.refresh === 'preload') void backgroundRefreshFromPreload(id, meta);
                         else if (source.refresh === 'live') void backgroundRefreshCube(cached!.id);
@@ -813,6 +814,7 @@ const loadCollection = async (presetName: string) => {
                         const cube: Cube = mod.default;
                         void setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
                         loadedCubes.value[id] = enrichCube(cube);
+                        warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value);
                         updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
                         return;
                     }
@@ -822,6 +824,7 @@ const loadCollection = async (presetName: string) => {
                         const cube = remapCube(raw, false, fetchedAt);
                         await setCachedCube(id, cube, fetchedAt);
                         loadedCubes.value[id] = enrichCube(cube);
+                        warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value);
                         updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
                         return;
                     }
@@ -836,6 +839,11 @@ const loadCollection = async (presetName: string) => {
         const similarityLandingPromise = similarityPromise.then(sim => {
             if (sim) {
                 similarityMatrix.value = mergeSimilarityMatrices(similarityMatrix.value, sim);
+                // Warm the memoize cache for every cube already loaded — covers cubes that
+                // streamed in before the similarity JSON arrived.
+                for (const id of Object.keys(loadedCubes.value)) {
+                    warmSimilarityCacheForCube(id, loadedCubes.value, similarityMatrix.value);
+                }
             }
         });
 

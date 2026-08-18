@@ -671,3 +671,23 @@ export const mergeSimilarityMatrices = (
     }
     return merged;
 };
+
+/**
+ * Populate the `determineCosineSimilarityScore` memoize cache with the pairs in `trustedMatrix`
+ * that involve `cubeId`. Cheap; a full row is at most (loaded cubes - 1) map inserts. Subsequent
+ * calls to `updateSimilarityForCube` will hit the cache instead of recomputing the pair.
+ */
+export const warmSimilarityCacheForCube = (
+    cubeId: string,
+    cubes: Record<string, Cube>,
+    trustedMatrix: SimilarityMatrix,
+): void => {
+    const cube = cubes[cubeId];
+    const row = trustedMatrix[cubeId];
+    if (!cube || !row) return;
+    for (const [otherId, score] of Object.entries(row)) {
+        const otherCube = cubes[otherId];
+        if (!otherCube) continue;
+        determineCosineSimilarityScore.cache.set(versionedSimilarityScoreKey(cube, otherCube), score);
+    }
+};
