@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
-import { getCachedCube, setCachedCube, setCachedCubeIfNewer, evictCube, isStale, pruneStaleEntries, listCachedSnapshots, _resetForTesting } from './CubeCache';
+import { getCachedCube, getCachedCubesBulk, setCachedCube, setCachedCubeIfNewer, evictCube, isStale, pruneStaleEntries, listCachedSnapshots, _resetForTesting } from './CubeCache';
 import type { CachedCube } from './CubeCache';
 import type { Cube } from '../types';
 
@@ -225,5 +225,60 @@ describe('listCachedSnapshots', () => {
         await setCachedCube('abcd@1000', makeCube('abcd@1000', 1000), '2026-01-01');
         const result = await listCachedSnapshots('abc');
         expect(result).toEqual([]);
+    });
+});
+
+describe('getCachedCubesBulk', () => {
+    beforeEach(async () => {
+        await _resetForTesting();
+        const { deleteDB } = await import('idb');
+        await deleteDB('cube-cache');
+    });
+
+    it('returns an empty map for an empty id list', async () => {
+        const result = await getCachedCubesBulk([]);
+        expect(result.size).toBe(0);
+    });
+
+    it('returns a map of all requested cubes present in cache', async () => {
+        await setCachedCube('a', makeCube('a'), '2026-05-30T12:00:00.000Z');
+        await setCachedCube('b', makeCube('b'), '2026-05-30T12:00:00.000Z');
+        await setCachedCube('c', makeCube('c'), '2026-05-30T12:00:00.000Z');
+
+        const result = await getCachedCubesBulk(['a', 'b', 'c']);
+        expect(result.size).toBe(3);
+        expect(result.get('a')!.id).toBe('a');
+        expect(result.get('b')!.id).toBe('b');
+        expect(result.get('c')!.id).toBe('c');
+    });
+
+    it('omits ids that are not in cache', async () => {
+        await setCachedCube('a', makeCube('a'), '2026-05-30T12:00:00.000Z');
+
+        const result = await getCachedCubesBulk(['a', 'missing1', 'missing2']);
+        expect(result.size).toBe(1);
+        expect(result.has('a')).toBe(true);
+        expect(result.has('missing1')).toBe(false);
+        expect(result.has('missing2')).toBe(false);
+    });
+
+    it('resolves a shortId to its cached entry via the shortId index', async () => {
+        await setCachedCube('canonical-id', makeCube('canonical-id', 'shorty'), '2026-05-30T12:00:00.000Z');
+
+        const result = await getCachedCubesBulk(['shorty']);
+        expect(result.size).toBe(1);
+        expect(result.get('shorty')!.id).toBe('canonical-id');
+    });
+
+    it('handles a mix of primary-key hits, shortId hits, and misses', async () => {
+        await setCachedCube('primary-1', makeCube('primary-1', 'short-1'), '2026-05-30T12:00:00.000Z');
+        await setCachedCube('primary-2', makeCube('primary-2'), '2026-05-30T12:00:00.000Z');
+
+        const result = await getCachedCubesBulk(['primary-1', 'short-1', 'primary-2', 'missing']);
+        expect(result.size).toBe(3);
+        expect(result.get('primary-1')!.id).toBe('primary-1');
+        expect(result.get('short-1')!.id).toBe('primary-1'); // resolved via shortId
+        expect(result.get('primary-2')!.id).toBe('primary-2');
+        expect(result.has('missing')).toBe(false);
     });
 });

@@ -26,6 +26,37 @@ export async function getCachedCube(id: string): Promise<CachedCube | null> {
     }
 }
 
+/**
+ * Fetch multiple cubes in a single IDB transaction. Returns a Map keyed by the
+ * requested id (each requested id maps to either its entry or is absent from
+ * the map). Falls back to the shortId index for ids missed by the primary key
+ * lookup. Returns an empty map if IDB is unavailable.
+ */
+export async function getCachedCubesBulk(ids: string[]): Promise<Map<string, CachedCube>> {
+    const result = new Map<string, CachedCube>();
+    if (ids.length === 0) return result;
+    try {
+        const db = await getDb();
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const shortIdIndex = store.index('shortId');
+        const missed: string[] = [];
+        await Promise.all(ids.map(async (id) => {
+            const entry = await store.get(id);
+            if (entry) result.set(id, entry);
+            else missed.push(id);
+        }));
+        await Promise.all(missed.map(async (id) => {
+            const entry = await shortIdIndex.get(id);
+            if (entry) result.set(id, entry);
+        }));
+        await tx.done;
+    } catch {
+        // Return whatever we managed to collect (possibly empty).
+    }
+    return result;
+}
+
 export async function setCachedCube(id: string, data: Cube, fetchedAt: string): Promise<void> {
     try {
         const db = await getDb();
