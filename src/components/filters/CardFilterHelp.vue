@@ -153,14 +153,14 @@ const FILTER_DOCS: FilterDoc[] = [
     },
     // ── Color ─────────────────────────────────────────────────────────────────
     {
-        keywords: ['color', 'c'],
-        description: 'Card\'s colors. With color values: ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset (includes colorless); "<" = proper subset; ">" = proper superset. With a number: compares against the color count (colorless = 0). Supports guild/shard/wedge names and "m"/"multicolor" for 2+ colors.',
-        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c>1', 'c=0', 'c:azorius', 'c:m', '-c:b'],
+        keywords: ['color', 'c', 'colors'],
+        description: 'Card\'s colors. With color values: ":" / ">=" = contains all (supersets OK); "=" = exactly these colors; "<=" = subset (includes colorless); "<" = proper subset; ">" = proper superset. Colorless (c/colorless) is a binary state, so c:c and c=c both match any colorless card (equivalent to colors=0). With a number: compares against the color count (colorless = 0). Supports guild/shard/wedge names and "m"/"multicolor" for 2+ colors.',
+        examples: ['c:u', 'c:rg', 'c=r', 'c<=r', 'c>1', 'c=0', 'c=c', 'c:azorius', 'c:m', '-c:b'],
     },
     {
         keywords: ['identity', 'id'],
-        description: 'Color identity (for Commander). Same color syntax as color. With a number: compares against the identity color count (colorless = 0).',
-        examples: ['id:bant', 'id=uw', 'id<=esper', 'id>1', 'id=0', 'id<=2'],
+        description: 'Color identity (for Commander). Same color syntax as color, including colorless-as-binary (id:c and id=c both match cards with no color identity). With a number: compares against the identity color count (colorless = 0).',
+        examples: ['id:bant', 'id=uw', 'id<=esper', 'id>1', 'id=0', 'id=c', 'id<=2'],
     },
     // ── Numeric fields ─────────────────────────────────────────────────────────
     {
@@ -310,9 +310,9 @@ const FILTER_DOCS: FilterDoc[] = [
         examples: ['cubecount>=3', 'cc=1'],
     },
     {
-        keywords: ['count'],
-        description: 'Copies of this card — total across all loaded cubes in the card table, or within the single cube in a cube list view.',
-        examples: ['count>1'],
+        keywords: ['count', 'copies'],
+        description: 'Copies of this card — total across all loaded cubes in the card table, or within the single cube in a cube list view. Use is:singleton / not:singleton as shortcuts for count=1 / count>1.',
+        examples: ['count>1', 'copies>1', 'is:singleton', 'not:singleton'],
     },
     {
         keywords: ['global', 'globalrate', 'gr'],
@@ -322,8 +322,8 @@ const FILTER_DOCS: FilterDoc[] = [
     // ── Boolean flags ──────────────────────────────────────────────────────────
     {
         keywords: ['is:', 'not:'],
-        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, mdfc, tdfc (transform), hybrid, phyrexian, reserved, booster, vanilla, spell, permanent, commander, split, flip, meld, leveler, custom, removal, draw, ramp, counterspell, flicker, tutor.',
-        examples: ['is:hybrid', 'is:phyrexian', 'is:mdfc', 'is:vanilla', 'is:reserved', 'not:supplemental', 'is:permanent', 'is:commander'],
+        description: 'Boolean flags. "not:" is the inverse of "is:". Values: universesbeyond (ub), supplemental (sp), digital, promo, dfc, mdfc, tdfc (transform), hybrid, phyrexian, reserved, booster, vanilla, spell, permanent, commander, split, flip, meld, leveler, custom, singleton, removal, draw, ramp, counterspell, flicker, tutor.',
+        examples: ['is:hybrid', 'is:phyrexian', 'is:mdfc', 'is:vanilla', 'is:reserved', 'not:supplemental', 'is:permanent', 'is:commander', 'is:singleton', 'not:singleton'],
     },
     // ── Sort directives ─────────────────────────────────────────────────────────
     {

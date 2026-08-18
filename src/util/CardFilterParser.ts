@@ -61,6 +61,7 @@ const KEYWORD_ALIASES: Record<string, string> = {
     // Color
     c: 'color',
     color: 'color',
+    colors: 'color',
     // Color identity
     id: 'coloridentity',
     identity: 'coloridentity',
@@ -97,6 +98,7 @@ const KEYWORD_ALIASES: Record<string, string> = {
     cubes: 'cubecount',
     cc: 'cubecount',
     count: 'count',
+    copies: 'count',
     // Set
     s: 'set',
     e: 'set',

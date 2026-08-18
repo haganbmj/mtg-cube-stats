@@ -371,3 +371,98 @@ describe('split-card mana cost filter', () => {
         expect(evaluate('mana={1}{R}', splitCard)).toBe(false);
     });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// count / copies / is:singleton
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('count / copies filter', () => {
+    it('count>1 matches a card with 2 copies', () => {
+        expect(evaluate('count>1', makeCard({ count: 2 }))).toBe(true);
+    });
+    it('count>1 does not match a card with 1 copy', () => {
+        expect(evaluate('count>1', makeCard({ count: 1 }))).toBe(false);
+    });
+    it('copies>1 matches the same cards as count>1', () => {
+        expect(evaluate('copies>1', makeCard({ count: 2 }))).toBe(true);
+        expect(evaluate('copies>1', makeCard({ count: 1 }))).toBe(false);
+    });
+    it('copies=3 matches a card with 3 copies', () => {
+        expect(evaluate('copies=3', makeCard({ count: 3 }))).toBe(true);
+    });
+});
+
+describe('is:singleton / not:singleton', () => {
+    it('is:singleton matches a card with count=1', () => {
+        expect(evaluate('is:singleton', makeCard({ count: 1 }))).toBe(true);
+    });
+    it('is:singleton matches a card with no count populated', () => {
+        expect(evaluate('is:singleton', makeCard({ count: undefined }))).toBe(true);
+    });
+    it('is:singleton does not match a card with count=2', () => {
+        expect(evaluate('is:singleton', makeCard({ count: 2 }))).toBe(false);
+    });
+    it('not:singleton matches a card with count>1', () => {
+        expect(evaluate('not:singleton', makeCard({ count: 3 }))).toBe(true);
+    });
+    it('not:singleton does not match a card with count=1', () => {
+        expect(evaluate('not:singleton', makeCard({ count: 1 }))).toBe(false);
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Colorless handling for color / coloridentity
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('color filter — colorless as a binary state', () => {
+    it('c=c matches a colorless card (empty colors)', () => {
+        expect(evaluate('c=c', makeCard({ effectiveColors: [] }))).toBe(true);
+    });
+    it('c=c matches a colorless card (C marker)', () => {
+        expect(evaluate('c=c', makeCard({ effectiveColors: ['C'] }))).toBe(true);
+    });
+    it('c=c does not match a colored card', () => {
+        expect(evaluate('c=c', makeCard({ effectiveColors: ['R'] }))).toBe(false);
+    });
+    it('c:c behaves the same as c=c (colorless is binary, not a set membership)', () => {
+        expect(evaluate('c:c', makeCard({ effectiveColors: [] }))).toBe(true);
+        expect(evaluate('c:c', makeCard({ effectiveColors: ['C'] }))).toBe(true);
+        expect(evaluate('c:c', makeCard({ effectiveColors: ['R'] }))).toBe(false);
+    });
+    it('color=colorless is equivalent to c=c', () => {
+        expect(evaluate('color=colorless', makeCard({ effectiveColors: [] }))).toBe(true);
+        expect(evaluate('color=colorless', makeCard({ effectiveColors: ['R'] }))).toBe(false);
+    });
+    it('c=c and colors=0 return the same result', () => {
+        const colorless = makeCard({ effectiveColors: [] });
+        const colored = makeCard({ effectiveColors: ['G'] });
+        expect(evaluate('c=c', colorless)).toBe(evaluate('colors=0', colorless));
+        expect(evaluate('c=c', colored)).toBe(evaluate('colors=0', colored));
+    });
+    it('c!=c matches any colored card', () => {
+        expect(evaluate('c!=c', makeCard({ effectiveColors: ['R'] }))).toBe(true);
+        expect(evaluate('c!=c', makeCard({ effectiveColors: ['W', 'U'] }))).toBe(true);
+        expect(evaluate('c!=c', makeCard({ effectiveColors: [] }))).toBe(false);
+    });
+});
+
+describe('color identity filter — colorless as a binary state', () => {
+    it('id=c matches a colorless card (empty identity)', () => {
+        expect(evaluate('id=c', makeCard({ effectiveColorIdentity: [] }))).toBe(true);
+    });
+    it('id=c matches a colorless card (C marker)', () => {
+        expect(evaluate('id=c', makeCard({ effectiveColorIdentity: ['C'] }))).toBe(true);
+    });
+    it('id=c does not match a colored identity', () => {
+        expect(evaluate('id=c', makeCard({ effectiveColorIdentity: ['G'] }))).toBe(false);
+    });
+    it('id:c behaves the same as id=c', () => {
+        expect(evaluate('id:c', makeCard({ effectiveColorIdentity: [] }))).toBe(true);
+        expect(evaluate('id:c', makeCard({ effectiveColorIdentity: ['C'] }))).toBe(true);
+        expect(evaluate('id:c', makeCard({ effectiveColorIdentity: ['G'] }))).toBe(false);
+    });
+    it('id!=c matches any card with a colored identity', () => {
+        expect(evaluate('id!=c', makeCard({ effectiveColorIdentity: ['R'] }))).toBe(true);
+        expect(evaluate('id!=c', makeCard({ effectiveColorIdentity: [] }))).toBe(false);
+    });
+});
