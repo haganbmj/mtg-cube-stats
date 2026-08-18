@@ -22,8 +22,8 @@
             min-width="100"
         >
             <template #default="{ row }">
-                <el-tag v-if="row.evergreen" type="success" size="small">Yes</el-tag>
-                <el-tag v-else type="info" size="small">No</el-tag>
+                <el-tag v-if="row.evergreen" type="success" size="small" disable-transitions>Yes</el-tag>
+                <el-tag v-else type="info" size="small" disable-transitions>No</el-tag>
             </template>
         </el-table-column>
         <el-table-column

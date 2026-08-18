@@ -1,7 +1,21 @@
 <template>
     <div class="cube-list-container">
         <div class="cube-list-filter">
-            <template v-if="visualDisplayVisible">
+            <div class="filter-group">
+                <label class="columns-label">Filter</label>
+                <el-button-group>
+                    <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
+                    <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
+                </el-button-group>
+            </div>
+            <div class="filter-group">
+                <label class="columns-label">Display</label>
+                <el-button-group>
+                    <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
+                    <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="List Display" />
+                </el-button-group>
+            </div>
+            <div v-if="visualDisplayVisible" class="filter-group">
                 <label class="columns-label">Columns</label>
                 <el-input-number
                     v-model="visualColumnCount"
@@ -11,15 +25,7 @@
                     controls-position="right"
                     class="columns-input"
                 />
-            </template>
-            <el-button-group>
-                <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
-                <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
-            </el-button-group>
-            <el-button-group>
-                <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
-                <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="List Display" />
-            </el-button-group>
+            </div>
         </div>
         <div class="cube-list-filter-status">
             <div class="cube-list-match-count">
@@ -320,8 +326,14 @@ watch(columns, () => nextTick(updateScrollWidth));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 20px;
     margin-bottom: 4px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .columns-label {

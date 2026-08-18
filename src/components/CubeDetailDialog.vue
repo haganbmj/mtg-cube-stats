@@ -80,8 +80,11 @@
             </div>
             <el-tabs v-model="activeTab" tab-position="top">
                 <el-tab-pane label="Details" name="details">
-                    <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
                     <el-row class="details-tab">
+                        <el-col v-if="activeCube?.brief" :span="24">
+                            <h4 class="stat-section-title">Description</h4>
+                            <div class="cube-dialog-brief" v-html="renderedBrief"></div>
+                        </el-col>
                         <el-col :span="24">
                             <h4 class="stat-section-title">Key Information</h4>
                             <div class="stat-grid">
