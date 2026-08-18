@@ -448,8 +448,11 @@ import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, collectHighlightCubeKeys, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
-import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates } from '../util/CubeCobraFrequency';
-import { getCardStats, cardStatsReady } from '../util/CubeCobraCardStats';
+import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates, initFrequencyData } from '../util/CubeCobraFrequency';
+import { getCardStats, cardStatsReady, initCardStats } from '../util/CubeCobraCardStats';
+
+initFrequencyData();
+initCardStats();
 import { openCardDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({

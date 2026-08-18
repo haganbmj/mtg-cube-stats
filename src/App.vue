@@ -124,13 +124,11 @@ import { parseCheckExpression } from './util/CheckExpressionParser';
 import { evaluateCheck } from './util/CheckEvaluator';
 import { THEME_KEY } from 'vue-echarts';
 import { getRandomFooter } from './util/RandomFooter';
-import { initScryfall, remapCube, enrichCube, preloadSimiliarityMatrix, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube } from './util/CubeFunctions';
+import { initScryfall, remapCube, enrichCube, mergeSimilarityMatrices, computeSimilarityMatrix, updateSimilarityForCube, removeSimilarityForCube, stripToRawCube, onScryfallRefresh } from './util/CubeFunctions';
 import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from './types/injectionKeys';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
-import { initFrequencyData } from './util/CubeCobraFrequency';
-import { initCardStats } from './util/CubeCobraCardStats';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme';
 import About from './components/About.vue';
@@ -737,80 +735,114 @@ const addCube = async (cubeId: string, { refresh = false, hidden = false }: { re
     }
 };
 
+import type { PresetCubeEntry } from './types';
+
+const backgroundRefreshFromPreload = async (id: string, meta: PresetCubeEntry): Promise<void> => {
+    const cubeKey = `../preloads/generated/cubes/${id}.json`;
+    if (!(cubeKey in cubeModules)) return;
+
+    refreshingCubeIds.value = new Set([...refreshingCubeIds.value, id]);
+    try {
+        const mod = await cubeModules[cubeKey]();
+        const cube: Cube = mod.default;
+        await setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
+        if (!loadedCubes.value[id]) return;
+        loadedCubes.value[id] = enrichCube(cube);
+        updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+    } catch (e) {
+        console.error(`Preload refresh failed for cube: ${id}`, e);
+    } finally {
+        const next = new Set(refreshingCubeIds.value);
+        next.delete(id);
+        refreshingCubeIds.value = next;
+    }
+};
+
 const loadCollection = async (presetName: string) => {
     if (!availablePresets.has(presetName)) return;
 
     const preset = presetCollections.find(p => p.label === presetName);
     if (!preset) return;
 
-    console.time(`Render Collection: ${presetName}`);
     console.time(`Load Collection: ${presetName}`);
+
+    // Set preset state up front — streaming cubes write into loadedCubes.value[id],
+    // so the empty base must exist before the first cube resolves. Setting
+    // activePresetName BEFORE loadedCubes also lets the URL watcher emit ?preset=name.
+    activePresetName.value = preset.name;
+    presetBaseIds.value = new Set(Object.keys(preset.cubes));
+    loadedCubes.value = {};
+    similarityMatrix.value = {};
 
     const cubeEntries = Object.entries(preset.cubes);
     loadingProgress.active = true;
     loadingProgress.total = cubeEntries.length;
     loadingProgress.loaded = 0;
 
+    // Fire the similarity fetch in parallel; it's a single small chunk.
+    const simKey = `../preloads/generated/similarities/${preset.name}.json`;
+    const similarityPromise: Promise<import('./types').SimilarityMatrix | null> = simKey in similarityModules
+        ? similarityModules[simKey]().then(m => m.default).catch(() => null)
+        : Promise.resolve(null);
+
     try {
         await ensureScryfallInitialized();
 
-        // Load each cube: IndexedDB → preload file → CubeCobra fallback
-        const results = await Promise.all(cubeEntries.map(async ([id, meta]) => {
+        const cubePromises = cubeEntries.map(async ([id, meta]) => {
             try {
-                // Tier 1: IndexedDB (if newer than preload)
                 const cached = await getCachedCube(id);
-                if (cached && cached.fetchedAt >= meta.fetchedAt) {
-                    return enrichCube(cached.data);
+                if (cached) {
+                    // Tier 1: render IDB immediately regardless of age.
+                    loadedCubes.value[id] = enrichCube(cached.data);
+                    updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+
+                    const cachedFetchedAt = new Date(cached.fetchedAt).getTime();
+                    const preloadFetchedAt = new Date(meta.fetchedAt).getTime();
+
+                    if (preloadFetchedAt > cachedFetchedAt) {
+                        void backgroundRefreshFromPreload(id, meta);
+                    } else if (isStale(cached)) {
+                        void backgroundRefreshCube(cached.id);
+                    }
+                    return;
                 }
 
-                // Tier 2: Preload file
+                // Tier 2: preload JSON.
                 const cubeKey = `../preloads/generated/cubes/${id}.json`;
                 if (cubeKey in cubeModules) {
                     const mod = await cubeModules[cubeKey]();
                     const cube: Cube = mod.default;
-                    setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
-                    return enrichCube(cube);
+                    void setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
+                    loadedCubes.value[id] = enrichCube(cube);
+                    updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+                    return;
                 }
 
-                // Tier 3: Live fetch (fallback)
+                // Tier 3: CubeCobra live fallback.
                 const raw = await getCubeData(id);
                 const fetchedAt = new Date().toISOString();
                 const cube = remapCube(raw, false, fetchedAt);
                 await setCachedCube(id, cube, fetchedAt);
-                return enrichCube(cube);
+                loadedCubes.value[id] = enrichCube(cube);
+                updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
             } catch (e) {
                 console.error(`[${id}] Failed to load cube:`, e);
-                return null;
             } finally {
                 loadingProgress.loaded++;
             }
-        }));
+        });
 
-        const enrichedCubes = Object.fromEntries(
-            results.filter((c): c is Cube => c !== null).map(c => [c.id, c]),
-        );
+        const similarityLandingPromise = similarityPromise.then(sim => {
+            if (sim) {
+                similarityMatrix.value = mergeSimilarityMatrices(similarityMatrix.value, sim);
+            }
+        });
 
-        // Load similarity matrix (after cubes are available for versioned cache keys)
-        const simKey = `../preloads/generated/similarities/${preset.name}.json`;
-        if (simKey in similarityModules) {
-            const simModule = await similarityModules[simKey]();
-            preloadSimiliarityMatrix(simModule.default, enrichedCubes);
-        }
-
-        console.timeEnd(`Load Collection: ${presetName}`);
-
-        // Set the active preset BEFORE updating loadedCubes so the URL watcher
-        // writes ?preset=name rather than serializing the cube IDs.
-        activePresetName.value = preset.name;
-        presetBaseIds.value = new Set(Object.keys(enrichedCubes));
-        loadedCubes.value = enrichedCubes;
-        similarityMatrix.value = computeSimilarityMatrix(loadedCubes.value);
-        await nextTick();
+        await Promise.all([...cubePromises, similarityLandingPromise]);
     } finally {
         loadingProgress.active = false;
+        console.timeEnd(`Load Collection: ${presetName}`);
     }
-
-    console.timeEnd(`Render Collection: ${presetName}`);
 };
 
 /**
@@ -846,8 +878,15 @@ onMounted(async () => {
     // Start data initialization in the background without blocking the UI
     ensureScryfallInitialized();
     pruneStaleEntries();
-    initFrequencyData();
-    initCardStats();
+
+    // Re-enrich loaded cubes if a fresh Scryfall payload lands after the stale render.
+    onScryfallRefresh(() => {
+        const reenriched: Record<string, Cube> = {};
+        for (const [id, cube] of Object.entries(loadedCubes.value)) {
+            reenriched[id] = enrichCube(stripToRawCube(cube));
+        }
+        loadedCubes.value = reenriched;
+    });
 
     // Apply initial state from URL hash
     activeTab.value = hashState.tab;
