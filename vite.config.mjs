@@ -1,10 +1,14 @@
 import { defineConfig } from "vite";
 import vue from '@vitejs/plugin-vue';
 
-// Emits `<link rel="preload">` for the Scryfall cards JSON so the browser starts
-// the ~10 MB (brotli) fetch during document parse rather than after the JS
-// graph resolves. Only runs on production builds; dev is skipped because the
-// hashed asset URL is unknown until bundling.
+// Emits an inline script that conditionally injects `<link rel="preload">` for
+// the Scryfall cards JSON so the browser starts the ~10 MB (brotli) fetch
+// during document parse rather than after the JS graph resolves. The preload
+// is skipped when a localStorage flag indicates the client already has the
+// cards in IndexedDB (return visitors); this avoids wasted bandwidth and the
+// "resource was preloaded but not used" console warning. Only runs on
+// production builds; dev is skipped because the hashed asset URL is unknown
+// until bundling.
 function cardsPreloadPlugin() {
     return {
         name: 'inject-cards-preload',
@@ -14,8 +18,9 @@ function cardsPreloadPlugin() {
                 a.type === 'asset' && a.name?.startsWith('cards-minimized') && a.fileName?.endsWith('.json'),
             );
             if (!cardsAsset) return html;
-            const tag = `    <link rel="preload" as="fetch" href="/${cardsAsset.fileName}" crossorigin>\n`;
-            return html.replace('</head>', `${tag}</head>`);
+            const href = `/${cardsAsset.fileName}`;
+            const script = `    <script>(function(){try{if(localStorage.getItem('mtg-cube-stats:cards-cached')==='1')return;}catch(e){}var l=document.createElement('link');l.rel='preload';l.as='fetch';l.crossOrigin='anonymous';l.href=${JSON.stringify(href)};document.head.appendChild(l);})();<\/script>\n`;
+            return html.replace('</head>', `${script}</head>`);
         },
     };
 }

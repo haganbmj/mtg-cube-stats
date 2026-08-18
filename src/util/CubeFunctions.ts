@@ -67,6 +67,9 @@ export async function initScryfall(): Promise<void> {
     });
     scryfall = data;
     scryfallReady.value = true;
+    // Signal to the next visit's HTML that cards are in IDB, so index.html can skip
+    // the <link rel="preload"> and avoid the "preloaded but not used" console warning.
+    try { localStorage.setItem('mtg-cube-stats:cards-cached', '1'); } catch { /* private mode / disabled */ }
     console.timeEnd('Loading Scryfall card data');
 }
 
