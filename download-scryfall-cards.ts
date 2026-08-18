@@ -140,6 +140,16 @@ const notPromoTypes = [
     'universesbeyond',
 ];
 
+// Frame effects that signal an alternate/variant printing (extendedart, showcase, etc.)
+// rather than the base printing of a card. Scryfall doesn't include these in promo_types,
+// so we have to inspect frame_effects directly to avoid picking them as the "normal" printing.
+const altFrameEffects = [
+    'extendedart',
+    'showcase',
+    'etched',
+    'shatteredglass',
+];
+
 const includedSets = [
     'sunf', // Unfinity Sticker Sheets.
 ];
@@ -245,6 +255,7 @@ const stripped = cards.filter((card: any) => {
     }
 
     const applicablePromoTypes = (card.promo_types || []).filter((pt: string) => !notPromoTypes.includes(pt));
+    const hasAltFrame = (card.frame_effects || []).some((fe: string) => altFrameEffects.includes(fe));
 
     return {
         id: card.id,
@@ -277,7 +288,7 @@ const stripped = cards.filter((card: any) => {
         layout: card.layout,
         collectorNumber: card.overridden_collector_number ?? card.collector_number,
         isDigital: card.digital,
-        isPromo: !customNotPromoSets.includes(card.set) && (card.promo || applicablePromoTypes.length > 0 || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
+        isPromo: !customNotPromoSets.includes(card.set) && (card.promo || applicablePromoTypes.length > 0 || hasAltFrame || customPromoSetTypes.includes(card.set_type) || customPromoSets.includes(card.set)),
         isToken: card.layout === 'token' || card.layout === 'double_faced_token',
         isReserved: card.reserved,
         isHybrid: /\{[WUBRG2]\/[WUBRG]\}/.test(
