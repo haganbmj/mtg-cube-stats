@@ -25,6 +25,20 @@ Additional Commands
 npm run cards:update
 ```
 
+## Load-time Profiling
+
+Set `VITE_LOAD_PROFILE=1` to log per-phase timings during preset loads. When unset, the profiler compiles out entirely.
+
+```sh
+# One-off run
+VITE_LOAD_PROFILE=1 npm run serve
+
+# Or add to .env.local (gitignored)
+echo 'VITE_LOAD_PROFILE=1' >> .env.local
+```
+
+Each `loadCollection` emits a `LOAD PROFILE <preset name> { ... }` line with buckets for `enrichCube`, `updateSim`, `warmSim`, `getCached`, `mergeMatrix`, `similarityLoad`, `checksFires`, `checksEvals`, and `cubePromisesTotal`.
+
 The card search syntax is powered by a [Nearley](https://nearley.js.org/) grammar defined in `src/util/cardFilters.grammar.ts`. Edit this file directly to modify the parser rules or lexer tokens.
 
 ## Dependencies

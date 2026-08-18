@@ -6,6 +6,9 @@ import {
     _applyFreshScryfallForTesting,
     _clearScryfallRefreshListenersForTesting,
     getScryfallCards,
+    warmSimilarityCacheForCube,
+    determineCosineSimilarityScore,
+    updateSimilarityForCube,
 } from './CubeFunctions';
 import type { Cube, CubeCard, ScryfallDataStructure, SimilarityMatrix, SimilarityScore } from '../types';
 
@@ -250,5 +253,84 @@ describe('onScryfallRefresh', () => {
 
         expect(Object.keys(observed[0])).toContain('marker-a');
         expect(Object.keys(observed[1])).toContain('marker-b');
+    });
+});
+
+describe('warmSimilarityCacheForCube', () => {
+    const makeCube = (id: string, cardIds: string[], lastModified = '2026-01-01'): Cube => ({
+        id,
+        name: id,
+        owner: 'owner',
+        lastModified,
+        cards: cardIds.map(c => ({ printingId: c, oracleId: c })),
+        suffixedCardIds: cardIds,
+    });
+
+    beforeEach(() => {
+        determineCosineSimilarityScore.cache.clear();
+    });
+
+    it('populates the memoize cache with pairs from the trusted matrix', () => {
+        const a = makeCube('a', ['x', 'y']);
+        const b = makeCube('b', ['x', 'z']);
+        const c = makeCube('c', ['y', 'z']);
+        const cubes = { a, b, c };
+        const trusted: SimilarityMatrix = {
+            a: { b: score(0.42), c: score(0.99) },
+        };
+
+        warmSimilarityCacheForCube('a', cubes, trusted);
+
+        // determineCosineSimilarityScore should now return the seeded score without recomputing.
+        expect(determineCosineSimilarityScore(a, b)).toEqual(score(0.42));
+        expect(determineCosineSimilarityScore(a, c)).toEqual(score(0.99));
+    });
+
+    it('is symmetric — determineCosineSimilarityScore(b, a) also hits the cache', () => {
+        const a = makeCube('a', ['x']);
+        const b = makeCube('b', ['x']);
+        const trusted: SimilarityMatrix = { a: { b: score(0.42) } };
+
+        warmSimilarityCacheForCube('a', { a, b }, trusted);
+
+        expect(determineCosineSimilarityScore(b, a)).toEqual(score(0.42));
+    });
+
+    it('skips pairs where the other cube is not currently loaded', () => {
+        const a = makeCube('a', ['x']);
+        // 'b' is referenced by the trusted matrix but not in `cubes`.
+        const trusted: SimilarityMatrix = { a: { b: score(0.42) } };
+
+        warmSimilarityCacheForCube('a', { a }, trusted);
+
+        // The pair for b should not be cached; determineCosineSimilarityScore has no key to warm.
+        expect(determineCosineSimilarityScore.cache.size).toBe(0);
+    });
+
+    it('is a no-op when the cube has no row in the trusted matrix', () => {
+        const a = makeCube('a', ['x']);
+        const b = makeCube('b', ['x']);
+
+        warmSimilarityCacheForCube('a', { a, b }, {});
+
+        expect(determineCosineSimilarityScore.cache.size).toBe(0);
+    });
+
+    it('subsequent updateSimilarityForCube reads warmed pairs from the cache', () => {
+        // Rig the trusted matrix with an obviously wrong score. If updateSimilarityForCube
+        // hits the cache, it will propagate that wrong score into the matrix — proving the
+        // memoize cache is being used.
+        const a = makeCube('a', ['x', 'y']);
+        const b = makeCube('b', ['x', 'y']);
+        const cubes = { a, b };
+        const trusted: SimilarityMatrix = { a: { b: score(-999) } };
+
+        warmSimilarityCacheForCube('a', cubes, trusted);
+
+        const matrix: SimilarityMatrix = {};
+        updateSimilarityForCube('a', cubes, matrix);
+
+        expect(matrix.a.b).toEqual(score(-999));
+        expect(matrix.b.a).toEqual(score(-999));
     });
 });
