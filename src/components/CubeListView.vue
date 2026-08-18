@@ -2,14 +2,14 @@
     <div class="cube-list-container">
         <div class="cube-list-filter">
             <div class="filter-group">
-                <label class="columns-label">Filter</label>
+                <label class="columns-label filter-group-label">Filter</label>
                 <el-button-group>
                     <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched cards" />
                     <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched cards" />
                 </el-button-group>
             </div>
             <div class="filter-group">
-                <label class="columns-label">Display</label>
+                <label class="columns-label filter-group-label">Display</label>
                 <el-button-group>
                     <el-button :icon="Grid" :type="visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = true" title="Visual Display" />
                     <el-button :icon="List" :type="!visualDisplayVisible ? 'primary' : ''" @click="visualDisplayVisible = false" title="List Display" />
@@ -327,13 +327,19 @@ watch(columns, () => nextTick(updateScrollWidth));
     flex-wrap: wrap;
     align-items: center;
     gap: 20px;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
 }
 
 .filter-group {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+@media (max-width: 760px) {
+    .filter-group-label {
+        display: none;
+    }
 }
 
 .columns-label {
