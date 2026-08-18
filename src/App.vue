@@ -306,8 +306,14 @@ watch(
         overviewSortDirection,
         comparePair,
         showAllCards,
+        // Sync when loading finishes so the URL flips back to a clean ?preset=name.
+        // Also gate the effect so intermediate loading states don't leak "remove=<huge list>".
+        () => loadingProgress.active,
     ],
-    () => { debouncedSync(); },
+    () => {
+        if (loadingProgress.active) return;
+        debouncedSync();
+    },
 );
 
 onHashChange(async (newState) => {
