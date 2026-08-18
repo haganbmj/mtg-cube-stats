@@ -394,6 +394,9 @@ function evaluateFlag(flag: string, row: any): boolean {
             return row.layout === 'leveler';
         case 'custom':
             return !!row.isCustomCard;
+        case 'singleton':
+            // Cards outside a duplicate-aware context (no `count` populated) are inherently singleton.
+            return (row.count ?? 1) === 1;
         default:
             return false;
     }
@@ -441,6 +444,14 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
                 if (op === ':' || op === '=') return isMulti;
                 if (op === '!=') return !isMulti;
                 return false;
+            }
+
+            // Colorless is a binary state (colorCount === 0), so `c:c` is treated as `c=c`.
+            if (lowerVal === 'c' || lowerVal === 'colorless') {
+                const isColorless = colorCount === 0;
+                if (op === ':' || op === '=') return isColorless;
+                if (op === '!=') return !isColorless;
+                // fall through to set-inclusion handling for <, <=, >, >=
             }
 
             const wantedColors = parseColorValue(strVal);
@@ -498,6 +509,14 @@ function evaluateCondition(keyword: string, op: string, value: string | number, 
                 if (op === ':' || op === '=') return isMulti;
                 if (op === '!=') return !isMulti;
                 return false;
+            }
+
+            // Colorless is a binary state (idColorCount === 0), so `id:c` is treated as `id=c`.
+            if (lowerIdVal === 'c' || lowerIdVal === 'colorless') {
+                const isColorless = idColorCount === 0;
+                if (op === ':' || op === '=') return isColorless;
+                if (op === '!=') return !isColorless;
+                // fall through to set-inclusion handling for <, <=, >, >=
             }
 
             const wantedColors = parseColorValue(strVal);
