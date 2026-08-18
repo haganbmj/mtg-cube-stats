@@ -808,6 +808,11 @@ const loadCollection = async (presetName: string) => {
         bump(profile, 'getCached', performance.now() - bulkStart);
 
         const cubePromises = cubeEntries.map(async ([id, meta]) => {
+            // Yield so each cube's reactive mutation lands in its own macrotask.
+            // Without this the tier-1 (cache) branch runs entirely synchronously
+            // — all 71 mutations batch into a single Vue flush at the end and the
+            // progress bar sits at 0/N until the last cube.
+            await new Promise(resolve => setTimeout(resolve, 0));
             try {
                 const cached = bulkCache.get(id) ?? null;
                 const cubeKey = `../preloads/generated/cubes/${id}.json`;
