@@ -41,38 +41,50 @@
         </template>
 
         <template v-if="activeCube">
-            <div class="cube-dialog-meta">
-                <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
-                <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
-                <el-tooltip :content="fullLastModified" placement="top" :hide-after="50" :enterable="false" :disabled="!fullLastModified">
-                    <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
-                </el-tooltip>
-                <span class="cube-dialog-meta-item" v-if="(activeCube.stats?.assumedCategories || []).length">
-                    Categories:
-                    <el-tooltip
-                        v-for="category in (activeCube.stats?.assumedCategories || [])"
-                        :key="category"
-                        :content="getCategoryTooltip(category)"
-                        placement="top"
-                        :hide-after="50"
-                        :enterable="false"
-                    >
-                        <el-tag
-                            size="default"
-                            effect="dark"
-                            :color="getCategoryTagColor(category)"
-                            style="margin-left: 0.25rem;"
-                            disable-transitions
-                        >
-                            {{ category }}
-                        </el-tag>
+            <div class="cube-dialog-toolbar">
+                <div v-if="!isSearchableTab" class="cube-dialog-meta">
+                    <span class="cube-dialog-meta-item">Cards: <strong>{{ activeCube.stats?.totalCards ?? 0 }}</strong></span>
+                    <span class="cube-dialog-meta-item">Followers: <strong>{{ activeCube.followerCount ?? 0 }}</strong></span>
+                    <el-tooltip :content="fullLastModified" placement="top" :hide-after="50" :enterable="false" :disabled="!fullLastModified">
+                        <span class="cube-dialog-meta-item">Modified: <strong>{{ formattedLastModified }}</strong></span>
                     </el-tooltip>
-                </span>
+                    <span class="cube-dialog-meta-item" v-if="(activeCube.stats?.assumedCategories || []).length">
+                        Categories:
+                        <el-tooltip
+                            v-for="category in (activeCube.stats?.assumedCategories || [])"
+                            :key="category"
+                            :content="getCategoryTooltip(category)"
+                            placement="top"
+                            :hide-after="50"
+                            :enterable="false"
+                        >
+                            <el-tag
+                                size="default"
+                                effect="dark"
+                                :color="getCategoryTagColor(category)"
+                                style="margin-left: 0.25rem;"
+                                disable-transitions
+                            >
+                                {{ category }}
+                            </el-tag>
+                        </el-tooltip>
+                    </span>
+                </div>
+                <CardSearchInput
+                    v-else
+                    v-model="sharedSearchQuery"
+                    :loaded-cubes="{}"
+                    :collapse-cube-filter="true"
+                    class="cube-dialog-search"
+                />
             </div>
-            <div v-if="activeCube?.brief" class="cube-dialog-brief" v-html="renderedBrief"></div>
             <el-tabs v-model="activeTab" tab-position="top">
                 <el-tab-pane label="Details" name="details">
                     <el-row class="details-tab">
+                        <el-col v-if="activeCube?.brief" :span="24">
+                            <h4 class="stat-section-title">Description</h4>
+                            <div class="cube-dialog-brief" v-html="renderedBrief"></div>
+                        </el-col>
                         <el-col :span="24">
                             <h4 class="stat-section-title">Key Information</h4>
                             <div class="stat-grid">
@@ -464,7 +476,7 @@
                 </el-tab-pane>
 
                 <el-tab-pane label="List" name="list" :lazy="true">
-                    <CubeListView :cards="activeCubeCards" :initial-query="listInitialQuery" />
+                    <CubeListView :cards="activeCubeCards" :matching-oracle-ids="matchingOracleIds" />
                 </el-tab-pane>
 
                 <el-tab-pane label="Charts" name="charts">
@@ -510,11 +522,11 @@
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Keywords (${activeCube.stats?.uniqueKeywords})`" name="keywords">
-                    <KeywordTable :keywords="activeCube.stats?.keywords || {}" :totalCards="activeCube.stats?.totalCards || 1" @filter="applyListFilter" />
+                    <KeywordTable :keywords="filteredKeywordCounts" :totalCards="activeCube.stats?.totalCards || 1" @filter="applyListFilter" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Sets (${Object.keys(activeCube.stats?.setCodeDistribution || {}).length})`" name="sets">
-                    <SetNameTable :setCodeDistribution="activeCube.stats?.setCodeDistribution || {}" :totalCards="activeCube.stats?.totalCards || 1" @filter="applyListFilter" />
+                    <SetNameTable :setCodeDistribution="filteredSetCodeDistribution" :totalCards="activeCube.stats?.totalCards || 1" @filter="applyListFilter" />
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" name="tokens" :lazy="true">
@@ -756,6 +768,9 @@ import SetNameTable from './SetNameTable.vue';
 import StatCmpIndicator from './StatCmpIndicator.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
 import CubeListView from './CubeListView.vue';
+import CardSearchInput from './filters/CardSearchInput.vue';
+import { parseQuery } from '../util/CardFilterParser';
+import { evaluateCard, type FilterContext } from '../util/CardFilterEvaluator';
 import { openCardDetailDialogKey, openCubeDetailDialogKey } from '../types/injectionKeys';
 
 const props = defineProps({
@@ -811,8 +826,11 @@ const popDetail = inject<() => void>('popDetail');
 const loadedCubesRef = toRef(props, 'loadedCubes');
 
 const activeTab = ref('details');
-const listInitialQuery = ref('');
+const sharedSearchQuery = ref('');
 const activeCubeId = ref<string | null>(null);
+
+const SEARCHABLE_TABS = ['list', 'keywords', 'sets', 'tokens'] as const;
+const isSearchableTab = computed(() => (SEARCHABLE_TABS as readonly string[]).includes(activeTab.value));
 
 const activeCube = computed(() => {
     if (!activeCubeId.value) return props.cubeRow;
@@ -1175,27 +1193,76 @@ const generateNewPack = () => {
 };
 
 const applyListFilter = (query: string) => {
-    listInitialQuery.value = query;
+    sharedSearchQuery.value = query;
     activeTab.value = 'list';
 };
 
-// Tokens tab: unique tokens from the active cube, sorted alphabetically, with the cards that produce each
+const parsedFilter = computed(() => parseQuery(sharedSearchQuery.value).ast);
+
+const matchingOracleIds = computed<Set<string> | null>(() => {
+    const ast = parsedFilter.value;
+    if (!ast) return null;
+    const ctx: FilterContext = { loadedCubes: {} };
+    const counts: Record<string, number> = {};
+    for (const card of activeCubeCards.value) {
+        counts[card.oracleId] = (counts[card.oracleId] ?? 0) + 1;
+    }
+    const ids = new Set<string>();
+    for (const card of activeCubeCards.value) {
+        const row = {
+            ...card,
+            effectiveColors: card.colors,
+            effectiveColorIdentity: card.colorIdentity,
+            count: counts[card.oracleId],
+        };
+        if (evaluateCard(ast, row, ctx)) ids.add(card.oracleId);
+    }
+    return ids;
+});
+
+const filteredCards = computed(() => {
+    if (!matchingOracleIds.value) return activeCubeCards.value;
+    const ids = matchingOracleIds.value;
+    return activeCubeCards.value.filter(c => ids.has(c.oracleId));
+});
+
+const filteredKeywordCounts = computed(() => {
+    return filteredCards.value.reduce((acc: Record<string, number>, c) => {
+        (c.keywords ?? []).forEach(k => { acc[k] = (acc[k] ?? 0) + 1; });
+        return acc;
+    }, {});
+});
+
+const filteredSetCodeDistribution = computed(() => {
+    return filteredCards.value.reduce((acc: Record<string, number>, c) => {
+        if (c.setCode) acc[c.setCode] = (acc[c.setCode] ?? 0) + 1;
+        return acc;
+    }, {});
+});
+
+// Reset the shared search when the dialog closes or the active cube changes.
+watch([() => props.visible, activeCubeId], () => {
+    sharedSearchQuery.value = '';
+});
+
+// Tokens tab: unique tokens from the filtered card set, sorted alphabetically, with the cards that produce each
 const tokensTabData = computed(() => {
     const tokenMap = getTokens();
-    const tokenToCards = new Map<string, CubeCard[]>();
+    const tokenToSources = new Map<string, Map<string, CubeCard>>();
 
-    activeCubeCards.value.forEach(card => {
+    filteredCards.value.forEach(card => {
         (card.tokenOracleIds ?? []).forEach(tokenId => {
-            if (!tokenToCards.has(tokenId)) tokenToCards.set(tokenId, []);
-            tokenToCards.get(tokenId)!.push(card);
+            if (!tokenToSources.has(tokenId)) tokenToSources.set(tokenId, new Map());
+            // Dedupe sources by oracleId so cubes with multiple copies (or cards listing the same token twice) render once.
+            tokenToSources.get(tokenId)!.set(card.oracleId, card);
         });
     });
 
-    return Array.from(tokenToCards.entries())
+    return Array.from(tokenToSources.entries())
         .map(([tokenId, sources]) => ({
             tokenId,
             token: tokenMap[tokenId] as ScryfallToken | undefined,
-            sources,
+            sources: Array.from(sources.values()),
         }))
         .filter(entry => entry.token !== undefined)
         .sort((a, b) => (a.token!.name).localeCompare(b.token!.name));
@@ -1246,11 +1313,22 @@ const tokensTabData = computed(() => {
     color: var(--el-text-color-disabled);
 }
 
+.cube-dialog-toolbar {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    margin-bottom: 8px;
+}
+
+.cube-dialog-search {
+    flex: 1 1 auto;
+}
+
 .cube-dialog-meta {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow: hidden;
     gap: 16px;
-    margin-bottom: 8px;
     font-size: 0.8rem;
     color: var(--el-text-color-secondary);
 }
