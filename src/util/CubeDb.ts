@@ -11,13 +11,13 @@ let warnedOnce = false;
 export function getDb(): Promise<IDBPDatabase> {
     if (!dbPromise) {
         dbPromise = openDB(DB_NAME, DB_VERSION, {
-            upgrade(db, oldVersion) {
+            upgrade(db, oldVersion, _newVersion, transaction) {
                 let cubesStore;
                 if (!db.objectStoreNames.contains(CUBES_STORE)) {
                     cubesStore = db.createObjectStore(CUBES_STORE, { keyPath: 'id' });
                 }
                 if (oldVersion < 2) {
-                    cubesStore = cubesStore ?? db.transaction.objectStore(CUBES_STORE);
+                    cubesStore = cubesStore ?? transaction.objectStore(CUBES_STORE);
                     if (!cubesStore.indexNames.contains('shortId')) {
                         cubesStore.createIndex('shortId', 'shortId', { unique: false });
                     }

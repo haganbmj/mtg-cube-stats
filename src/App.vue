@@ -129,6 +129,7 @@ import { getCubeData, parseCubeIdInput } from './util/CubeCobra';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from './types/injectionKeys';
 import { snapshotKey, parseLoadedKey } from './util/Snapshots';
 import { getCachedCube, setCachedCube, setCachedCubeIfNewer, isStale, pruneStaleEntries } from './util/CubeCache';
+import { decidePresetCubeSource } from './util/PresetCubeResolver';
 import { registerTheme } from 'echarts';
 import darkbmjTheme from './echarts/theme';
 import About from './components/About.vue';
@@ -791,40 +792,40 @@ const loadCollection = async (presetName: string) => {
         const cubePromises = cubeEntries.map(async ([id, meta]) => {
             try {
                 const cached = await getCachedCube(id);
-                if (cached) {
-                    // Tier 1: render IDB immediately regardless of age.
-                    loadedCubes.value[id] = enrichCube(cached.data);
-                    updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
-
-                    const cachedFetchedAt = new Date(cached.fetchedAt).getTime();
-                    const preloadFetchedAt = new Date(meta.fetchedAt).getTime();
-
-                    if (preloadFetchedAt > cachedFetchedAt) {
-                        void backgroundRefreshFromPreload(id, meta);
-                    } else if (isStale(cached)) {
-                        void backgroundRefreshCube(cached.id);
-                    }
-                    return;
-                }
-
-                // Tier 2: preload JSON.
                 const cubeKey = `../preloads/generated/cubes/${id}.json`;
-                if (cubeKey in cubeModules) {
-                    const mod = await cubeModules[cubeKey]();
-                    const cube: Cube = mod.default;
-                    void setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
-                    loadedCubes.value[id] = enrichCube(cube);
-                    updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
-                    return;
-                }
+                const preloadExists = cubeKey in cubeModules;
+                const source = decidePresetCubeSource(
+                    cached ? { fetchedAt: cached.fetchedAt, isStale: isStale(cached) } : null,
+                    meta.fetchedAt,
+                    preloadExists,
+                );
 
-                // Tier 3: CubeCobra live fallback.
-                const raw = await getCubeData(id);
-                const fetchedAt = new Date().toISOString();
-                const cube = remapCube(raw, false, fetchedAt);
-                await setCachedCube(id, cube, fetchedAt);
-                loadedCubes.value[id] = enrichCube(cube);
-                updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+                switch (source.tier) {
+                    case 'cache': {
+                        loadedCubes.value[id] = enrichCube(cached!.data);
+                        updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+                        if (source.refresh === 'preload') void backgroundRefreshFromPreload(id, meta);
+                        else if (source.refresh === 'live') void backgroundRefreshCube(cached!.id);
+                        return;
+                    }
+                    case 'preload': {
+                        const mod = await cubeModules[cubeKey]();
+                        const cube: Cube = mod.default;
+                        void setCachedCubeIfNewer(id, cube, cube.fetchedAt ?? meta.fetchedAt);
+                        loadedCubes.value[id] = enrichCube(cube);
+                        updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+                        return;
+                    }
+                    case 'live': {
+                        const raw = await getCubeData(id);
+                        const fetchedAt = new Date().toISOString();
+                        const cube = remapCube(raw, false, fetchedAt);
+                        await setCachedCube(id, cube, fetchedAt);
+                        loadedCubes.value[id] = enrichCube(cube);
+                        updateSimilarityForCube(id, loadedCubes.value, similarityMatrix.value);
+                        return;
+                    }
+                }
             } catch (e) {
                 console.error(`[${id}] Failed to load cube:`, e);
             } finally {
