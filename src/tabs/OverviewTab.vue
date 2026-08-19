@@ -175,6 +175,7 @@
                         placeholder="Search history or enter Cube ID"
                         @select="handleAutocompleteSelect"
                         @keyup.enter="submitAddCubeForm"
+                        @click="handleAutocompleteClick"
                         clearable
                     >
                         <template #default="{ item }">
@@ -505,7 +506,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, inject, watch, nextTick } from 'vue';
+import { ref, reactive, computed, inject, watch } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 import { useBackDismiss } from '../util/useBackDismiss';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -719,7 +720,7 @@ interface CubeHistoryEntry {
 
 const cubeAddHistory = bindStorage<CubeHistoryEntry[]>('cube-add-history', v => Array.isArray(v) ? v : []);
 
-const cubeAutocompleteRef = ref<{ blur: () => void; focus: () => void; getData: (query: string) => void } | null>(null);
+const cubeAutocompleteRef = ref<{ getData: (query: string) => void } | null>(null);
 
 function recordCubeHistory(cubeId: string) {
     const cube = (Object.values(props.loadedCubes) as Cube[]).find(
@@ -758,11 +759,14 @@ async function handleAutocompleteSelect(item: CubeHistoryEntry & { value: string
     recordCubeHistory(item.id);
     addCubeForm.cubeId = '';
     addCubeForm.loading = false;
-    // Re-open the suggestion popper; el-autocomplete closes it on select and won't
-    // reopen from a programmatic focus() call while the input still has native focus.
-    await nextTick();
-    cubeAutocompleteRef.value?.focus();
-    cubeAutocompleteRef.value?.getData('');
+    // Focus is retained natively by el-autocomplete; the dropdown will reopen on
+    // the user's next input or when they click back into the field.
+}
+
+function handleAutocompleteClick() {
+    // The input keeps native focus after a selection, so focus events won't fire
+    // on a subsequent click; open the suggestions manually.
+    cubeAutocompleteRef.value?.getData(addCubeForm.cubeId);
 }
 
 const columnCustomizationVisible = ref(false);
