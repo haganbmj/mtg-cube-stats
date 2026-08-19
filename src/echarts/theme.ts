@@ -97,12 +97,6 @@ const theme = {
             "color": "rgba(41,52,65,1)",
             "borderWidth": 2,
         },
-        "emphasis": {
-            "itemStyle": {
-                "borderWidth": 0,
-                "borderColor": "rgba(255, 255, 255, 0.2)",
-            },
-        },
     },
     "parallel": {
         "itemStyle": {
