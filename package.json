@@ -33,7 +33,7 @@
     "moo": "^0.5.3",
     "nearley": "^2.20.1",
     "vue": "^3.5.40",
-    "vue-echarts": "^8.0.1",
+    "vue-echarts": "^8.1.0",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
