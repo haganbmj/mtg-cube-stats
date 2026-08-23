@@ -29,7 +29,8 @@ const manifest: Manifest = {
         '68c09094-c473-47cd-893b-e9d8a3d66fbe', // I Loot The Body
         '5a1d3ff2-3eec-40c0-849c-e19de60305ae', // Innistrad to Eldritch Moon 2011-2016 Golden Age Standard Cube
         'aefb5841-8654-48fc-9b02-ba5062a651cd', // The Mardube
-        '6122a60ae66c4a105041808a', // Old Border Foil Cube
+        // '6122a60ae66c4a105041808a', // Old Border Foil Cube
+        '203c4a53-1a5c-47dc-8752-9a6886a51905', // Old Border Foil Cube (450)
         '2f166be5-e08e-4223-8883-4782471f58b4', // Omnipresent Impostors
         '302c8800-db4d-473f-b6ed-2dd3467ffa8e', // Options Cube
         '6003518eeaf0061046b4c9ae', // The Peasant+ Cube
