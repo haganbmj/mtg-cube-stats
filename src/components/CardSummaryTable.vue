@@ -448,7 +448,7 @@ import TristateSelect from './filters/TristateSelect.vue';
 import { parseQuery } from '../util/CardFilterParser';
 import { evaluateCard, computeHighlightedOracleIds, collectHighlightCubeKeys, computeEligibleCubes, preResolveCubeKeys, extractSortDirective } from '../util/CardFilterEvaluator';
 import { getSetReleaseDates, getScryfallCards, scryfallReady } from '../util/CubeFunctions';
-import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates, initFrequencyData } from '../util/CubeCobraFrequency';
+import { resolveCubeCount, FREQUENCY_COLUMNS, resolveAllRates, initFrequencyData, frequencyDataReady } from '../util/CubeCobraFrequency';
 import { getCardStats, cardStatsReady, initCardStats } from '../util/CubeCobraCardStats';
 
 initFrequencyData();
@@ -555,7 +555,10 @@ function handleTableSortChange(payload: { prop: string; order: 'ascending' | 'de
     sortDirection.value = payload.order;
 }
 
-const derivableFromImageSorts = new Set(['name', 'cmc', 'releaseDate', 'minRarity', 'power', 'toughness']);
+const derivableFromImageSorts = new Set([
+    'name', 'cmc', 'releaseDate', 'minRarity', 'power', 'toughness',
+    'effectiveColors', 'effectiveColorIdentity', 'typeLine', 'setCode', 'layout',
+]);
 
 function getVisualCardTag(card: any): { label: string; value: string } {
     const prop = resolvedSortProp.value;
@@ -570,6 +573,8 @@ function getVisualCardTag(card: any): { label: string; value: string } {
     switch (prop) {
         case 'cubeCount':
             return { label: 'Cube Count', value: String(card.cubeCount ?? 'N/A') };
+        case 'count':
+            return { label: 'Count', value: String(card.count ?? 'N/A') };
         case 'globalRatePercent_total':
             return { label: 'Global Rate', value: card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' };
         case 'globalRatePercent_broad_pauper':
@@ -586,6 +591,10 @@ function getVisualCardTag(card: any): { label: string; value: string } {
             return { label: 'Price', value: card.minPriceTix != null ? Number(card.minPriceTix).toFixed(1) + ' Tix' : 'N/A' };
         case 'oracleTextWordCountMinusParen':
             return { label: 'Word Count', value: card.oracleTextWordCountMinusParen != null ? String(card.oracleTextWordCountMinusParen) : 'N/A' };
+        case 'oracleTextWordCount':
+            return { label: 'Word Count', value: card.oracleTextWordCount != null ? String(card.oracleTextWordCount) : 'N/A' };
+        case 'setType':
+            return { label: 'Set Type', value: card.setType ?? 'N/A' };
         default:
             if (Object.keys(props.loadedCubes).length <= 1) {
                 return { label: 'Global Rate', value: card.globalRatePercent_total != null ? card.globalRatePercent_total.toFixed(1) + '%' : 'N/A' };
@@ -981,6 +990,8 @@ const exportToCsv = () => {
 
 // --- Data pipeline ---
 const tableData = computed(() => {
+    // Reactive dep: rerun once frequency data loads so resolveAllRates() populates rates.
+    void frequencyDataReady.value;
     const allCards = Object.keys(props.loadedCubes).reduce((acc: Record<string, any>, key) => {
         props.loadedCubes[key].cards.forEach((card: any) => {
             if (acc[card.oracleId] === undefined) {
