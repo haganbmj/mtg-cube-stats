@@ -24,7 +24,7 @@
     "@element-plus/icons-vue": "^2.3.2",
     "@vueuse/core": "^14.4.0",
     "dompurify": "^3.4.12",
-    "echarts": "^6.0.0",
+    "echarts": "^6.1.0",
     "element-plus": "^2.14.3",
     "idb": "^8.0.3",
     "katex": "^0.17.0",
