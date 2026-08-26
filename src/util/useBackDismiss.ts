@@ -5,6 +5,7 @@ import {
     notifyNestedDismissClosed,
     signalExternalHistoryBack,
 } from './dialogHistoryCoord';
+import { suppressHashReconcile } from './useDetailNavigation';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Module-level globals — shared across all useBackDismiss instances so that
@@ -76,6 +77,11 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
             notifyNestedDismissClosed();
             ignoreNextPop++;
             signalExternalHistoryBack();
+            // If a URL sync ran during the dialog's lifetime, replaceState
+            // mutated the pushed history entry so history.back() now reverts
+            // the URL to a stale pre-dialog state. Suppress App.vue's
+            // reconciler so it doesn't wipe in-memory cubes to match.
+            suppressHashReconcile.value = true;
             history.back();
         }
     });
@@ -90,6 +96,7 @@ export function useBackDismiss(isOpen: Ref<boolean>, close: () => void) {
             notifyNestedDismissClosed();
             ignoreNextPop++;
             signalExternalHistoryBack();
+            suppressHashReconcile.value = true;
             history.back();
         }
     });
