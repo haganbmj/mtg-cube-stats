@@ -1593,6 +1593,11 @@ const tokensTabData = computed(() => {
     margin-left: 0;
 }
 
+/* Uniform button width so preset labels of varying length align consistently. */
+.history-preset-buttons :deep(.el-button) {
+    min-width: 8.5rem;
+}
+
 @media (max-width: 760px) {
     .history-preset-buttons {
         justify-content: center;
