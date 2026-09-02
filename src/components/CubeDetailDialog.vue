@@ -1587,6 +1587,23 @@ const tokensTabData = computed(() => {
     gap: 0.5rem;
 }
 
+/* Element Plus adds margin-left between adjacent buttons which stacks with flex gap
+   and lingers on wrapped rows; rely on the flex gap alone for spacing. */
+.history-preset-buttons :deep(.el-button + .el-button) {
+    margin-left: 0;
+}
+
+/* Uniform button width so preset labels of varying length align consistently. */
+.history-preset-buttons :deep(.el-button) {
+    min-width: 8.5rem;
+}
+
+@media (max-width: 760px) {
+    .history-preset-buttons {
+        justify-content: center;
+    }
+}
+
 .history-custom-row {
     display: flex;
     flex-wrap: wrap;
