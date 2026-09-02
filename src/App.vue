@@ -1276,7 +1276,8 @@ td.el-table__cell.el-table__expanded-cell > div.el-row {
     }
 
     .el-dialog .el-dialog__body {
-        overflow: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
         flex: 1;
         min-height: 0;
     }
