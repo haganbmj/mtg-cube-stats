@@ -402,9 +402,6 @@
 
     <div v-if="isMobile && filteredRows.length > pageSize" class="card-table-pagination-row">
         <el-button :disabled="currentPage <= 1" @click="currentPage--">Previous</el-button>
-        <span class="card-table-filter-toggle" @click="viewExpanded = !viewExpanded">
-            {{ viewExpanded ? '▴ View' : '▾ View' }}
-        </span>
         <el-button :disabled="currentPage >= totalPages" @click="currentPage++">Next</el-button>
     </div>
     <el-pagination
