@@ -115,6 +115,8 @@ const manifest: Manifest = {
         '5dbcbd2a44e9cb7a6c8097cf', // ahhabee - C/U be
         '5e539a45e74a617cdd462f32', // gsethi - Gsethi 360 Peasant Cube
         '9bd7c4dc-408d-4ebb-b08a-039528a4a50e', // CloudedBirb - Peasant Vintage PowerMax!
+        '629ab6452a407b100be28423', // tsuihou - Limited All Stars
+        '60a4d6d0586303104c16ba21', // marcinkruk - The Warsaw Peasant Cube
     ],
 };
 
