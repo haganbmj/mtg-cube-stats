@@ -17,6 +17,8 @@ const manifest: Manifest = {
         '12b2535f-0665-4e60-896f-54373ecc4583', // Reject Modernity
         '041a13ba-b23c-4580-9550-0080b8fe29da', // Starship Troopers
         'f43649bc-b213-4e62-b7d1-68dfb27af966', // The Arti Parti
+        '514a9a6f-20a2-4d91-ba90-34fe72aa4de1', // No Mana No Cry
+        'afb85eb0-31b4-45c4-b5a9-1f6a0f5a1fae', // Boudican Destruction Horizon
     ],
 };
 
