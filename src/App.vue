@@ -646,7 +646,7 @@ const addCubes = async (cubeIds: string[]) => {
     loadingProgress.active = false;
 };
 
-const loadCubeById = (id: string) => addCubes([id]);
+const loadCubeById = (id: string) => addAny(id);
 
 const saveCollection = (name: string) => {
     const cubeIds = Object.keys(visibleLoadedCubes.value);

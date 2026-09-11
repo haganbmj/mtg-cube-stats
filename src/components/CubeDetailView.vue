@@ -761,6 +761,7 @@
                     Refresh
                 </el-button>
                 <el-button
+                    v-if="context === 'dialog'"
                     :icon="Delete"
                     size="small"
                     type="danger"
