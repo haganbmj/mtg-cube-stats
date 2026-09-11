@@ -1562,6 +1562,7 @@ const totalUniqueTokenCount = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
 }
 
 .token-entry--dimmed {
@@ -1590,6 +1591,7 @@ const totalUniqueTokenCount = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
 }
 
 .token-name {
