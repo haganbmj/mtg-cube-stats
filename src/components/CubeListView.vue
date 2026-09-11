@@ -115,8 +115,8 @@
 import { ref, computed, inject, onMounted, onBeforeUnmount, nextTick, watch, type PropType } from 'vue';
 import type { CubeCard } from '../types';
 import { bindStorage } from '../util/VueLocalStorage';
+import { filterMode, visualColumnCount } from '../util/CubeListDisplayPrefs';
 import { openCardDetailDialogKey } from '../types/injectionKeys';
-import { useWindowSize } from '@vueuse/core';
 import { Hide, BrushFilled, Grid, List } from '@element-plus/icons-vue';
 import {
     PRIMARY_TYPE_ORDER,
@@ -143,18 +143,6 @@ const props = defineProps({
 const openCardDetailDialog = inject(openCardDetailDialogKey);
 
 const visualDisplayVisible = bindStorage('cube-list-display-mode-visual', (v) => typeof v === 'boolean' ? v : false);
-
-const filterMode = bindStorage('cube-list-filter-mode', (v) => {
-    return v === 'dim' ? 'dim' : 'hide';
-});
-
-const { width: windowWidth } = useWindowSize();
-const isMobile = computed(() => windowWidth.value <= 760);
-const defaultVisualColumnCount = computed(() => isMobile.value ? 2 : 6);
-
-const visualColumnCount = bindStorage<number>('cube-list-visual-column-count', (v) =>
-    typeof v === 'number' ? Math.min(20, Math.max(1, Math.round(v))) : defaultVisualColumnCount.value,
-);
 
 const matchingOracleIds = computed<Set<string> | null>(() => props.matchingOracleIds);
 
