@@ -22,12 +22,12 @@ const manifest: Manifest = {
         'a9fe75b7-d00b-4342-899b-9d2bd25f8a66', // The Desert Bird
         '0718b9a8-7580-47da-bd5e-3b3a1701fb3a', // The Kuleshov Cube
         'd5c56175-4e10-4e41-9e4e-08fc01439c4b', // The Legacy of Bloodwake Atoll
-        '216fe320-4d78-4d1f-aae4-b36231f59a9e', // The Library of Babel
+        // '216fe320-4d78-4d1f-aae4-b36231f59a9e', // The Library of Babel
         'f907f0a5-8e95-474a-a879-6cced27aaeb3', // The Middle School
         '636e940b282cc10f6a181e75', // The Penrose Cube
         'b9a0475c-2c66-43d6-b9d9-2ade2b493fd0', // The Premodern Unchained Cube
         'ae9f493b-b6c8-4a73-9c09-35d9010e2a42', // The Trinket Cube
-        // Plus an Undisclosed One.
+        '5a81d61c-db43-4ed3-b0f9-59f7a18ba3d6', // Synesthia
     ],
 };
 
