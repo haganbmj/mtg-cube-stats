@@ -6,7 +6,6 @@
         style="max-width: 1900px;"
         top="5vh"
         align-center
-        :show-close="false"
         :before-close="() => $emit('close')"
     >
         <CubeDetailView
