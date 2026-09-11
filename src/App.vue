@@ -51,6 +51,23 @@
                             <StatisticsTab :loadedCubes="overviewTableData" :loadingProgress="loadingProgress" />
                         </el-tab-pane>
 
+                        <el-tab-pane label="Cube" name="cube" :lazy="true">
+                            <CubeDetailTab
+                                :loadedCubes="loadedCubes"
+                                :overviewTableData="overviewTableData"
+                                :similarityMatrix="similarityMatrix"
+                                :peerStats="peerStats"
+                                :loadCubeById="loadCubeById"
+                                :loadingProgress="loadingProgress"
+                                :selectedCubeId="cubeTabSelectedId"
+                                :activeSubtab="cubeTabSubtab"
+                                :searchQuery="cubeTabSearchQuery"
+                                @update:selectedCubeId="(v) => cubeTabSelectedId = v"
+                                @update:activeSubtab="(v) => cubeTabSubtab = v"
+                                @update:searchQuery="(v) => cubeTabSearchQuery = v"
+                            />
+                        </el-tab-pane>
+
                         <!-- <el-tab-pane label="Themes" name="archetypes" :lazy="true" :disabled="Object.keys(loadedCubes).length === 0">
                             ArchetypeAnalysisTab was removed; restore from git history if reintroducing.
                         </el-tab-pane> -->
@@ -110,7 +127,7 @@
 import { ref, shallowRef, computed, reactive, watch, watchEffect, provide, onMounted, nextTick } from 'vue';
 import type { SortDirection } from './util/SortConfig';
 import { stripSortTokens } from './util/SortConfig';
-import { useHashRouter } from './util/useHashRouter';
+import { useHashRouter, validateCubeSubtab } from './util/useHashRouter';
 import { useDebounceFn } from '@vueuse/core';
 import { useDetailNavigation, suppressHashReconcile } from './util/useDetailNavigation';
 import { ElMessage, ElNotification } from 'element-plus';
@@ -142,6 +159,7 @@ import InfographicTab from './tabs/InfographicTab.vue';
 import CardsTab from './tabs/CardsTab.vue';
 import ComparisonTab from './tabs/ComparisonTab.vue';
 import ChecksTab from './tabs/ChecksTab.vue';
+import CubeDetailTab from './tabs/CubeDetailTab.vue';
 
 registerTheme('darkbmj', darkbmjTheme);
 provide(THEME_KEY, 'darkbmj');
@@ -224,6 +242,10 @@ const navigateToComparison = (cubeAId: string, cubeBId: string) => {
 provide('navigateToComparison', navigateToComparison);
 provide('refreshingCubeIds', refreshingCubeIds);
 
+const cubeTabSelectedId = ref<string | null>(null);
+const cubeTabSubtab = ref<string>('details');
+const cubeTabSearchQuery = ref('');
+
 const cardTableQuery = ref('');
 provide('cardTableQuery', cardTableQuery);
 
@@ -249,7 +271,9 @@ const debouncedSync = useDebounceFn(() => {
         ? stripSortTokens(cardTableQuery.value)
         : activeTab.value === 'overview'
             ? stripSortTokens(overviewSearchQuery.value)
-            : '';
+            : activeTab.value === 'cube'
+                ? cubeTabSearchQuery.value
+                : '';
 
     const currentSortProp = activeTab.value === 'cards'
         ? cardSortProp.value
@@ -290,6 +314,8 @@ const debouncedSync = useDebounceFn(() => {
         compareA: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeAId : null,
         compareB: activeTab.value === 'compare' && comparePair.value ? comparePair.value.cubeBId : null,
         allCards: activeTab.value === 'cards' && showAllCards.value,
+        cubeId: activeTab.value === 'cube' ? cubeTabSelectedId.value : null,
+        cubeSubtab: activeTab.value === 'cube' ? cubeTabSubtab.value : null,
     });
 }, 100);
 
@@ -306,6 +332,9 @@ watch(
         overviewSortDirection,
         comparePair,
         showAllCards,
+        cubeTabSelectedId,
+        cubeTabSubtab,
+        cubeTabSearchQuery,
         // Sync when loading finishes so the URL flips back to a clean ?preset=name.
         // Also gate the effect so intermediate loading states don't leak "remove=<huge list>".
         () => loadingProgress.active,
@@ -340,6 +369,10 @@ onHashChange(async (newState) => {
         overviewSearchQuery.value = newState.q;
         if (newState.order) overviewSortProp.value = newState.order;
         if (newState.direction) overviewSortDirection.value = newState.direction === 'asc' ? 'ascending' : 'descending';
+    } else if (newState.tab === 'cube') {
+        cubeTabSelectedId.value = newState.cubeId;
+        cubeTabSubtab.value = validateCubeSubtab(newState.cubeSubtab) ?? 'details';
+        cubeTabSearchQuery.value = newState.q;
     }
 
     showAllCards.value = newState.allCards;
@@ -612,6 +645,8 @@ const addCubes = async (cubeIds: string[]) => {
     similarityMatrix.value = computeSimilarityMatrix(loadedCubes.value);
     loadingProgress.active = false;
 };
+
+const loadCubeById = (id: string) => addCubes([id]);
 
 const saveCollection = (name: string) => {
     const cubeIds = Object.keys(visibleLoadedCubes.value);
@@ -975,6 +1010,15 @@ provide('removeCube', removeCube);
 provide('checksState', checksState);
 provide('checkResults', checkResults);
 
+const openInCubeTab = (opts: { cubeId: string; subtab: string; query: string }) => {
+    cubeTabSelectedId.value = opts.cubeId;
+    cubeTabSubtab.value = opts.subtab;
+    cubeTabSearchQuery.value = opts.query;
+    closeAllDialogs();
+    activeTab.value = 'cube';
+};
+provide('openInCubeTab', openInCubeTab);
+
 onMounted(async () => {
     // Start data initialization in the background without blocking the UI
     ensureScryfallInitialized();
@@ -1001,6 +1045,12 @@ onMounted(async () => {
         overviewSearchQuery.value = hashState.q;
         if (hashState.order) overviewSortProp.value = hashState.order;
         if (hashState.direction) overviewSortDirection.value = hashState.direction === 'asc' ? 'ascending' : 'descending';
+    }
+
+    if (hashState.tab === 'cube') {
+        cubeTabSelectedId.value = hashState.cubeId;
+        cubeTabSubtab.value = validateCubeSubtab(hashState.cubeSubtab) ?? 'details';
+        cubeTabSearchQuery.value = hashState.q;
     }
 
     showAllCards.value = hashState.allCards;
