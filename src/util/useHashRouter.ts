@@ -11,9 +11,20 @@ export interface HashRouterState {
     compareA: string | null;
     compareB: string | null;
     allCards: boolean;
+    cubeId: string | null;
+    cubeSubtab: string | null;
 }
 
-const VALID_TABS = ['overview', 'infographic', 'statistics', 'compare', 'cards', 'checks', 'about'];
+const VALID_TABS = ['overview', 'infographic', 'statistics', 'compare', 'cards', 'checks', 'about', 'cube'];
+
+export const VALID_CUBE_SUBTABS = [
+    'details', 'list', 'charts', 'keywords', 'sets', 'tokens', 'similar', 'history', 'samplepack',
+] as const;
+
+export function validateCubeSubtab(value: string | null): string | null {
+    if (!value) return null;
+    return (VALID_CUBE_SUBTABS as readonly string[]).includes(value) ? value : null;
+}
 
 export function parseHash(hash: string): HashRouterState {
     // Expected: #/{tab}?{params} or empty
@@ -38,6 +49,8 @@ export function parseHash(hash: string): HashRouterState {
         compareA: params.get('a') || null,
         compareB: params.get('b') || null,
         allCards: params.get('allCards') === '1',
+        cubeId: params.get('id') || null,
+        cubeSubtab: params.get('sub') || null,
     };
 }
 
@@ -56,6 +69,10 @@ export function serializeHash(state: HashRouterState): string {
     if (state.tab === 'compare') {
         if (state.compareA) params.set('a', state.compareA);
         if (state.compareB) params.set('b', state.compareB);
+    }
+    if (state.tab === 'cube') {
+        if (state.cubeId) params.set('id', state.cubeId);
+        if (state.cubeSubtab && state.cubeSubtab !== 'details') params.set('sub', state.cubeSubtab);
     }
     if (state.allCards) params.set('allCards', '1');
 
@@ -88,6 +105,8 @@ function migrateLegacyUrl(): string {
             compareA: null,
             compareB: null,
             allCards: false,
+            cubeId: null,
+            cubeSubtab: null,
         };
         const hash = serializeHash(state);
         history.replaceState(null, '', window.location.pathname + hash);
