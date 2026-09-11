@@ -1358,6 +1358,7 @@ const totalUniqueTokenCount = computed(() => {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-bottom: 16px;
 }
 
 .cube-detail-image {

@@ -192,6 +192,20 @@ const onSelectCubeFromView = (id: string) => {
     emit('update:searchQuery', '');
 };
 
+// Default to the first visible loaded cube when the tab is entered with no
+// selection (either at mount, or after cubes finish loading in the background).
+// A URL-supplied selectedCubeId short-circuits this — the auto-load watch handles it.
+watch(
+    () => Object.keys(props.loadedCubes).length,
+    (count) => {
+        if (props.selectedCubeId) return;
+        if (count === 0) return;
+        const firstVisible = visibleOptions.value[0]?.id ?? Object.keys(props.loadedCubes)[0];
+        if (firstVisible) emit('update:selectedCubeId', firstVisible);
+    },
+    { immediate: true },
+);
+
 // Auto-load when the URL supplies an id we don't have yet.
 watch(
     () => props.selectedCubeId,
@@ -225,7 +239,7 @@ watch(
 }
 
 .cube-selector-row {
-    max-width: 900px;
+    max-width: 440px;
 }
 
 .cube-tab-loading {
