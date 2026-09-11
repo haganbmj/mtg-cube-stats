@@ -530,8 +530,40 @@
                 </el-tab-pane>
 
                 <el-tab-pane :label="`Tokens (${activeCube.stats?.uniqueTokenCount ?? 0})`" name="tokens" :lazy="true">
-                    <div class="tokens-tab">
-                        <div v-for="entry in tokensTabData" :key="entry.tokenId" class="token-entry">
+                    <div class="tokens-filter">
+                        <div class="filter-group">
+                            <label class="tokens-filter-label filter-group-label">Filter</label>
+                            <el-button-group>
+                                <el-button :icon="BrushFilled" :type="filterMode === 'dim' ? 'primary' : ''" @click="filterMode = 'dim'" title="Highlight matched tokens" />
+                                <el-button :icon="Hide" :type="filterMode === 'hide' ? 'primary' : ''" @click="filterMode = 'hide'" title="Hide unmatched tokens" />
+                            </el-button-group>
+                        </div>
+                        <div class="filter-group">
+                            <label class="tokens-filter-label">Columns</label>
+                            <el-input-number
+                                v-model="visualColumnCount"
+                                :min="1"
+                                :max="20"
+                                :step="1"
+                                controls-position="right"
+                                class="columns-input"
+                            />
+                        </div>
+                    </div>
+                    <div class="tokens-filter-status">
+                        <div class="tokens-match-count">
+                            <el-text size="small" type="info">
+                                Filtered to {{ matchingOracleIds ? `${matchedTokenIds?.size ?? 0} / ${totalUniqueTokenCount}` : totalUniqueTokenCount }} tokens
+                            </el-text>
+                        </div>
+                    </div>
+                    <div class="tokens-tab" :style="{ gridTemplateColumns: `repeat(${visualColumnCount}, 1fr)` }">
+                        <div
+                            v-for="entry in tokensTabData"
+                            :key="entry.tokenId"
+                            class="token-entry"
+                            :class="{ 'token-entry--dimmed': filterMode === 'dim' && matchedTokenIds && !matchedTokenIds.has(entry.tokenId) }"
+                        >
                             <el-image
                                 :src="entry.token!.urlFront"
                                 fit="contain"
@@ -567,7 +599,12 @@
                                         <template #content>
                                             <el-image :src="card.urlFront" fit="contain" :class="['card-image', card.setCode?.toLowerCase()]" />
                                         </template>
-                                        <el-link @click="openCardDetailDialog?.(card.oracleId)" class="token-source-name" underline="never">{{ card.name }}</el-link>
+                                        <el-link
+                                            @click="openCardDetailDialog?.(card.oracleId)"
+                                            class="token-source-name"
+                                            :class="{ 'token-source-name--dimmed': filterMode === 'dim' && matchingOracleIds && !matchingOracleIds.has(card.oracleId) }"
+                                            underline="never"
+                                        >{{ card.name }}</el-link>
                                     </el-tooltip></div>
                             </div>
                         </div>
@@ -745,7 +782,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject, toRef, type Ref } from 'vue';
 import { useDateFormat, useWindowSize } from '@vueuse/core';
-import { Loading, Link, Refresh, Clock, InfoFilled, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
+import { Loading, Link, Refresh, Clock, InfoFilled, Delete, CircleCheck, CircleClose, BrushFilled, Hide } from '@element-plus/icons-vue';
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -754,6 +791,7 @@ import type { ChecksState, CheckResult } from '../types/checks';
 import type { ScryfallToken } from '../types/scryfall';
 import { formatPrice } from '../util/HelperFunctions';
 import { getTokens } from '../util/CubeFunctions';
+import { filterMode, visualColumnCount } from '../util/CubeListDisplayPrefs';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { listCachedSnapshots, evictCube } from '../util/CubeCache';
 import type { CachedCube } from '../util/CubeCache';
@@ -1245,12 +1283,16 @@ watch([() => props.visible, activeCubeId], () => {
     sharedSearchQuery.value = '';
 });
 
-// Tokens tab: unique tokens from the filtered card set, sorted alphabetically, with the cards that produce each
+// Tokens tab: unique tokens produced by cards in the cube, sorted alphabetically, with the cards that produce each.
+// In `hide` mode, only tokens whose sources match the active search are included (matches CubeListView semantics).
+// In `dim` mode, all tokens are included; the template dims unmatched entries and unmatched source names.
 const tokensTabData = computed(() => {
     const tokenMap = getTokens();
     const tokenToSources = new Map<string, Map<string, CubeCard>>();
 
-    filteredCards.value.forEach(card => {
+    const sourceCards = filterMode.value === 'hide' ? filteredCards.value : activeCubeCards.value;
+
+    sourceCards.forEach(card => {
         (card.tokenOracleIds ?? []).forEach(tokenId => {
             if (!tokenToSources.has(tokenId)) tokenToSources.set(tokenId, new Map());
             // Dedupe sources by oracleId so cubes with multiple copies (or cards listing the same token twice) render once.
@@ -1266,6 +1308,30 @@ const tokensTabData = computed(() => {
         }))
         .filter(entry => entry.token !== undefined)
         .sort((a, b) => (a.token!.name).localeCompare(b.token!.name));
+});
+
+// Set of tokenIds whose sources include at least one card matching the active search.
+// Null when no search is active. Used for both dim styling and the match count.
+const matchedTokenIds = computed<Set<string> | null>(() => {
+    const matches = matchingOracleIds.value;
+    if (!matches) return null;
+    const s = new Set<string>();
+    for (const entry of tokensTabData.value) {
+        if (entry.sources.some(src => matches.has(src.oracleId))) s.add(entry.tokenId);
+    }
+    return s;
+});
+
+// Unfiltered count of unique renderable tokens in the active cube (independent of filter mode / search).
+const totalUniqueTokenCount = computed(() => {
+    const tokenMap = getTokens();
+    const s = new Set<string>();
+    for (const card of activeCubeCards.value) {
+        for (const t of (card.tokenOracleIds ?? [])) {
+            if (tokenMap[t] !== undefined) s.add(t);
+        }
+    }
+    return s.size;
 });
 </script>
 
@@ -1415,14 +1481,55 @@ const tokensTabData = computed(() => {
     width: 100%;
 }
 
+.tokens-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 12px;
+}
+
+.tokens-filter .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tokens-filter-label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+}
+
+.tokens-filter .columns-input {
+    width: 90px;
+}
+
+.tokens-filter-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.tokens-match-count {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .tokens-filter .filter-group-label {
+        display: none;
+    }
+}
+
 .tokens-tab {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
     padding: 8px 0;
 
     @media (max-width: 760px) {
-        grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
 }
@@ -1431,6 +1538,14 @@ const tokensTabData = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.token-entry--dimmed {
+    opacity: 0.35;
+}
+
+.token-source-name--dimmed {
+    opacity: 0.4;
 }
 
 .token-image {
