@@ -117,6 +117,7 @@ const manifest: Manifest = {
         '9bd7c4dc-408d-4ebb-b08a-039528a4a50e', // CloudedBirb - Peasant Vintage PowerMax!
         '629ab6452a407b100be28423', // tsuihou - Limited All Stars
         '60a4d6d0586303104c16ba21', // marcinkruk - The Warsaw Peasant Cube
+        '216fe320-4d78-4d1f-aae4-b36231f59a9e', // shmouzkeisha - The Library of Babel
     ],
 };
 
