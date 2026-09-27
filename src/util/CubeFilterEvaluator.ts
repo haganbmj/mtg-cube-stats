@@ -33,6 +33,8 @@ const CUBE_KEYWORD_ALIASES: Record<string, string> = {
     followers: 'followers',
     // Size (raw numeric)
     size: 'size',
+    // `cubesize` covers cases where the shared parser normalizes `size` -> `cubesize` for the card-tab filter.
+    cubesize: 'size',
     cards: 'size',
     totalcards: 'size',
     // Average CMC
