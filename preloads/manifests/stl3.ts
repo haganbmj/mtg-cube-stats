@@ -19,6 +19,11 @@ const manifest: Manifest = {
         'f43649bc-b213-4e62-b7d1-68dfb27af966', // The Arti Parti
         '514a9a6f-20a2-4d91-ba90-34fe72aa4de1', // No Mana No Cry
         'afb85eb0-31b4-45c4-b5a9-1f6a0f5a1fae', // Boudican Destruction Horizon
+        '07481055-8612-411b-b3cb-a4deca988e95', // Usman
+        '37475a24-8f7d-448e-b562-1404e42f390d', // Floor is Lava
+        'fc7f96b0-5c44-4f1f-a9bd-cbbb4f5f0c15', // Face Plant
+        '2c26979e-028f-4af3-954d-5d79c93990bd', // Flavor Cube
+        '48b0aee6-fb17-4656-9123-6bd12ff017b5', // Crumbling
     ],
 };
 
