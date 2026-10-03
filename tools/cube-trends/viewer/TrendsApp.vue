@@ -28,8 +28,16 @@
                 <el-tab-pane v-for="view in VIEWS" :key="view" :label="view" :name="view" />
             </el-tabs>
 
-            <OverviewView v-if="selectedView === 'overview'" :meta="meta" />
+            <OverviewView v-if="selectedView === 'overview'" :data="fullData" />
+            <CardsView v-else-if="selectedView === 'cards'" :data="fullData" @select-card="selectedCard = $event" />
+            <SetsView v-else-if="selectedView === 'sets'" :data="fullData" />
+            <RecencyView v-else-if="selectedView === 'recency'" :data="fullData" />
+            <ShapeView v-else-if="selectedView === 'shape'" :data="fullData" />
             <EmptyState v-else reason="Coming soon" />
+
+            <el-drawer v-model="cardDrawerVisible" size="70%" :title="selectedCardName">
+                <CardDetailView v-if="selectedCard" :data="fullData" :oracleId="selectedCard" />
+            </el-drawer>
         </template>
     </div>
 </template>
@@ -37,9 +45,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { VIEWS, parseHash, buildHash, type ViewName } from './router';
-import { listManifests, loadManifestData, type TrendsData } from './dataSource';
+import { listManifests, loadManifestData, type TrendsData, type AnalysisData } from './dataSource';
+import type { MetaResult } from '../output';
 import EmptyState from './components/EmptyState.vue';
 import OverviewView from './views/OverviewView.vue';
+import CardsView from './views/CardsView.vue';
+import CardDetailView from './views/CardDetailView.vue';
+import SetsView from './views/SetsView.vue';
+import RecencyView from './views/RecencyView.vue';
+import ShapeView from './views/ShapeView.vue';
 
 const manifests = ref<string[]>(listManifests());
 const selectedManifest = ref<string | null>(null);
@@ -50,6 +64,20 @@ const data = ref<TrendsData | null>(null);
 const meta = computed(() => data.value?.meta ?? null);
 const generatedAt = computed(() => (meta.value ? new Date(meta.value.generatedAt).toLocaleString() : ''));
 const totalGaps = computed(() => (meta.value ? meta.value.cubes.reduce((sum, cube) => sum + cube.gaps, 0) : 0));
+
+// Non-empty analyses guarantee every AnalysisData field is present; asserted once here.
+const fullData = computed(() => data.value as Required<AnalysisData> & { meta: MetaResult });
+const cardDrawerVisible = computed({
+    get: () => selectedCard.value !== null,
+    set: (value: boolean) => {
+        if (!value) {
+            selectedCard.value = null;
+        }
+    },
+});
+const selectedCardName = computed(() => (
+    fullData.value?.cards?.cards.find((card) => card.info.oracleId === selectedCard.value)?.info.name ?? ''
+));
 
 async function applyHash(): Promise<void> {
     const route = parseHash(location.hash);
@@ -75,6 +103,7 @@ function syncHash(): void {
 
 watch(selectedManifest, syncHash);
 watch(selectedView, syncHash);
+watch(selectedCard, syncHash);
 
 onMounted(() => {
     window.addEventListener('hashchange', applyHash);
