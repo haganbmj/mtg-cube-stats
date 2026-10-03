@@ -19,6 +19,7 @@
     "preload:fetch": "tsx preload-cube-data.ts --fetch-only",
     "preload:assemble": "tsx preload-cube-data.ts --assemble-only",
     "trends:fetch": "tsx tools/cube-trends/cli/fetch.ts",
+    "trends:analyze": "node --max-old-space-size=4096 --import tsx tools/cube-trends/cli/analyze.ts",
     "test": "vitest"
   },
   "dependencies": {
