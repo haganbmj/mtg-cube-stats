@@ -64,6 +64,29 @@ describe('analyzeSurvival', () => {
         expect(result.established).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0 }]);
     });
 
+    it('enters left-truncated spells into the risk set at the first observing sample', () => {
+        const samples = [0, 10 * DAY, 20 * DAY];
+        const cubes = [
+            {
+                id: 'a',
+                revisions: [
+                    { id: 'a-0', date: 0, cards: ['old', 'fresh', 'stay'], addedAt: { old: -90 * DAY, fresh: 0, stay: 0 } },
+                    { id: 'a-1', date: 10 * DAY, cards: ['old', 'stay'] },
+                    { id: 'a-2', date: 20 * DAY, cards: ['stay'] },
+                ],
+                grid: ['a-0', 'a-1', 'a-2'],
+            },
+        ];
+
+        const result = analyzeSurvival(makeContext({ samples, cubes, config: flatWeighting }));
+        if ('empty' in result) {
+            throw new Error('expected a non-empty result');
+        }
+
+        // old (entry 90, removed at 110) is not at risk at t=10: S(10) = 1 - 1/2
+        expect(result.overall).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0.5 }, { t: 110, s: 0 }]);
+    });
+
     it('returns empty when there are no card spells in the sampled window', () => {
         const samples = [0];
         const cubes = [

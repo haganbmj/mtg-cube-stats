@@ -46,6 +46,13 @@ export function theilSen(xs: number[], ys: number[]): number {
 export interface Spell {
     duration: number;
     event: boolean;
+    // delayed entry (left truncation): at risk only for entry < t <= duration
+    entry?: number;
+}
+
+function atRisk(spell: Spell, t: number): boolean {
+    const entry = spell.entry ?? 0;
+    return spell.duration >= t && (entry <= 0 || entry < t);
 }
 
 export function kaplanMeier(spells: Spell[]): { t: number; s: number }[] {
@@ -54,7 +61,7 @@ export function kaplanMeier(spells: Spell[]): { t: number; s: number }[] {
     const points = [{ t: 0, s: 1 }];
     let survival = 1;
     for (const t of eventTimes) {
-        const n = spells.filter((s) => s.duration >= t).length;
+        const n = spells.filter((s) => atRisk(s, t)).length;
         const d = spells.filter((s) => s.event && s.duration === t).length;
         survival *= 1 - d / n;
         points.push({ t, s: survival });

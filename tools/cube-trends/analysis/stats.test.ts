@@ -47,6 +47,19 @@ describe('kaplanMeier', () => {
             { t: 7, s: 0 },
         ]);
     });
+
+    it('counts a delayed-entry spell at risk only after its entry time', () => {
+        const spells = [
+            { duration: 10, event: true },
+            { duration: 20, event: true, entry: 15 },
+            { duration: 30, event: false, entry: 0 },
+        ];
+        expect(kaplanMeier(spells)).toEqual([
+            { t: 0, s: 1 },
+            { t: 10, s: 0.5 },
+            { t: 20, s: 0.25 },
+        ]);
+    });
 });
 
 describe('largestRemainder', () => {

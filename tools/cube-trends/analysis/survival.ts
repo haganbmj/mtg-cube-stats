@@ -19,30 +19,32 @@ interface SpellRecord {
     key: string;
     start: Ms;
     duration: number;
+    entry: number;
     event: boolean;
 }
 
 // Walks a cube's distinct revisions in order, opening a spell when a key first appears
 // (or reappears after a removal) and closing it when a later revision lacks it.
-function computeCubeSpells(cRevisions: PanelRevision[], censorAt: Ms): SpellRecord[] {
+// firstSeen maps a revision id to the first sample observing it (the spell's entry time).
+function computeCubeSpells(cRevisions: PanelRevision[], firstSeen: Map<string, Ms>, censorAt: Ms): SpellRecord[] {
     const spells: SpellRecord[] = [];
-    const open = new Map<string, Ms>();
+    const open = new Map<string, { start: Ms; observed: Ms }>();
 
     for (const rev of cRevisions) {
         for (const key of rev.cards) {
             if (!open.has(key)) {
-                open.set(key, rev.addedAt.get(key) ?? rev.date);
+                open.set(key, { start: rev.addedAt.get(key) ?? rev.date, observed: firstSeen.get(rev.id)! });
             }
         }
-        for (const [key, start] of [...open]) {
+        for (const [key, { start, observed }] of [...open]) {
             if (!rev.cards.has(key)) {
-                spells.push({ key, start, duration: Math.max(0, (rev.date - start) / DAY), event: true });
+                spells.push({ key, start, duration: Math.max(0, (rev.date - start) / DAY), entry: Math.max(0, (observed - start) / DAY), event: true });
                 open.delete(key);
             }
         }
     }
-    for (const [key, start] of open) {
-        spells.push({ key, start, duration: Math.max(0, (censorAt - start) / DAY), event: false });
+    for (const [key, { start, observed }] of open) {
+        spells.push({ key, start, duration: Math.max(0, (censorAt - start) / DAY), entry: Math.max(0, (observed - start) / DAY), event: false });
     }
 
     return spells;
@@ -59,22 +61,28 @@ export function analyzeSurvival(ctx: AnalysisContext): SurvivalResult {
     const established: Spell[] = [];
 
     cubes.forEach((_cube, c) => {
-        const revIds = [...new Set(grid[c].filter((id): id is string => id !== null))]
+        const firstSeen = new Map<string, Ms>();
+        grid[c].forEach((id, k) => {
+            if (id !== null && !firstSeen.has(id)) {
+                firstSeen.set(id, samples[k]);
+            }
+        });
+        const revIds = [...firstSeen.keys()]
             .sort((a, b) => revisions.get(a)!.date - revisions.get(b)!.date);
         const cRevisions = revIds.map((id) => revisions.get(id)!);
 
-        for (const spell of computeCubeSpells(cRevisions, lastSample)) {
-            const entry: Spell = { duration: spell.duration, event: spell.event };
-            overall.push(entry);
+        for (const spell of computeCubeSpells(cRevisions, firstSeen, lastSample)) {
+            const km: Spell = { duration: spell.duration, event: spell.event, entry: spell.entry };
+            overall.push(km);
 
             const info = cardInfo.get(baseOracleId(spell.key));
             if (!info?.eligibility) {
                 continue;
             }
             if (spell.start - info.eligibility.date < newCardThresholdMs) {
-                newCards.push(entry);
+                newCards.push(km);
             } else {
-                established.push(entry);
+                established.push(km);
             }
         }
     });
