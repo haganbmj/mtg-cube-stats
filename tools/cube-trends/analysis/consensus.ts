@@ -32,7 +32,10 @@ function emptyResult(): ConsensusResult {
         size: 0,
         quotas: Object.fromEntries(COLOR_CATEGORIES.map((c) => [c, 0])) as Record<ColorCategory, number>,
         cards: [],
-        nearMisses: Object.fromEntries(COLOR_CATEGORIES.map((c) => [c, []])) as Record<ColorCategory, ConsensusCard[]>,
+        nearMisses: COLOR_CATEGORIES.reduce((acc, cat) => {
+            acc[cat] = [];
+            return acc;
+        }, {} as Record<ColorCategory, ConsensusCard[]>),
         shape: { type: {}, mv: {} },
     };
 }

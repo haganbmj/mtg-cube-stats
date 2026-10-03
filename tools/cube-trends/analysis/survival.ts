@@ -58,7 +58,7 @@ export function analyzeSurvival(ctx: AnalysisContext): SurvivalResult {
     const newCards: Spell[] = [];
     const established: Spell[] = [];
 
-    cubes.forEach((cube, c) => {
+    cubes.forEach((_cube, c) => {
         const revIds = [...new Set(grid[c].filter((id): id is string => id !== null))]
             .sort((a, b) => revisions.get(a)!.date - revisions.get(b)!.date);
         const cRevisions = revIds.map((id) => revisions.get(id)!);
