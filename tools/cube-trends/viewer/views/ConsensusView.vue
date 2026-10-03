@@ -19,18 +19,29 @@
         <h3>Cards by Category</h3>
         <div v-for="category in COLOR_CATEGORIES" :key="category" class="consensus-category">
             <h4>{{ category }}</h4>
-            <ul class="consensus-card-list">
-                <li v-for="card in cardsByCategory.get(category)" :key="card.oracleId" class="consensus-card">
-                    <CardName
-                        :name="cardName(card.oracleId)"
-                        :imageUrl="cardLookup.get(card.oracleId)?.info.urlFront"
-                        :setCode="cardLookup.get(card.oracleId)?.info.eligibility?.setCode"
-                        :copies="card.quantity"
-                    />
-                    <span>{{ formatPercent(card.score) }}</span>
-                    <span>{{ formatPercent(card.currentIr) }}</span>
-                </li>
-            </ul>
+            <el-table :data="cardsByCategory.get(category)" size="small">
+                <el-table-column label="Card">
+                    <template #default="{ row }">
+                        <CardName
+                            :name="cardName(row.oracleId)"
+                            :imageUrl="cardLookup.get(row.oracleId)?.info.urlFront"
+                            :setCode="cardLookup.get(row.oracleId)?.info.eligibility?.setCode"
+                            :copies="row.quantity"
+                        />
+                    </template>
+                </el-table-column>
+                <el-table-column label="Qty">
+                    <template #default="{ row }">{{ row.quantity }}</template>
+                </el-table-column>
+                <el-table-column>
+                    <template #header><InfoLabel label="Score" :tip="scoreTip" /></template>
+                    <template #default="{ row }">{{ formatPercent(row.score) }}</template>
+                </el-table-column>
+                <el-table-column>
+                    <template #header><InfoLabel label="Current IR" :tip="currentIrTip" /></template>
+                    <template #default="{ row }">{{ formatPercent(row.currentIr) }}</template>
+                </el-table-column>
+            </el-table>
         </div>
 
         <h3>Type Mix: Consensus vs Community</h3>
@@ -53,10 +64,15 @@
                             />
                         </template>
                     </el-table-column>
-                    <el-table-column label="Score">
+                    <el-table-column label="Qty">
+                        <template #default="{ row }">{{ row.quantity }}</template>
+                    </el-table-column>
+                    <el-table-column>
+                        <template #header><InfoLabel label="Score" :tip="scoreTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.score) }}</template>
                     </el-table-column>
-                    <el-table-column label="Current IR">
+                    <el-table-column>
+                        <template #header><InfoLabel label="Current IR" :tip="currentIrTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.currentIr) }}</template>
                     </el-table-column>
                 </el-table>
@@ -77,10 +93,14 @@ import { downloadText, type CsvColumn } from '../util/csv';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';
+import InfoLabel from '../components/InfoLabel.vue';
 
 const props = defineProps<{
     data: FullTrendsData;
 }>();
+
+const scoreTip = 'Mean inclusion rate over the last 90 days of snapshots. Cards are selected for the consensus cube in this order.';
+const currentIrTip = 'Share of cubes (weighted) that include this card at the latest snapshot.';
 
 const cardLookup = computed(() => buildCardLookup(props.data.cards));
 
@@ -166,16 +186,4 @@ function downloadImportList(): void {
     font-weight: bold;
 }
 
-.consensus-card-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.consensus-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 2px 0;
-}
 </style>

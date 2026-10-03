@@ -3,6 +3,7 @@ import { VIEWS, VIEW_LABELS, parseHash, buildHash, type Route } from './router';
 import { toCsv } from './util/csv';
 import { releaseMarkLines } from './util/releaseMarkers';
 import { formatCount } from './util/format';
+import { compareNullable, byName } from './util/sort';
 
 describe('formatCount', () => {
     it('formats a cards-per-cube mean as a plain 2-decimal number, not a percent', () => {
@@ -112,5 +113,28 @@ describe('releaseMarkLines', () => {
             { xAxis: 2000, name: 'war' },
         ]);
         expect(result.label.formatter({ name: 'dom' })).toBe('dom');
+    });
+});
+
+describe('compareNullable', () => {
+    it('sorts numbers ascending', () => {
+        expect(compareNullable(1, 2)).toBeLessThan(0);
+        expect(compareNullable(2, 1)).toBeGreaterThan(0);
+        expect(compareNullable(1, 1)).toBe(0);
+    });
+
+    it('treats null/undefined as -Infinity so they sort first ascending', () => {
+        expect(compareNullable(null, 1)).toBeLessThan(0);
+        expect(compareNullable(undefined, 1)).toBeLessThan(0);
+        expect(compareNullable(1, null)).toBeGreaterThan(0);
+        expect(compareNullable(null, undefined)).toBe(0);
+    });
+});
+
+describe('byName', () => {
+    it('compares case-insensitively', () => {
+        expect(byName('apple', 'Banana')).toBeLessThan(0);
+        expect(byName('Banana', 'apple')).toBeGreaterThan(0);
+        expect(byName('Apple', 'apple')).toBe(0);
     });
 });

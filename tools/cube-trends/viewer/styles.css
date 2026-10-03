@@ -142,3 +142,9 @@ body {
 .trends-view h4 {
     font-size: 0.9rem;
 }
+
+.chart-description {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    margin: 0 0 0.5rem;
+}
