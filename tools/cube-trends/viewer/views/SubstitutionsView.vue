@@ -34,8 +34,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { Substitution } from '../../analysis/substitutions';
 import { copyNumber, type CardInfo } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
@@ -43,10 +42,8 @@ import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
 import type { CsvColumn } from '../util/csv';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const emptyReason = computed(() => ('empty' in props.data.substitutions ? props.data.substitutions.reason : null));

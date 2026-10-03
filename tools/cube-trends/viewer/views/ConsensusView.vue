@@ -59,8 +59,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Download } from '@element-plus/icons-vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { ConsensusCard } from '../../analysis/consensus';
 import { COLOR_CATEGORIES, MV_BUCKETS, type ColorCategory } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
@@ -69,10 +68,8 @@ import { downloadText, type CsvColumn } from '../util/csv';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const cardLookup = computed(() => buildCardLookup(props.data.cards));

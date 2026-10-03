@@ -7,15 +7,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import TrendChart from '../components/TrendChart.vue';
 import EmptyState from '../components/EmptyState.vue';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const emptyReason = computed(() => ('empty' in props.data.survival ? props.data.survival.reason : null));

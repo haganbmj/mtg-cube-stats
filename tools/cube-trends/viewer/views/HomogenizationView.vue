@@ -7,18 +7,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import { releaseMarkLines } from '../util/releaseMarkers';
 import TrendChart from '../components/TrendChart.vue';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
-
-const points = computed(() => props.data.timeline.points.filter((p) => p.homogenization !== null));
 
 const option = computed(() => ({
     tooltip: { trigger: 'axis' },
@@ -31,29 +26,33 @@ const option = computed(() => ({
             type: 'line',
             stack: 'band',
             symbol: 'none',
+            connectNulls: false,
             lineStyle: { opacity: 0 },
             areaStyle: { opacity: 0 },
-            data: points.value.map((p) => [p.t, p.homogenization!.q1]),
+            data: props.data.timeline.points.map((p) => [p.t, p.homogenization?.q1 ?? null]),
         },
         {
             name: 'IQR',
             type: 'line',
             stack: 'band',
             symbol: 'none',
+            connectNulls: false,
             lineStyle: { opacity: 0 },
             areaStyle: { opacity: 0.2 },
-            data: points.value.map((p) => [p.t, p.homogenization!.q3 - p.homogenization!.q1]),
+            data: props.data.timeline.points.map((p) => [p.t, p.homogenization ? p.homogenization.q3 - p.homogenization.q1 : null]),
         },
         {
             name: 'Weighted Mean',
             type: 'line',
-            data: points.value.map((p) => [p.t, p.homogenization!.weightedMean]),
+            connectNulls: false,
+            data: props.data.timeline.points.map((p) => [p.t, p.homogenization?.weightedMean ?? null]),
             markLine: releaseMarkLines(props.data.sets.markers),
         },
         {
             name: 'Mean',
             type: 'line',
-            data: points.value.map((p) => [p.t, p.homogenization!.mean]),
+            connectNulls: false,
+            data: props.data.timeline.points.map((p) => [p.t, p.homogenization?.mean ?? null]),
         },
     ],
 }));

@@ -51,8 +51,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { VIEWS, parseHash, buildHash, type ViewName } from './router';
-import { listManifests, loadManifestData, type TrendsData, type AnalysisData } from './dataSource';
-import type { MetaResult } from '../output';
+import { listManifests, loadManifestData, type TrendsData, type FullTrendsData } from './dataSource';
 import EmptyState from './components/EmptyState.vue';
 import OverviewView from './views/OverviewView.vue';
 import CardsView from './views/CardsView.vue';
@@ -78,7 +77,7 @@ const generatedAt = computed(() => (meta.value ? new Date(meta.value.generatedAt
 const totalGaps = computed(() => (meta.value ? meta.value.cubes.reduce((sum, cube) => sum + cube.gaps, 0) : 0));
 
 // Non-empty analyses guarantee every AnalysisData field is present; asserted once here.
-const fullData = computed(() => data.value as Required<AnalysisData> & { meta: MetaResult });
+const fullData = computed(() => data.value as FullTrendsData);
 const cardDrawerVisible = computed({
     get: () => selectedCard.value !== null,
     set: (value: boolean) => {

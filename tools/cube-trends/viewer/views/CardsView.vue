@@ -54,8 +54,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { CardTrend } from '../../analysis/cards';
 import { COLOR_CATEGORIES, type ColorCategory } from '../../analysis/cardInfo';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
@@ -63,10 +62,8 @@ import ExportButton from '../components/ExportButton.vue';
 import Sparkline from '../components/Sparkline.vue';
 import type { CsvColumn } from '../util/csv';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const emit = defineEmits<{

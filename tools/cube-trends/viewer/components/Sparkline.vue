@@ -1,6 +1,6 @@
 <template>
     <svg :width="width" :height="height" class="sparkline">
-        <polyline :points="points" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <polyline v-for="(segment, i) in segments" :key="i" :points="segment" fill="none" stroke="currentColor" stroke-width="1.5" />
     </svg>
 </template>
 
@@ -8,7 +8,7 @@
 import { computed } from 'vue';
 
 const props = withDefaults(defineProps<{
-    values: number[];
+    values: (number | null)[];
     width?: number;
     height?: number;
 }>(), {
@@ -16,18 +16,33 @@ const props = withDefaults(defineProps<{
     height: 20,
 });
 
-const points = computed(() => {
+const segments = computed(() => {
     const { values, width, height } = props;
-    if (values.length === 0) {
-        return '';
+    const known = values.filter((v): v is number => v !== null);
+    if (known.length === 0) {
+        return [];
     }
-    const min = Math.min(...values);
-    const max = Math.max(...values);
+    const min = Math.min(...known);
+    const max = Math.max(...known);
     const range = max - min || 1;
     const step = values.length > 1 ? width / (values.length - 1) : 0;
-    return values
-        .map((v, i) => `${i * step},${height - ((v - min) / range) * height}`)
-        .join(' ');
+
+    const result: string[] = [];
+    let current: string[] = [];
+    values.forEach((v, i) => {
+        if (v === null) {
+            if (current.length > 1) {
+                result.push(current.join(' '));
+            }
+            current = [];
+            return;
+        }
+        current.push(`${i * step},${height - ((v - min) / range) * height}`);
+    });
+    if (current.length > 1) {
+        result.push(current.join(' '));
+    }
+    return result;
 });
 </script>
 

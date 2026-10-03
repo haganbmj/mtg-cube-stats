@@ -26,8 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { Trendsetter } from '../../analysis/trendsetters';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatPercent } from '../util/format';
@@ -35,10 +34,8 @@ import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
 import type { CsvColumn } from '../util/csv';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const emptyReason = computed(() => ('empty' in props.data.trendsetters ? props.data.trendsetters.reason : null));

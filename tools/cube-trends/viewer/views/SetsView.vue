@@ -48,8 +48,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { SetAdoption } from '../../analysis/sets';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatPercent } from '../util/format';
@@ -57,10 +56,8 @@ import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import type { CsvColumn } from '../util/csv';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const cardLookup = computed(() => buildCardLookup(props.data.cards));

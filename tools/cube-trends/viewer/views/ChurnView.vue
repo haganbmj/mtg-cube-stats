@@ -26,8 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { CubeChurn } from '../../analysis/churn';
 import { releaseMarkLines } from '../util/releaseMarkers';
 import { formatPercent } from '../util/format';
@@ -36,16 +35,14 @@ import ExportButton from '../components/ExportButton.vue';
 import Sparkline from '../components/Sparkline.vue';
 import type { CsvColumn } from '../util/csv';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 interface ChurnRow extends CubeChurn {
     name: string;
     owner: string;
-    sparkValues: number[];
+    sparkValues: (number | null)[];
 }
 
 const cubeLookup = computed(() => new Map(props.data.meta.cubes.map((cube) => [cube.id, cube])));
@@ -54,7 +51,7 @@ const rows = computed<ChurnRow[]>(() => props.data.churn.cubes.map((cube) => ({
     ...cube,
     name: cubeLookup.value.get(cube.cubeId)?.name ?? cube.cubeId,
     owner: cubeLookup.value.get(cube.cubeId)?.owner ?? '',
-    sparkValues: cube.rate.map((r) => r ?? 0),
+    sparkValues: cube.rate,
 })));
 
 const communityOption = computed(() => ({

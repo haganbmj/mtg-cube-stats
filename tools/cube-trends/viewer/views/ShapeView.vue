@@ -16,17 +16,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import { COLOR_CATEGORIES, MV_BUCKETS } from '../../analysis/cardInfo';
 import { releaseMarkLines } from '../util/releaseMarkers';
 import { formatPercent } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
-type FullData = Required<AnalysisData> & { meta: MetaResult };
-
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const colorOption = computed(() => ({

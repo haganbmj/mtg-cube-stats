@@ -23,6 +23,8 @@ export interface AnalysisData {
 
 export type TrendsData = { meta: MetaResult } & Partial<AnalysisData>;
 
+export type FullTrendsData = Required<AnalysisData> & { meta: MetaResult };
+
 // Task 20 rewrites this literal glob pattern.
 const modules = import.meta.glob('../output/*/*.json') as Record<string, () => Promise<{ default: unknown }>>;
 

@@ -23,7 +23,10 @@
 
         <el-row :gutter="16">
             <el-col :span="12">
-                <h3>Top Risers</h3>
+                <div class="overview-table-header">
+                    <h3>Top Risers</h3>
+                    <ExportButton filename="top-risers.csv" :rows="risers" :columns="momentumColumns" />
+                </div>
                 <el-table :data="risers" size="small">
                     <el-table-column prop="info.name" label="Card" />
                     <el-table-column label="IR">
@@ -35,7 +38,10 @@
                 </el-table>
             </el-col>
             <el-col :span="12">
-                <h3>Top Fallers</h3>
+                <div class="overview-table-header">
+                    <h3>Top Fallers</h3>
+                    <ExportButton filename="top-fallers.csv" :rows="fallers" :columns="momentumColumns" />
+                </div>
                 <el-table :data="fallers" size="small">
                     <el-table-column prop="info.name" label="Card" />
                     <el-table-column label="IR">
@@ -48,7 +54,10 @@
             </el-col>
         </el-row>
 
-        <h3>Newest Consensus Entries</h3>
+        <div class="overview-table-header">
+            <h3>Newest Consensus Entries</h3>
+            <ExportButton filename="newest-consensus.csv" :rows="newestConsensus" :columns="newestConsensusColumns" />
+        </div>
         <el-table :data="newestConsensus" size="small">
             <el-table-column label="Card">
                 <template #default="{ row }">{{ row.trend.info.name }}</template>
@@ -64,7 +73,10 @@
             </el-table-column>
         </el-table>
 
-        <h3>Cubes ({{ data.meta.cubes.length }})</h3>
+        <div class="overview-table-header">
+            <h3>Cubes ({{ data.meta.cubes.length }})</h3>
+            <ExportButton filename="cubes.csv" :rows="data.meta.cubes" :columns="cubeColumns" />
+        </div>
         <el-table :data="data.meta.cubes" size="small">
             <el-table-column prop="name" label="Cube" />
             <el-table-column prop="owner" label="Owner" />
@@ -83,19 +95,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MetaResult } from '../../output';
-import type { AnalysisData } from '../dataSource';
+import type { FullTrendsData } from '../dataSource';
 import type { CardTrend } from '../../analysis/cards';
 import type { ConsensusCard } from '../../analysis/consensus';
+import type { PanelCube } from '../../analysis/panel';
 import { buildCardLookup } from '../util/cardLookup';
 import { releaseMarkLines } from '../util/releaseMarkers';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
-
-type FullData = Required<AnalysisData> & { meta: MetaResult };
+import ExportButton from '../components/ExportButton.vue';
+import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{
-    data: FullData;
+    data: FullTrendsData;
 }>();
 
 const lastSampleIndex = computed(() => props.data.meta.samples.length - 1);
@@ -136,6 +148,26 @@ const newestConsensus = computed(() => props.data.consensus.cards
     .sort((a, b) => b.trend.firstSeen! - a.trend.firstSeen!)
     .slice(0, 10));
 
+const momentumColumns: CsvColumn<CardTrend>[] = [
+    { key: 'name', label: 'Card', value: (c) => c.info.name },
+    { key: 'current', label: 'IR', value: (c) => c.current },
+    { key: 'momentum', label: 'Momentum', value: (c) => c.momentum },
+];
+
+const newestConsensusColumns: CsvColumn<{ consensus: ConsensusCard; trend: CardTrend }>[] = [
+    { key: 'name', label: 'Card', value: (r) => r.trend.info.name },
+    { key: 'category', label: 'Category', value: (r) => r.consensus.category },
+    { key: 'firstSeen', label: 'First Seen', value: (r) => (r.trend.firstSeen === null ? '' : formatDate(r.trend.firstSeen)) },
+    { key: 'quantity', label: 'Qty', value: (r) => r.consensus.quantity },
+];
+
+const cubeColumns: CsvColumn<PanelCube & { coverage: number; gaps: number }>[] = [
+    { key: 'name', label: 'Cube', value: (c) => c.name },
+    { key: 'owner', label: 'Owner', value: (c) => c.owner },
+    { key: 'coverage', label: 'Coverage', value: (c) => c.coverage },
+    { key: 'gaps', label: 'Gaps', value: (c) => c.gaps },
+];
+
 const timelineChartOption = computed(() => ({
     tooltip: { trigger: 'axis' },
     legend: { data: ['Adds', 'Removes'] },
@@ -158,6 +190,12 @@ const timelineChartOption = computed(() => ({
 </script>
 
 <style scoped>
+.overview-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .headline-stat-title {
     font-size: 13px;
     color: var(--el-text-color-secondary);
