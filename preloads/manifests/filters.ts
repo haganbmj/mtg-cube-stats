@@ -5,12 +5,13 @@ const UNIT_MS: Record<string, number> = {
     m: 60 * 1000,
     h: 60 * 60 * 1000,
     d: 24 * 60 * 60 * 1000,
+    w: 7 * 24 * 60 * 60 * 1000,
     mo: 30 * 24 * 60 * 60 * 1000,
     y: 365 * 24 * 60 * 60 * 1000,
 };
 
 export function parseDuration(input: string): number {
-    const match = /^(\d+)(mo|m|h|d|y)$/.exec(input);
+    const match = /^(\d+)(mo|m|h|d|w|y)$/.exec(input);
     if (!match) throw new Error(`Invalid duration: "${input}"`);
     const value = Number.parseInt(match[1], 10);
     return value * UNIT_MS[match[2]];
