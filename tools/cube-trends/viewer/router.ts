@@ -14,6 +14,20 @@ export const VIEWS = [
 
 export type ViewName = typeof VIEWS[number];
 
+export const VIEW_LABELS: Record<ViewName, string> = {
+    overview: 'Overview',
+    cards: 'Cards',
+    sets: 'Sets',
+    recency: 'Recency',
+    shape: 'Shape',
+    churn: 'Churn',
+    survival: 'Survival',
+    trendsetters: 'Trendsetters',
+    homogenization: 'Homogenization',
+    substitutions: 'Substitutions',
+    consensus: 'Consensus',
+};
+
 export interface Route {
     manifest: string | null;
     view: ViewName;

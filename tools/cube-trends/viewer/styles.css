@@ -1,0 +1,144 @@
+html {
+    scrollbar-gutter: stable;
+}
+
+body {
+    font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,微软雅黑,Arial,sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+
+    margin: 0px auto;
+}
+
+.el-table .cell {
+    line-height: 20px;
+}
+
+.el-header {
+    padding-top: 0.8em;
+    padding-bottom: 0.8em;
+    height: unset;
+
+    background: var(--el-fill-color-lighter);
+    border-bottom: 1px solid var(--el-border-color);
+}
+
+.el-header a {
+    text-decoration: none;
+    color: var(--el-text-color-secondary);
+}
+
+.el-header a:hover {
+    color: var(--el-color-primary);
+}
+
+.el-main {
+    padding-top: 5px;
+    overflow: visible;
+}
+
+.el-tabs__content {
+    overflow: visible;
+}
+
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.header-links {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.header-links svg {
+    display: block;
+}
+
+@media (max-width: 480px) {
+    .header-links {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    .header-page-title {
+        display: none;
+    }
+}
+
+.cell-secondary {
+    color: var(--el-text-color-secondary);
+    margin-left: 0.5em;
+}
+
+.el-popper.card-tooltip {
+    padding: 6px 8px;
+    width: 250px;
+    height: 350px;
+}
+
+.el-popper.card-tooltip .card-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4.75% / 3.5%;
+}
+
+.el-popper.card-tooltip .card-image.lea {
+    border-radius: 7% / 5.5%;
+}
+
+@media (hover: none), (pointer: coarse) {
+    .el-popper[role="tooltip"]:not(:has(.el-select-dropdown)):not(:has(.el-dropdown-menu)):not(:has(.el-color-dropdown)):not(.el-popover) {
+        display: none !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .el-tabs__nav-prev,
+    .el-tabs__nav-next {
+        display: none !important;
+    }
+
+    .el-tabs__nav-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .el-tabs__nav-wrap::-webkit-scrollbar {
+        display: none;
+    }
+
+    .el-tabs__nav-wrap::after {
+        display: none !important;
+    }
+
+    .el-tabs__nav-scroll {
+        width: max-content;
+    }
+
+    .el-header {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .el-main {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+.trends-view h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.5rem;
+}
+
+.trends-view h4 {
+    font-size: 0.9rem;
+}
