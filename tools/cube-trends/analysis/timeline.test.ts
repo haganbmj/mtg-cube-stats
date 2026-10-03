@@ -60,4 +60,24 @@ describe('analyzeTimeline', () => {
         expect(points[2].adds).toBe(1);
         expect(points[2].removes).toBe(0);
     });
+
+    it('computes numeric homogenization for three cubes', () => {
+        const t = 1000 * DAY;
+        const samples = [t];
+        const cubes = [
+            { id: 'a', revisions: [{ id: 'a-0', date: t, cards: ['x', 'y'] }], grid: ['a-0'] },
+            { id: 'b', revisions: [{ id: 'b-0', date: t, cards: ['x', 'z'] }], grid: ['b-0'] },
+            { id: 'c', revisions: [{ id: 'c-0', date: t, cards: ['w', 'v'] }], grid: ['c-0'] },
+        ];
+
+        const ctx = makeContext({ samples, cubes, config: flatWeighting });
+        const { points } = analyzeTimeline(ctx);
+
+        expect(points[0].homogenization).not.toBeNull();
+        expect(points[0].homogenization!.mean).toBeCloseTo(1 / 6);
+        expect(points[0].homogenization!.weightedMean).toBeCloseTo(1 / 6);
+        expect(points[0].homogenization!.q1).toBe(0);
+        expect(points[0].homogenization!.median).toBe(0);
+        expect(points[0].homogenization!.q3).toBe(0.5);
+    });
 });
