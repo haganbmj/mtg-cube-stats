@@ -183,7 +183,42 @@ describe('buildPanel', () => {
 
         expect(panel.grid).toEqual([[null, null, 'rev1']]);
     });
-});
+
+    it('excludes basic lands from elo by default and includes them with includeBasics', () => {
+        const rev = rawRevision({ id: 'rev1', date: 100, mainboard: [{ oracleId: 'forest', elo: 1500 }] });
+        const members: MemberEntry[] = [{ cubeId: 'cube1', index: indexWithCoverage('cube1', [{ id: 'rev1', from: 100, to: 100 }]) }];
+
+        const withoutBasics = buildPanel({ samples: [100], members, loadRevision: () => rev, cards, eligibility: new Map(), includeBasics: false });
+        expect(withoutBasics.elo.has('forest')).toBe(false);
+
+        const withBasics = buildPanel({ samples: [100], members, loadRevision: () => rev, cards, eligibility: new Map(), includeBasics: true });
+        expect(withBasics.elo.get('forest')).toBe(1500);
+    });
+
+    it('excludes unknown oracle ids from elo', () => {
+        const rev = rawRevision({ id: 'rev1', date: 100, mainboard: [{ oracleId: 'bolt', elo: 1800 }, { oracleId: 'mystery', elo: 1600 }] });
+        const members: MemberEntry[] = [{ cubeId: 'cube1', index: indexWithCoverage('cube1', [{ id: 'rev1', from: 100, to: 100 }]) }];
+        const panel = buildPanel({ samples: [100], members, loadRevision: () => rev, cards, eligibility: new Map(), includeBasics: false });
+
+        expect(panel.elo.get('bolt')).toBe(1800);
+        expect(panel.elo.has('mystery')).toBe(false);
+    });
+
+    it('elo is the max across two members newest revisions', () => {
+        const rev1 = rawRevision({ id: 'rev1', date: 100, mainboard: [{ oracleId: 'bolt', elo: 1600 }] });
+        const rev2 = rawRevision({ id: 'rev2', date: 100, mainboard: [{ oracleId: 'bolt', elo: 1800 }] });
+        const index1 = indexWithCoverage('cube1', [{ id: 'rev1', from: 100, to: 100 }]);
+        const index2 = indexWithCoverage('cube2', [{ id: 'rev2', from: 100, to: 100 }]);
+        const members: MemberEntry[] = [
+            { cubeId: 'cube1', index: index1 },
+            { cubeId: 'cube2', index: index2 },
+        ];
+        const loadRevision = (cubeId: string) => (cubeId === 'cube1' ? rev1 : rev2);
+
+        const panel = buildPanel({ samples: [100], members, loadRevision, cards, eligibility: new Map(), includeBasics: false });
+        expect(panel.elo.get('bolt')).toBe(1800);
+    });
+})
 
 describe('selectMembers', () => {
     it('skips missing indexes and indexes with no coverage', () => {

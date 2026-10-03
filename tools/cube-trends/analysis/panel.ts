@@ -46,6 +46,20 @@ function newestInterval(index: CubeIndex): CoverageInterval {
     return index.coverage.reduce((best, iv) => (iv.to > best.to ? iv : best));
 }
 
+function shouldIncludeCard(card: { isCustomCard?: boolean; oracleId: string }, cards: Record<string, ScryfallCard>, includeBasics: boolean): boolean {
+    if (card.isCustomCard) {
+        return false;
+    }
+    const scryfallCard = cards[card.oracleId];
+    if (!scryfallCard) {
+        return false;
+    }
+    if (!includeBasics && scryfallCard.effectiveTypes.includes('Basic')) {
+        return false;
+    }
+    return true;
+}
+
 export function selectMembers(
     manifest: Manifest,
     entries: MemberEntry[],
@@ -80,12 +94,10 @@ function buildPanelRevision(
             return;
         }
         const oracleId = card.oracleId;
-        const scryfallCard = cards[oracleId];
-        if (!scryfallCard) {
-            unknownOracleIds.add(oracleId);
-            return;
-        }
-        if (!includeBasics && scryfallCard.effectiveTypes.includes('Basic')) {
+        if (!shouldIncludeCard(card, cards, includeBasics)) {
+            if (!cards[oracleId]) {
+                unknownOracleIds.add(oracleId);
+            }
             return;
         }
 
@@ -153,7 +165,7 @@ export function buildPanel(input: {
         cubes.push({ id: member.cubeId, name: newestRaw.name, owner: remapped.owner });
 
         for (const card of remapped.cards) {
-            if (card.isCustomCard || card.elo === undefined) {
+            if (card.elo === undefined || !shouldIncludeCard(card, cards, includeBasics)) {
                 continue;
             }
             const current = elo.get(card.oracleId);
