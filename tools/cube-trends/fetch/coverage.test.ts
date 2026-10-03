@@ -55,4 +55,14 @@ describe('uncoveredSamples', () => {
         const samples = [50, 150, 300];
         expect(uncoveredSamples(index, samples)).toEqual([300, 50]);
     });
+
+    it('excludes samples that resolve to null (before createdAfter) and covered samples', () => {
+        const index = {
+            ...emptyIndex('cube1', 0),
+            createdAfter: 50,
+            coverage: [{ id: 'a', from: 100, to: 200 }],
+        };
+        const samples = [10, 75, 150];
+        expect(uncoveredSamples(index, samples)).toEqual([75]);
+    });
 });
