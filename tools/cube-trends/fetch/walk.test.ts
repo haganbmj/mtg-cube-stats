@@ -176,6 +176,26 @@ describe('walkCube', () => {
         expect(result.index.missing).toBe(false);
         expect(result.index.coverage).toEqual([]);
         expect(store.writeIndex).toHaveBeenCalledTimes(1);
+        expect(result.anchorFailed).toBe(true);
+    });
+
+    it('does not report anchorFailed on a 404 anchor', async () => {
+        const fetcher = createTimelineFetcher(TIMELINE, { notFoundAt: [D(95)] });
+        const store = createMemoryStore();
+
+        const result = await walkCube('cube', tenSamples(), { now: () => D(95), fetcher, store });
+
+        expect(result.index.missing).toBe(true);
+        expect(result.anchorFailed).toBe(false);
+    });
+
+    it('does not report anchorFailed when the anchor fetch succeeds', async () => {
+        const fetcher = createTimelineFetcher(TIMELINE);
+        const store = createMemoryStore();
+
+        const result = await walkCube('cube', tenSamples(), { now: () => D(95), fetcher, store });
+
+        expect(result.anchorFailed).toBe(false);
     });
 
     it('adds a sample to gaps and keeps progressing when its response fails to cover it', async () => {

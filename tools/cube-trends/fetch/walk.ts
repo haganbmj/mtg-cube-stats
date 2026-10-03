@@ -15,6 +15,7 @@ export interface WalkDeps {
 export interface WalkResult {
     index: CubeIndex;
     requests: number;
+    anchorFailed: boolean;
 }
 
 type FetchOutcome =
@@ -42,12 +43,12 @@ export async function walkCube(cubeId: string, samples: Ms[], deps: WalkDeps): P
     if (anchor.status === 'notFound') {
         index = { ...index, missing: true };
         store.writeIndex(index);
-        return { index, requests };
+        return { index, requests, anchorFailed: false };
     }
     if (anchor.status === 'error') {
         log?.(`walkCube: "now" fetch failed for cube ${cubeId}`);
         store.writeIndex(index);
-        return { index, requests };
+        return { index, requests, anchorFailed: true };
     }
     store.writeRevision(cubeId, anchor.rev);
     index = addCoverage({ ...index, missing: false }, anchor.rev.changelog.id, anchor.rev.changelog.date, now);
@@ -64,7 +65,7 @@ export async function walkCube(cubeId: string, samples: Ms[], deps: WalkDeps): P
         if (outcome.status === 'notFound') {
             index = { ...index, missing: true };
             store.writeIndex(index);
-            return { index, requests };
+            return { index, requests, anchorFailed: false };
         }
         if (outcome.status === 'error') {
             failedThisRun.add(next);
@@ -93,5 +94,5 @@ export async function walkCube(cubeId: string, samples: Ms[], deps: WalkDeps): P
         store.writeIndex(index);
     }
 
-    return { index, requests };
+    return { index, requests, anchorFailed: false };
 }

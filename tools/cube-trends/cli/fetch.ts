@@ -33,11 +33,13 @@ async function main(): Promise<void> {
         const cubesWithGaps = results.filter((r) => r.index.gaps.length > 0);
         const totalGapSamples = cubesWithGaps.reduce((sum, r) => sum + r.index.gaps.length, 0);
         const missingIds = manifest.cubes.filter((_, i) => results[i].index.missing);
+        const anchorFailures = results.filter((r) => r.anchorFailed).length;
 
         console.log(
             `[${manifest.name}] cubes=${manifest.cubes.length} requests=${totalRequests} ` +
             `gaps=${cubesWithGaps.length} (${totalGapSamples} samples) ` +
-            `missing=${missingIds.length === 0 ? 'none' : missingIds.join(', ')}`,
+            `missing=${missingIds.length === 0 ? 'none' : missingIds.join(', ')} ` +
+            `anchorFailures=${anchorFailures}`,
         );
     }
 }
