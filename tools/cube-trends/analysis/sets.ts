@@ -34,6 +34,8 @@ export interface SetDisplacement {
     code: string;
     groups: DisplacementGroup[];
     topCards: { key: string; removals: number }[];
+    // window was clamped to the last sample
+    partial: boolean;
 }
 
 export interface SetsResult {
@@ -149,9 +151,11 @@ function computeExpectedByGroup(ctx: AnalysisContext, windowLength: number, T: n
     return expected;
 }
 
-function computeDisplacement(ctx: AnalysisContext, marker: SetInfo, expectedByGroup: Map<string, number>, windowLength: number): SetDisplacement {
+function computeDisplacement(ctx: AnalysisContext, marker: SetInfo, expectedByGroup: Map<string, number>, windowLength: number, last: Ms): SetDisplacement {
     const windowStart = marker.releasedAt;
-    const windowEnd = windowStart + windowLength;
+    const windowEnd = Math.min(windowStart + windowLength, last);
+    const partial = windowEnd < windowStart + windowLength;
+    const observedFraction = windowLength > 0 ? (windowEnd - windowStart) / windowLength : 0;
 
     const observedByGroup = new Map<string, number>();
     const removalCounts = new Map<string, number>();
@@ -169,7 +173,7 @@ function computeDisplacement(ctx: AnalysisContext, marker: SetInfo, expectedByGr
 
     const groups: DisplacementGroup[] = [];
     for (const [g, removals] of observedByGroup) {
-        const expected = expectedByGroup.get(g) ?? 0;
+        const expected = (expectedByGroup.get(g) ?? 0) * observedFraction;
         const lift = expected > 0 ? removals / expected : 0;
         const [colorCategory, primaryType] = g.split('|');
         groups.push({ colorCategory: colorCategory as ColorCategory, primaryType, removals, expected, lift });
@@ -181,7 +185,7 @@ function computeDisplacement(ctx: AnalysisContext, marker: SetInfo, expectedByGr
         .sort((a, b) => b.removals - a.removals || a.key.localeCompare(b.key))
         .slice(0, 10);
 
-    return { code: marker.code, groups, topCards };
+    return { code: marker.code, groups, topCards, partial };
 }
 
 export function analyzeSets(ctx: AnalysisContext): SetsResult {
@@ -211,8 +215,8 @@ export function analyzeSets(ctx: AnalysisContext): SetsResult {
     const expectedByGroup = T > 0 ? computeExpectedByGroup(ctx, windowLength, T) : new Map<string, number>();
     const displacement = markers.map((marker) => (
         T > 0
-            ? computeDisplacement(ctx, marker, expectedByGroup, windowLength)
-            : { code: marker.code, groups: [], topCards: [] }
+            ? computeDisplacement(ctx, marker, expectedByGroup, windowLength, last)
+            : { code: marker.code, groups: [], topCards: [], partial: true }
     ));
 
     return { markers, adoption, displacement };

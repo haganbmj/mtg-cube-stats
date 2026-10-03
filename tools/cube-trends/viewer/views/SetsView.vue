@@ -21,7 +21,12 @@
 
         <h3>Displacement</h3>
         <el-collapse>
-            <el-collapse-item v-for="marker in data.sets.markers" :key="marker.code" :name="marker.code" :title="`${marker.name} (${marker.code})`">
+            <el-collapse-item
+                v-for="marker in data.sets.markers"
+                :key="marker.code"
+                :name="marker.code"
+                :title="`${marker.name} (${marker.code})${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}`"
+            >
                 <template v-if="displacementByCode.get(marker.code)">
                     <el-table :data="displacementByCode.get(marker.code)!.groups" size="small">
                         <el-table-column prop="colorCategory" label="Category" />

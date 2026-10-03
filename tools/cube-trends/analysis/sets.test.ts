@@ -95,6 +95,32 @@ describe('analyzeSets', () => {
             { key: 'i2', removals: 1 },
             { key: 'i3', removals: 1 },
         ]);
+        expect(displacement[0].partial).toBe(false);
+    });
+
+    it('clamps the displacement window to the last sample and scales expected by the observed length', () => {
+        const samples = Array.from({ length: 20 }, (_, i) => i * WEEK);
+        const releasedAt = samples[17];
+
+        const cubes = [
+            {
+                id: 'c1',
+                revisions: [
+                    { id: 'before', date: samples[0], cards: ['i1', 'i2', 'i3', 'i4'] },
+                    { id: 'after', date: samples[18], cards: ['i4'] },
+                ],
+                grid: [...Array(18).fill('before'), 'after', 'after'],
+            },
+        ];
+        const sets = [{ code: 'NEW', name: 'New Set', releasedAt }];
+
+        const { displacement } = analyzeSets(makeContext({ samples, cubes, config: flatWeighting, sets }));
+
+        expect(displacement[0].partial).toBe(true);
+        const redInstants = displacement[0].groups.find((g) => g.colorCategory === 'R' && g.primaryType === 'Instant')!;
+        // baseline 3 removals / 19 weeks, observed window 2 of 8 weeks
+        expect(redInstants.expected).toBeCloseTo((3 / 19) * 2);
+        expect(redInstants.lift).toBeCloseTo(19 / 2);
     });
 
     it('excludes a set from adoption when attributed cards exist only in off-grid revisions', () => {
