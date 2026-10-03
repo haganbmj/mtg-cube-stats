@@ -21,6 +21,11 @@ export async function loadJsonAsset<T>(
     family: string,
     options: LoadJsonAssetOptions<T> = {},
 ): Promise<T> {
+    // Dev asset URLs aren't content-hashed, so a cached entry would never be invalidated.
+    if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
+        return fetchJson<T>(url);
+    }
+
     schedulePruneOnce();
 
     // Tier 1: exact URL hit.

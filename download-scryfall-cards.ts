@@ -225,6 +225,14 @@ const primaryType = (card: any): string => {
 
 const minRarityOrder = ['common', 'uncommon', 'rare', 'mythic', 'special', 'bonus'];
 
+// Use Scryfall's URIs as-is so we keep their cache-busting timestamp query param.
+// Single-image layouts (incl. split/flip/adventure) carry image_uris at the top level;
+// double-sided layouts (transform/modal_dfc/etc.) carry them per face.
+const frontImageUri = (card: any): string =>
+    card.image_uris?.large
+    ?? card.card_faces?.[0]?.image_uris?.large
+    ?? `https://cards.scryfall.io/large/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.jpg`;
+
 const stripped = cards.filter((card: any) => {
     // Process the exclusions.
     return includedSets.includes(card.set) ||
@@ -248,8 +256,8 @@ const stripped = cards.filter((card: any) => {
 }).map((card: any) => {
     // Then set the high level data necessary to organize the remaining cards.
     let cardBackUri: string | undefined = undefined;
-    if (card.card_faces?.[1]?.image_uris) {
-        cardBackUri = `https://api.scryfall.com/cards/${card.set}/${card.collector_number}?format=image&face=back`;
+    if (card.card_faces?.[1]?.image_uris?.large) {
+        cardBackUri = card.card_faces[1].image_uris.large;
     } else if (card.layout == 'meld') {
         cardBackUri = `https://backs.scryfall.io/large/${card.card_back_id.charAt(0)}/${card.card_back_id.charAt(1)}/${card.card_back_id}.jpg`;
     }
@@ -303,7 +311,7 @@ const stripped = cards.filter((card: any) => {
         loyalty: card.loyalty ?? card.card_faces?.[0]?.loyalty,
         producedMana: card.produced_mana,
         imageUris: {
-            front: `https://cards.scryfall.io/large/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.jpg`,
+            front: frontImageUri(card),
             back: cardBackUri,
         },
         priceUsd: card.prices?.usd ? parseFloat(card.prices.usd) : undefined,
@@ -489,7 +497,7 @@ const bestTokens = Object.keys(tokensByOracleId).reduce((store: any, key: string
         colors: earliest.colors || [],
         power: earliest.power,
         toughness: earliest.toughness,
-        urlFront: `https://cards.scryfall.io/large/front/${earliest.id.charAt(0)}/${earliest.id.charAt(1)}/${earliest.id}.jpg`,
+        urlFront: frontImageUri(earliest),
     };
     return store;
 }, {});
