@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { VIEWS, VIEW_LABELS, parseHash, buildHash, type Route } from './router';
 import { toCsv } from './util/csv';
 import { releaseMarkLines } from './util/releaseMarkers';
+import { buildAddsRemovesOption } from './util/charts';
+import type { TimelinePoint } from '../analysis/timeline';
 import { formatCount } from './util/format';
 import { compareNullable, byName } from './util/sort';
 
@@ -113,6 +115,27 @@ describe('releaseMarkLines', () => {
             { xAxis: 2000, name: 'war' },
         ]);
         expect(result.label.formatter({ name: 'dom' })).toBe('dom');
+    });
+});
+
+describe('buildAddsRemovesOption', () => {
+    it('stacks Adds/Removes with distinct colors and negates removes values', () => {
+        const points: TimelinePoint[] = [
+            { t: 1000, adds: 5, removes: 3 } as TimelinePoint,
+            { t: 2000, adds: 2, removes: 7 } as TimelinePoint,
+        ];
+        const option = buildAddsRemovesOption(
+            points,
+            [{ code: 'dom', name: 'Dominaria', releasedAt: 1000 }],
+        ) as { series: { name: string; stack: string; itemStyle: { color: string }; data: [number, number][] }[] };
+
+        const [addsSeries, removesSeries] = option.series;
+
+        expect(addsSeries.stack).toBe('changes');
+        expect(removesSeries.stack).toBe('changes');
+        expect(addsSeries.itemStyle.color).toBe('#67C23A');
+        expect(removesSeries.itemStyle.color).toBe('#F56C6C');
+        expect(removesSeries.data.every(([, value]) => value <= 0)).toBe(true);
     });
 });
 

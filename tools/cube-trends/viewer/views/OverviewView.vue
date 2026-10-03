@@ -115,7 +115,7 @@ import type { CardTrend } from '../../analysis/cards';
 import type { ConsensusCard } from '../../analysis/consensus';
 import type { PanelCube } from '../../analysis/panel';
 import { buildCardLookup } from '../util/cardLookup';
-import { releaseMarkLines } from '../util/releaseMarkers';
+import { buildAddsRemovesOption } from '../util/charts';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
@@ -189,25 +189,7 @@ const cubeColumns: CsvColumn<PanelCube & { coverage: number; gaps: number }>[] =
     { key: 'gaps', label: 'Gaps', value: (c) => c.gaps },
 ];
 
-const timelineChartOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['Adds', 'Removes'] },
-    xAxis: { type: 'time' },
-    yAxis: { type: 'value' },
-    series: [
-        {
-            name: 'Adds',
-            type: 'bar',
-            data: props.data.timeline.points.map((p) => [p.t, p.adds]),
-            markLine: releaseMarkLines(props.data.sets.markers),
-        },
-        {
-            name: 'Removes',
-            type: 'bar',
-            data: props.data.timeline.points.map((p) => [p.t, -p.removes]),
-        },
-    ],
-}));
+const timelineChartOption = computed(() => buildAddsRemovesOption(props.data.timeline.points, props.data.sets.markers));
 </script>
 
 <style scoped>
