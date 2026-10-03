@@ -51,13 +51,19 @@ function computeAdoption(ctx: AnalysisContext, marker: SetInfo): SetAdoption | n
     const { panel, weights, config } = ctx;
     const { samples, grid } = panel;
 
-    // Cards ever attributed to this set, across every revision in the panel.
+    // Cards ever attributed to this set, counted only from grid-reachable revisions.
     const attributedBases = new Set<string>();
-    for (const rev of panel.revisions.values()) {
-        for (const key of rev.cards) {
-            const base = baseOracleId(key);
-            if (panel.cardInfo.get(base)?.eligibility?.setCode === marker.code) {
-                attributedBases.add(base);
+    for (let c = 0; c < grid.length; c++) {
+        for (let k = 0; k < samples.length; k++) {
+            const revId = grid[c][k];
+            if (revId === null) {
+                continue;
+            }
+            for (const key of panel.revisions.get(revId)!.cards) {
+                const base = baseOracleId(key);
+                if (panel.cardInfo.get(base)?.eligibility?.setCode === marker.code) {
+                    attributedBases.add(base);
+                }
             }
         }
     }

@@ -96,4 +96,35 @@ describe('analyzeSets', () => {
             { key: 'i3', removals: 1 },
         ]);
     });
+
+    it('excludes a set from adoption when attributed cards exist only in off-grid revisions', () => {
+        const samples = [0, WEEK * 2];
+        const releasedAt = samples[0];
+
+        const cubes = [
+            {
+                id: 'c1',
+                revisions: [
+                    { id: 'r0', date: samples[0], cards: ['cardA'] },
+                    { id: 'r1', date: samples[1], cards: ['cardA'] },
+                    { id: 'offgrid', date: samples[1], cards: ['cardB'] }, // off-grid revision
+                ],
+                grid: ['r0', 'r1'], // only r0 and r1 in grid; offgrid revision not referenced
+            },
+        ];
+
+        const cardInfo = [
+            makeCardInfo('cardA', { eligibility: { date: 0, setCode: 'HYBRID', fallback: false } }),
+            makeCardInfo('cardB', { eligibility: { date: 0, setCode: 'HYBRID', fallback: false } }),
+        ];
+
+        const sets = [{ code: 'HYBRID', name: 'Hybrid Set', releasedAt }];
+
+        const ctx = makeContext({ samples, cubes, cardInfo, config: flatWeighting, sets });
+        const { adoption } = analyzeSets(ctx);
+
+        // Set should be absent because only cardA (from grid) counts toward cardCount;
+        // cardB from the off-grid revision is not included, so cardCount=1 < setMinCards=2.
+        expect(adoption).toHaveLength(0);
+    });
 });
