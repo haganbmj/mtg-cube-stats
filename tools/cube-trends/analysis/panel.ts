@@ -138,7 +138,7 @@ function buildPanelRevision(
         });
     }
 
-    return { id: raw.id, cubeId, date: raw.changelog.date, cards: cardSet, addedAt };
+    return { id: raw.changelog.id, cubeId, date: raw.changelog.date, cards: cardSet, addedAt };
 }
 
 export function buildPanel(input: {

@@ -5,6 +5,9 @@ import type { Manifest } from '../../../preloads/manifests/types';
 import { colorCategory, baseOracleId, copyNumber } from './cardInfo';
 import { selectMembers, buildPanel, gridAnchor, type Panel, type MemberEntry } from './panel';
 import { computeDiffs } from './diffs';
+import { buildContext } from './context';
+import { analyzeSubstitutions } from './substitutions';
+import { resolveConfig } from '../config';
 import { resolveAt } from '../fetch/coverage';
 import { sampleDates, DAY } from '../fetch/sampling';
 
@@ -41,6 +44,8 @@ function scryfallCard(overrides: Partial<ScryfallCard>): ScryfallCard {
 const cards: Record<string, ScryfallCard> = {
     bolt: scryfallCard({ name: 'Lightning Bolt', colors: ['R'], primaryType: 'Instant', effectiveTypes: ['Instant'], cmc: 1 }),
     counterspell: scryfallCard({ name: 'Counterspell', colors: ['U'], primaryType: 'Instant', effectiveTypes: ['Instant'], cmc: 2 }),
+    shock: scryfallCard({ name: 'Shock', colors: ['R'], primaryType: 'Instant', effectiveTypes: ['Instant'], cmc: 1 }),
+    negate: scryfallCard({ name: 'Negate', colors: ['U'], primaryType: 'Instant', effectiveTypes: ['Instant'], cmc: 2 }),
     forest: scryfallCard({
         name: 'Forest',
         colors: [],
@@ -61,9 +66,10 @@ interface MainboardEntry {
     custom?: boolean;
 }
 
-function rawRevision(opts: { id: string; date: Ms; name?: string; owner?: string; mainboard: MainboardEntry[] }): CompactRevision {
+function rawRevision(opts: { id: string; date: Ms; cubeId?: string; name?: string; owner?: string; mainboard: MainboardEntry[] }): CompactRevision {
     return {
-        id: opts.id,
+        // raw.id is the cube id; the revision id is changelog.id
+        id: opts.cubeId ?? 'cube1',
         name: opts.name ?? 'Test Cube',
         owner: { id: 'owner1', username: opts.owner ?? 'alice' },
         changelog: { id: opts.id, date: opts.date },
@@ -293,6 +299,41 @@ describe('computeDiffs', () => {
 
         expect(events).toEqual([
             { cubeId: 'cube1', date: 200, type: 'add', key: 'bolt+', fromRevision: 'rev1', toRevision: 'rev2' },
+        ]);
+    });
+
+    it('keys diffs by changelog id so each transition of one cube stays separate', () => {
+        const revs: Record<string, CompactRevision> = {
+            rev1: rawRevision({ id: 'rev1', date: 100, mainboard: [{ oracleId: 'bolt' }, { oracleId: 'counterspell' }] }),
+            rev2: rawRevision({ id: 'rev2', date: 200, mainboard: [{ oracleId: 'shock' }, { oracleId: 'counterspell' }] }),
+            rev3: rawRevision({ id: 'rev3', date: 300, mainboard: [{ oracleId: 'shock' }, { oracleId: 'negate' }] }),
+        };
+        const index = indexWithCoverage('cube1', [
+            { id: 'rev1', from: 100, to: 100 },
+            { id: 'rev2', from: 200, to: 200 },
+            { id: 'rev3', from: 300, to: 300 },
+        ]);
+        const panel = buildPanel({
+            samples: [100, 200, 300],
+            members: [{ cubeId: 'cube1', index }],
+            loadRevision: (_cubeId, id) => revs[id],
+            cards,
+            eligibility: new Map(),
+            includeBasics: false,
+        });
+        const config = resolveConfig('test', {
+            weighting: { recency: false, dedupe: false },
+            thresholds: { ...resolveConfig('test').thresholds, substitutionMinCubes: 1 },
+        });
+        const result = analyzeSubstitutions(buildContext(panel, config, []));
+        if ('empty' in result) {
+            throw new Error('expected non-empty result');
+        }
+
+        // 2 transitions, each pair in 1: lift = (1/2) / ((1/2)(1/2)) = 2
+        expect(result.pairs.map((p) => [p.removed, p.added, p.lift])).toEqual([
+            ['bolt', 'shock', 2],
+            ['counterspell', 'negate', 2],
         ]);
     });
 
