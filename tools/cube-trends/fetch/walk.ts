@@ -1,5 +1,5 @@
 import type { Ms, CubeIndex, CompactRevision } from '../types';
-import { emptyIndex, addCoverage, uncoveredSamples } from './coverage';
+import { emptyIndex, addCoverage, uncoveredSamples, resolveAt } from './coverage';
 import { compactRevision } from './compact';
 import type { CacheStore } from './store';
 import type { CubeFetcher } from './client';
@@ -82,6 +82,13 @@ export async function walkCube(cubeId: string, samples: Ms[], deps: WalkDeps): P
             index = { ...index, createdAfter: Math.max(index.createdAfter ?? -Infinity, next) };
         } else {
             index = addCoverage(index, id, date, next);
+        }
+        if (resolveAt(index, next) === undefined) {
+            // defensive: an inconsistent response left the sample uncovered; stop retrying it this run.
+            failedThisRun.add(next);
+            if (!index.gaps.includes(next)) {
+                index = { ...index, gaps: [...index.gaps, next] };
+            }
         }
         store.writeIndex(index);
     }

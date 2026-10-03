@@ -127,4 +127,10 @@ describe('compactRevision', () => {
         const compact = compactRevision(raw);
         expect(compact.changelog.date).toBe(1745595563148);
     });
+
+    it('throws InvalidRevisionError when changelog.date is non-numeric', () => {
+        const raw = rawFixture();
+        raw.changelog.date = 'not-a-date';
+        expect(() => compactRevision(raw)).toThrow(InvalidRevisionError);
+    });
 });

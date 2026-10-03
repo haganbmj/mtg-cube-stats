@@ -4,6 +4,7 @@ import { emptyIndex, resolveAt } from './coverage';
 import type { CacheStore } from './store';
 import type { CubeFetcher } from './client';
 import { NotFoundError } from './client';
+import * as compact from './compact';
 import { walkCube } from './walk';
 
 const D = (n: number): Ms => n * 86_400_000;
@@ -175,5 +176,23 @@ describe('walkCube', () => {
         expect(result.index.missing).toBe(false);
         expect(result.index.coverage).toEqual([]);
         expect(store.writeIndex).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds a sample to gaps and keeps progressing when its response fails to cover it', async () => {
+        const fetcher = createTimelineFetcher(TIMELINE);
+        const store = createMemoryStore();
+        const original = compact.compactRevision;
+        // Simulate a response that passes compaction but, through some inconsistency, never ends up
+        // covering the sample it was fetched for — the loop must not retry it forever.
+        const spy = vi.spyOn(compact, 'compactRevision').mockImplementation((raw: any) => {
+            const rev = original(raw);
+            return rev.changelog.date === D(40) ? { ...rev, changelog: { ...rev.changelog, date: NaN } } : rev;
+        });
+
+        const result = await walkCube('cube', tenSamples(), { now: () => D(95), fetcher, store });
+
+        spy.mockRestore();
+        expect(result.index.gaps).toContain(D(40));
+        expect(resolveAt(result.index, D(40))).toBeUndefined();
     });
 });

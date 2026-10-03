@@ -48,6 +48,10 @@ export function compactRevision(raw: any): CompactRevision {
     if (!Array.isArray(raw.cards?.mainboard)) {
         throw new InvalidRevisionError('revision is missing cards.mainboard');
     }
+    const changelogDate = Number(raw.changelog.date);
+    if (!Number.isFinite(changelogDate)) {
+        throw new InvalidRevisionError('revision changelog.date is not a finite number');
+    }
 
     return withoutUndefined({
         id: raw.id,
@@ -61,7 +65,7 @@ export function compactRevision(raw: any): CompactRevision {
         brief: raw.brief,
         categoryOverride: raw.categoryOverride,
         categoryPrefixes: raw.categoryPrefixes,
-        changelog: { id: raw.changelog.id, date: Number(raw.changelog.date) },
+        changelog: { id: raw.changelog.id, date: changelogDate },
         cards: { mainboard: raw.cards.mainboard.map(compactCard) },
     }) as CompactRevision;
 }
