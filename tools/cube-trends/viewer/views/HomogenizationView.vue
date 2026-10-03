@@ -1,6 +1,7 @@
 <template>
     <div class="homogenization-view">
         <h3>Mean Pairwise Similarity</h3>
+        <p class="chart-description">Average pairwise similarity (cosine) between cubes at each snapshot; rising means cubes are converging. Shaded band is the interquartile range.</p>
         <TrendChart :option="option" />
     </div>
 </template>

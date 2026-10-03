@@ -21,16 +21,20 @@
                     />
                 </template>
             </el-table-column>
-            <el-table-column prop="current" label="IR" sortable="custom">
+            <el-table-column prop="current" sortable="custom">
+                <template #header><InfoLabel label="IR" :tip="irTip" /></template>
                 <template #default="{ row }">{{ formatPercent(row.current) }}</template>
             </el-table-column>
-            <el-table-column prop="peak" label="Peak" sortable="custom">
+            <el-table-column prop="peak" sortable="custom">
+                <template #header><InfoLabel label="Peak" :tip="peakTip" /></template>
                 <template #default="{ row }">{{ formatPercent(row.peak) }}</template>
             </el-table-column>
-            <el-table-column prop="delta" label="Δ90d" sortable="custom">
+            <el-table-column prop="delta" sortable="custom">
+                <template #header><InfoLabel label="Δ90d" :tip="deltaTip" /></template>
                 <template #default="{ row }">{{ row.delta === null ? '—' : formatPercent(row.delta) }}</template>
             </el-table-column>
-            <el-table-column prop="momentum" label="Momentum" sortable="custom">
+            <el-table-column prop="momentum" sortable="custom">
+                <template #header><InfoLabel label="Momentum" :tip="momentumTip" /></template>
                 <template #default="{ row }">{{ formatMomentum(row.momentum) }}</template>
             </el-table-column>
             <el-table-column prop="eligibility" label="Eligibility" sortable="custom">
@@ -62,7 +66,13 @@ import { formatPercent, formatMomentum, formatDate } from '../util/format';
 import ExportButton from '../components/ExportButton.vue';
 import Sparkline from '../components/Sparkline.vue';
 import CardName from '../components/CardName.vue';
+import InfoLabel from '../components/InfoLabel.vue';
 import type { CsvColumn } from '../util/csv';
+
+const irTip = 'Weighted share of cubes including the card at the latest snapshot.';
+const peakTip = 'Highest inclusion rate reached over the full window.';
+const deltaTip = 'Change in IR over roughly the last 90 days.';
+const momentumTip = 'Robust trend of IR, in percentage points per 30 days.';
 
 const props = defineProps<{
     data: FullTrendsData;

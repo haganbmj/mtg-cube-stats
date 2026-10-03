@@ -19,6 +19,7 @@
         </el-row>
 
         <h3>Community Adds / Removes</h3>
+        <p class="chart-description">Cards added (green, above zero) and removed (red, below zero) across all cubes in each sampling interval. Dashed vertical lines mark set releases.</p>
         <TrendChart :option="timelineChartOption" />
 
         <el-row :gutter="16">
@@ -33,10 +34,12 @@
                             <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
                         </template>
                     </el-table-column>
-                    <el-table-column prop="current" label="IR" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
+                    <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
+                        <template #header><InfoLabel label="IR" :tip="irTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
-                    <el-table-column prop="momentum" label="Momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
+                    <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
+                        <template #header><InfoLabel label="Momentum" :tip="momentumTip" /></template>
                         <template #default="{ row }">{{ formatMomentum(row.momentum) }}</template>
                     </el-table-column>
                 </el-table>
@@ -52,10 +55,12 @@
                             <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
                         </template>
                     </el-table-column>
-                    <el-table-column prop="current" label="IR" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
+                    <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
+                        <template #header><InfoLabel label="IR" :tip="irTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
-                    <el-table-column prop="momentum" label="Momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
+                    <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
+                        <template #header><InfoLabel label="Momentum" :tip="momentumTip" /></template>
                         <template #default="{ row }">{{ formatMomentum(row.momentum) }}</template>
                     </el-table-column>
                 </el-table>
@@ -116,7 +121,11 @@ import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';
+import InfoLabel from '../components/InfoLabel.vue';
 import type { CsvColumn } from '../util/csv';
+
+const irTip = 'Weighted share of cubes including the card at the latest snapshot.';
+const momentumTip = 'Robust trend of IR, in percentage points per 30 days.';
 
 const props = defineProps<{
     data: FullTrendsData;

@@ -1,9 +1,11 @@
 <template>
     <div class="recency-view">
         <h3>Median Card Age</h3>
+        <p class="chart-description">Median time since cards first became eligible, across all cards in all cubes.</p>
         <TrendChart :option="ageOption" />
 
         <h3>Share Under Age Threshold</h3>
+        <p class="chart-description">Share of cube slots filled by cards eligible within the last 3, 6, or 12 months.</p>
         <TrendChart :option="shareOption" />
     </div>
 </template>

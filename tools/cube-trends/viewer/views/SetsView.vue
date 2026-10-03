@@ -1,6 +1,7 @@
 <template>
     <div class="sets-view">
         <h3>Adoption Curves</h3>
+        <p class="chart-description">Average number of a set's cards per cube by weeks since release (cards attributed to the set by first eligible printing).</p>
         <TrendChart :option="adoptionOption" />
 
         <div class="sets-table-header">
@@ -17,7 +18,8 @@
                 <template #default="{ row }">{{ formatCount(row.peak) }}</template>
             </el-table-column>
             <el-table-column prop="timeToPeakWeeks" label="Weeks to Peak" sortable :sort-method="(a, b) => compareNullable(a.timeToPeakWeeks, b.timeToPeakWeeks)" />
-            <el-table-column prop="retention" label="Retention" sortable :sort-method="(a, b) => compareNullable(a.retention, b.retention)">
+            <el-table-column prop="retention" sortable :sort-method="(a, b) => compareNullable(a.retention, b.retention)">
+                <template #header><InfoLabel label="Retention" :tip="retentionTip" /></template>
                 <template #default="{ row }">{{ row.retention === null ? '—' : formatPercent(row.retention) }}</template>
             </el-table-column>
         </el-table>
@@ -35,10 +37,12 @@
                         <el-table-column prop="colorCategory" label="Category" sortable :sort-method="(a, b) => byName(a.colorCategory, b.colorCategory)" />
                         <el-table-column prop="primaryType" label="Type" sortable :sort-method="(a, b) => byName(a.primaryType, b.primaryType)" />
                         <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
-                        <el-table-column prop="expected" label="Expected" sortable :sort-method="(a, b) => compareNullable(a.expected, b.expected)">
+                        <el-table-column prop="expected" sortable :sort-method="(a, b) => compareNullable(a.expected, b.expected)">
+                            <template #header><InfoLabel label="Expected" :tip="displacementTip" /></template>
                             <template #default="{ row }">{{ row.expected.toFixed(1) }}</template>
                         </el-table-column>
-                        <el-table-column prop="lift" label="Lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                        <el-table-column prop="lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                            <template #header><InfoLabel label="Lift" :tip="displacementTip" /></template>
                             <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                         </el-table-column>
                     </el-table>
@@ -73,7 +77,11 @@ import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';
+import InfoLabel from '../components/InfoLabel.vue';
 import type { CsvColumn } from '../util/csv';
+
+const retentionTip = 'Adoption at 26 weeks as a share of peak adoption.';
+const displacementTip = "Removals in the 8 weeks after release vs. each cube's normal removal rate.";
 
 const props = defineProps<{
     data: FullTrendsData;

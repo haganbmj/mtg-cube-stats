@@ -1,15 +1,19 @@
 <template>
     <div class="shape-view">
         <h3>Color Category Shares</h3>
+        <p class="chart-description">Median share of each color category across cubes at each snapshot.</p>
         <TrendChart :option="colorOption" />
 
         <h3>Cube Size</h3>
+        <p class="chart-description">Median cube size with the interquartile range (25th–75th percentile) shaded.</p>
         <TrendChart :option="sizeOption" />
 
         <h3>Type Shares</h3>
+        <p class="chart-description">Median share of each card type across cubes at each snapshot.</p>
         <TrendChart :option="typeOption" />
 
         <h3>Mana Value Distribution (latest)</h3>
+        <p class="chart-description">Median number of non-land cards at each mana value in the latest snapshot; tooltip shows the interquartile range.</p>
         <TrendChart :option="mvOption" />
     </div>
 </template>

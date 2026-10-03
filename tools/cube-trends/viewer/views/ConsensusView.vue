@@ -45,9 +45,11 @@
         </div>
 
         <h3>Type Mix: Consensus vs Community</h3>
+        <p class="chart-description">Consensus cube vs. the community median.</p>
         <TrendChart :option="typeOption" />
 
         <h3>Mana Value Curve: Consensus vs Community</h3>
+        <p class="chart-description">Consensus cube vs. the community median.</p>
         <TrendChart :option="mvOption" />
 
         <h3>Near Misses</h3>

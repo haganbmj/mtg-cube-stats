@@ -1,6 +1,7 @@
 <template>
     <div class="churn-view">
         <h3>Community Churn Rate</h3>
+        <p class="chart-description">Weighted share of a cube's slots changed per interval ((adds + removes) ÷ 2 × size).</p>
         <TrendChart :option="communityOption" />
 
         <div class="churn-table-header">

@@ -1,7 +1,10 @@
 <template>
     <div class="survival-view">
         <EmptyState v-if="emptyReason !== null" :reason="emptyReason" />
-        <TrendChart v-else :option="option" />
+        <template v-else>
+            <p class="chart-description">Share of card copies still in a cube N days after being added (Kaplan–Meier). 'New' cards were eligible for less than 6 months when added.</p>
+            <TrendChart :option="option" />
+        </template>
     </div>
 </template>
 

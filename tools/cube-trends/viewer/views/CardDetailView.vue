@@ -6,9 +6,11 @@
         </div>
 
         <h4>Inclusion Rate</h4>
+        <p class="chart-description">Weighted share of cubes running each copy of this card at each snapshot.</p>
         <TrendChart :option="irChartOption" />
 
         <h4>Cube &times; Sample Copy Presence</h4>
+        <p class="chart-description">Copies of this card in each cube at each snapshot.</p>
         <TrendChart :option="heatmapOption" />
     </div>
 </template>

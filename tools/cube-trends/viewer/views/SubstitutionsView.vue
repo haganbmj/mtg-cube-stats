@@ -2,6 +2,7 @@
     <div class="substitutions-view">
         <EmptyState v-if="emptyReason !== null" :reason="emptyReason" />
         <template v-else>
+            <p class="chart-description">Card pairs frequently swapped together across cube updates, more than chance would predict.</p>
             <div class="substitutions-table-header">
                 <h3>Substitutions</h3>
                 <ExportButton filename="substitutions.csv" :rows="rows" :columns="exportColumns" />
@@ -28,7 +29,8 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="cubes" label="Cubes" sortable :sort-method="(a, b) => compareNullable(a.cubes, b.cubes)" />
-                <el-table-column prop="lift" label="Lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                <el-table-column prop="lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                    <template #header><InfoLabel label="Lift" :tip="liftTip" /></template>
                     <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                 </el-table-column>
             </el-table>
@@ -46,7 +48,10 @@ import { compareNullable, byName } from '../util/sort';
 import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
 import CardName from '../components/CardName.vue';
+import InfoLabel from '../components/InfoLabel.vue';
 import type { CsvColumn } from '../util/csv';
+
+const liftTip = 'How much more often the pair is swapped together than chance.';
 
 const props = defineProps<{
     data: FullTrendsData;
