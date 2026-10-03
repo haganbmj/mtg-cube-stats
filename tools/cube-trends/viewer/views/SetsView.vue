@@ -42,7 +42,12 @@
                     <h5>Top Displaced Cards</h5>
                     <ul>
                         <li v-for="card in displacementByCode.get(marker.code)!.topCards" :key="card.key">
-                            {{ cardLookup.get(card.key)?.info.name ?? card.key }} ({{ card.removals }})
+                            <CardName
+                                :name="cardLookup.get(card.key)?.info.name ?? card.key"
+                                :imageUrl="cardLookup.get(card.key)?.info.urlFront"
+                                :setCode="cardLookup.get(card.key)?.info.eligibility?.setCode"
+                                :copies="copyNumber(card.key)"
+                            /> ({{ card.removals }})
                         </li>
                     </ul>
                 </template>
@@ -55,10 +60,12 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { SetAdoption } from '../../analysis/sets';
+import { copyNumber } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatCount, formatPercent } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
+import CardName from '../components/CardName.vue';
 import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{

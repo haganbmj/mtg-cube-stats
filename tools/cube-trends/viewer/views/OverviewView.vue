@@ -28,7 +28,11 @@
                     <ExportButton filename="top-risers.csv" :rows="risers" :columns="momentumColumns" />
                 </div>
                 <el-table :data="risers" size="small">
-                    <el-table-column prop="info.name" label="Card" />
+                    <el-table-column label="Card">
+                        <template #default="{ row }">
+                            <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
+                        </template>
+                    </el-table-column>
                     <el-table-column label="IR">
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
@@ -43,7 +47,11 @@
                     <ExportButton filename="top-fallers.csv" :rows="fallers" :columns="momentumColumns" />
                 </div>
                 <el-table :data="fallers" size="small">
-                    <el-table-column prop="info.name" label="Card" />
+                    <el-table-column label="Card">
+                        <template #default="{ row }">
+                            <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
+                        </template>
+                    </el-table-column>
                     <el-table-column label="IR">
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
@@ -60,7 +68,9 @@
         </div>
         <el-table :data="newestConsensus" size="small">
             <el-table-column label="Card">
-                <template #default="{ row }">{{ row.trend.info.name }}</template>
+                <template #default="{ row }">
+                    <CardName :name="row.trend.info.name" :imageUrl="row.trend.info.urlFront" :setCode="row.trend.info.eligibility?.setCode" />
+                </template>
             </el-table-column>
             <el-table-column label="Category">
                 <template #default="{ row }">{{ row.consensus.category }}</template>
@@ -104,6 +114,7 @@ import { releaseMarkLines } from '../util/releaseMarkers';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
+import CardName from '../components/CardName.vue';
 import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{

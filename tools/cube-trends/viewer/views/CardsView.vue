@@ -10,14 +10,16 @@
         </div>
 
         <el-table :data="pagedRows" size="small" @sort-change="handleSortChange" @row-click="handleRowClick">
-            <el-table-column label="" width="48">
-                <template #default="{ row }">
-                    <img :src="row.info.urlFront" loading="lazy" width="32" :alt="row.info.name" />
-                </template>
-            </el-table-column>
             <el-table-column prop="name" label="Name" sortable="custom">
                 <template #default="{ row }">
-                    {{ row.info.name }}<span v-if="row.copy > 1"> {{ copyLabel(row.copy) }}</span>
+                    <CardName
+                        :name="row.info.name"
+                        :imageUrl="row.info.urlFront"
+                        :setCode="row.info.eligibility?.setCode"
+                        :copies="row.copy"
+                        clickable
+                        @click="handleRowClick(row)"
+                    />
                 </template>
             </el-table-column>
             <el-table-column prop="current" label="IR" sortable="custom">
@@ -60,6 +62,7 @@ import { COLOR_CATEGORIES, type ColorCategory } from '../../analysis/cardInfo';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
 import ExportButton from '../components/ExportButton.vue';
 import Sparkline from '../components/Sparkline.vue';
+import CardName from '../components/CardName.vue';
 import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{
@@ -158,10 +161,6 @@ function handleSortChange({ prop, order }: { prop: string; order: 'ascending' | 
 
 function handleRowClick(row: CardTrend): void {
     emit('select-card', row.info.oracleId);
-}
-
-function copyLabel(copy: number): string {
-    return `×${copy}`;
 }
 
 const exportColumns: CsvColumn<CardTrend>[] = [

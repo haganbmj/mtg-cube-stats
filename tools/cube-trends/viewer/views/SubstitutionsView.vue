@@ -9,18 +9,22 @@
             <el-table :data="rows" size="small">
                 <el-table-column label="Removed">
                     <template #default="{ row }">
-                        <div class="substitution-card">
-                            <img :src="row.removedInfo?.urlFront" loading="lazy" width="32" :alt="row.removedName" />
-                            <span>{{ row.removedName }}<template v-if="row.removedCopy >= 2"> &times;{{ row.removedCopy }}</template></span>
-                        </div>
+                        <CardName
+                            :name="row.removedName"
+                            :imageUrl="row.removedInfo?.urlFront"
+                            :setCode="row.removedInfo?.eligibility?.setCode"
+                            :copies="row.removedCopy"
+                        />
                     </template>
                 </el-table-column>
                 <el-table-column label="Added">
                     <template #default="{ row }">
-                        <div class="substitution-card">
-                            <img :src="row.addedInfo?.urlFront" loading="lazy" width="32" :alt="row.addedName" />
-                            <span>{{ row.addedName }}<template v-if="row.addedCopy >= 2"> &times;{{ row.addedCopy }}</template></span>
-                        </div>
+                        <CardName
+                            :name="row.addedName"
+                            :imageUrl="row.addedInfo?.urlFront"
+                            :setCode="row.addedInfo?.eligibility?.setCode"
+                            :copies="row.addedCopy"
+                        />
                     </template>
                 </el-table-column>
                 <el-table-column prop="cubes" label="Cubes" />
@@ -40,6 +44,7 @@ import { copyNumber, type CardInfo } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
 import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
+import CardName from '../components/CardName.vue';
 import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{
@@ -86,11 +91,5 @@ const exportColumns: CsvColumn<SubstitutionRow>[] = [
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-
-.substitution-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 </style>

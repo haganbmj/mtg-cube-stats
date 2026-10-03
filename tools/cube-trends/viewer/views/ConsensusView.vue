@@ -21,10 +21,12 @@
             <h4>{{ category }}</h4>
             <ul class="consensus-card-list">
                 <li v-for="card in cardsByCategory.get(category)" :key="card.oracleId" class="consensus-card">
-                    <img :src="cardLookup.get(card.oracleId)?.info.urlFront" loading="lazy" width="32" :alt="cardName(card.oracleId)" />
-                    <span class="consensus-card-name">
-                        {{ cardName(card.oracleId) }}<template v-if="card.quantity >= 2"> &times;{{ card.quantity }}</template>
-                    </span>
+                    <CardName
+                        :name="cardName(card.oracleId)"
+                        :imageUrl="cardLookup.get(card.oracleId)?.info.urlFront"
+                        :setCode="cardLookup.get(card.oracleId)?.info.eligibility?.setCode"
+                        :copies="card.quantity"
+                    />
                     <span>{{ formatPercent(card.score) }}</span>
                     <span>{{ formatPercent(card.currentIr) }}</span>
                 </li>
@@ -42,7 +44,14 @@
             <el-collapse-item v-for="category in COLOR_CATEGORIES" :key="category" :name="category" :title="category">
                 <el-table :data="data.consensus.nearMisses[category]" size="small">
                     <el-table-column label="Name">
-                        <template #default="{ row }">{{ cardName(row.oracleId) }}</template>
+                        <template #default="{ row }">
+                            <CardName
+                                :name="cardName(row.oracleId)"
+                                :imageUrl="cardLookup.get(row.oracleId)?.info.urlFront"
+                                :setCode="cardLookup.get(row.oracleId)?.info.eligibility?.setCode"
+                                :copies="row.quantity"
+                            />
+                        </template>
                     </el-table-column>
                     <el-table-column label="Score">
                         <template #default="{ row }">{{ formatPercent(row.score) }}</template>
@@ -67,6 +76,7 @@ import { formatPercent } from '../util/format';
 import { downloadText, type CsvColumn } from '../util/csv';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
+import CardName from '../components/CardName.vue';
 
 const props = defineProps<{
     data: FullTrendsData;
@@ -167,9 +177,5 @@ function downloadImportList(): void {
     align-items: center;
     gap: 8px;
     padding: 2px 0;
-}
-
-.consensus-card-name {
-    flex: 1;
 }
 </style>

@@ -17,7 +17,15 @@
                 </el-table-column>
                 <el-table-column prop="leadOnConsensus" label="Lead on Consensus" />
                 <el-table-column label="Examples">
-                    <template #default="{ row }">{{ row.exampleNames.join(', ') }}</template>
+                    <template #default="{ row }">
+                        <span v-for="(example, i) in row.examples" :key="example.oracleId">
+                            <CardName
+                                :name="cardLookup.get(example.oracleId)?.info.name ?? example.oracleId"
+                                :imageUrl="cardLookup.get(example.oracleId)?.info.urlFront"
+                                :setCode="cardLookup.get(example.oracleId)?.info.eligibility?.setCode"
+                            /><template v-if="i < row.examples.length - 1">, </template>
+                        </span>
+                    </template>
                 </el-table-column>
             </el-table>
         </template>
@@ -32,6 +40,7 @@ import { buildCardLookup } from '../util/cardLookup';
 import { formatPercent } from '../util/format';
 import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
+import CardName from '../components/CardName.vue';
 import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{
