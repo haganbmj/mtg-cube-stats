@@ -50,7 +50,7 @@ export async function walkCube(cubeId: string, samples: Ms[], deps: WalkDeps): P
         return { index, requests };
     }
     store.writeRevision(cubeId, anchor.rev);
-    index = addCoverage(index, anchor.rev.changelog.id, anchor.rev.changelog.date, now);
+    index = addCoverage({ ...index, missing: false }, anchor.rev.changelog.id, anchor.rev.changelog.date, now);
     store.writeIndex(index);
 
     const failedThisRun = new Set<Ms>();

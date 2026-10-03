@@ -154,6 +154,16 @@ describe('walkCube', () => {
         expect(result.requests).toBe(1);
     });
 
+    it('clears missing once a later anchor fetch succeeds', async () => {
+        const fetcher = createTimelineFetcher(TIMELINE);
+        const store = createMemoryStore();
+        store.writeIndex({ ...emptyIndex('cube', D(95)), missing: true });
+
+        const result = await walkCube('cube', tenSamples(), { now: () => D(95), fetcher, store });
+
+        expect(result.index.missing).toBe(false);
+    });
+
     it('anchor fetch failure records no gap', async () => {
         const fetcher = createTimelineFetcher(TIMELINE, { throwAt: [D(95)] });
         const store = createMemoryStore();
