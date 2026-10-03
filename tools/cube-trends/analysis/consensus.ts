@@ -1,11 +1,9 @@
 import type { AnalysisContext } from './context';
-import { baseOracleId, copyNumber, type ColorCategory } from './cardInfo';
+import { baseOracleId, COLOR_CATEGORIES, copyNumber, MV_BUCKETS, mvBucket, type ColorCategory } from './cardInfo';
 import type { ShapeResult } from './shape';
 import { largestRemainder } from './stats';
 
 const DAY = 86_400_000;
-const COLOR_CATEGORIES: ColorCategory[] = ['W', 'U', 'B', 'R', 'G', 'M', 'C', 'L'];
-const MV_BUCKETS = ['0', '1', '2', '3', '4', '5', '6', '7+'];
 
 export interface ConsensusCard {
     oracleId: string;
@@ -28,10 +26,6 @@ export interface ConsensusResult {
     };
 }
 
-function mvBucket(cmc: number): string {
-    const floored = Math.floor(cmc);
-    return floored >= 7 ? '7+' : String(floored);
-}
 
 function emptyResult(): ConsensusResult {
     return {

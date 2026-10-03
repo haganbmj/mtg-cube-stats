@@ -51,3 +51,11 @@ export function copyNumber(key: string): number {
     const trailing = key.match(/\+*$/)?.[0] ?? '';
     return 1 + trailing.length;
 }
+export const COLOR_CATEGORIES: ColorCategory[] = ['W', 'U', 'B', 'R', 'G', 'M', 'C', 'L'];
+
+export const MV_BUCKETS = ['0', '1', '2', '3', '4', '5', '6', '7+'];
+
+export function mvBucket(cmc: number): string {
+    const floored = Math.floor(cmc);
+    return floored >= 7 ? '7+' : String(floored);
+}

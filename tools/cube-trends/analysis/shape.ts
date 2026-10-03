@@ -1,6 +1,6 @@
 import type { Ms } from '../types';
 import type { AnalysisContext } from './context';
-import { baseOracleId, type ColorCategory } from './cardInfo';
+import { baseOracleId, COLOR_CATEGORIES, MV_BUCKETS, mvBucket, type ColorCategory } from './cardInfo';
 import { weightedQuantile } from './stats';
 
 export interface Band {
@@ -21,14 +21,6 @@ export interface ShapePoint {
 export interface ShapeResult {
     points: ShapePoint[];
     types: string[];
-}
-
-const COLOR_CATEGORIES: ColorCategory[] = ['W', 'U', 'B', 'R', 'G', 'M', 'C', 'L'];
-const MV_BUCKETS = ['0', '1', '2', '3', '4', '5', '6', '7+'];
-
-function mvBucket(cmc: number): string {
-    const floored = Math.floor(cmc);
-    return floored >= 7 ? '7+' : String(floored);
 }
 
 function band(values: number[], weights: number[]): Band {
