@@ -18,6 +18,7 @@
     "preload": "tsx preload-cube-data.ts",
     "preload:fetch": "tsx preload-cube-data.ts --fetch-only",
     "preload:assemble": "tsx preload-cube-data.ts --assemble-only",
+    "trends:fetch": "tsx tools/cube-trends/cli/fetch.ts",
     "test": "vitest"
   },
   "dependencies": {
