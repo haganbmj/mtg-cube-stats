@@ -6,7 +6,7 @@ import { sampleDates } from '../fetch/sampling';
 import { createCacheStore, DEFAULT_CACHE_DIR } from '../fetch/store';
 import { parseDuration } from '../../../preloads/manifests/filters';
 import { computeEligibility, readJsonlLines } from '../analysis/eligibility';
-import { selectMembers, buildPanel, type MemberEntry } from '../analysis/panel';
+import { selectMembers, buildPanel, gridAnchor, type MemberEntry } from '../analysis/panel';
 import { buildContext, type SetInfo } from '../analysis/context';
 import { analyzeCards } from '../analysis/cards';
 import { analyzeTimeline } from '../analysis/timeline';
@@ -42,7 +42,6 @@ async function main(): Promise<void> {
     const manifests = await loadManifests(selection);
 
     const store = createCacheStore(DEFAULT_CACHE_DIR);
-    const now = Date.now();
 
     const cardsData: ScryfallDataStructure = JSON.parse(fs.readFileSync('data/cards-minimized.json', 'utf8'));
     const sets = loadSets();
@@ -60,7 +59,6 @@ async function main(): Promise<void> {
     for (const manifest of manifests) {
         const tStart = Date.now();
         const config = resolveConfig(manifest.name, overrides);
-        const samples = sampleDates(now, parseDuration(config.interval), parseDuration(config.range));
 
         const entries: MemberEntry[] = [];
         const missing: string[] = [];
@@ -75,6 +73,9 @@ async function main(): Promise<void> {
 
         const members = selectMembers(manifest, entries, (cubeId, id) => store.readRevision(cubeId, id));
         console.log(`[${manifest.name}] members selected in ${Date.now() - tStart}ms (${members.length}/${manifest.cubes.length})`);
+
+        const anchor = gridAnchor(members.map((m) => m.index)) ?? Date.now();
+        const samples = sampleDates(anchor, parseDuration(config.interval), parseDuration(config.range));
 
         const outDir = `${DEFAULT_OUTPUT_DIR}/${manifest.name}`;
 

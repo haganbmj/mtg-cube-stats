@@ -46,6 +46,21 @@ function newestInterval(index: CubeIndex): CoverageInterval {
     return index.coverage.reduce((best, iv) => (iv.to > best.to ? iv : best));
 }
 
+/** Latest fetch-proven time across indexes, so the sample grid matches what was fetched. */
+export function gridAnchor(indexes: CubeIndex[]): Ms | null {
+    let anchor: Ms | null = null;
+    for (const index of indexes) {
+        if (index.coverage.length === 0) {
+            continue;
+        }
+        const to = newestInterval(index).to;
+        if (anchor === null || to > anchor) {
+            anchor = to;
+        }
+    }
+    return anchor;
+}
+
 function shouldIncludeCard(card: { isCustomCard?: boolean; oracleId: string }, cards: Record<string, ScryfallCard>, includeBasics: boolean): boolean {
     if (card.isCustomCard) {
         return false;

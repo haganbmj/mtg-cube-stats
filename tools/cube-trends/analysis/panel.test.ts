@@ -3,8 +3,10 @@ import type { ScryfallCard } from '../../../src/types/scryfall';
 import type { CompactRevision, CubeIndex, Ms } from '../types';
 import type { Manifest } from '../../../preloads/manifests/types';
 import { colorCategory, baseOracleId, copyNumber } from './cardInfo';
-import { selectMembers, buildPanel, type Panel, type MemberEntry } from './panel';
+import { selectMembers, buildPanel, gridAnchor, type Panel, type MemberEntry } from './panel';
 import { computeDiffs } from './diffs';
+import { resolveAt } from '../fetch/coverage';
+import { sampleDates, DAY } from '../fetch/sampling';
 
 function scryfallCard(overrides: Partial<ScryfallCard>): ScryfallCard {
     return {
@@ -219,6 +221,32 @@ describe('buildPanel', () => {
         expect(panel.elo.get('bolt')).toBe(1800);
     });
 })
+
+describe('gridAnchor', () => {
+    it('is the max newest coverage end across indexes', () => {
+        const a = indexWithCoverage('a', [{ id: 'r1', from: 0, to: 500 }, { id: 'r2', from: 500, to: 900 }]);
+        const b = indexWithCoverage('b', [{ id: 'r3', from: 0, to: 700 }]);
+        expect(gridAnchor([a, b])).toBe(900);
+    });
+
+    it('is null when no index has coverage', () => {
+        expect(gridAnchor([indexWithCoverage('a', [])])).toBeNull();
+        expect(gridAnchor([])).toBeNull();
+    });
+
+    it('resolves the latest sample when analyze runs a day after the fetch', () => {
+        const fetchedAt = 100 * DAY + 15 * 3_600_000;
+        const index = indexWithCoverage('a', [{ id: 'r1', from: 90 * DAY, to: fetchedAt }]);
+        const interval = 14 * DAY;
+        const range = 28 * DAY;
+
+        const wallClockSamples = sampleDates(fetchedAt + DAY, interval, range);
+        expect(resolveAt(index, wallClockSamples[wallClockSamples.length - 1])).toBeUndefined();
+
+        const samples = sampleDates(gridAnchor([index])!, interval, range);
+        expect(resolveAt(index, samples[samples.length - 1])).toBe('r1');
+    });
+});
 
 describe('selectMembers', () => {
     it('skips missing indexes and indexes with no coverage', () => {
