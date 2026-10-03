@@ -10,8 +10,8 @@
         <el-table :data="data.sets.adoption" size="small">
             <el-table-column prop="code" label="Set" />
             <el-table-column prop="name" label="Name" />
-            <el-table-column label="Peak">
-                <template #default="{ row }">{{ formatPercent(row.peak) }}</template>
+            <el-table-column label="Peak (cards per cube)">
+                <template #default="{ row }">{{ formatCount(row.peak) }}</template>
             </el-table-column>
             <el-table-column prop="timeToPeakWeeks" label="Weeks to Peak" />
             <el-table-column label="Retention">
@@ -51,7 +51,7 @@ import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { SetAdoption } from '../../analysis/sets';
 import { buildCardLookup } from '../util/cardLookup';
-import { formatPercent } from '../util/format';
+import { formatCount, formatPercent } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import type { CsvColumn } from '../util/csv';
@@ -68,7 +68,7 @@ const adoptionOption = computed(() => ({
     tooltip: { trigger: 'axis' },
     legend: { type: 'scroll', data: props.data.sets.adoption.map((s) => s.name) },
     xAxis: { type: 'value', name: 'Weeks since release' },
-    yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
+    yAxis: { type: 'value', name: 'Cards per cube', axisLabel: { formatter: (v: number) => formatCount(v) } },
     series: props.data.sets.adoption.map((set) => ({
         name: set.name,
         type: 'line',
@@ -79,7 +79,7 @@ const adoptionOption = computed(() => ({
 const peakColumns: CsvColumn<SetAdoption>[] = [
     { key: 'code', label: 'Set', value: (s) => s.code },
     { key: 'name', label: 'Name', value: (s) => s.name },
-    { key: 'peak', label: 'Peak', value: (s) => s.peak },
+    { key: 'peak', label: 'Peak (cards per cube)', value: (s) => formatCount(s.peak) },
     { key: 'timeToPeakWeeks', label: 'Weeks to Peak', value: (s) => s.timeToPeakWeeks },
     { key: 'retention', label: 'Retention', value: (s) => s.retention },
 ];

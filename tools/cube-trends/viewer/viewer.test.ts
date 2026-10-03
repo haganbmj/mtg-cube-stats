@@ -2,6 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { parseHash, buildHash, type Route } from './router';
 import { toCsv } from './util/csv';
 import { releaseMarkLines } from './util/releaseMarkers';
+import { formatCount } from './util/format';
+
+describe('formatCount', () => {
+    it('formats a cards-per-cube mean as a plain 2-decimal number, not a percent', () => {
+        expect(formatCount(6.857)).toBe('6.86');
+        expect(formatCount(0)).toBe('0.00');
+    });
+});
 
 describe('parseHash / buildHash', () => {
     it('parses an empty hash to the overview defaults', () => {
