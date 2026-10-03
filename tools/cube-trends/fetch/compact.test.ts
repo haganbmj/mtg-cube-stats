@@ -76,10 +76,12 @@ function rawFixture(): any {
 
 describe('compactRevision', () => {
     it('drops fields not in the spec list', () => {
-        const compact = compactRevision(rawFixture());
+        const raw = rawFixture();
+        const compact = compactRevision(raw);
         expect(compact).not.toHaveProperty('views');
         expect(compact).not.toHaveProperty('description');
         expect(compact).not.toHaveProperty('collaborators');
+        expect(compact.image).toEqual({ uri: raw.image.uri });
         for (const card of compact.cards.mainboard) {
             expect(card.details).not.toHaveProperty('prices');
         }
