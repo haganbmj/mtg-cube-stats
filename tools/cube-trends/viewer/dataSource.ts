@@ -23,18 +23,6 @@ export interface AnalysisData {
 
 export type TrendsData = { meta: MetaResult } & Partial<AnalysisData>;
 
-const ANALYSIS_FILES = [
-    'cards',
-    'timeline',
-    'sets',
-    'shape',
-    'churn',
-    'survival',
-    'trendsetters',
-    'substitutions',
-    'consensus',
-] as const;
-
 // Task 20 rewrites this literal glob pattern.
 const modules = import.meta.glob('../output/*/*.json') as Record<string, () => Promise<{ default: unknown }>>;
 
@@ -65,8 +53,17 @@ export async function loadManifestData(name: string): Promise<TrendsData> {
         return { meta };
     }
 
-    const results = await Promise.all(ANALYSIS_FILES.map((file) => loadFile(name, file)));
-    const data = Object.fromEntries(ANALYSIS_FILES.map((file, i) => [file, results[i]])) as AnalysisData;
+    const [cards, timeline, sets, shape, churn, survival, trendsetters, substitutions, consensus] = await Promise.all([
+        loadFile<CardsResult>(name, 'cards'),
+        loadFile<TimelineResult>(name, 'timeline'),
+        loadFile<SetsResult>(name, 'sets'),
+        loadFile<ShapeResult>(name, 'shape'),
+        loadFile<ChurnResult>(name, 'churn'),
+        loadFile<SurvivalResult>(name, 'survival'),
+        loadFile<TrendsettersResult>(name, 'trendsetters'),
+        loadFile<SubstitutionsResult>(name, 'substitutions'),
+        loadFile<ConsensusResult>(name, 'consensus'),
+    ]);
 
-    return { meta, ...data };
+    return { meta, cards, timeline, sets, shape, churn, survival, trendsetters, substitutions, consensus };
 }

@@ -23,6 +23,18 @@ describe('parseHash / buildHash', () => {
     it('falls back to overview for an unknown view', () => {
         expect(parseHash('#/wotc/not-a-real-view')).toEqual({ manifest: 'wotc', view: 'overview', card: null });
     });
+
+    it('round-trips a route with a null manifest', () => {
+        const route: Route = { manifest: null, view: 'overview', card: null };
+        const hash = buildHash(route);
+        expect(hash).toBe('#/');
+        expect(parseHash(hash)).toEqual(route);
+    });
+
+    it('treats malformed percent-encoding as an absent segment instead of throwing', () => {
+        expect(() => parseHash('#/wotc%/sets')).not.toThrow();
+        expect(parseHash('#/wotc%/sets')).toEqual({ manifest: null, view: 'sets', card: null });
+    });
 });
 
 describe('toCsv', () => {

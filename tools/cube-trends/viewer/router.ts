@@ -22,6 +22,15 @@ export interface Route {
 
 const VIEW_SET: ReadonlySet<string> = new Set(VIEWS);
 
+// Malformed percent-encoding must not crash the viewer; treat it as absent.
+function safeDecode(value: string): string | null {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return null;
+    }
+}
+
 export function parseHash(hash: string): Route {
     const withoutPrefix = hash.replace(/^#\/?/, '');
     const queryIndex = withoutPrefix.indexOf('?');
@@ -29,16 +38,16 @@ export function parseHash(hash: string): Route {
     const queryPart = queryIndex === -1 ? '' : withoutPrefix.slice(queryIndex + 1);
 
     const segments = pathPart.split('/').filter((segment) => segment.length > 0);
-    const manifest = segments[0] !== undefined ? decodeURIComponent(segments[0]) : null;
-    const rawView = segments[1] !== undefined ? decodeURIComponent(segments[1]) : 'overview';
-    const view: ViewName = VIEW_SET.has(rawView) ? (rawView as ViewName) : 'overview';
+    const manifest = segments[0] !== undefined ? safeDecode(segments[0]) : null;
+    const rawView = segments[1] !== undefined ? safeDecode(segments[1]) : null;
+    const view: ViewName = rawView !== null && VIEW_SET.has(rawView) ? (rawView as ViewName) : 'overview';
 
     let card: string | null = null;
     if (queryPart.length > 0) {
         for (const pair of queryPart.split('&')) {
             const [key, value] = pair.split('=');
             if (key === 'card' && value !== undefined) {
-                card = decodeURIComponent(value);
+                card = safeDecode(value);
             }
         }
     }
@@ -47,8 +56,10 @@ export function parseHash(hash: string): Route {
 }
 
 export function buildHash(route: Route): string {
-    const manifestSegment = encodeURIComponent(route.manifest ?? '');
-    let hash = `#/${manifestSegment}/${encodeURIComponent(route.view)}`;
+    let hash = '#/';
+    if (route.manifest !== null) {
+        hash += `${encodeURIComponent(route.manifest)}/${encodeURIComponent(route.view)}`;
+    }
     if (route.card !== null) {
         hash += `?card=${encodeURIComponent(route.card)}`;
     }
