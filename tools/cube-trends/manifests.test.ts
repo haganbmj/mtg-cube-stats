@@ -124,4 +124,15 @@ describe('loadManifests', () => {
         expect(result).toHaveLength(1);
         expect(result[0].name).toBe('a');
     });
+
+    it('throws naming the bad manifest when a name has unsafe characters', async () => {
+        fs.writeFileSync(
+            path.join(tempDir, 'bad.ts'),
+            `export default { name: 'bad/../name', label: 'Bad', fetch: null, cubes: [] };`,
+        );
+
+        await expect(
+            loadManifests('all', { manifestsDir: tempDir }),
+        ).rejects.toThrow(/Invalid manifest name "bad\/\.\.\/name"/);
+    });
 });

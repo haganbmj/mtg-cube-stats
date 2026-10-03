@@ -5,6 +5,8 @@ import type { Manifest } from '../../preloads/manifests/types';
 const DEFAULT_MANIFESTS_DIR = './preloads/manifests';
 const DEFAULT_TOP100_PATH = './preloads/cache/cubecobra-top100-ids.json';
 
+const VALID_MANIFEST_NAME = /^[A-Za-z0-9_-]+$/;
+
 async function loadAllManifestFiles(manifestsDir: string): Promise<Manifest[]> {
     // Only manifest modules live at the top level of manifestsDir; shared types, helpers, and tests are excluded.
     const files = fs.readdirSync(manifestsDir).filter((f) =>
@@ -13,7 +15,12 @@ async function loadAllManifestFiles(manifestsDir: string): Promise<Manifest[]> {
     const manifests: Manifest[] = [];
     for (const f of files) {
         const mod = await import(path.resolve(manifestsDir, f));
-        manifests.push(mod.default as Manifest);
+        const manifest = mod.default as Manifest;
+        if (!VALID_MANIFEST_NAME.test(manifest.name)) {
+            // the name is used as an output directory segment, so it must stay within a safe charset.
+            throw new Error(`Invalid manifest name "${manifest.name}" in ${f}: must match ${VALID_MANIFEST_NAME}`);
+        }
+        manifests.push(manifest);
     }
     return manifests;
 }
