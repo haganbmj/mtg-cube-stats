@@ -33,6 +33,12 @@
             <SetsView v-else-if="selectedView === 'sets'" :data="fullData" />
             <RecencyView v-else-if="selectedView === 'recency'" :data="fullData" />
             <ShapeView v-else-if="selectedView === 'shape'" :data="fullData" />
+            <ChurnView v-else-if="selectedView === 'churn'" :data="fullData" />
+            <SurvivalView v-else-if="selectedView === 'survival'" :data="fullData" />
+            <TrendsettersView v-else-if="selectedView === 'trendsetters'" :data="fullData" />
+            <HomogenizationView v-else-if="selectedView === 'homogenization'" :data="fullData" />
+            <SubstitutionsView v-else-if="selectedView === 'substitutions'" :data="fullData" />
+            <ConsensusView v-else-if="selectedView === 'consensus'" :data="fullData" />
             <EmptyState v-else reason="Coming soon" />
 
             <el-drawer v-model="cardDrawerVisible" size="70%" :title="selectedCardName">
@@ -54,6 +60,12 @@ import CardDetailView from './views/CardDetailView.vue';
 import SetsView from './views/SetsView.vue';
 import RecencyView from './views/RecencyView.vue';
 import ShapeView from './views/ShapeView.vue';
+import ChurnView from './views/ChurnView.vue';
+import SurvivalView from './views/SurvivalView.vue';
+import TrendsettersView from './views/TrendsettersView.vue';
+import HomogenizationView from './views/HomogenizationView.vue';
+import SubstitutionsView from './views/SubstitutionsView.vue';
+import ConsensusView from './views/ConsensusView.vue';
 
 const manifests = ref<string[]>(listManifests());
 const selectedManifest = ref<string | null>(null);
