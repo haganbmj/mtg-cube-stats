@@ -109,6 +109,21 @@ describe('AssetCache', () => {
         await expect(loadJsonAsset('/assets/x.json', 'cards')).rejects.toThrow('network down');
     });
 
+    it('bypasses the cache in dev mode', async () => {
+        vi.stubEnv('MODE', 'development');
+        try {
+            await seedAsset('/data/foo.json', 'cards', { cached: true }, new Date().toISOString());
+            (globalThis.fetch as any).mockResolvedValue({ json: () => Promise.resolve({ fresh: true }) });
+
+            const result = await loadJsonAsset('/data/foo.json', 'cards', { onStale: vi.fn() });
+
+            expect(result).toEqual({ fresh: true });
+            expect(globalThis.fetch).toHaveBeenCalledWith('/data/foo.json');
+        } finally {
+            vi.unstubAllEnvs();
+        }
+    });
+
     it('prunes assets whose URLs are not registered', async () => {
         await seedAssetWithoutRegistering('/assets/keep.json', 'cards', { keep: true }, new Date().toISOString());
         await seedAssetWithoutRegistering('/assets/drop1.json', 'frequency', { drop: true }, new Date().toISOString());
