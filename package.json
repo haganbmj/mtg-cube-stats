@@ -20,6 +20,7 @@
     "preload:assemble": "tsx preload-cube-data.ts --assemble-only",
     "trends:fetch": "tsx tools/cube-trends/cli/fetch.ts",
     "trends:analyze": "node --max-old-space-size=4096 --import tsx tools/cube-trends/cli/analyze.ts",
+    "trends:report": "tsx tools/cube-trends/cli/report.ts",
     "test": "vitest"
   },
   "dependencies": {
@@ -52,6 +53,7 @@
     "tsx": "^4.23.15",
     "typescript-eslint": "^8.64.0",
     "vite": "8.3.2",
+    "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^5.0.2",
     "vue-loader": "^17.4.2"
   }
