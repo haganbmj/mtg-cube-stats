@@ -7,12 +7,13 @@
             <h3>Curators</h3>
             <ExportButton filename="churn.csv" :rows="rows" :columns="exportColumns" />
         </div>
-        <el-table :data="rows" size="small">
-            <el-table-column prop="name" label="Cube" />
-            <el-table-column prop="owner" label="Owner" />
-            <el-table-column prop="totalAdds" label="Adds" />
-            <el-table-column prop="totalRemoves" label="Removes" />
-            <el-table-column label="Mean Rate">
+        <el-table :data="rows" size="small" :default-sort="{ prop: 'changes', order: 'descending' }">
+            <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
+            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a, b) => byName(a.owner, b.owner)" />
+            <el-table-column prop="totalAdds" label="Adds" sortable :sort-method="(a, b) => compareNullable(a.totalAdds, b.totalAdds)" />
+            <el-table-column prop="totalRemoves" label="Removes" sortable :sort-method="(a, b) => compareNullable(a.totalRemoves, b.totalRemoves)" />
+            <el-table-column prop="changes" label="Changes" sortable :sort-method="(a, b) => compareNullable(a.changes, b.changes)" />
+            <el-table-column prop="meanRate" label="Mean Rate" sortable :sort-method="(a, b) => compareNullable(a.meanRate, b.meanRate)">
                 <template #default="{ row }">{{ formatPercent(row.meanRate) }}</template>
             </el-table-column>
             <el-table-column label="Trend">
@@ -30,6 +31,7 @@ import type { FullTrendsData } from '../dataSource';
 import type { CubeChurn } from '../../analysis/churn';
 import { releaseMarkLines } from '../util/releaseMarkers';
 import { formatPercent } from '../util/format';
+import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import Sparkline from '../components/Sparkline.vue';
@@ -42,6 +44,7 @@ const props = defineProps<{
 interface ChurnRow extends CubeChurn {
     name: string;
     owner: string;
+    changes: number;
     sparkValues: (number | null)[];
 }
 
@@ -51,6 +54,7 @@ const rows = computed<ChurnRow[]>(() => props.data.churn.cubes.map((cube) => ({
     ...cube,
     name: cubeLookup.value.get(cube.cubeId)?.name ?? cube.cubeId,
     owner: cubeLookup.value.get(cube.cubeId)?.owner ?? '',
+    changes: cube.totalAdds + cube.totalRemoves,
     sparkValues: cube.rate,
 })));
 

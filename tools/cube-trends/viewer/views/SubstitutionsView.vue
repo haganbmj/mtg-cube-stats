@@ -6,8 +6,8 @@
                 <h3>Substitutions</h3>
                 <ExportButton filename="substitutions.csv" :rows="rows" :columns="exportColumns" />
             </div>
-            <el-table :data="rows" size="small">
-                <el-table-column label="Removed">
+            <el-table :data="rows" size="small" :default-sort="{ prop: 'cubes', order: 'descending' }">
+                <el-table-column prop="removedName" label="Removed" sortable :sort-method="(a, b) => byName(a.removedName, b.removedName)">
                     <template #default="{ row }">
                         <CardName
                             :name="row.removedName"
@@ -17,7 +17,7 @@
                         />
                     </template>
                 </el-table-column>
-                <el-table-column label="Added">
+                <el-table-column prop="addedName" label="Added" sortable :sort-method="(a, b) => byName(a.addedName, b.addedName)">
                     <template #default="{ row }">
                         <CardName
                             :name="row.addedName"
@@ -27,8 +27,8 @@
                         />
                     </template>
                 </el-table-column>
-                <el-table-column prop="cubes" label="Cubes" />
-                <el-table-column label="Lift">
+                <el-table-column prop="cubes" label="Cubes" sortable :sort-method="(a, b) => compareNullable(a.cubes, b.cubes)" />
+                <el-table-column prop="lift" label="Lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
                     <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                 </el-table-column>
             </el-table>
@@ -42,6 +42,7 @@ import type { FullTrendsData } from '../dataSource';
 import type { Substitution } from '../../analysis/substitutions';
 import { copyNumber, type CardInfo } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
+import { compareNullable, byName } from '../util/sort';
 import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
 import CardName from '../components/CardName.vue';

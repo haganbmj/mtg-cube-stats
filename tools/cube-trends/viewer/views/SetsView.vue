@@ -7,14 +7,17 @@
             <h3>Peak / Retention</h3>
             <ExportButton filename="sets.csv" :rows="data.sets.adoption" :columns="peakColumns" />
         </div>
-        <el-table :data="data.sets.adoption" size="small">
-            <el-table-column prop="code" label="Set" />
-            <el-table-column prop="name" label="Name" />
-            <el-table-column label="Peak (cards per cube)">
+        <el-table :data="data.sets.adoption" size="small" :default-sort="{ prop: 'releasedAt', order: 'descending' }">
+            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)" />
+            <el-table-column prop="name" label="Name" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
+            <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
+                <template #default="{ row }">{{ formatDate(row.releasedAt) }}</template>
+            </el-table-column>
+            <el-table-column prop="peak" label="Peak (cards per cube)" sortable :sort-method="(a, b) => compareNullable(a.peak, b.peak)">
                 <template #default="{ row }">{{ formatCount(row.peak) }}</template>
             </el-table-column>
-            <el-table-column prop="timeToPeakWeeks" label="Weeks to Peak" />
-            <el-table-column label="Retention">
+            <el-table-column prop="timeToPeakWeeks" label="Weeks to Peak" sortable :sort-method="(a, b) => compareNullable(a.timeToPeakWeeks, b.timeToPeakWeeks)" />
+            <el-table-column prop="retention" label="Retention" sortable :sort-method="(a, b) => compareNullable(a.retention, b.retention)">
                 <template #default="{ row }">{{ row.retention === null ? '—' : formatPercent(row.retention) }}</template>
             </el-table-column>
         </el-table>
@@ -28,28 +31,31 @@
                 :title="`${marker.name} (${marker.code})${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}`"
             >
                 <template v-if="displacementByCode.get(marker.code)">
-                    <el-table :data="displacementByCode.get(marker.code)!.groups" size="small">
-                        <el-table-column prop="colorCategory" label="Category" />
-                        <el-table-column prop="primaryType" label="Type" />
-                        <el-table-column prop="removals" label="Removals" />
-                        <el-table-column label="Expected">
+                    <el-table :data="displacementByCode.get(marker.code)!.groups" size="small" :default-sort="{ prop: 'lift', order: 'descending' }">
+                        <el-table-column prop="colorCategory" label="Category" sortable :sort-method="(a, b) => byName(a.colorCategory, b.colorCategory)" />
+                        <el-table-column prop="primaryType" label="Type" sortable :sort-method="(a, b) => byName(a.primaryType, b.primaryType)" />
+                        <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
+                        <el-table-column prop="expected" label="Expected" sortable :sort-method="(a, b) => compareNullable(a.expected, b.expected)">
                             <template #default="{ row }">{{ row.expected.toFixed(1) }}</template>
                         </el-table-column>
-                        <el-table-column label="Lift">
+                        <el-table-column prop="lift" label="Lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
                             <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                         </el-table-column>
                     </el-table>
                     <h5>Top Displaced Cards</h5>
-                    <ul>
-                        <li v-for="card in displacementByCode.get(marker.code)!.topCards" :key="card.key">
-                            <CardName
-                                :name="cardLookup.get(card.key)?.info.name ?? card.key"
-                                :imageUrl="cardLookup.get(card.key)?.info.urlFront"
-                                :setCode="cardLookup.get(card.key)?.info.eligibility?.setCode"
-                                :copies="copyNumber(card.key)"
-                            /> ({{ card.removals }})
-                        </li>
-                    </ul>
+                    <el-table :data="displacementByCode.get(marker.code)!.topCards" size="small" :default-sort="{ prop: 'removals', order: 'descending' }">
+                        <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
+                            <template #default="{ row }">
+                                <CardName
+                                    :name="cardLookup.get(row.key)?.info.name ?? row.key"
+                                    :imageUrl="cardLookup.get(row.key)?.info.urlFront"
+                                    :setCode="cardLookup.get(row.key)?.info.eligibility?.setCode"
+                                    :copies="copyNumber(row.key)"
+                                />
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
+                    </el-table>
                 </template>
             </el-collapse-item>
         </el-collapse>
@@ -62,7 +68,8 @@ import type { FullTrendsData } from '../dataSource';
 import type { SetAdoption } from '../../analysis/sets';
 import { copyNumber } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
-import { formatCount, formatPercent } from '../util/format';
+import { formatCount, formatPercent, formatDate } from '../util/format';
+import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';

@@ -10,17 +10,17 @@
         <dl class="consensus-meta">
             <dt>Size</dt><dd>{{ data.consensus.size }}</dd>
         </dl>
-        <el-table :data="quotaRows" size="small">
-            <el-table-column prop="category" label="Category" />
-            <el-table-column prop="quota" label="Quota" />
-            <el-table-column prop="actual" label="Actual" />
+        <el-table :data="quotaRows" size="small" :default-sort="{ prop: 'category', order: 'ascending' }">
+            <el-table-column prop="category" label="Category" sortable :sort-method="(a, b) => compareCategory(a.category, b.category)" />
+            <el-table-column prop="quota" label="Quota" sortable :sort-method="(a, b) => compareNullable(a.quota, b.quota)" />
+            <el-table-column prop="actual" label="Actual" sortable :sort-method="(a, b) => compareNullable(a.actual, b.actual)" />
         </el-table>
 
         <h3>Cards by Category</h3>
         <div v-for="category in COLOR_CATEGORIES" :key="category" class="consensus-category">
             <h4>{{ category }}</h4>
-            <el-table :data="cardsByCategory.get(category)" size="small">
-                <el-table-column label="Card">
+            <el-table :data="cardsByCategory.get(category)" size="small" :default-sort="{ prop: 'score', order: 'descending' }">
+                <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardName(a.oracleId), cardName(b.oracleId))">
                     <template #default="{ row }">
                         <CardName
                             :name="cardName(row.oracleId)"
@@ -30,14 +30,14 @@
                         />
                     </template>
                 </el-table-column>
-                <el-table-column label="Qty">
+                <el-table-column prop="quantity" label="Qty" sortable :sort-method="(a, b) => compareNullable(a.quantity, b.quantity)">
                     <template #default="{ row }">{{ row.quantity }}</template>
                 </el-table-column>
-                <el-table-column>
+                <el-table-column prop="score" sortable :sort-method="(a, b) => compareNullable(a.score, b.score)">
                     <template #header><InfoLabel label="Score" :tip="scoreTip" /></template>
                     <template #default="{ row }">{{ formatPercent(row.score) }}</template>
                 </el-table-column>
-                <el-table-column>
+                <el-table-column prop="currentIr" sortable :sort-method="(a, b) => compareNullable(a.currentIr, b.currentIr)">
                     <template #header><InfoLabel label="Current IR" :tip="currentIrTip" /></template>
                     <template #default="{ row }">{{ formatPercent(row.currentIr) }}</template>
                 </el-table-column>
@@ -53,8 +53,8 @@
         <h3>Near Misses</h3>
         <el-collapse>
             <el-collapse-item v-for="category in COLOR_CATEGORIES" :key="category" :name="category" :title="category">
-                <el-table :data="data.consensus.nearMisses[category]" size="small">
-                    <el-table-column label="Name">
+                <el-table :data="data.consensus.nearMisses[category]" size="small" :default-sort="{ prop: 'score', order: 'descending' }">
+                    <el-table-column prop="name" label="Name" sortable :sort-method="(a, b) => byName(cardName(a.oracleId), cardName(b.oracleId))">
                         <template #default="{ row }">
                             <CardName
                                 :name="cardName(row.oracleId)"
@@ -64,14 +64,14 @@
                             />
                         </template>
                     </el-table-column>
-                    <el-table-column label="Qty">
+                    <el-table-column prop="quantity" label="Qty" sortable :sort-method="(a, b) => compareNullable(a.quantity, b.quantity)">
                         <template #default="{ row }">{{ row.quantity }}</template>
                     </el-table-column>
-                    <el-table-column>
+                    <el-table-column prop="score" sortable :sort-method="(a, b) => compareNullable(a.score, b.score)">
                         <template #header><InfoLabel label="Score" :tip="scoreTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.score) }}</template>
                     </el-table-column>
-                    <el-table-column>
+                    <el-table-column prop="currentIr" sortable :sort-method="(a, b) => compareNullable(a.currentIr, b.currentIr)">
                         <template #header><InfoLabel label="Current IR" :tip="currentIrTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.currentIr) }}</template>
                     </el-table-column>
@@ -90,6 +90,7 @@ import { COLOR_CATEGORIES, MV_BUCKETS, type ColorCategory } from '../../analysis
 import { buildCardLookup } from '../util/cardLookup';
 import { formatPercent } from '../util/format';
 import { downloadText, type CsvColumn } from '../util/csv';
+import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';
@@ -106,6 +107,10 @@ const cardLookup = computed(() => buildCardLookup(props.data.cards));
 
 function cardName(oracleId: string): string {
     return cardLookup.value.get(oracleId)?.info.name ?? oracleId;
+}
+
+function compareCategory(a: ColorCategory, b: ColorCategory): number {
+    return COLOR_CATEGORIES.indexOf(a) - COLOR_CATEGORIES.indexOf(b);
 }
 
 const cardsByCategory = computed(() => {

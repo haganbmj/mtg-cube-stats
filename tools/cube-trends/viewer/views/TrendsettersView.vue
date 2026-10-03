@@ -6,16 +6,16 @@
                 <h3>Trendsetting Cubes</h3>
                 <ExportButton filename="trendsetters.csv" :rows="rows" :columns="exportColumns" />
             </div>
-            <el-table :data="rows" size="small">
-                <el-table-column prop="name" label="Cube" />
-                <el-table-column prop="adoptions" label="Adoptions" />
-                <el-table-column label="Mean Percentile">
+            <el-table :data="rows" size="small" :default-sort="{ prop: 'meanPercentile', order: 'ascending' }">
+                <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
+                <el-table-column prop="adoptions" label="Adoptions" sortable :sort-method="(a, b) => compareNullable(a.adoptions, b.adoptions)" />
+                <el-table-column prop="meanPercentile" label="Mean Percentile" sortable :sort-method="(a, b) => compareNullable(a.meanPercentile, b.meanPercentile)">
                     <template #default="{ row }">{{ formatPercent(row.meanPercentile) }}</template>
                 </el-table-column>
-                <el-table-column label="Mean Lag">
+                <el-table-column prop="meanLagDays" label="Mean Lag" sortable :sort-method="(a, b) => compareNullable(a.meanLagDays, b.meanLagDays)">
                     <template #default="{ row }">{{ row.meanLagDays === null ? '—' : `${row.meanLagDays.toFixed(1)}d` }}</template>
                 </el-table-column>
-                <el-table-column prop="leadOnConsensus" label="Lead on Consensus" />
+                <el-table-column prop="leadOnConsensus" label="Lead on Consensus" sortable :sort-method="(a, b) => compareNullable(a.leadOnConsensus, b.leadOnConsensus)" />
                 <el-table-column label="Examples">
                     <template #default="{ row }">
                         <span v-for="(example, i) in row.examples" :key="example.oracleId">
@@ -38,6 +38,7 @@ import type { FullTrendsData } from '../dataSource';
 import type { Trendsetter } from '../../analysis/trendsetters';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatPercent } from '../util/format';
+import { compareNullable, byName } from '../util/sort';
 import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
 import CardName from '../components/CardName.vue';

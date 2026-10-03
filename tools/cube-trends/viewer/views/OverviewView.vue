@@ -27,16 +27,16 @@
                     <h3>Top Risers</h3>
                     <ExportButton filename="top-risers.csv" :rows="risers" :columns="momentumColumns" />
                 </div>
-                <el-table :data="risers" size="small">
-                    <el-table-column label="Card">
+                <el-table :data="risers" size="small" :default-sort="{ prop: 'momentum', order: 'descending' }">
+                    <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(a.info.name, b.info.name)">
                         <template #default="{ row }">
                             <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
                         </template>
                     </el-table-column>
-                    <el-table-column label="IR">
+                    <el-table-column prop="current" label="IR" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
-                    <el-table-column label="Momentum">
+                    <el-table-column prop="momentum" label="Momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
                         <template #default="{ row }">{{ formatMomentum(row.momentum) }}</template>
                     </el-table-column>
                 </el-table>
@@ -46,16 +46,16 @@
                     <h3>Top Fallers</h3>
                     <ExportButton filename="top-fallers.csv" :rows="fallers" :columns="momentumColumns" />
                 </div>
-                <el-table :data="fallers" size="small">
-                    <el-table-column label="Card">
+                <el-table :data="fallers" size="small" :default-sort="{ prop: 'momentum', order: 'ascending' }">
+                    <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(a.info.name, b.info.name)">
                         <template #default="{ row }">
                             <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
                         </template>
                     </el-table-column>
-                    <el-table-column label="IR">
+                    <el-table-column prop="current" label="IR" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
-                    <el-table-column label="Momentum">
+                    <el-table-column prop="momentum" label="Momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
                         <template #default="{ row }">{{ formatMomentum(row.momentum) }}</template>
                     </el-table-column>
                 </el-table>
@@ -66,19 +66,19 @@
             <h3>Newest Consensus Entries</h3>
             <ExportButton filename="newest-consensus.csv" :rows="newestConsensus" :columns="newestConsensusColumns" />
         </div>
-        <el-table :data="newestConsensus" size="small">
-            <el-table-column label="Card">
+        <el-table :data="newestConsensus" size="small" :default-sort="{ prop: 'firstSeen', order: 'descending' }">
+            <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(a.trend.info.name, b.trend.info.name)">
                 <template #default="{ row }">
                     <CardName :name="row.trend.info.name" :imageUrl="row.trend.info.urlFront" :setCode="row.trend.info.eligibility?.setCode" />
                 </template>
             </el-table-column>
-            <el-table-column label="Category">
+            <el-table-column prop="category" label="Category" sortable :sort-method="(a, b) => byName(a.consensus.category, b.consensus.category)">
                 <template #default="{ row }">{{ row.consensus.category }}</template>
             </el-table-column>
-            <el-table-column label="First Seen">
+            <el-table-column prop="firstSeen" label="First Seen" sortable :sort-method="(a, b) => compareNullable(a.trend.firstSeen, b.trend.firstSeen)">
                 <template #default="{ row }">{{ formatDate(row.trend.firstSeen) }}</template>
             </el-table-column>
-            <el-table-column label="Qty">
+            <el-table-column prop="quantity" label="Qty" sortable :sort-method="(a, b) => compareNullable(a.consensus.quantity, b.consensus.quantity)">
                 <template #default="{ row }">{{ row.consensus.quantity }}</template>
             </el-table-column>
         </el-table>
@@ -87,11 +87,11 @@
             <h3>Cubes ({{ data.meta.cubes.length }})</h3>
             <ExportButton filename="cubes.csv" :rows="data.meta.cubes" :columns="cubeColumns" />
         </div>
-        <el-table :data="data.meta.cubes" size="small">
-            <el-table-column prop="name" label="Cube" />
-            <el-table-column prop="owner" label="Owner" />
-            <el-table-column prop="coverage" label="Coverage" />
-            <el-table-column prop="gaps" label="Gaps" />
+        <el-table :data="data.meta.cubes" size="small" :default-sort="{ prop: 'name', order: 'ascending' }">
+            <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
+            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a, b) => byName(a.owner, b.owner)" />
+            <el-table-column prop="coverage" label="Coverage" sortable :sort-method="(a, b) => compareNullable(a.coverage, b.coverage)" />
+            <el-table-column prop="gaps" label="Gaps" sortable :sort-method="(a, b) => compareNullable(a.gaps, b.gaps)" />
         </el-table>
 
         <template v-if="data.meta.missing.length > 0">
@@ -112,6 +112,7 @@ import type { PanelCube } from '../../analysis/panel';
 import { buildCardLookup } from '../util/cardLookup';
 import { releaseMarkLines } from '../util/releaseMarkers';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
+import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';

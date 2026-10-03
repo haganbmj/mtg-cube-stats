@@ -9,7 +9,7 @@
             <ExportButton filename="cards.csv" :rows="sortedRows" :columns="exportColumns" />
         </div>
 
-        <el-table :data="pagedRows" size="small" @sort-change="handleSortChange" @row-click="handleRowClick">
+        <el-table :data="pagedRows" size="small" :default-sort="{ prop: 'current', order: 'descending' }" @sort-change="handleSortChange" @row-click="handleRowClick">
             <el-table-column prop="name" label="Name" sortable="custom">
                 <template #default="{ row }">
                     <CardName
@@ -18,7 +18,6 @@
                         :setCode="row.info.eligibility?.setCode"
                         :copies="row.copy"
                         clickable
-                        @click="handleRowClick(row)"
                     />
                 </template>
             </el-table-column>
