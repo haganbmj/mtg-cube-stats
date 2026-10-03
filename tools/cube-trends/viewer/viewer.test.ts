@@ -107,9 +107,12 @@ describe('releaseMarkLines', () => {
         const result = releaseMarkLines([
             { code: 'dom', name: 'Dominaria', releasedAt: 1000 },
             { code: 'war', name: 'War of the Spark', releasedAt: 2000 },
-        ]) as { symbol: string; label: { formatter: (p: { name: string }) => string }; data: { xAxis: number; name: string }[] };
+        ]) as { symbol: string; lineStyle: { color: string; type: string }; label: { formatter: (p: { name: string }) => string; color: string }; data: { xAxis: number; name: string }[] };
 
         expect(result.symbol).toBe('none');
+        expect(result.lineStyle.color).toBe('#909399');
+        expect(result.lineStyle.type).toBe('dashed');
+        expect(result.label.color).toBe('#909399');
         expect(result.data).toEqual([
             { xAxis: 1000, name: 'dom' },
             { xAxis: 2000, name: 'war' },
