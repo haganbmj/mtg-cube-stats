@@ -153,4 +153,17 @@ describe('walkCube', () => {
         expect(result.index.missing).toBe(true);
         expect(result.requests).toBe(1);
     });
+
+    it('anchor fetch failure records no gap', async () => {
+        const fetcher = createTimelineFetcher(TIMELINE, { throwAt: [D(95)] });
+        const store = createMemoryStore();
+
+        const result = await walkCube('cube', tenSamples(), { now: () => D(95), fetcher, store });
+
+        expect(result.requests).toBe(1);
+        expect(result.index.gaps).toEqual([]);
+        expect(result.index.missing).toBe(false);
+        expect(result.index.coverage).toEqual([]);
+        expect(store.writeIndex).toHaveBeenCalledTimes(1);
+    });
 });
