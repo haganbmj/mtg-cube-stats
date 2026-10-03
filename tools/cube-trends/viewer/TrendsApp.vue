@@ -68,6 +68,10 @@ import ConsensusView from './views/ConsensusView.vue';
 
 const manifests = ref<string[]>(listManifests());
 const selectedManifest = ref<string | null>(null);
+// Tracks which manifest's data is actually loaded, since selectedManifest may already
+// equal the hash's manifest by the time applyHash runs (e.g. user picked it in the select).
+const loadedManifest = ref<string | null>(null);
+let requestToken = 0;
 const selectedView = ref<ViewName>('overview');
 const selectedCard = ref<string | null>(null);
 const data = ref<TrendsData | null>(null);
@@ -98,10 +102,16 @@ async function applyHash(): Promise<void> {
 
     selectedView.value = route.view;
     selectedCard.value = route.card;
+    selectedManifest.value = manifest;
 
-    if (manifest !== selectedManifest.value) {
-        selectedManifest.value = manifest;
-        data.value = manifest ? await loadManifestData(manifest) : null;
+    if (manifest !== loadedManifest.value) {
+        const token = ++requestToken;
+        const result = manifest ? await loadManifestData(manifest) : null;
+        if (token !== requestToken) {
+            return; // superseded by a later manifest switch
+        }
+        loadedManifest.value = manifest;
+        data.value = result;
     }
 }
 
