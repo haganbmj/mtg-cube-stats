@@ -70,6 +70,17 @@ describe('toCsv', () => {
         expect(csv).toBe('V\r\n-5');
     });
 
+    it('prefixes cells starting with a tab or carriage return to prevent CSV injection', () => {
+        const csv = toCsv(
+            [{ tab: '\tSUM(1)', cr: '\rSUM(1)' }],
+            [
+                { key: 'tab', label: 'Tab', value: (row) => row.tab },
+                { key: 'cr', label: 'Cr', value: (row) => row.cr },
+            ],
+        );
+        expect(csv).toBe('Tab,Cr\r\n\'\tSUM(1),"\'\rSUM(1)"');
+    });
+
     it('treats empty/missing values as blank cells', () => {
         const csv = toCsv(
             [{ v: null }, { v: undefined }],

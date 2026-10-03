@@ -4,7 +4,7 @@ export interface CsvColumn<T> {
     value: (row: T) => unknown;
 }
 
-const INJECTION_PREFIX = /^[=+\-@]/;
+const INJECTION_PREFIX = /^[=+\-@\t\r]/;
 const NEEDS_QUOTING = /[",\r\n]/;
 
 function escapeCell(raw: unknown): string {
