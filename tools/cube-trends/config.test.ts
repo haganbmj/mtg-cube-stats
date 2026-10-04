@@ -12,6 +12,8 @@ describe('resolveConfig', () => {
 
     it('applies the peasant manifest override', () => {
         expect(resolveConfig('peasant').eligibility).toBe('firstCommonOrUncommon');
+        expect(resolveConfig('peasant').range).toBe('2y');
+        expect(resolveConfig('wotc').range).toBe('1y');
     });
 
     it('deep-merges overrides on top of manifest defaults', () => {

@@ -29,7 +29,7 @@ export const DEFAULT_CONFIG: TrendsConfig = {
 };
 
 export const MANIFEST_OVERRIDES: Record<string, Partial<TrendsConfig>> = {
-    peasant: { eligibility: 'firstCommonOrUncommon' },
+    peasant: { eligibility: 'firstCommonOrUncommon', range: '2y' },
 };
 
 export function resolveConfig(manifestName: string, overrides: Partial<TrendsConfig> = {}): TrendsConfig {
