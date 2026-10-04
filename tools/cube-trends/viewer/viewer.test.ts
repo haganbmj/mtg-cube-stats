@@ -3,9 +3,39 @@ import { VIEWS, VIEW_LABELS, parseHash, buildHash, type Route } from './router';
 import { toCsv } from './util/csv';
 import { releaseMarkLines } from './util/releaseMarkers';
 import { buildAddsRemovesOption } from './util/charts';
+import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
+import type { CardTrend } from '../analysis/cards';
 import { formatCount } from './util/format';
 import { compareNullable, byName } from './util/sort';
+
+function makeTrend(copy: number, cubesPresent: number[][]): CardTrend {
+    return {
+        key: copy === 1 ? 'card' : `card${'+'.repeat(copy - 1)}`,
+        copy,
+        info: {
+            oracleId: 'card',
+            name: 'Card',
+            urlFront: '',
+            colors: [],
+            colorCategory: 'C',
+            primaryType: 'Creature',
+            cmc: 0,
+            isBasic: false,
+            eligibility: null,
+        },
+        ir: [],
+        unweighted: [],
+        count: [],
+        cubesPresent,
+        current: 0,
+        peak: 0,
+        firstSeen: null,
+        lastSeen: null,
+        momentum: null,
+        delta: null,
+    };
+}
 
 describe('formatCount', () => {
     it('formats a cards-per-cube mean as a plain 2-decimal number, not a percent', () => {
@@ -162,5 +192,66 @@ describe('byName', () => {
         expect(byName('apple', 'Banana')).toBeLessThan(0);
         expect(byName('Banana', 'apple')).toBeGreaterThan(0);
         expect(byName('Apple', 'apple')).toBe(0);
+    });
+});
+
+describe('buildCardTimeline', () => {
+    const samples = [0, 1000, 2000];
+    const cubes = [
+        { id: 'c1', name: 'Cube One', owner: 'Alice' },
+        { id: 'c2', name: 'Cube Two', owner: 'Bob' },
+        { id: 'c3', name: 'Cube Three', owner: 'Carol' },
+        { id: 'c4', name: 'Cube Four', owner: 'Dave' },
+    ];
+
+    // c1 present throughout, c2 added mid-window, c3 removed before the last sample, c4 never present.
+    const copy1 = makeTrend(1, [[0, 2], [0, 1, 2], [0, 1]]);
+    // c1 has a second copy only at the last sample; c2 never picks up a second copy.
+    const copy2 = makeTrend(2, [[], [0], [0]]);
+
+    it('marks a cube present at every sample as current with no window flags', () => {
+        const rows = buildCardTimeline([copy1, copy2], samples, cubes);
+        const row = rows.find((r) => r.cubeId === 'c1')!;
+        expect(row.firstSeen).toBe(0);
+        expect(row.lastSeen).toBe(2000);
+        expect(row.current).toBe(true);
+        expect(row.addedInWindow).toBe(false);
+        expect(row.removedInWindow).toBe(false);
+    });
+
+    it('flags a cube absent at the first sample as added in window', () => {
+        const rows = buildCardTimeline([copy1, copy2], samples, cubes);
+        const row = rows.find((r) => r.cubeId === 'c2')!;
+        expect(row.firstSeen).toBe(1000);
+        expect(row.lastSeen).toBe(2000);
+        expect(row.current).toBe(true);
+        expect(row.addedInWindow).toBe(true);
+        expect(row.removedInWindow).toBe(false);
+    });
+
+    it('flags a cube absent at the last sample as removed', () => {
+        const rows = buildCardTimeline([copy1, copy2], samples, cubes);
+        const row = rows.find((r) => r.cubeId === 'c3')!;
+        expect(row.firstSeen).toBe(0);
+        expect(row.lastSeen).toBe(1000);
+        expect(row.current).toBe(false);
+        expect(row.addedInWindow).toBe(false);
+        expect(row.removedInWindow).toBe(true);
+    });
+
+    it('counts copies at the latest sample across all copy keys', () => {
+        const rows = buildCardTimeline([copy1, copy2], samples, cubes);
+        expect(rows.find((r) => r.cubeId === 'c1')!.copiesLatest).toBe(2);
+        expect(rows.find((r) => r.cubeId === 'c2')!.copiesLatest).toBe(1);
+        expect(rows.find((r) => r.cubeId === 'c3')!.copiesLatest).toBe(0);
+    });
+
+    it('excludes a cube that never held copy 1', () => {
+        const rows = buildCardTimeline([copy1, copy2], samples, cubes);
+        expect(rows.find((r) => r.cubeId === 'c4')).toBeUndefined();
+    });
+
+    it('returns no rows when there are no samples', () => {
+        expect(buildCardTimeline([copy1], [], cubes)).toEqual([]);
     });
 });
