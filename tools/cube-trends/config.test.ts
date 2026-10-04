@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { resolveConfig, DEFAULT_CONFIG } from './config';
 
 describe('resolveConfig', () => {
+    it('defaults to weekly sampling', () => {
+        expect(DEFAULT_CONFIG.interval).toBe('1w');
+    });
+
     it('returns the default config for wotc', () => {
         expect(resolveConfig('wotc')).toEqual(DEFAULT_CONFIG);
     });
@@ -11,8 +15,8 @@ describe('resolveConfig', () => {
     });
 
     it('deep-merges overrides on top of manifest defaults', () => {
-        const config = resolveConfig('peasant', { interval: '1w', thresholds: { setMinCards: 5 } as any });
-        expect(config.interval).toBe('1w');
+        const config = resolveConfig('peasant', { interval: '2w', thresholds: { setMinCards: 5 } as any });
+        expect(config.interval).toBe('2w');
         expect(config.thresholds.setMinCards).toBe(5);
         expect(config.thresholds.momentumMinPeakIr).toBe(0.05);
     });

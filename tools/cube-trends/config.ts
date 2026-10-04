@@ -15,7 +15,7 @@ const DEFAULT_THRESHOLDS: Thresholds = {
 };
 
 export const DEFAULT_CONFIG: TrendsConfig = {
-    interval: '2w',
+    interval: '1w',
     range: '1y',
     concurrency: 2,
     requestDelayMs: 500,
