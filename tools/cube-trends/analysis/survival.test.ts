@@ -66,6 +66,36 @@ describe('analyzeSurvival', () => {
         expect(result.established).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0.5 }, { t: 20, s: 0 }]);
     });
 
+    it('starts a new card spell no earlier than its eligibility date', () => {
+        const W = 1000 * DAY;
+        const samples = [W, W + 10 * DAY, W + 50 * DAY];
+        const cubes = [
+            {
+                id: 'a',
+                revisions: [
+                    { id: 'a-0', date: W, cards: ['early', 'gone'], addedAt: { early: W - 200 * DAY, gone: W - 100 * DAY } },
+                    { id: 'a-1', date: W + 10 * DAY, cards: ['early'] },
+                    { id: 'a-2', date: W + 50 * DAY, cards: [] },
+                ],
+                grid: ['a-0', 'a-1', 'a-2'],
+            },
+        ];
+        const cardInfo = [
+            makeCardInfo('early', { eligibility: { date: W + 20 * DAY, setCode: 'aaa', fallback: false } }),
+            // Removed before it ever became eligible: no eligible time in the cube.
+            makeCardInfo('gone', { eligibility: { date: W + 30 * DAY, setCode: 'bbb', fallback: false } }),
+        ];
+
+        const result = analyzeSurvival(makeContext({ samples, cubes, cardInfo, config: flatWeighting }));
+        if ('empty' in result) {
+            throw new Error('expected a non-empty result');
+        }
+
+        expect(result.spells).toBe(1);
+        expect(result.newCards).toEqual([{ t: 0, s: 1 }, { t: 30, s: 0 }]);
+        expect(result.overall).toEqual([{ t: 0, s: 1 }, { t: 30, s: 0 }]);
+    });
+
     it('enters left-truncated spells into the risk set at the first observing sample', () => {
         const samples = [0, 10 * DAY, 20 * DAY];
         const cubes = [

@@ -72,19 +72,28 @@ export function analyzeSurvival(ctx: AnalysisContext): SurvivalResult {
         const cRevisions = revIds.map((id) => revisions.get(id)!);
 
         for (const spell of computeCubeSpells(cRevisions, firstSeen, lastSample)) {
-            const km: Spell = { duration: spell.duration, event: spell.event, entry: spell.entry };
+            const info = cardInfo.get(baseOracleId(spell.key));
+            // New = released (first eligible) within the analysis window, matching Trendsetters' Mean Lag.
+            const isNew = info?.eligibility ? info.eligibility.date >= windowStart : null;
+
+            let { duration, entry } = spell;
+            if (isNew) {
+                // Time in a cube before the card was eligible doesn't count.
+                const shift = Math.max(0, (info!.eligibility!.date - spell.start) / DAY);
+                if (shift >= duration) {
+                    continue;
+                }
+                duration -= shift;
+                entry = Math.max(0, entry - shift);
+            }
+
+            const km: Spell = { duration, event: spell.event, entry };
             overall.push(km);
 
-            const info = cardInfo.get(baseOracleId(spell.key));
-            if (!info?.eligibility) {
+            if (isNew === null) {
                 continue;
             }
-            // New = released (first eligible) within the analysis window, matching Trendsetters' Mean Lag.
-            if (info.eligibility.date >= windowStart) {
-                newCards.push(km);
-            } else {
-                established.push(km);
-            }
+            (isNew ? newCards : established).push(km);
         }
     });
 
