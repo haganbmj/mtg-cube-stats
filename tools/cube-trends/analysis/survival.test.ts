@@ -33,22 +33,25 @@ describe('analyzeSurvival', () => {
         expect(result.overall).toEqual([{ t: 0, s: 1 }, { t: 120, s: 0 }]);
     });
 
-    it('splits spells into new vs established by eligibility relative to the survivalNewCardMonths threshold', () => {
+    it('splits spells into new (eligible within the window) vs established', () => {
         const windowStart = 1000 * DAY;
-        const samples = [windowStart, windowStart + 10 * DAY];
+        const samples = [windowStart, windowStart + 10 * DAY, windowStart + 20 * DAY];
         const cubes = [
             {
                 id: 'a',
                 revisions: [
-                    { id: 'a-0', date: windowStart, cards: ['fresh', 'veteran'] },
-                    { id: 'a-1', date: windowStart + 10 * DAY, cards: [] },
+                    { id: 'a-0', date: windowStart, cards: ['veteran', 'recent'] },
+                    { id: 'a-1', date: windowStart + 10 * DAY, cards: ['recent', 'fresh'] },
+                    { id: 'a-2', date: windowStart + 20 * DAY, cards: [] },
                 ],
-                grid: ['a-0', 'a-1'],
+                grid: ['a-0', 'a-1', 'a-2'],
             },
         ];
         const cardInfo = [
-            makeCardInfo('fresh', { eligibility: { date: windowStart - 30 * DAY, setCode: 'aaa', fallback: false } }),
-            makeCardInfo('veteran', { eligibility: { date: windowStart - 400 * DAY, setCode: 'bbb', fallback: false } }),
+            makeCardInfo('fresh', { eligibility: { date: windowStart + 5 * DAY, setCode: 'aaa', fallback: false } }),
+            // Eligible shortly before the window: established under the window-based definition.
+            makeCardInfo('recent', { eligibility: { date: windowStart - 30 * DAY, setCode: 'bbb', fallback: false } }),
+            makeCardInfo('veteran', { eligibility: { date: windowStart - 400 * DAY, setCode: 'ccc', fallback: false } }),
         ];
 
         const ctx = makeContext({ samples, cubes, cardInfo, config: flatWeighting });
@@ -58,10 +61,9 @@ describe('analyzeSurvival', () => {
             throw new Error('expected a non-empty result');
         }
 
-        expect(result.spells).toBe(2);
-        expect(result.overall).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0 }]);
+        expect(result.spells).toBe(3);
         expect(result.newCards).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0 }]);
-        expect(result.established).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0 }]);
+        expect(result.established).toEqual([{ t: 0, s: 1 }, { t: 10, s: 0.5 }, { t: 20, s: 0 }]);
     });
 
     it('enters left-truncated spells into the risk set at the first observing sample', () => {

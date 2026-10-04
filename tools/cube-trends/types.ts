@@ -37,7 +37,6 @@ export interface Thresholds {
     setMinCards: number;
     displacementWeeks: number;
     retentionWeeks: number;
-    survivalNewCardMonths: number;
     trendsetterMinAdopters: number;
     trendsetterMinAdoptions: number;
     trendsetterConsensusIr: number;

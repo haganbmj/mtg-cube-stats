@@ -51,10 +51,10 @@ function computeCubeSpells(cRevisions: PanelRevision[], firstSeen: Map<string, M
 }
 
 export function analyzeSurvival(ctx: AnalysisContext): SurvivalResult {
-    const { panel, config } = ctx;
+    const { panel } = ctx;
     const { samples, grid, cubes, revisions, cardInfo } = panel;
     const lastSample = samples[samples.length - 1];
-    const newCardThresholdMs = config.thresholds.survivalNewCardMonths * 30 * DAY;
+    const windowStart = samples[0];
 
     const overall: Spell[] = [];
     const newCards: Spell[] = [];
@@ -79,7 +79,8 @@ export function analyzeSurvival(ctx: AnalysisContext): SurvivalResult {
             if (!info?.eligibility) {
                 continue;
             }
-            if (spell.start - info.eligibility.date < newCardThresholdMs) {
+            // New = released (first eligible) within the analysis window, matching Trendsetters' Mean Lag.
+            if (info.eligibility.date >= windowStart) {
                 newCards.push(km);
             } else {
                 established.push(km);

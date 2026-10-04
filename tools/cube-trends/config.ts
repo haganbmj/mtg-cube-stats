@@ -6,7 +6,6 @@ const DEFAULT_THRESHOLDS: Thresholds = {
     setMinCards: 2,
     displacementWeeks: 8,
     retentionWeeks: 26,
-    survivalNewCardMonths: 6,
     trendsetterMinAdopters: 3,
     trendsetterMinAdoptions: 5,
     trendsetterConsensusIr: 0.2,
