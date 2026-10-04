@@ -131,6 +131,19 @@ describe('axisTooltip', () => {
 
         expect(formatter(params)).toBe('Week 30<br/><marker>Series: 30');
     });
+
+    it('orders rows by value descending when sortDesc is set', () => {
+        const formatter = axisTooltip((x) => `Week ${x}`, (v) => String(v), { sortDesc: true });
+
+        const params = [
+            { seriesName: 'A', marker: '', value: [30, 1.5], dataIndex: 0, axisValue: 30 },
+            { seriesName: 'B', marker: '', value: [30, 6.4], dataIndex: 0, axisValue: 30 },
+            { seriesName: 'C', marker: '', value: [30, null], dataIndex: 0, axisValue: 30 },
+            { seriesName: 'D', marker: '', value: [30, 3.9], dataIndex: 0, axisValue: 30 },
+        ];
+
+        expect(formatter(params)).toBe('Week 30<br/>B: 6.4<br/>D: 3.9<br/>A: 1.5');
+    });
 });
 
 describe('VIEW_LABELS', () => {

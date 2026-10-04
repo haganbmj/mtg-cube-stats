@@ -51,16 +51,24 @@ interface BandTooltipBand {
 }
 
 // ECharts axis-tooltip formatter: a header derived from the axis value, then one row per series present in params.
-export function axisTooltip(header: (axisValue: number) => string, format: (v: number) => string): (params: any[]) => string {
+export function axisTooltip(
+    header: (axisValue: number) => string,
+    format: (v: number) => string,
+    options: { sortDesc?: boolean } = {},
+): (params: any[]) => string {
     return (params) => {
-        const rows = [header(params[0].axisValue)];
+        const entries: { param: any; value: number }[] = [];
         for (const param of params) {
             const raw = Array.isArray(param.value) ? param.value[1] : param.value;
             if (raw === null || raw === undefined) {
                 continue;
             }
-            rows.push(`${param.marker}${param.seriesName}: ${format(raw)}`);
+            entries.push({ param, value: raw });
         }
+        if (options.sortDesc) {
+            entries.sort((a, b) => b.value - a.value);
+        }
+        const rows = [header(params[0].axisValue), ...entries.map(({ param, value }) => `${param.marker}${param.seriesName}: ${format(value)}`)];
         return rows.join('<br/>');
     };
 }

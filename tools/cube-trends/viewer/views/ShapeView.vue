@@ -23,7 +23,7 @@ import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { COLOR_CATEGORIES, MV_BUCKETS } from '../../analysis/cardInfo';
 import { releaseMarkLines } from '../util/releaseMarkers';
-import { formatPercent, formatPercentTooltip, bandTooltip } from '../util/format';
+import { formatPercent, formatPercentTooltip, formatDate, bandTooltip, axisTooltip } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
 const props = defineProps<{
@@ -31,7 +31,7 @@ const props = defineProps<{
 }>();
 
 const colorOption = computed(() => ({
-    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
+    tooltip: { trigger: 'axis', formatter: axisTooltip(formatDate, formatPercentTooltip, { sortDesc: true }) },
     legend: { data: COLOR_CATEGORIES },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
@@ -92,7 +92,7 @@ const sizeOption = computed(() => {
 });
 
 const typeOption = computed(() => ({
-    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
+    tooltip: { trigger: 'axis', formatter: axisTooltip(formatDate, formatPercentTooltip, { sortDesc: true }) },
     legend: { type: 'scroll', data: props.data.shape.types },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
