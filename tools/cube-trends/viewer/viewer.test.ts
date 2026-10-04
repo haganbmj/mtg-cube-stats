@@ -149,6 +149,21 @@ describe('releaseMarkLines', () => {
         ]);
         expect(result.label.formatter({ name: 'dom' })).toBe('dom');
     });
+
+    it('merges sets released on the same date into one marker', () => {
+        const result = releaseMarkLines([
+            { code: 'msh', name: 'Marvel Super Heroes', releasedAt: 3000 },
+            { code: 'dom', name: 'Dominaria', releasedAt: 1000 },
+            { code: 'msc', name: 'Marvel Super Heroes Commander', releasedAt: 3000 },
+        ]) as { data: { xAxis: number; name: string }[]; tooltip: { formatter: (p: { name: string }) => string } };
+
+        expect(result.data).toEqual([
+            { xAxis: 1000, name: 'dom' },
+            { xAxis: 3000, name: 'msh/msc' },
+        ]);
+        expect(result.tooltip.formatter({ name: 'msh/msc' }))
+            .toBe('Marvel Super Heroes (msh), Marvel Super Heroes Commander (msc)');
+    });
 });
 
 describe('buildAddsRemovesOption', () => {
