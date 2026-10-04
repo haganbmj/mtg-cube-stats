@@ -6,7 +6,7 @@ import { buildAddsRemovesOption } from './util/charts';
 import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
 import type { CardTrend } from '../analysis/cards';
-import { formatCount } from './util/format';
+import { formatCount, formatPercentTooltip, formatDays, bandTooltip, formatDate } from './util/format';
 import { compareNullable, byName } from './util/sort';
 
 function makeTrend(copy: number, cubesPresent: number[][]): CardTrend {
@@ -41,6 +41,74 @@ describe('formatCount', () => {
     it('formats a cards-per-cube mean as a plain 2-decimal number, not a percent', () => {
         expect(formatCount(6.857)).toBe('6.86');
         expect(formatCount(0)).toBe('0.00');
+    });
+});
+
+describe('formatPercentTooltip', () => {
+    it('formats a 0-1 fraction as a percent with at most 2 decimals, trailing zeros trimmed', () => {
+        expect(formatPercentTooltip(0.12345)).toBe('12.35%');
+        expect(formatPercentTooltip(0.125)).toBe('12.5%');
+        expect(formatPercentTooltip(0.5)).toBe('50%');
+        expect(formatPercentTooltip(0)).toBe('0%');
+    });
+
+    it('returns an em dash for null, undefined, or NaN', () => {
+        expect(formatPercentTooltip(null)).toBe('—');
+        expect(formatPercentTooltip(undefined)).toBe('—');
+        expect(formatPercentTooltip(NaN)).toBe('—');
+    });
+});
+
+describe('formatDays', () => {
+    it('rounds to whole days and pluralizes', () => {
+        expect(formatDays(412)).toBe('412 days');
+        expect(formatDays(1)).toBe('1 day');
+    });
+
+    it('returns an em dash for null', () => {
+        expect(formatDays(null)).toBe('—');
+    });
+});
+
+describe('bandTooltip', () => {
+    it('renders a date header, present line series (skipping nulls), and the band row', () => {
+        const formatter = bandTooltip({
+            lines: [
+                { seriesName: 'Median', format: (v) => String(Math.round(v)) },
+                { seriesName: 'Missing', format: (v) => String(v) },
+            ],
+            band: {
+                q1: (index) => [10, 20][index],
+                q3: (index) => [15, 25][index],
+                format: (v) => String(Math.round(v)),
+            },
+        });
+
+        const params = [
+            { seriesName: 'Q1', marker: '<q1-marker>', value: [1000, 10], dataIndex: 0, axisValue: 1000 },
+            { seriesName: 'IQR', marker: '<iqr-marker>', value: [1000, 5], dataIndex: 0, axisValue: 1000 },
+            { seriesName: 'Median', marker: '<median-marker>', value: [1000, 12.4], dataIndex: 0, axisValue: 1000 },
+            { seriesName: 'Missing', marker: '<missing-marker>', value: [1000, null], dataIndex: 0, axisValue: 1000 },
+        ];
+
+        expect(formatter(params)).toBe(
+            `${formatDate(1000)}<br/><median-marker>Median: 12<br/>25th–75th pct: 10 – 15`,
+        );
+    });
+
+    it('omits the band row when q1 or q3 is null at that index', () => {
+        const formatter = bandTooltip({
+            lines: [{ seriesName: 'Mean', format: (v) => String(v) }],
+            band: {
+                q1: () => null,
+                q3: () => 5,
+                format: (v) => String(v),
+            },
+        });
+
+        const params = [{ seriesName: 'Mean', marker: '<mean-marker>', value: [1000, 3], dataIndex: 0, axisValue: 1000 }];
+
+        expect(formatter(params)).toBe(`${formatDate(1000)}<br/><mean-marker>Mean: 3`);
     });
 });
 
