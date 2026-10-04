@@ -33,6 +33,13 @@
                 :title="`${marker.name} (${marker.code}) — released ${formatDate(marker.releasedAt)}${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}`"
             >
                 <template v-if="displacementByCode.get(marker.code)">
+                    <div class="export-row">
+                        <ExportButton
+                            :filename="`${marker.code}-displacement-groups.csv`"
+                            :rows="displacementByCode.get(marker.code)!.groups"
+                            :columns="displacementGroupsColumns"
+                        />
+                    </div>
                     <el-table :data="displacementByCode.get(marker.code)!.groups" size="small" :default-sort="{ prop: 'lift', order: 'descending' }">
                         <el-table-column prop="colorCategory" label="Category" sortable :sort-method="(a, b) => byName(a.colorCategory, b.colorCategory)" />
                         <el-table-column prop="primaryType" label="Type" sortable :sort-method="(a, b) => byName(a.primaryType, b.primaryType)" />
@@ -48,7 +55,14 @@
                     </el-table>
                     <div class="displacement-columns">
                         <div class="displacement-column">
-                            <h5>Top Removals</h5>
+                            <div class="sets-table-header">
+                                <h5>Top Removals</h5>
+                                <ExportButton
+                                    :filename="`${marker.code}-top-removals.csv`"
+                                    :rows="displacementByCode.get(marker.code)!.topCards"
+                                    :columns="topRemovalsColumns"
+                                />
+                            </div>
                             <el-table :data="displacementByCode.get(marker.code)!.topCards" size="small" :default-sort="{ prop: 'removals', order: 'descending' }">
                                 <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
                                     <template #default="{ row }">
@@ -64,7 +78,14 @@
                             </el-table>
                         </div>
                         <div class="displacement-column">
-                            <h5>Top Additions</h5>
+                            <div class="sets-table-header">
+                                <h5>Top Additions</h5>
+                                <ExportButton
+                                    :filename="`${marker.code}-top-additions.csv`"
+                                    :rows="displacementByCode.get(marker.code)!.topAdded"
+                                    :columns="topAdditionsColumns"
+                                />
+                            </div>
                             <el-table :data="displacementByCode.get(marker.code)!.topAdded" size="small" :default-sort="{ prop: 'additions', order: 'descending' }">
                                 <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
                                     <template #default="{ row }">
@@ -93,7 +114,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
-import type { SetAdoption } from '../../analysis/sets';
+import type { SetAdoption, DisplacementGroup } from '../../analysis/sets';
 import { copyNumber } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatCount, formatPercent, formatDate } from '../util/format';
@@ -135,6 +156,25 @@ const peakColumns: CsvColumn<SetAdoption>[] = [
     { key: 'timeToPeakWeeks', label: 'Weeks to Peak', value: (s) => s.timeToPeakWeeks },
     { key: 'retention', label: 'Retention', value: (s) => s.retention },
 ];
+
+const displacementGroupsColumns: CsvColumn<DisplacementGroup>[] = [
+    { key: 'colorCategory', label: 'Category', value: (g) => g.colorCategory },
+    { key: 'primaryType', label: 'Type', value: (g) => g.primaryType },
+    { key: 'removals', label: 'Removals', value: (g) => g.removals },
+    { key: 'expected', label: 'Expected', value: (g) => g.expected.toFixed(1) },
+    { key: 'lift', label: 'Lift', value: (g) => g.lift.toFixed(2) },
+];
+
+const topRemovalsColumns: CsvColumn<{ key: string; removals: number }>[] = [
+    { key: 'name', label: 'Card', value: (r) => cardLookup.value.get(r.key)?.info.name ?? r.key },
+    { key: 'removals', label: 'Removals', value: (r) => r.removals },
+];
+
+const topAdditionsColumns: CsvColumn<{ key: string; additions: number; fromSet: boolean }>[] = [
+    { key: 'name', label: 'Card', value: (r) => cardLookup.value.get(r.key)?.info.name ?? r.key },
+    { key: 'additions', label: 'Additions', value: (r) => r.additions },
+    { key: 'fromSet', label: 'From Set', value: (r) => (r.fromSet ? 'yes' : 'no') },
+];
 </script>
 
 <style scoped>
@@ -142,6 +182,12 @@ const peakColumns: CsvColumn<SetAdoption>[] = [
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.export-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
 }
 
 .displacement-columns {
