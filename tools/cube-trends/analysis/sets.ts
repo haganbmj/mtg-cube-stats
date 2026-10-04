@@ -34,6 +34,7 @@ export interface SetDisplacement {
     code: string;
     groups: DisplacementGroup[];
     topCards: { key: string; removals: number }[];
+    topAdded: { key: string; additions: number; fromSet: boolean }[];
     // window was clamped to the last sample
     partial: boolean;
 }
@@ -185,7 +186,24 @@ function computeDisplacement(ctx: AnalysisContext, marker: SetInfo, expectedByGr
         .sort((a, b) => b.removals - a.removals || a.key.localeCompare(b.key))
         .slice(0, 10);
 
-    return { code: marker.code, groups, topCards, partial };
+    const addCounts = new Map<string, number>();
+    for (const event of ctx.diffs) {
+        if (event.type !== 'add' || event.date < windowStart || event.date > windowEnd) {
+            continue;
+        }
+        addCounts.set(event.key, (addCounts.get(event.key) ?? 0) + 1);
+    }
+
+    const topAdded = [...addCounts.entries()]
+        .map(([key, additions]) => ({
+            key,
+            additions,
+            fromSet: ctx.panel.cardInfo.get(baseOracleId(key))?.eligibility?.setCode === marker.code,
+        }))
+        .sort((a, b) => b.additions - a.additions || a.key.localeCompare(b.key))
+        .slice(0, 10);
+
+    return { code: marker.code, groups, topCards, topAdded, partial };
 }
 
 export function analyzeSets(ctx: AnalysisContext): SetsResult {
@@ -216,7 +234,7 @@ export function analyzeSets(ctx: AnalysisContext): SetsResult {
     const displacement = markers.map((marker) => (
         T > 0
             ? computeDisplacement(ctx, marker, expectedByGroup, windowLength, last)
-            : { code: marker.code, groups: [], topCards: [], partial: true }
+            : { code: marker.code, groups: [], topCards: [], topAdded: [], partial: true }
     ));
 
     return { markers, adoption, displacement };

@@ -153,4 +153,36 @@ describe('analyzeSets', () => {
         // cardB from the off-grid revision is not included, so cardCount=1 < setMinCards=2.
         expect(adoption).toHaveLength(0);
     });
+
+    it('counts top additions within the displacement window and flags set-eligible ones', () => {
+        const samples = Array.from({ length: 20 }, (_, i) => i * WEEK);
+        const releasedAt = samples[5];
+
+        const cubes = [
+            {
+                id: 'c1',
+                revisions: [
+                    { id: 'r0', date: samples[0], cards: [] },
+                    { id: 'r1', date: samples[6], cards: ['new1', 'new3'] },
+                    { id: 'r2', date: samples[15], cards: ['new1', 'new3', 'new2'] },
+                ],
+                grid: [...Array(6).fill('r0'), ...Array(9).fill('r1'), ...Array(5).fill('r2')],
+            },
+        ];
+
+        const cardInfo = [
+            makeCardInfo('new1', { eligibility: { date: 0, setCode: 'NEO', fallback: false } }),
+        ];
+
+        const sets = [{ code: 'NEO', name: 'Kamigawa: Neon Dynasty', releasedAt }];
+
+        const ctx = makeContext({ samples, cubes, cardInfo, config: flatWeighting, sets });
+        const { displacement } = analyzeSets(ctx);
+
+        // new2 is added at samples[15], past the 8-week window end (samples[13]), so it's excluded.
+        expect(displacement[0].topAdded).toEqual([
+            { key: 'new1', additions: 1, fromSet: true },
+            { key: 'new3', additions: 1, fromSet: false },
+        ]);
+    });
 });

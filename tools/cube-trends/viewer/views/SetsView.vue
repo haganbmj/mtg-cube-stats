@@ -30,7 +30,7 @@
                 v-for="marker in data.sets.markers"
                 :key="marker.code"
                 :name="marker.code"
-                :title="`${marker.name} (${marker.code})${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}`"
+                :title="`${marker.name} (${marker.code}) — released ${formatDate(marker.releasedAt)}${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}`"
             >
                 <template v-if="displacementByCode.get(marker.code)">
                     <el-table :data="displacementByCode.get(marker.code)!.groups" size="small" :default-sort="{ prop: 'lift', order: 'descending' }">
@@ -46,20 +46,44 @@
                             <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                         </el-table-column>
                     </el-table>
-                    <h5>Top Displaced Cards</h5>
-                    <el-table :data="displacementByCode.get(marker.code)!.topCards" size="small" :default-sort="{ prop: 'removals', order: 'descending' }">
-                        <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
-                            <template #default="{ row }">
-                                <CardName
-                                    :name="cardLookup.get(row.key)?.info.name ?? row.key"
-                                    :imageUrl="cardLookup.get(row.key)?.info.urlFront"
-                                    :setCode="cardLookup.get(row.key)?.info.eligibility?.setCode"
-                                    :copies="copyNumber(row.key)"
-                                />
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
-                    </el-table>
+                    <div class="displacement-columns">
+                        <div class="displacement-column">
+                            <h5>Top Removals</h5>
+                            <el-table :data="displacementByCode.get(marker.code)!.topCards" size="small" :default-sort="{ prop: 'removals', order: 'descending' }">
+                                <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
+                                    <template #default="{ row }">
+                                        <CardName
+                                            :name="cardLookup.get(row.key)?.info.name ?? row.key"
+                                            :imageUrl="cardLookup.get(row.key)?.info.urlFront"
+                                            :setCode="cardLookup.get(row.key)?.info.eligibility?.setCode"
+                                            :copies="copyNumber(row.key)"
+                                        />
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
+                            </el-table>
+                        </div>
+                        <div class="displacement-column">
+                            <h5>Top Additions</h5>
+                            <el-table :data="displacementByCode.get(marker.code)!.topAdded" size="small" :default-sort="{ prop: 'additions', order: 'descending' }">
+                                <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
+                                    <template #default="{ row }">
+                                        <CardName
+                                            :name="cardLookup.get(row.key)?.info.name ?? row.key"
+                                            :imageUrl="cardLookup.get(row.key)?.info.urlFront"
+                                            :setCode="cardLookup.get(row.key)?.info.eligibility?.setCode"
+                                            :copies="copyNumber(row.key)"
+                                        />
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="additions" label="Additions" sortable :sort-method="(a, b) => compareNullable(a.additions, b.additions)" />
+                                <el-table-column prop="fromSet" sortable :sort-method="(a, b) => compareNullable(Number(a.fromSet), Number(b.fromSet))">
+                                    <template #header><InfoLabel label="From Set" :tip="fromSetTip" /></template>
+                                    <template #default="{ row }">{{ row.fromSet ? '✓' : '—' }}</template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
                 </template>
             </el-collapse-item>
         </el-collapse>
@@ -82,6 +106,7 @@ import type { CsvColumn } from '../util/csv';
 
 const retentionTip = 'Adoption at 26 weeks as a share of peak adoption.';
 const displacementTip = "Removals in the 8 weeks after release vs. each cube's normal removal rate.";
+const fromSetTip = "Card's first eligible printing is in this set.";
 
 const props = defineProps<{
     data: FullTrendsData;
@@ -117,5 +142,21 @@ const peakColumns: CsvColumn<SetAdoption>[] = [
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.displacement-columns {
+    display: flex;
+    gap: 24px;
+}
+
+.displacement-column {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .displacement-columns {
+        flex-direction: column;
+    }
 }
 </style>
