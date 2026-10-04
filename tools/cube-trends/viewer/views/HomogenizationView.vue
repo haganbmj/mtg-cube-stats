@@ -10,6 +10,7 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { releaseMarkLines } from '../util/releaseMarkers';
+import { formatPercent, formatPercentTooltip, bandTooltip } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
 const props = defineProps<{
@@ -17,10 +18,23 @@ const props = defineProps<{
 }>();
 
 const option = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: {
+        trigger: 'axis',
+        formatter: bandTooltip({
+            lines: [
+                { seriesName: 'Weighted Mean', format: (v) => formatPercentTooltip(v) },
+                { seriesName: 'Mean', format: (v) => formatPercentTooltip(v) },
+            ],
+            band: {
+                q1: (index) => props.data.timeline.points[index].homogenization?.q1 ?? null,
+                q3: (index) => props.data.timeline.points[index].homogenization?.q3 ?? null,
+                format: (v) => formatPercentTooltip(v),
+            },
+        }),
+    },
     legend: { data: ['Weighted Mean', 'Mean'] },
     xAxis: { type: 'time' },
-    yAxis: { type: 'value', min: 0, max: 1 },
+    yAxis: { type: 'value', min: 0, max: 1, axisLabel: { formatter: (v: number) => formatPercent(v) } },
     series: [
         {
             name: 'Q1',

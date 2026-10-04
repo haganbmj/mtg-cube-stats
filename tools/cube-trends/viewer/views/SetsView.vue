@@ -138,7 +138,7 @@ const cardLookup = computed(() => buildCardLookup(props.data.cards));
 const displacementByCode = computed(() => new Map(props.data.sets.displacement.map((d) => [d.code, d])));
 
 const adoptionOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatCount(v) },
     legend: { type: 'scroll', data: props.data.sets.adoption.map((s) => s.name) },
     xAxis: { type: 'value', name: 'Weeks since release' },
     yAxis: { type: 'value', name: 'Cards per cube', axisLabel: { formatter: (v: number) => formatCount(v) } },

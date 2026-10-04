@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
+import { formatPercent, formatPercentTooltip } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 import EmptyState from '../components/EmptyState.vue';
 
@@ -26,14 +27,14 @@ const option = computed(() => {
     }
     const survival = props.data.survival;
     return {
-        tooltip: { trigger: 'axis' },
+        tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
         legend: { data: ['Overall', 'New Cards', 'Established'] },
         xAxis: { type: 'value', name: 'Days' },
-        yAxis: { type: 'value', axisLabel: { formatter: (v: number) => `${v}%` } },
+        yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
         series: [
-            { name: 'Overall', type: 'line', step: 'end', data: survival.overall.map((p) => [p.t, p.s * 100]) },
-            { name: 'New Cards', type: 'line', step: 'end', data: survival.newCards.map((p) => [p.t, p.s * 100]) },
-            { name: 'Established', type: 'line', step: 'end', data: survival.established.map((p) => [p.t, p.s * 100]) },
+            { name: 'Overall', type: 'line', step: 'end', data: survival.overall.map((p) => [p.t, p.s]) },
+            { name: 'New Cards', type: 'line', step: 'end', data: survival.newCards.map((p) => [p.t, p.s]) },
+            { name: 'Established', type: 'line', step: 'end', data: survival.established.map((p) => [p.t, p.s]) },
         ],
     };
 });

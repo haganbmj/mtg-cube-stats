@@ -39,7 +39,7 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { releaseMarkLines } from '../util/releaseMarkers';
-import { formatPercent, formatDate } from '../util/format';
+import { formatPercent, formatPercentTooltip, formatDate } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import { buildCardTimeline, type CardTimelineRow } from '../util/cardTimeline';
 import TrendChart from '../components/TrendChart.vue';
@@ -62,7 +62,7 @@ function copyLabel(copy: number): string {
 }
 
 const irChartOption = computed(() => ({
-    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercent(v) },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
     legend: { data: copies.value.map((c) => copyLabel(c.copy)) },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', min: 0, max: 1, axisLabel: { formatter: (v: number) => formatPercent(v) } },

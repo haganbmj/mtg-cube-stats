@@ -14,6 +14,7 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { releaseMarkLines } from '../util/releaseMarkers';
+import { formatPercent, formatPercentTooltip, formatDays } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
 const props = defineProps<{
@@ -21,9 +22,9 @@ const props = defineProps<{
 }>();
 
 const ageOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatDays(v) },
     xAxis: { type: 'time' },
-    yAxis: { type: 'value', name: 'Median age (days)' },
+    yAxis: { type: 'value', name: 'Days' },
     series: [{
         type: 'line',
         connectNulls: false,
@@ -33,29 +34,29 @@ const ageOption = computed(() => ({
 }));
 
 const shareOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
     legend: { data: ['< 3mo', '< 6mo', '< 12mo'] },
     xAxis: { type: 'time' },
-    yAxis: { type: 'value', axisLabel: { formatter: '{value}%' } },
+    yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
     series: [
         {
             name: '< 3mo',
             type: 'line',
             connectNulls: false,
-            data: props.data.timeline.points.map((p) => [p.t, p.shareUnder.m3 * 100]),
+            data: props.data.timeline.points.map((p) => [p.t, p.shareUnder.m3]),
             markLine: releaseMarkLines(props.data.sets.markers),
         },
         {
             name: '< 6mo',
             type: 'line',
             connectNulls: false,
-            data: props.data.timeline.points.map((p) => [p.t, p.shareUnder.m6 * 100]),
+            data: props.data.timeline.points.map((p) => [p.t, p.shareUnder.m6]),
         },
         {
             name: '< 12mo',
             type: 'line',
             connectNulls: false,
-            data: props.data.timeline.points.map((p) => [p.t, p.shareUnder.m12 * 100]),
+            data: props.data.timeline.points.map((p) => [p.t, p.shareUnder.m12]),
         },
     ],
 }));

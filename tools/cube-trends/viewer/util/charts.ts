@@ -8,7 +8,7 @@ const REMOVES_COLOR = '#F56C6C';
 // Single stacked bar per interval: adds above zero, removes below.
 export function buildAddsRemovesOption(points: TimelinePoint[], markers: SetInfo[]): object {
     return {
-        tooltip: { trigger: 'axis' },
+        tooltip: { trigger: 'axis', valueFormatter: (v: number) => String(Math.abs(v)) },
         legend: { data: ['Adds', 'Removes'] },
         xAxis: { type: 'time' },
         yAxis: { type: 'value' },

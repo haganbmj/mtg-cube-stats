@@ -243,7 +243,10 @@ describe('buildAddsRemovesOption', () => {
         const option = buildAddsRemovesOption(
             points,
             [{ code: 'dom', name: 'Dominaria', releasedAt: 1000 }],
-        ) as { series: { name: string; stack: string; itemStyle: { color: string }; data: [number, number][] }[] };
+        ) as {
+            tooltip: { valueFormatter: (v: number) => string };
+            series: { name: string; stack: string; itemStyle: { color: string }; data: [number, number][] }[];
+        };
 
         const [addsSeries, removesSeries] = option.series;
 
@@ -252,6 +255,12 @@ describe('buildAddsRemovesOption', () => {
         expect(addsSeries.itemStyle.color).toBe('#67C23A');
         expect(removesSeries.itemStyle.color).toBe('#F56C6C');
         expect(removesSeries.data.every(([, value]) => value <= 0)).toBe(true);
+    });
+
+    it('shows removes as positive counts in the tooltip via valueFormatter', () => {
+        const option = buildAddsRemovesOption([], []) as { tooltip: { valueFormatter: (v: number) => string } };
+        expect(option.tooltip.valueFormatter(-7)).toBe('7');
+        expect(option.tooltip.valueFormatter(5)).toBe('5');
     });
 });
 

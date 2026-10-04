@@ -23,7 +23,7 @@ import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { COLOR_CATEGORIES, MV_BUCKETS } from '../../analysis/cardInfo';
 import { releaseMarkLines } from '../util/releaseMarkers';
-import { formatPercent } from '../util/format';
+import { formatPercent, formatPercentTooltip, bandTooltip } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
 const props = defineProps<{
@@ -31,7 +31,7 @@ const props = defineProps<{
 }>();
 
 const colorOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
     legend: { data: COLOR_CATEGORIES },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
@@ -48,7 +48,17 @@ const colorOption = computed(() => ({
 const sizeOption = computed(() => {
     const points = props.data.shape.points;
     return {
-        tooltip: { trigger: 'axis' },
+        tooltip: {
+            trigger: 'axis',
+            formatter: bandTooltip({
+                lines: [{ seriesName: 'Median', format: (v) => String(Math.round(v)) }],
+                band: {
+                    q1: (index) => points[index].size.q1,
+                    q3: (index) => points[index].size.q3,
+                    format: (v) => String(Math.round(v)),
+                },
+            }),
+        },
         legend: { data: ['Median'] },
         xAxis: { type: 'time' },
         yAxis: { type: 'value', name: 'Cube size' },
@@ -82,7 +92,7 @@ const sizeOption = computed(() => {
 });
 
 const typeOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
     legend: { type: 'scroll', data: props.data.shape.types },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },

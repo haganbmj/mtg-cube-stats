@@ -31,7 +31,7 @@ import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { CubeChurn } from '../../analysis/churn';
 import { releaseMarkLines } from '../util/releaseMarkers';
-import { formatPercent } from '../util/format';
+import { formatPercent, formatPercentTooltip } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
@@ -60,7 +60,7 @@ const rows = computed<ChurnRow[]>(() => props.data.churn.cubes.map((cube) => ({
 })));
 
 const communityOption = computed(() => ({
-    tooltip: { trigger: 'axis' },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
     series: [{

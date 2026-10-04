@@ -90,7 +90,7 @@ import type { FullTrendsData } from '../dataSource';
 import type { ConsensusCard } from '../../analysis/consensus';
 import { COLOR_CATEGORIES, MV_BUCKETS, type ColorCategory } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
-import { formatPercent } from '../util/format';
+import { formatPercent, formatPercentTooltip } from '../util/format';
 import { downloadText, type CsvColumn } from '../util/csv';
 import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
@@ -132,7 +132,7 @@ const quotaRows = computed(() => COLOR_CATEGORIES.map((category) => ({
 const typeOption = computed(() => {
     const types = props.data.shape.types;
     return {
-        tooltip: { trigger: 'axis' },
+        tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
         legend: { data: ['Consensus', 'Community'] },
         xAxis: { type: 'category', data: types, axisLabel: { rotate: 45 } },
         yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },
