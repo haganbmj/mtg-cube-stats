@@ -22,6 +22,10 @@
         <p class="chart-description">Cards added (green, above zero) and removed (red, below zero) across all cubes in each sampling interval. Dashed vertical lines mark set releases.</p>
         <TrendChart :option="timelineChartOption" />
 
+        <h3>Cubes Updated</h3>
+        <p class="chart-description">Share of existing cubes with at least one add or remove in each sampling interval (bars), so a single heavily edited cube counts once. The line is the median number of changes among cubes that changed.</p>
+        <TrendChart :option="cubesUpdatedOption" />
+
         <el-row :gutter="16">
             <el-col :span="12">
                 <div class="overview-table-header">
@@ -115,7 +119,7 @@ import type { CardTrend } from '../../analysis/cards';
 import type { ConsensusCard } from '../../analysis/consensus';
 import type { PanelCube } from '../../analysis/panel';
 import { buildCardLookup } from '../util/cardLookup';
-import { buildAddsRemovesOption } from '../util/charts';
+import { buildAddsRemovesOption, buildCubesUpdated, buildCubesUpdatedOption } from '../util/charts';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
@@ -190,6 +194,10 @@ const cubeColumns: CsvColumn<PanelCube & { coverage: number; gaps: number }>[] =
 ];
 
 const timelineChartOption = computed(() => buildAddsRemovesOption(props.data.timeline.points, props.data.sets.markers));
+const cubesUpdatedOption = computed(() => buildCubesUpdatedOption(
+    buildCubesUpdated(props.data.churn, props.data.meta.samples),
+    props.data.sets.markers,
+));
 </script>
 
 <style scoped>

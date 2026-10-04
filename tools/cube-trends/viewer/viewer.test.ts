@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { VIEWS, VIEW_LABELS, parseHash, buildHash, type Route } from './router';
 import { toCsv } from './util/csv';
 import { releaseMarkLines } from './util/releaseMarkers';
-import { buildAddsRemovesOption } from './util/charts';
+import { buildAddsRemovesOption, buildCubesUpdated, buildCubesUpdatedOption } from './util/charts';
 import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
+import type { ChurnResult, CubeChurn } from '../analysis/churn';
 import type { CardTrend } from '../analysis/cards';
 import { formatCount, formatPercentTooltip, formatDays, bandTooltip, axisTooltip, formatDate } from './util/format';
 import { compareNullable, byName } from './util/sort';
@@ -265,6 +266,45 @@ describe('releaseMarkLines', () => {
         ]);
         expect(result.tooltip.formatter({ name: 'msh/msc' }))
             .toBe('Marvel Super Heroes (msh), Marvel Super Heroes Commander (msc)');
+    });
+});
+
+describe('buildCubesUpdated', () => {
+    const cube = (adds: number[], removes: number[], rate: (number | null)[]): CubeChurn => ({
+        cubeId: 'c', adds, removes, rate, totalAdds: 0, totalRemoves: 0, meanRate: 0,
+    });
+
+    it('computes the share of existing cubes modified and the median changes among modified cubes', () => {
+        const churn: ChurnResult = {
+            community: { rate: [null, 0.1, 0] },
+            cubes: [
+                cube([0, 40, 0], [0, 40, 0], [null, 0.2, 0]),
+                cube([0, 2, 0], [0, 1, 0], [null, 0.01, 0]),
+                cube([0, 0, 0], [0, 0, 0], [null, 0, 0]),
+                cube([0, 0, 0], [0, 0, 0], [null, null, 0]),
+            ],
+        };
+
+        expect(buildCubesUpdated(churn, [100, 200, 300])).toEqual([
+            { t: 100, active: 0, modified: 0, share: null, medianChanges: null },
+            { t: 200, active: 3, modified: 2, share: 2 / 3, medianChanges: 41.5 },
+            { t: 300, active: 4, modified: 0, share: 0, medianChanges: null },
+        ]);
+    });
+
+    it('builds a share bar with a median-changes line on a second axis', () => {
+        const option = buildCubesUpdatedOption(
+            [{ t: 200, active: 3, modified: 2, share: 2 / 3, medianChanges: 41.5 }],
+            [],
+        ) as { series: { name: string; type: string; yAxisIndex?: number; data: [number, number | null][] }[]; yAxis: unknown[] };
+
+        expect(option.yAxis).toHaveLength(2);
+        expect(option.series.map((s) => [s.name, s.type, s.yAxisIndex ?? 0])).toEqual([
+            ['Cubes modified', 'bar', 0],
+            ['Median changes', 'line', 1],
+        ]);
+        expect(option.series[0].data).toEqual([[200, 2 / 3]]);
+        expect(option.series[1].data).toEqual([[200, 41.5]]);
     });
 });
 
