@@ -31,12 +31,24 @@ export function formatPercentTooltip(value: number | null | undefined): string {
     return `${trimmed}%`;
 }
 
-export function formatDays(value: number | null | undefined): string {
+// Matches parseDuration: weeks are 7 days, years are 365 days.
+export const daysToWeeks = (days: number): number => days / 7;
+export const daysToYears = (days: number): number => days / 365;
+
+function formatUnit(value: number | null | undefined, unit: string): string {
     if (value === null || value === undefined || Number.isNaN(value)) {
         return '—';
     }
-    const days = Math.round(value);
-    return `${days} day${days === 1 ? '' : 's'}`;
+    const fixed = value.toFixed(1);
+    return `${fixed} ${unit}${fixed === '1.0' ? '' : 's'}`;
+}
+
+export function formatWeeks(weeks: number | null | undefined): string {
+    return formatUnit(weeks, 'week');
+}
+
+export function formatYears(years: number | null | undefined): string {
+    return formatUnit(years, 'year');
 }
 
 interface BandTooltipLine {

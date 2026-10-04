@@ -14,7 +14,7 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { releaseMarkLines } from '../util/releaseMarkers';
-import { formatPercent, formatPercentTooltip, formatDays } from '../util/format';
+import { formatPercent, formatPercentTooltip, formatYears, daysToYears } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
 const props = defineProps<{
@@ -22,13 +22,13 @@ const props = defineProps<{
 }>();
 
 const ageOption = computed(() => ({
-    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatDays(v) },
+    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatYears(v) },
     xAxis: { type: 'time' },
-    yAxis: { type: 'value', name: 'Days' },
+    yAxis: { type: 'value', name: 'Years' },
     series: [{
         type: 'line',
         connectNulls: false,
-        data: props.data.timeline.points.map((p) => [p.t, p.medianAgeDays]),
+        data: props.data.timeline.points.map((p) => [p.t, p.medianAgeDays === null ? null : daysToYears(p.medianAgeDays)]),
         markLine: releaseMarkLines(props.data.sets.markers),
     }],
 }));

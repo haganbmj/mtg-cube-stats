@@ -14,8 +14,9 @@
                     <template #header><InfoLabel label="Mean Percentile" :tip="meanPercentileTip" /></template>
                     <template #default="{ row }">{{ formatPercent(row.meanPercentile) }}</template>
                 </el-table-column>
-                <el-table-column prop="meanLagDays" label="Mean Lag" sortable :sort-method="(a, b) => compareNullable(a.meanLagDays, b.meanLagDays)">
-                    <template #default="{ row }">{{ row.meanLagDays === null ? '—' : `${row.meanLagDays.toFixed(1)}d` }}</template>
+                <el-table-column prop="meanLagDays" sortable :sort-method="(a, b) => compareNullable(a.meanLagDays, b.meanLagDays)">
+                    <template #header><InfoLabel label="Mean Lag" tip="Average time between a card becoming eligible and this cube adding it." /></template>
+                    <template #default="{ row }">{{ row.meanLagDays === null ? '—' : formatWeeks(daysToWeeks(row.meanLagDays)) }}</template>
                 </el-table-column>
                 <el-table-column prop="leadOnConsensus" sortable :sort-method="(a, b) => compareNullable(a.leadOnConsensus, b.leadOnConsensus)">
                     <template #header><InfoLabel label="Lead on Consensus" :tip="leadOnConsensusTip" /></template>
@@ -41,7 +42,7 @@ import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { Trendsetter } from '../../analysis/trendsetters';
 import { buildCardLookup } from '../util/cardLookup';
-import { formatPercent } from '../util/format';
+import { formatPercent, formatWeeks, daysToWeeks } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import ExportButton from '../components/ExportButton.vue';
 import EmptyState from '../components/EmptyState.vue';
@@ -81,7 +82,7 @@ const exportColumns: CsvColumn<TrendsetterRow>[] = [
     { key: 'name', label: 'Cube', value: (r) => r.name },
     { key: 'adoptions', label: 'Adoptions', value: (r) => r.adoptions },
     { key: 'meanPercentile', label: 'Mean Percentile', value: (r) => r.meanPercentile },
-    { key: 'meanLagDays', label: 'Mean Lag Days', value: (r) => r.meanLagDays },
+    { key: 'meanLagWeeks', label: 'Mean Lag (weeks)', value: (r) => (r.meanLagDays === null ? null : daysToWeeks(r.meanLagDays).toFixed(1)) },
     { key: 'leadOnConsensus', label: 'Lead on Consensus', value: (r) => r.leadOnConsensus },
     { key: 'examples', label: 'Examples', value: (r) => r.exampleNames.join(', ') },
 ];

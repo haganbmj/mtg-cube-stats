@@ -7,7 +7,7 @@ import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
 import type { ChurnResult, CubeChurn } from '../analysis/churn';
 import type { CardTrend } from '../analysis/cards';
-import { formatCount, formatPercentTooltip, formatDays, bandTooltip, axisTooltip, formatDate } from './util/format';
+import { formatCount, formatPercentTooltip, formatWeeks, formatYears, daysToWeeks, daysToYears, bandTooltip, axisTooltip, formatDate } from './util/format';
 import { compareNullable, byName } from './util/sort';
 
 function makeTrend(copy: number, cubesPresent: number[][]): CardTrend {
@@ -60,14 +60,21 @@ describe('formatPercentTooltip', () => {
     });
 });
 
-describe('formatDays', () => {
-    it('rounds to whole days and pluralizes', () => {
-        expect(formatDays(412)).toBe('412 days');
-        expect(formatDays(1)).toBe('1 day');
+describe('formatWeeks / formatYears', () => {
+    it('formats weeks with one decimal and converts days to weeks', () => {
+        expect(formatWeeks(12.44)).toBe('12.4 weeks');
+        expect(formatWeeks(1)).toBe('1.0 week');
+        expect(formatWeeks(daysToWeeks(87))).toBe('12.4 weeks');
+    });
+
+    it('formats years with one decimal and converts days to years', () => {
+        expect(formatYears(4.89)).toBe('4.9 years');
+        expect(formatYears(daysToYears(1786))).toBe('4.9 years');
     });
 
     it('returns an em dash for null', () => {
-        expect(formatDays(null)).toBe('—');
+        expect(formatWeeks(null)).toBe('—');
+        expect(formatYears(null)).toBe('—');
     });
 });
 
