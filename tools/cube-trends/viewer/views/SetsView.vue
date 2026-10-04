@@ -117,7 +117,7 @@ import type { FullTrendsData } from '../dataSource';
 import type { SetAdoption, DisplacementGroup } from '../../analysis/sets';
 import { copyNumber } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
-import { formatCount, formatPercent, formatDate } from '../util/format';
+import { formatCount, formatPercent, formatDate, axisTooltip } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
@@ -138,7 +138,7 @@ const cardLookup = computed(() => buildCardLookup(props.data.cards));
 const displacementByCode = computed(() => new Map(props.data.sets.displacement.map((d) => [d.code, d])));
 
 const adoptionOption = computed(() => ({
-    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatCount(v) },
+    tooltip: { trigger: 'axis', formatter: axisTooltip((x) => `Week ${Math.round(x)}`, formatCount) },
     legend: { type: 'scroll', data: props.data.sets.adoption.map((s) => s.name) },
     xAxis: { type: 'value', name: 'Weeks since release' },
     yAxis: { type: 'value', name: 'Cards per cube', axisLabel: { formatter: (v: number) => formatCount(v) } },

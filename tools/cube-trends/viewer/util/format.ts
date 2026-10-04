@@ -50,6 +50,21 @@ interface BandTooltipBand {
     format: (v: number) => string;
 }
 
+// ECharts axis-tooltip formatter: a header derived from the axis value, then one row per series present in params.
+export function axisTooltip(header: (axisValue: number) => string, format: (v: number) => string): (params: any[]) => string {
+    return (params) => {
+        const rows = [header(params[0].axisValue)];
+        for (const param of params) {
+            const raw = Array.isArray(param.value) ? param.value[1] : param.value;
+            if (raw === null || raw === undefined) {
+                continue;
+            }
+            rows.push(`${param.marker}${param.seriesName}: ${format(raw)}`);
+        }
+        return rows.join('<br/>');
+    };
+}
+
 // ECharts axis-tooltip formatter for a median line + transparent Q1/IQR band chart.
 export function bandTooltip(opts: { lines: BandTooltipLine[]; band: BandTooltipBand }): (params: any[]) => string {
     return (params) => {

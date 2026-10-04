@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
-import { formatPercent, formatPercentTooltip } from '../util/format';
+import { formatPercent, formatPercentTooltip, axisTooltip } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 import EmptyState from '../components/EmptyState.vue';
 
@@ -27,7 +27,7 @@ const option = computed(() => {
     }
     const survival = props.data.survival;
     return {
-        tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
+        tooltip: { trigger: 'axis', formatter: axisTooltip((x) => `Day ${Math.round(x)}`, formatPercentTooltip) },
         legend: { data: ['Overall', 'New Cards', 'Established'] },
         xAxis: { type: 'value', name: 'Days' },
         yAxis: { type: 'value', axisLabel: { formatter: (v: number) => formatPercent(v) } },

@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const mergedOption = computed(() => ({
     ...props.option,
+    useUTC: true,
     toolbox: {
         ...(props.option as any).toolbox,
         feature: {

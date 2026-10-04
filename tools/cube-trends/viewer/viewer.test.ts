@@ -6,7 +6,7 @@ import { buildAddsRemovesOption } from './util/charts';
 import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
 import type { CardTrend } from '../analysis/cards';
-import { formatCount, formatPercentTooltip, formatDays, bandTooltip, formatDate } from './util/format';
+import { formatCount, formatPercentTooltip, formatDays, bandTooltip, axisTooltip, formatDate } from './util/format';
 import { compareNullable, byName } from './util/sort';
 
 function makeTrend(copy: number, cubesPresent: number[][]): CardTrend {
@@ -109,6 +109,27 @@ describe('bandTooltip', () => {
         const params = [{ seriesName: 'Mean', marker: '<mean-marker>', value: [1000, 3], dataIndex: 0, axisValue: 1000 }];
 
         expect(formatter(params)).toBe(`${formatDate(1000)}<br/><mean-marker>Mean: 3`);
+    });
+});
+
+describe('axisTooltip', () => {
+    it('renders a header from the axis value and one row per present series, skipping nulls', () => {
+        const formatter = axisTooltip((x) => `Day ${Math.round(x)}`, (v) => `${v}%`);
+
+        const params = [
+            { seriesName: 'Overall', marker: '<overall-marker>', value: [1802.27, 42], dataIndex: 0, axisValue: 1802.27 },
+            { seriesName: 'Established', marker: '<established-marker>', value: [1802.27, null], dataIndex: 0, axisValue: 1802.27 },
+        ];
+
+        expect(formatter(params)).toBe('Day 1802<br/><overall-marker>Overall: 42%');
+    });
+
+    it('reads plain (non-pair) values directly', () => {
+        const formatter = axisTooltip((x) => `Week ${Math.round(x)}`, (v) => String(v));
+
+        const params = [{ seriesName: 'Series', marker: '<marker>', value: 30, dataIndex: 0, axisValue: 30 }];
+
+        expect(formatter(params)).toBe('Week 30<br/><marker>Series: 30');
     });
 });
 
