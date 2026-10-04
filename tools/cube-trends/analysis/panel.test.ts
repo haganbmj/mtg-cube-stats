@@ -9,7 +9,7 @@ import { buildContext } from './context';
 import { analyzeSubstitutions } from './substitutions';
 import { resolveConfig } from '../config';
 import { resolveAt } from '../fetch/coverage';
-import { sampleDates, DAY } from '../fetch/sampling';
+import { sampleDates, DAY, GRID_EPOCH } from '../fetch/sampling';
 
 function scryfallCard(overrides: Partial<ScryfallCard>): ScryfallCard {
     return {
@@ -240,13 +240,14 @@ describe('gridAnchor', () => {
         expect(gridAnchor([])).toBeNull();
     });
 
-    it('resolves the latest sample when analyze runs a day after the fetch', () => {
-        const fetchedAt = 100 * DAY + 15 * 3_600_000;
-        const index = indexWithCoverage('a', [{ id: 'r1', from: 90 * DAY, to: fetchedAt }]);
+    it('resolves the latest sample when analyze runs after the grid has rolled over, unlike a wall-clock anchor', () => {
         const interval = 14 * DAY;
         const range = 28 * DAY;
+        // just before the next grid boundary, so a wall-clock anchor a couple of days later rolls past it.
+        const fetchedAt = GRID_EPOCH + 13 * DAY + 23 * 3_600_000;
+        const index = indexWithCoverage('a', [{ id: 'r1', from: GRID_EPOCH - 7 * DAY, to: fetchedAt }]);
 
-        const wallClockSamples = sampleDates(fetchedAt + DAY, interval, range);
+        const wallClockSamples = sampleDates(fetchedAt + 2 * DAY, interval, range);
         expect(resolveAt(index, wallClockSamples[wallClockSamples.length - 1])).toBeUndefined();
 
         const samples = sampleDates(gridAnchor([index])!, interval, range);

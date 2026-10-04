@@ -1,13 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sampleDates, DAY } from './sampling';
 import { emptyIndex, resolveAt, addCoverage, uncoveredSamples } from './coverage';
-
-describe('sampleDates', () => {
-    it('builds a descending-to-ascending anchor grid', () => {
-        const dates = sampleDates(Date.UTC(2026, 9, 3, 15), 14 * DAY, 28 * DAY);
-        expect(dates).toEqual([Date.UTC(2026, 8, 5), Date.UTC(2026, 8, 19), Date.UTC(2026, 9, 3)]);
-    });
-});
 
 describe('resolveAt', () => {
     const index = {

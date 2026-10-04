@@ -6,6 +6,7 @@ import type { CubeFetcher } from './client';
 import { NotFoundError } from './client';
 import * as compact from './compact';
 import { walkCube } from './walk';
+import { sampleDates } from './sampling';
 
 const D = (n: number): Ms => n * 86_400_000;
 
@@ -216,3 +217,46 @@ describe('walkCube', () => {
         expect(resolveAt(result.index, D(40))).toBeUndefined();
     });
 });
+
+describe('walkCube with a stable grid', () => {
+    it('reuses coverage from a coarser-grid walk, fetching only new finer-grid dates not already proven', async () => {
+        const now = Date.UTC(2026, 9, 3); // GRID_EPOCH
+        const timeline: TimelineEntry[] = [
+            { id: 'r1', date: Date.UTC(2026, 8, 1) },
+            { id: 'r2', date: Date.UTC(2026, 8, 25) },
+            { id: 'r3', date: now },
+        ];
+        const range = 28 * 86_400_000;
+        const fetcher = createTimelineFetcher(timeline);
+        const store = createMemoryStore();
+
+        const biweekly = sampleDates(now, 14 * 86_400_000, range);
+        await walkCube('cube', biweekly, { now: () => now, fetcher, store });
+
+        const calls: Ms[] = [];
+        const trackingFetcher: CubeFetcher = {
+            fetchAt: (cubeId, date) => {
+                calls.push(date);
+                return fetcher.fetchAt(cubeId, date);
+            },
+        };
+        const weekly = sampleDates(now, 7 * 86_400_000, range);
+        const newOnly = weekly.filter((d) => !biweekly.includes(d));
+        expect(newOnly).toEqual([Date.UTC(2026, 8, 12), Date.UTC(2026, 8, 26)]);
+
+        const result = await walkCube('cube', weekly, { now: () => now, fetcher: trackingFetcher, store });
+
+        // the anchor ('now') is always re-fetched; Sep 12 is already inside r1's proven interval from
+        // the biweekly walk, so only Sep 26 (outside any proven interval) should trigger a request.
+        expect(calls).toEqual([now, Date.UTC(2026, 8, 26)]);
+        for (const d of biweekly) {
+            if (d !== now) {
+                expect(calls).not.toContain(d);
+            }
+        }
+        for (const d of weekly) {
+            expect(resolveAt(result.index, d)).not.toBeUndefined();
+        }
+    });
+});
+
