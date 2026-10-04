@@ -15,8 +15,11 @@
                     <template #default="{ row }">{{ formatPercent(row.meanPercentile) }}</template>
                 </el-table-column>
                 <el-table-column prop="meanLagDays" sortable :sort-method="(a, b) => compareNullable(a.meanLagDays, b.meanLagDays)">
-                    <template #header><InfoLabel label="Mean Lag" tip="Average time between a card becoming eligible and this cube adding it." /></template>
+                    <template #header><InfoLabel label="Mean Lag" :tip="meanLagTip" /></template>
                     <template #default="{ row }">{{ row.meanLagDays === null ? '—' : formatWeeks(daysToWeeks(row.meanLagDays)) }}</template>
+                </el-table-column>
+                <el-table-column prop="newCardAdoptions" sortable :sort-method="(a, b) => compareNullable(a.newCardAdoptions, b.newCardAdoptions)">
+                    <template #header><InfoLabel label="New-Card Adoptions" :tip="newCardAdoptionsTip" /></template>
                 </el-table-column>
                 <el-table-column prop="leadOnConsensus" sortable :sort-method="(a, b) => compareNullable(a.leadOnConsensus, b.leadOnConsensus)">
                     <template #header><InfoLabel label="Lead on Consensus" :tip="leadOnConsensusTip" /></template>
@@ -52,6 +55,8 @@ import type { CsvColumn } from '../util/csv';
 
 const meanPercentileTip = 'Average adoption order among adopting cubes; 0% = first.';
 const leadOnConsensusTip = 'Early adoptions (first quarter) of cards that reached ≥20% IR.';
+const meanLagTip = 'Average time from a card first becoming eligible to this cube adding it, for cards that became eligible within the analysis window (first copy only). Late-window cards can only show short lags.';
+const newCardAdoptionsTip = 'Number of new-card adoptions the Mean Lag is averaged over.';
 
 const props = defineProps<{
     data: FullTrendsData;
@@ -83,6 +88,7 @@ const exportColumns: CsvColumn<TrendsetterRow>[] = [
     { key: 'adoptions', label: 'Adoptions', value: (r) => r.adoptions },
     { key: 'meanPercentile', label: 'Mean Percentile', value: (r) => r.meanPercentile },
     { key: 'meanLagWeeks', label: 'Mean Lag (weeks)', value: (r) => (r.meanLagDays === null ? null : daysToWeeks(r.meanLagDays).toFixed(1)) },
+    { key: 'newCardAdoptions', label: 'New-Card Adoptions', value: (r) => r.newCardAdoptions },
     { key: 'leadOnConsensus', label: 'Lead on Consensus', value: (r) => r.leadOnConsensus },
     { key: 'examples', label: 'Examples', value: (r) => r.exampleNames.join(', ') },
 ];

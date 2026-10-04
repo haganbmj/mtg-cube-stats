@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { makeContext } from './fixtures';
+import { makeCardInfo, makeContext } from './fixtures';
 import { analyzeTrendsetters } from './trendsetters';
 
 const DAY = 86_400_000;
@@ -32,6 +32,34 @@ describe('analyzeTrendsetters', () => {
         expect(result.cubes.find((c) => c.cubeId === 'A')!.adoptions).toBe(5);
         expect(result.cubes.find((c) => c.cubeId === 'A')!.meanLagDays).toBeNull();
         expect(result.cubes.find((c) => c.cubeId === 'A')!.examples).toHaveLength(5);
+    });
+
+    it('measures mean lag only over first-copy adoptions of cards eligible within the window', () => {
+        const start = 10 * DAY;
+        const old = ['p1', 'p2', 'p3', 'p4', 'p5'];
+        const samples = [start, start + DAY, start + 2 * DAY, start + 3 * DAY];
+        const cubes = ['A', 'B', 'C'].map((id, i) => ({
+            id,
+            revisions: [
+                { id: `${id}-0`, date: start, cards: [] },
+                { id: `${id}-1`, date: start + (i + 1) * DAY, cards: [...old, 'nw', 'nw+'] },
+            ],
+            grid: [`${id}-0`, `${id}-1`, `${id}-1`, `${id}-1`],
+        }));
+        const cardInfo = [
+            ...old.map((o) => makeCardInfo(o, { eligibility: { date: 0, setCode: 'old', fallback: false } })),
+            makeCardInfo('nw', { eligibility: { date: start, setCode: 'new', fallback: false } }),
+        ];
+
+        const result = analyzeTrendsetters(makeContext({ samples, cubes, cardInfo, config: flatWeighting }));
+        if ('empty' in result) {
+            throw new Error('expected non-empty result');
+        }
+
+        const byId = (id: string) => result.cubes.find((c) => c.cubeId === id)!;
+        expect(byId('A').newCardAdoptions).toBe(1);
+        expect(byId('A').meanLagDays).toBeCloseTo(1);
+        expect(byId('C').meanLagDays).toBeCloseTo(3);
     });
 
     it('returns empty with a reason when no cube reaches the adoption threshold', () => {

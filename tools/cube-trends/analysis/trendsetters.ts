@@ -1,6 +1,6 @@
 import type { Empty, Ms } from '../types';
 import type { AnalysisContext } from './context';
-import { baseOracleId } from './cardInfo';
+import { baseOracleId, copyNumber } from './cardInfo';
 
 const DAY = 86_400_000;
 
@@ -9,6 +9,7 @@ export interface Trendsetter {
     adoptions: number;
     meanPercentile: number;
     meanLagDays: number | null;
+    newCardAdoptions: number;
     leadOnConsensus: number;
     examples: { oracleId: string; date: Ms; percentile: number }[];
 }
@@ -80,10 +81,15 @@ export function analyzeTrendsetters(ctx: AnalysisContext): TrendsettersResult {
 
         const meanPercentile = adoptions.reduce((sum, a) => sum + a.percentile, 0) / adoptions.length;
 
+        // Lag measures reaction to new cards: first copies of cards that became eligible inside the window.
+        const windowStart = panel.samples[0];
         const lagDays: number[] = [];
         for (const a of adoptions) {
+            if (copyNumber(a.key) !== 1) {
+                continue;
+            }
             const eligibility = panel.cardInfo.get(baseOracleId(a.key))?.eligibility;
-            if (eligibility) {
+            if (eligibility && eligibility.date >= windowStart) {
                 lagDays.push((a.date - eligibility.date) / DAY);
             }
         }
@@ -106,7 +112,7 @@ export function analyzeTrendsetters(ctx: AnalysisContext): TrendsettersResult {
             .slice(0, 5)
             .map((a) => ({ oracleId: a.key, date: a.date, percentile: a.percentile }));
 
-        cubes.push({ cubeId, adoptions: adoptions.length, meanPercentile, meanLagDays, leadOnConsensus, examples });
+        cubes.push({ cubeId, adoptions: adoptions.length, meanPercentile, meanLagDays, newCardAdoptions: lagDays.length, leadOnConsensus, examples });
     }
 
     if (cubes.length === 0) {
