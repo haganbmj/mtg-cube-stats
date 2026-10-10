@@ -13,6 +13,8 @@ const props = defineProps<{
 }>();
 
 const mergedOption = computed(() => ({
+    // No initial draw animation; data updates still animate.
+    animationDuration: 0,
     ...props.option,
     useUTC: true,
     toolbox: {

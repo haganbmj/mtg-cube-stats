@@ -1,7 +1,7 @@
 <template>
     <div class="recency-view">
         <h3>Card Age Percentiles</h3>
-        <p class="chart-description">Time since cards first became eligible, across all cards in all cubes. The 90th percentile line means 90% of cards are younger than that age.</p>
+        <p class="chart-description">Time since cards first became eligible, across all cards in all cubes. The 75th percentile line means 75% of cards are younger than that age.</p>
         <TrendChart :option="ageOption" />
 
         <h3>Share Under Age Threshold</h3>
@@ -22,11 +22,9 @@ const props = defineProps<{
 }>();
 
 const AGE_LINES = [
-    { name: '90th', key: 'p90' },
     { name: '75th', key: 'p75' },
     { name: 'Median', key: 'p50' },
     { name: '25th', key: 'p25' },
-    { name: '10th', key: 'p10' },
 ] as const;
 
 const ageOption = computed(() => ({

@@ -13,6 +13,18 @@ export function formatSignedCount(value: number | null, unit = ''): string {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}${unit}`;
 }
 
+// Direction of a signed value as displayed: text that rounds to zero is flat.
+export function trendDirection(value: number | null, text: string): 'up' | 'down' | 'flat' | null {
+    if (value === null) {
+        return null;
+    }
+    const shown = text.match(/\d+(?:\.\d+)?/);
+    if (value === 0 || !shown || Number(shown[0]) === 0) {
+        return 'flat';
+    }
+    return value > 0 ? 'up' : 'down';
+}
+
 export function formatMomentum(value: number | null, digits = 1): string {
     if (value === null) {
         return '—';

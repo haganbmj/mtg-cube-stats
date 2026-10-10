@@ -7,7 +7,7 @@ import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
 import type { ChurnResult, CubeChurn } from '../analysis/churn';
 import type { CardTrend } from '../analysis/cards';
-import { formatCount, formatSignedCount, formatMomentum, formatPercentTooltip, formatWeeks, formatYears, daysToWeeks, daysToYears, bandTooltip, axisTooltip, formatDate } from './util/format';
+import { formatCount, formatSignedCount, formatMomentum, trendDirection, formatPercentTooltip, formatWeeks, formatYears, daysToWeeks, daysToYears, bandTooltip, axisTooltip, formatDate } from './util/format';
 import { compareNullable, byName } from './util/sort';
 
 function makeTrend(cubesPresent: number[][]): CardTrend {
@@ -49,6 +49,16 @@ describe('formatSignedCount', () => {
         expect(formatSignedCount(0.123)).toBe('+0.12');
         expect(formatSignedCount(-1.5, ' /30d')).toBe('-1.50 /30d');
         expect(formatSignedCount(null)).toBe('—');
+    });
+});
+
+describe('trendDirection', () => {
+    it('follows the sign, but is flat when the displayed text rounds to zero', () => {
+        expect(trendDirection(0.012, '+1.2 pp/30d')).toBe('up');
+        expect(trendDirection(-0.5, '-0.50')).toBe('down');
+        expect(trendDirection(-0.00001, '-0.00 pp/30d')).toBe('flat');
+        expect(trendDirection(0, '0.0%')).toBe('flat');
+        expect(trendDirection(null, '—')).toBeNull();
     });
 });
 

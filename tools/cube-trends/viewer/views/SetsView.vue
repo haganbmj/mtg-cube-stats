@@ -47,11 +47,11 @@
             </el-table-column>
             <el-table-column prop="delta" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].delta, b[trendMetric].delta)">
                 <template #header><InfoLabel label="Δ90d" :tip="trendDeltaTip" /></template>
-                <template #default="{ row }">{{ formatTrendDelta(row[trendMetric].delta) }}</template>
+                <template #default="{ row }"><SignedValue :value="row[trendMetric].delta" :text="formatTrendDelta(row[trendMetric].delta)" /></template>
             </el-table-column>
             <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].momentum, b[trendMetric].momentum)">
                 <template #header><InfoLabel label="Momentum" :tip="trendMomentumTip" /></template>
-                <template #default="{ row }">{{ formatTrendMomentum(row[trendMetric].momentum) }}</template>
+                <template #default="{ row }"><SignedValue :value="row[trendMetric].momentum" :text="formatTrendMomentum(row[trendMetric].momentum)" /></template>
             </el-table-column>
             <el-table-column label="Trend">
                 <template #default="{ row }"><Sparkline :values="row[trendMetric].values" /></template>
@@ -155,6 +155,7 @@ import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';
 import InfoLabel from '../components/InfoLabel.vue';
 import Sparkline from '../components/Sparkline.vue';
+import SignedValue from '../components/SignedValue.vue';
 import type { CsvColumn } from '../util/csv';
 
 const retentionTip = 'Adoption at 26 weeks as a share of peak adoption.';
