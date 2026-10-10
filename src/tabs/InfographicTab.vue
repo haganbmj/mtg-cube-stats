@@ -212,7 +212,11 @@
                     </el-table-column>
                     <el-table-column v-if="activeListModal === 'tokens'" label="Cards" width="90" align="right" prop="effectCount" />
                     <el-table-column v-if="activeListModal === 'tokens'" label="Unique Cards" width="120" align="right" prop="uniqueCardCount" />
-                    <el-table-column v-if="activeListModal === 'sets'" label="Set" min-width="160" prop="setName" />
+                    <el-table-column v-if="activeListModal === 'sets'" label="Set" min-width="160" prop="setName">
+                        <template #default="{ row }">
+                            <SetSymbol :setCode="row.setCode" :setName="row.setName" class="set-symbol" />{{ row.setName }}
+                        </template>
+                    </el-table-column>
                     <el-table-column v-if="activeListModal === 'sets'" label="Code" width="70" prop="setCode" />
                     <el-table-column v-if="activeListModal === 'sets'" label="Cubes" width="130" align="right">
                         <template #default="{ row }">{{ row.cubeCount }} ({{ ((row.cubeCount / totalCubes) * 100).toFixed(1) }}%)</template>
@@ -475,6 +479,7 @@
                         <div class="set-list two-column">
                             <div v-for="(set, index) in topPopularSets.slice(0, 10)" :key="set.setCode" class="set-item">
                                 <div class="set-rank">{{ index + 1 }}</div>
+                                <SetSymbol :setCode="set.setCode" :setName="set.setName" class="set-symbol" />
                                 <div class="set-info">
                                     <div class="set-name">{{ set.setName }}</div>
                                     <div class="set-stats">{{ set.cardCount.toLocaleString() }} cards</div>
@@ -520,6 +525,7 @@ import { getSetName, getTokens } from '../util/CubeFunctions';
 import { isEvergreenKeyword } from '../util/Keywords';
 import { displayName, externalCubeId } from '../util/Snapshots';
 import PresetHeader from '../components/PresetHeader.vue';
+import SetSymbol from '../components/SetSymbol.vue';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from '../types/injectionKeys';
 
 const activeListModal = ref<'popular' | 'elo' | 'tokens' | 'sets' | 'keywords' | null>(null);
@@ -1222,6 +1228,17 @@ const lowestRarityScoreCube = computed(() => {
             }
         }
     }
+}
+
+.set-symbol {
+    margin-right: 8px;
+    font-size: 1.1em;
+    flex-shrink: 0;
+}
+
+.set-list .set-symbol {
+    margin-right: 10px;
+    font-size: 1.25rem;
 }
 
 // Card tooltip styles matching CardSummaryTable.vue
