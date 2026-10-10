@@ -37,7 +37,7 @@
             </el-table-column>
             <el-table-column prop="eligibility" label="Eligibility" sortable="custom">
                 <template #default="{ row }">
-                    <template v-if="row.info.eligibility">{{ formatDate(row.info.eligibility.date) }} ({{ row.info.eligibility.setCode }})</template>
+                    <template v-if="row.info.eligibility">{{ formatDate(row.info.eligibility.date) }} <SetSymbol :setCode="row.info.eligibility.setCode" :setName="setNames.get(row.info.eligibility.setCode)" />{{ row.info.eligibility.setCode }}</template>
                     <template v-else>—</template>
                 </template>
             </el-table-column>
@@ -66,6 +66,8 @@ import Sparkline from '../components/Sparkline.vue';
 import CardName from '../components/CardName.vue';
 import InfoLabel from '../components/InfoLabel.vue';
 import SignedValue from '../components/SignedValue.vue';
+import SetSymbol from '../components/SetSymbol.vue';
+import { buildSetNameLookup } from '../util/setNames';
 import type { CsvColumn } from '../util/csv';
 
 const irTip = 'Weighted share of cubes including the card at the latest snapshot.';
@@ -82,6 +84,7 @@ const emit = defineEmits<{
 }>();
 
 const searchQuery = ref('');
+const setNames = computed(() => buildSetNameLookup(props.data.sets));
 const colorFilter = ref<ColorCategory | ''>('');
 const currentPage = ref(1);
 const pageSize = 50;

@@ -33,6 +33,10 @@ export function reportPlugin(manifest: string): Plugin {
 }
 
 // Vite emits the HTML nested under <outDir>/tools/cube-trends/index.html (path relative to root).
+export function isDanglingSvgFont(entry: string): boolean {
+    return /^(mana|mplantin|keyrune)-[\w-]+\.svg$/.test(entry);
+}
+
 function flattenOutput(outDir: string): void {
     const nestedHtml = path.join(outDir, 'tools', 'cube-trends', 'index.html');
     fs.renameSync(nestedHtml, path.join(outDir, 'index.html'));
@@ -42,13 +46,11 @@ function flattenOutput(outDir: string): void {
     // `#mana`/`#mplantin` glyph anchors), even with assetsInlineLimit raised. Those SVGs are
     // the legacy iOS<4.1 @font-face fallback; the woff/ttf formats earlier in the same src list
     // are already inlined and render fine, so the orphaned SVGs are safe to discard.
-    const danglingSvgFont = /^(mana|mplantin)-[\w-]+\.svg$/;
     for (const entry of fs.readdirSync(outDir)) {
-        if (entry !== 'index.html' && danglingSvgFont.test(entry)) {
+        if (isDanglingSvgFont(entry)) {
             fs.rmSync(path.join(outDir, entry));
         }
     }
-
     const remaining = fs.readdirSync(outDir);
     if (remaining.length !== 1 || remaining[0] !== 'index.html') {
         throw new Error(`Unexpected contents in ${outDir}: ${remaining.join(', ')}`);

@@ -9,7 +9,9 @@
             <ExportButton filename="sets.csv" :rows="data.sets.adoption" :columns="peakColumns" />
         </div>
         <el-table :data="data.sets.adoption" size="small" :default-sort="{ prop: 'releasedAt', order: 'descending' }">
-            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)" />
+            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)">
+                <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code }}</template>
+            </el-table-column>
             <el-table-column prop="name" label="Name" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
             <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
                 <template #default="{ row }">{{ formatDate(row.releasedAt) }}</template>
@@ -36,7 +38,9 @@
         </div>
         <p class="chart-description">Every set with cards in these cubes, by first eligible printing. Each card counts once per cube regardless of copies.</p>
         <el-table :data="data.sets.trends" size="small" max-height="480" :default-sort="{ prop: 'current', order: 'descending' }">
-            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)" />
+            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)">
+                <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code }}</template>
+            </el-table-column>
             <el-table-column prop="name" label="Name" min-width="180" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
             <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
                 <template #default="{ row }">{{ formatDate(row.releasedAt) }}</template>
@@ -64,8 +68,10 @@
                 v-for="marker in data.sets.markers"
                 :key="marker.code"
                 :name="marker.code"
-                :title="`${marker.name} (${marker.code}) — released ${formatDate(marker.releasedAt)}${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}`"
             >
+                <template #title>
+                    <SetSymbol :setCode="marker.code" :setName="marker.name" />{{ `${marker.name} (${marker.code}) — released ${formatDate(marker.releasedAt)}${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}` }}
+                </template>
                 <template v-if="displacementByCode.get(marker.code)">
                     <div class="export-row">
                         <ExportButton
@@ -156,6 +162,7 @@ import CardName from '../components/CardName.vue';
 import InfoLabel from '../components/InfoLabel.vue';
 import Sparkline from '../components/Sparkline.vue';
 import SignedValue from '../components/SignedValue.vue';
+import SetSymbol from '../components/SetSymbol.vue';
 import type { CsvColumn } from '../util/csv';
 
 const retentionTip = 'Adoption at 26 weeks as a share of peak adoption.';

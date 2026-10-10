@@ -4,6 +4,8 @@ import { toCsv } from './util/csv';
 import { releaseMarkLines } from './util/releaseMarkers';
 import { buildAddsRemovesOption, buildCubesUpdated, buildCubesUpdatedOption } from './util/charts';
 import { buildCardTimeline } from './util/cardTimeline';
+import { buildSetNameLookup } from './util/setNames';
+import type { SetsResult } from '../analysis/sets';
 import type { TimelinePoint } from '../analysis/timeline';
 import type { ChurnResult, CubeChurn } from '../analysis/churn';
 import type { CardTrend } from '../analysis/cards';
@@ -49,6 +51,21 @@ describe('formatSignedCount', () => {
         expect(formatSignedCount(0.123)).toBe('+0.12');
         expect(formatSignedCount(-1.5, ' /30d')).toBe('-1.50 /30d');
         expect(formatSignedCount(null)).toBe('—');
+    });
+});
+
+describe('buildSetNameLookup', () => {
+    it('maps set codes to names from release markers and set trends', () => {
+        const sets = {
+            markers: [{ code: 'eoe', name: 'Edge of Eternities', releasedAt: 0 }],
+            adoption: [],
+            displacement: [],
+            trends: [{ code: 'mh3', name: 'Modern Horizons 3' }],
+        } as unknown as SetsResult;
+        const lookup = buildSetNameLookup(sets);
+        expect(lookup.get('eoe')).toBe('Edge of Eternities');
+        expect(lookup.get('mh3')).toBe('Modern Horizons 3');
+        expect(lookup.get('zzz')).toBeUndefined();
     });
 });
 

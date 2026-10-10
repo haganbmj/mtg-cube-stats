@@ -9,6 +9,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'mana-font/css/mana.css';
+import 'keyrune/css/keyrune.css';
 import './viewer/styles.css';
 
 import darkbmjTheme from '../../src/echarts/theme';

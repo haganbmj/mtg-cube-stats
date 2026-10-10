@@ -2,7 +2,13 @@
     <div class="card-detail-view">
         <div v-if="info" class="card-detail-header">
             <img :src="info.urlFront" :alt="info.name" class="card-detail-image" />
-            <h3>{{ info.name }}</h3>
+            <div>
+                <h3>{{ info.name }}</h3>
+                <div v-if="info.eligibility" class="cell-secondary">
+                    Eligible {{ formatDate(info.eligibility.date) }} ·
+                    <SetSymbol :setCode="info.eligibility.setCode" :setName="setNames.get(info.eligibility.setCode)" />{{ setNames.get(info.eligibility.setCode) ?? info.eligibility.setCode.toUpperCase() }}
+                </div>
+            </div>
         </div>
 
         <h4>Inclusion Rate</h4>
@@ -43,6 +49,8 @@ import { compareNullable, byName } from '../util/sort';
 import { buildCardTimeline, type CardTimelineRow } from '../util/cardTimeline';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
+import SetSymbol from '../components/SetSymbol.vue';
+import { buildSetNameLookup } from '../util/setNames';
 import type { CsvColumn } from '../util/csv';
 
 const props = defineProps<{
@@ -53,6 +61,7 @@ const props = defineProps<{
 const trend = computed(() => props.data.cards.cards.find((card) => card.info.oracleId === props.oracleId) ?? null);
 
 const info = computed(() => trend.value?.info ?? null);
+const setNames = computed(() => buildSetNameLookup(props.data.sets));
 
 const irChartOption = computed(() => ({
     tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
