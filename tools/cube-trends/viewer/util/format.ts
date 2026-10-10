@@ -1,0 +1,127 @@
+export function formatPercent(value: number): string {
+    return `${(value * 100).toFixed(1)}%`;
+}
+
+export function formatCount(value: number): string {
+    return value.toFixed(2);
+}
+
+export function formatSignedCount(value: number | null, unit = ''): string {
+    if (value === null) {
+        return '—';
+    }
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}${unit}`;
+}
+
+// Direction of a signed value as displayed: text that rounds to zero is flat.
+export function trendDirection(value: number | null, text: string): 'up' | 'down' | 'flat' | null {
+    if (value === null) {
+        return null;
+    }
+    const shown = text.match(/\d+(?:\.\d+)?/);
+    if (value === 0 || !shown || Number(shown[0]) === 0) {
+        return 'flat';
+    }
+    return value > 0 ? 'up' : 'down';
+}
+
+export function formatMomentum(value: number | null, digits = 1): string {
+    if (value === null) {
+        return '—';
+    }
+    const pointsPerMonth = value * 100;
+    const sign = pointsPerMonth >= 0 ? '+' : '';
+    return `${sign}${pointsPerMonth.toFixed(digits)} pp/30d`;
+}
+
+export function formatDate(ms: number | null): string {
+    if (ms === null) {
+        return '—';
+    }
+    return new Date(ms).toISOString().slice(0, 10);
+}
+
+export function formatPercentTooltip(value: number | null | undefined): string {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+        return '—';
+    }
+    const fixed = (value * 100).toFixed(2);
+    const trimmed = fixed.includes('.') ? fixed.replace(/0+$/, '').replace(/\.$/, '') : fixed;
+    return `${trimmed}%`;
+}
+
+// Matches parseDuration: weeks are 7 days, years are 365 days.
+export const daysToWeeks = (days: number): number => days / 7;
+export const daysToYears = (days: number): number => days / 365;
+
+function formatUnit(value: number | null | undefined, unit: string): string {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+        return '—';
+    }
+    const fixed = value.toFixed(1);
+    return `${fixed} ${unit}${fixed === '1.0' ? '' : 's'}`;
+}
+
+export function formatWeeks(weeks: number | null | undefined): string {
+    return formatUnit(weeks, 'week');
+}
+
+export function formatYears(years: number | null | undefined): string {
+    return formatUnit(years, 'year');
+}
+
+interface BandTooltipLine {
+    seriesName: string;
+    format: (v: number) => string;
+}
+
+interface BandTooltipBand {
+    q1: (index: number) => number | null;
+    q3: (index: number) => number | null;
+    format: (v: number) => string;
+}
+
+// ECharts axis-tooltip formatter: a header derived from the axis value, then one row per series present in params.
+export function axisTooltip(
+    header: (axisValue: number) => string,
+    format: (v: number) => string,
+    options: { sortDesc?: boolean } = {},
+): (params: any[]) => string {
+    return (params) => {
+        const entries: { param: any; value: number }[] = [];
+        for (const param of params) {
+            const raw = Array.isArray(param.value) ? param.value[1] : param.value;
+            if (raw === null || raw === undefined) {
+                continue;
+            }
+            entries.push({ param, value: raw });
+        }
+        if (options.sortDesc) {
+            entries.sort((a, b) => b.value - a.value);
+        }
+        const rows = [header(params[0].axisValue), ...entries.map(({ param, value }) => `${param.marker}${param.seriesName}: ${format(value)}`)];
+        return rows.join('<br/>');
+    };
+}
+
+// ECharts axis-tooltip formatter for a median line + transparent Q1/IQR band chart.
+export function bandTooltip(opts: { lines: BandTooltipLine[]; band: BandTooltipBand }): (params: any[]) => string {
+    return (params) => {
+        const rows = [formatDate(params[0].axisValue)];
+        for (const line of opts.lines) {
+            const param = params.find((p) => p.seriesName === line.seriesName);
+            const raw = Array.isArray(param?.value) ? param.value[1] : param?.value;
+            if (raw === null || raw === undefined) {
+                continue;
+            }
+            rows.push(`${param.marker}${param.seriesName}: ${line.format(raw)}`);
+        }
+        const index = params[0].dataIndex;
+        const q1 = opts.band.q1(index);
+        const q3 = opts.band.q3(index);
+        if (q1 !== null && q3 !== null) {
+            rows.push(`25th–75th pct: ${opts.band.format(q1)} – ${opts.band.format(q3)}`);
+        }
+        return rows.join('<br/>');
+    };
+}

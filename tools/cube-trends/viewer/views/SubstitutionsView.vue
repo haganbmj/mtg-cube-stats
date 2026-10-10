@@ -1,0 +1,95 @@
+<template>
+    <div class="substitutions-view">
+        <EmptyState v-if="emptyReason !== null" :reason="emptyReason" />
+        <template v-else>
+            <p class="chart-description">Card pairs frequently swapped together across cube updates, more than chance would predict.</p>
+            <div class="substitutions-table-header">
+                <h3>Substitutions</h3>
+                <ExportButton filename="substitutions.csv" :rows="rows" :columns="exportColumns" />
+            </div>
+            <el-table :data="rows" size="small" :default-sort="{ prop: 'cubes', order: 'descending' }">
+                <el-table-column prop="removedName" label="Removed" sortable :sort-method="(a, b) => byName(a.removedName, b.removedName)">
+                    <template #default="{ row }">
+                        <CardName
+                            :name="row.removedName"
+                            :imageUrl="row.removedInfo?.urlFront"
+                            :setCode="row.removedInfo?.eligibility?.setCode"
+                        />
+                    </template>
+                </el-table-column>
+                <el-table-column prop="addedName" label="Added" sortable :sort-method="(a, b) => byName(a.addedName, b.addedName)">
+                    <template #default="{ row }">
+                        <CardName
+                            :name="row.addedName"
+                            :imageUrl="row.addedInfo?.urlFront"
+                            :setCode="row.addedInfo?.eligibility?.setCode"
+                        />
+                    </template>
+                </el-table-column>
+                <el-table-column prop="cubes" label="Cubes" sortable :sort-method="(a, b) => compareNullable(a.cubes, b.cubes)" />
+                <el-table-column prop="lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                    <template #header><InfoLabel label="Lift" :tip="liftTip" /></template>
+                    <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
+                </el-table-column>
+            </el-table>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { FullTrendsData } from '../dataSource';
+import type { Substitution } from '../../analysis/substitutions';
+import type { CardInfo } from '../../analysis/cardInfo';
+import { buildCardLookup } from '../util/cardLookup';
+import { compareNullable, byName } from '../util/sort';
+import ExportButton from '../components/ExportButton.vue';
+import EmptyState from '../components/EmptyState.vue';
+import CardName from '../components/CardName.vue';
+import InfoLabel from '../components/InfoLabel.vue';
+import type { CsvColumn } from '../util/csv';
+
+const liftTip = 'How much more often the pair is swapped together than chance.';
+
+const props = defineProps<{
+    data: FullTrendsData;
+}>();
+
+const emptyReason = computed(() => ('empty' in props.data.substitutions ? props.data.substitutions.reason : null));
+const cardLookup = computed(() => buildCardLookup(props.data.cards));
+
+interface SubstitutionRow extends Substitution {
+    removedName: string;
+    removedInfo: CardInfo | undefined;
+    addedName: string;
+    addedInfo: CardInfo | undefined;
+}
+
+const rows = computed<SubstitutionRow[]>(() => {
+    if ('empty' in props.data.substitutions) {
+        return [];
+    }
+    return props.data.substitutions.pairs.map((pair) => ({
+        ...pair,
+        removedName: cardLookup.value.get(pair.removed)?.info.name ?? pair.removed,
+        removedInfo: cardLookup.value.get(pair.removed)?.info,
+        addedName: cardLookup.value.get(pair.added)?.info.name ?? pair.added,
+        addedInfo: cardLookup.value.get(pair.added)?.info,
+    }));
+});
+
+const exportColumns: CsvColumn<SubstitutionRow>[] = [
+    { key: 'removedName', label: 'Removed', value: (r) => r.removedName },
+    { key: 'addedName', label: 'Added', value: (r) => r.addedName },
+    { key: 'cubes', label: 'Cubes', value: (r) => r.cubes },
+    { key: 'lift', label: 'Lift', value: (r) => r.lift },
+];
+</script>
+
+<style scoped>
+.substitutions-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+</style>
