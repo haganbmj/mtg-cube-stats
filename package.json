@@ -27,7 +27,7 @@
     "echarts": "^6.1.0",
     "element-plus": "^2.14.7",
     "idb": "^8.0.3",
-    "katex": "^0.18.9",
+    "katex": "^0.19.0",
     "keyrune": "^3.19.0",
     "mana-font": "^1.18.0",
     "marked": "^18.0.9",
