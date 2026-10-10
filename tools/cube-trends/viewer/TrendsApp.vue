@@ -34,35 +34,37 @@
                     </span>
                 </div>
 
-                <EmptyState
-                    v-if="manifests.length === 0"
-                    reason="No analysis output found. Run npm run trends:fetch and npm run trends:analyze."
-                />
-                <EmptyState v-else-if="meta?.empty" :reason="meta.empty" />
-                <template v-else-if="meta">
-                    <el-tabs v-model="selectedView">
-                        <el-tab-pane v-for="view in VIEWS" :key="view" :label="VIEW_LABELS[view]" :name="view" />
-                    </el-tabs>
+                <div v-loading="loading" :element-loading-text="`Loading ${selectedManifest ?? ''}…`" class="trends-body">
+                    <EmptyState
+                        v-if="manifests.length === 0"
+                        reason="No analysis output found. Run npm run trends:fetch and npm run trends:analyze."
+                    />
+                    <EmptyState v-else-if="meta?.empty" :reason="meta.empty" />
+                    <template v-else-if="meta">
+                        <el-tabs v-model="selectedView">
+                            <el-tab-pane v-for="view in VIEWS" :key="view" :label="VIEW_LABELS[view]" :name="view" />
+                        </el-tabs>
 
-                    <div class="trends-view">
-                        <OverviewView v-if="selectedView === 'overview'" :data="fullData" />
-                        <CardsView v-else-if="selectedView === 'cards'" :data="fullData" @select-card="selectedCard = $event" />
-                        <SetsView v-else-if="selectedView === 'sets'" :data="fullData" />
-                        <RecencyView v-else-if="selectedView === 'recency'" :data="fullData" />
-                        <ShapeView v-else-if="selectedView === 'shape'" :data="fullData" />
-                        <ChurnView v-else-if="selectedView === 'churn'" :data="fullData" />
-                        <SurvivalView v-else-if="selectedView === 'survival'" :data="fullData" />
-                        <TrendsettersView v-else-if="selectedView === 'trendsetters'" :data="fullData" />
-                        <HomogenizationView v-else-if="selectedView === 'homogenization'" :data="fullData" />
-                        <SubstitutionsView v-else-if="selectedView === 'substitutions'" :data="fullData" />
-                        <ConsensusView v-else-if="selectedView === 'consensus'" :data="fullData" />
-                        <EmptyState v-else reason="Coming soon" />
-                    </div>
+                        <div class="trends-view">
+                            <OverviewView v-if="selectedView === 'overview'" :data="fullData" />
+                            <CardsView v-else-if="selectedView === 'cards'" :data="fullData" @select-card="selectedCard = $event" />
+                            <SetsView v-else-if="selectedView === 'sets'" :data="fullData" />
+                            <RecencyView v-else-if="selectedView === 'recency'" :data="fullData" />
+                            <ShapeView v-else-if="selectedView === 'shape'" :data="fullData" />
+                            <ChurnView v-else-if="selectedView === 'churn'" :data="fullData" />
+                            <SurvivalView v-else-if="selectedView === 'survival'" :data="fullData" />
+                            <TrendsettersView v-else-if="selectedView === 'trendsetters'" :data="fullData" />
+                            <HomogenizationView v-else-if="selectedView === 'homogenization'" :data="fullData" />
+                            <SubstitutionsView v-else-if="selectedView === 'substitutions'" :data="fullData" />
+                            <ConsensusView v-else-if="selectedView === 'consensus'" :data="fullData" />
+                            <EmptyState v-else reason="Coming soon" />
+                        </div>
 
-                    <el-drawer v-model="cardDrawerVisible" size="70%" :title="selectedCardName">
-                        <CardDetailView v-if="selectedCard" :data="fullData" :oracleId="selectedCard" />
-                    </el-drawer>
-                </template>
+                        <el-drawer v-model="cardDrawerVisible" size="70%" :title="selectedCardName">
+                            <CardDetailView v-if="selectedCard" :data="fullData" :oracleId="selectedCard" />
+                        </el-drawer>
+                    </template>
+                </div>
             </el-main>
         </el-container>
     </div>
@@ -95,6 +97,7 @@ let requestToken = 0;
 const selectedView = ref<ViewName>('overview');
 const selectedCard = ref<string | null>(null);
 const data = ref<TrendsData | null>(null);
+const loading = ref(false);
 
 const meta = computed(() => data.value?.meta ?? null);
 const generatedAt = computed(() => (meta.value ? new Date(meta.value.generatedAt).toLocaleString() : ''));
@@ -126,10 +129,12 @@ async function applyHash(): Promise<void> {
 
     if (manifest !== loadedManifest.value) {
         const token = ++requestToken;
+        loading.value = manifest !== null;
         const result = manifest ? await loadManifestData(manifest) : null;
         if (token !== requestToken) {
             return; // superseded by a later manifest switch
         }
+        loading.value = false;
         loadedManifest.value = manifest;
         data.value = result;
     }
@@ -165,5 +170,9 @@ onBeforeUnmount(() => {
     gap: 12px;
     flex-wrap: wrap;
     margin-bottom: 8px;
+}
+
+.trends-body {
+    min-height: 300px;
 }
 </style>
