@@ -7,7 +7,7 @@ import { buildCardTimeline } from './util/cardTimeline';
 import type { TimelinePoint } from '../analysis/timeline';
 import type { ChurnResult, CubeChurn } from '../analysis/churn';
 import type { CardTrend } from '../analysis/cards';
-import { formatCount, formatPercentTooltip, formatWeeks, formatYears, daysToWeeks, daysToYears, bandTooltip, axisTooltip, formatDate } from './util/format';
+import { formatCount, formatSignedCount, formatPercentTooltip, formatWeeks, formatYears, daysToWeeks, daysToYears, bandTooltip, axisTooltip, formatDate } from './util/format';
 import { compareNullable, byName } from './util/sort';
 
 function makeTrend(cubesPresent: number[][]): CardTrend {
@@ -41,6 +41,14 @@ describe('formatCount', () => {
     it('formats a cards-per-cube mean as a plain 2-decimal number, not a percent', () => {
         expect(formatCount(6.857)).toBe('6.86');
         expect(formatCount(0)).toBe('0.00');
+    });
+});
+
+describe('formatSignedCount', () => {
+    it('formats a signed cards-per-cube change with an optional unit', () => {
+        expect(formatSignedCount(0.123)).toBe('+0.12');
+        expect(formatSignedCount(-1.5, ' /30d')).toBe('-1.50 /30d');
+        expect(formatSignedCount(null)).toBe('—');
     });
 });
 

@@ -35,6 +35,7 @@ export interface Thresholds {
     momentumMinPeakIr: number;
     deltaWindowDays: number;
     setMinCards: number;
+    setMomentumMinPeak: number;
     displacementWeeks: number;
     retentionWeeks: number;
     trendsetterMinAdopters: number;

@@ -6,6 +6,13 @@ export function formatCount(value: number): string {
     return value.toFixed(2);
 }
 
+export function formatSignedCount(value: number | null, unit = ''): string {
+    if (value === null) {
+        return '—';
+    }
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}${unit}`;
+}
+
 export function formatMomentum(value: number | null): string {
     if (value === null) {
         return '—';

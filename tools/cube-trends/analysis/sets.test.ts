@@ -186,3 +186,71 @@ describe('analyzeSets', () => {
         ]);
     });
 });
+
+describe('analyzeSets set trends', () => {
+    const DAY = 86_400_000;
+    const samples = [0, 30 * DAY, 60 * DAY, 90 * DAY];
+    // Cube a swaps 'old' cards for 'new' ones (and picks up an extra copy, which is ignored); cube b never changes.
+    const cubes = [
+        {
+            id: 'a',
+            revisions: [
+                { id: 'a0', date: samples[0], cards: ['x1', 'o1', 'o2', 'o3'] },
+                { id: 'a1', date: samples[1], cards: ['x1', 'x2', 'o1', 'o2'] },
+                { id: 'a2', date: samples[2], cards: ['x1', 'x2', 'x3', 'o1'] },
+                { id: 'a3', date: samples[3], cards: ['x1', 'x2', 'x3', 'x3+', 'o1'] },
+            ],
+            grid: ['a0', 'a1', 'a2', 'a3'],
+        },
+        {
+            id: 'b',
+            revisions: [{ id: 'b0', date: samples[0], cards: ['o1', 'o2'] }],
+            grid: ['b0', 'b0', 'b0', 'b0'],
+        },
+    ];
+    const elig = (setCode: string) => ({ eligibility: { date: 0, setCode, fallback: false } });
+    const cardInfo = [
+        makeCardInfo('x1', elig('new')), makeCardInfo('x2', elig('new')), makeCardInfo('x3', elig('new')),
+        makeCardInfo('o1', elig('old')), makeCardInfo('o2', elig('old')), makeCardInfo('o3', elig('old')),
+    ];
+    const sets = [
+        { code: 'new', name: 'New Set', releasedAt: 0 },
+        { code: 'old', name: 'Old Set', releasedAt: -1000 * DAY },
+    ];
+
+    it('tracks distinct cards per cube and share of cube cards for every set', () => {
+        const { trends } = analyzeSets(makeContext({ samples, cubes, cardInfo, sets, config: flatWeighting }));
+        const byCode = new Map(trends.map((t) => [t.code, t]));
+
+        const next = byCode.get('new')!;
+        expect(next.name).toBe('New Set');
+        expect(next.cardCount).toBe(3);
+        expect(next.perCube.values).toEqual([0.5, 1, 1.5, 1.5]);
+        expect(next.share.values).toEqual([0.125, 0.25, 0.375, 0.375]);
+        expect(next.perCube.current).toBe(1.5);
+        expect(next.perCube.delta).toBe(1);
+        expect(next.share.delta).toBe(0.25);
+        expect(next.perCube.momentum).toBeGreaterThan(0);
+        expect(next.share.momentum).toBeGreaterThan(0);
+
+        const old = byCode.get('old')!;
+        expect(old.perCube.values).toEqual([2.5, 2, 1.5, 1.5]);
+        expect(old.share.values).toEqual([0.875, 0.75, 0.625, 0.625]);
+        expect(old.perCube.momentum).toBeLessThan(0);
+    });
+
+    it('omits momentum for sets that never reach the minimum cards per cube', () => {
+        const sparse = [{ id: 'a', revisions: [{ id: 'a0', date: 0, cards: ['x1', 'x2', 'o1'] }], grid: ['a0', 'a0', 'a0', 'a0'] },
+            { id: 'b', revisions: [{ id: 'b0', date: 0, cards: ['o1'] }], grid: ['b0', 'b0', 'b0', 'b0'] },
+            { id: 'c', revisions: [{ id: 'c0', date: 0, cards: ['o1'] }], grid: ['c0', 'c0', 'c0', 'c0'] },
+            { id: 'd', revisions: [{ id: 'd0', date: 0, cards: ['o1'] }], grid: ['d0', 'd0', 'd0', 'd0'] },
+            { id: 'e', revisions: [{ id: 'e0', date: 0, cards: ['o1'] }], grid: ['e0', 'e0', 'e0', 'e0'] }];
+        const { trends } = analyzeSets(makeContext({ samples, cubes: sparse, cardInfo, sets, config: flatWeighting }));
+        // 2 cards across 5 cubes = 0.4 cards per cube, below the 0.5 floor
+        const next = trends.find((t) => t.code === 'new')!;
+        expect(next.perCube.peak).toBeCloseTo(0.4);
+        expect(next.perCube.momentum).toBeNull();
+        expect(next.share.momentum).toBeNull();
+        expect(next.perCube.delta).toBe(0);
+    });
+});

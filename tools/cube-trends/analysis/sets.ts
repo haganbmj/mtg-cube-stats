@@ -3,8 +3,10 @@ import type { AnalysisContext, SetInfo } from './context';
 import type { ColorCategory } from './cardInfo';
 import { baseOracleId, copyNumber } from './cardInfo';
 import type { DiffEvent } from './diffs';
+import { theilSen } from './stats';
 
-const WEEK = 7 * 86_400_000;
+const DAY = 86_400_000;
+const WEEK = 7 * DAY;
 
 export interface AdoptionPoint {
     week: number;
@@ -39,10 +41,28 @@ export interface SetDisplacement {
     partial: boolean;
 }
 
+export interface SetMetricTrend {
+    values: number[];
+    current: number;
+    peak: number;
+    delta: number | null;
+    momentum: number | null;
+}
+
+export interface SetTrend {
+    code: string;
+    name: string;
+    releasedAt: Ms | null;
+    cardCount: number;
+    perCube: SetMetricTrend;
+    share: SetMetricTrend;
+}
+
 export interface SetsResult {
     markers: SetInfo[];
     adoption: SetAdoption[];
     displacement: SetDisplacement[];
+    trends: SetTrend[];
 }
 
 function groupOf(ctx: AnalysisContext, key: string): string | null {
@@ -206,11 +226,106 @@ function computeDisplacement(ctx: AnalysisContext, marker: SetInfo, expectedByGr
     return { code: marker.code, groups, topCards, topAdded, partial };
 }
 
+function metricTrend(ctx: AnalysisContext, values: number[], allowMomentum: boolean): SetMetricTrend {
+    const { samples } = ctx.panel;
+    const last = samples.length - 1;
+    let delta: number | null = null;
+    if (samples.length >= 2) {
+        const cutoff = samples[last] - ctx.config.thresholds.deltaWindowDays * DAY;
+        delta = values[last] - values[samples.findIndex((t) => t >= cutoff)];
+    }
+    return {
+        values,
+        current: values[last],
+        peak: Math.max(...values),
+        delta,
+        momentum: allowMomentum ? theilSen(samples.map((t) => t / DAY), values) * 30 : null,
+    };
+}
+
+// Weighted mean, across cubes present at each sample, of each set's distinct cards and share of the cube's distinct cards.
+function computeSetTrends(ctx: AnalysisContext): SetTrend[] {
+    const { panel, weights, config } = ctx;
+    const { samples, grid } = panel;
+    const perCube = new Map<string, number[]>();
+    const share = new Map<string, number[]>();
+    const bases = new Map<string, Set<string>>();
+    const series = (map: Map<string, number[]>, code: string): number[] => {
+        let values = map.get(code);
+        if (!values) {
+            values = samples.map(() => 0);
+            map.set(code, values);
+        }
+        return values;
+    };
+
+    for (let k = 0; k < samples.length; k++) {
+        let totalWeight = 0;
+        const counts: { w: number; size: number; bySet: Map<string, number> }[] = [];
+        for (let c = 0; c < grid.length; c++) {
+            const revId = grid[c][k];
+            if (revId === null) {
+                continue;
+            }
+            const bySet = new Map<string, number>();
+            let size = 0;
+            for (const key of panel.revisions.get(revId)!.cards) {
+                if (copyNumber(key) !== 1) {
+                    continue;
+                }
+                size++;
+                const code = panel.cardInfo.get(key)?.eligibility?.setCode;
+                if (code === undefined) {
+                    continue;
+                }
+                bySet.set(code, (bySet.get(code) ?? 0) + 1);
+                let codeBases = bases.get(code);
+                if (!codeBases) {
+                    codeBases = new Set();
+                    bases.set(code, codeBases);
+                }
+                codeBases.add(key);
+            }
+            totalWeight += weights[c][k];
+            counts.push({ w: weights[c][k], size, bySet });
+        }
+        if (totalWeight === 0) {
+            continue;
+        }
+        for (const { w, size, bySet } of counts) {
+            for (const [code, n] of bySet) {
+                series(perCube, code)[k] += (w * n) / totalWeight;
+                series(share, code)[k] += (w * n) / size / totalWeight;
+            }
+        }
+    }
+
+    const setInfo = new Map(ctx.sets.map((s) => [s.code, s]));
+    const trends: SetTrend[] = [];
+    for (const [code, codeBases] of bases) {
+        if (codeBases.size < config.thresholds.setMinCards) {
+            continue;
+        }
+        const perCubeValues = perCube.get(code)!;
+        const allowMomentum = Math.max(...perCubeValues) >= config.thresholds.setMomentumMinPeak;
+        trends.push({
+            code,
+            name: setInfo.get(code)?.name ?? code,
+            releasedAt: setInfo.get(code)?.releasedAt ?? null,
+            cardCount: codeBases.size,
+            perCube: metricTrend(ctx, perCubeValues, allowMomentum),
+            share: metricTrend(ctx, share.get(code)!, allowMomentum),
+        });
+    }
+
+    return trends.sort((a, b) => b.perCube.current - a.perCube.current || a.code.localeCompare(b.code));
+}
+
 export function analyzeSets(ctx: AnalysisContext): SetsResult {
     const { samples } = ctx.panel;
 
     if (samples.length === 0) {
-        return { markers: [], adoption: [], displacement: [] };
+        return { markers: [], adoption: [], displacement: [], trends: [] };
     }
 
     const first = samples[0];
@@ -237,5 +352,5 @@ export function analyzeSets(ctx: AnalysisContext): SetsResult {
             : { code: marker.code, groups: [], topCards: [], topAdded: [], partial: true }
     ));
 
-    return { markers, adoption, displacement };
+    return { markers, adoption, displacement, trends: computeSetTrends(ctx) };
 }

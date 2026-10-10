@@ -24,6 +24,40 @@
             </el-table-column>
         </el-table>
 
+        <div class="sets-table-header">
+            <h3>Set Trends</h3>
+            <div class="sets-trend-controls">
+                <el-radio-group v-model="trendMetric" size="small">
+                    <el-radio-button value="perCube">Cards per cube</el-radio-button>
+                    <el-radio-button value="share">Share of cube</el-radio-button>
+                </el-radio-group>
+                <ExportButton filename="set-trends.csv" :rows="data.sets.trends" :columns="trendColumns" />
+            </div>
+        </div>
+        <p class="chart-description">Every set with cards in these cubes, by first eligible printing. Each card counts once per cube regardless of copies.</p>
+        <el-table :data="data.sets.trends" size="small" max-height="480" :default-sort="{ prop: 'current', order: 'descending' }">
+            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)" />
+            <el-table-column prop="name" label="Name" min-width="180" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
+            <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
+                <template #default="{ row }">{{ formatDate(row.releasedAt) }}</template>
+            </el-table-column>
+            <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].current, b[trendMetric].current)">
+                <template #header><InfoLabel label="Current" :tip="trendCurrentTip" /></template>
+                <template #default="{ row }">{{ formatTrendValue(row[trendMetric].current) }}</template>
+            </el-table-column>
+            <el-table-column prop="delta" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].delta, b[trendMetric].delta)">
+                <template #header><InfoLabel label="Δ90d" :tip="trendDeltaTip" /></template>
+                <template #default="{ row }">{{ formatTrendDelta(row[trendMetric].delta) }}</template>
+            </el-table-column>
+            <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].momentum, b[trendMetric].momentum)">
+                <template #header><InfoLabel label="Momentum" :tip="trendMomentumTip" /></template>
+                <template #default="{ row }">{{ formatTrendMomentum(row[trendMetric].momentum) }}</template>
+            </el-table-column>
+            <el-table-column label="Trend">
+                <template #default="{ row }"><Sparkline :values="row[trendMetric].values" /></template>
+            </el-table-column>
+        </el-table>
+
         <h3>Displacement</h3>
         <el-collapse>
             <el-collapse-item
@@ -110,21 +144,54 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { FullTrendsData } from '../dataSource';
-import type { SetAdoption, DisplacementGroup } from '../../analysis/sets';
+import type { SetAdoption, DisplacementGroup, SetTrend } from '../../analysis/sets';
 import { buildCardLookup } from '../util/cardLookup';
-import { formatCount, formatPercent, formatDate, axisTooltip } from '../util/format';
+import { formatCount, formatSignedCount, formatMomentum, formatPercent, formatDate, axisTooltip } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
 import TrendChart from '../components/TrendChart.vue';
 import ExportButton from '../components/ExportButton.vue';
 import CardName from '../components/CardName.vue';
 import InfoLabel from '../components/InfoLabel.vue';
+import Sparkline from '../components/Sparkline.vue';
 import type { CsvColumn } from '../util/csv';
 
 const retentionTip = 'Adoption at 26 weeks as a share of peak adoption.';
 const displacementTip = "Removals in the 8 weeks after release vs. each cube's normal removal rate.";
 const fromSetTip = "Card's first eligible printing is in this set.";
+const trendCurrentTip = 'Weighted mean across cubes at the latest snapshot.';
+const trendDeltaTip = 'Change over roughly the last 90 days.';
+const trendMomentumTip = 'Robust trend per 30 days over the full window. Shown for sets reaching at least 0.5 cards per cube.';
+
+const trendMetric = ref<'perCube' | 'share'>('perCube');
+
+function formatTrendValue(value: number): string {
+    return trendMetric.value === 'perCube' ? formatCount(value) : formatPercent(value);
+}
+
+function formatTrendDelta(value: number | null): string {
+    if (trendMetric.value === 'perCube') {
+        return formatSignedCount(value);
+    }
+    return value === null ? '—' : formatPercent(value);
+}
+
+function formatTrendMomentum(value: number | null): string {
+    return trendMetric.value === 'perCube' ? formatSignedCount(value, ' /30d') : formatMomentum(value);
+}
+
+const trendColumns: CsvColumn<SetTrend>[] = [
+    { key: 'code', label: 'Set', value: (s) => s.code },
+    { key: 'name', label: 'Name', value: (s) => s.name },
+    { key: 'releasedAt', label: 'Released', value: (s) => formatDate(s.releasedAt) },
+    { key: 'perCube', label: 'Cards per cube', value: (s) => s.perCube.current },
+    { key: 'perCubeDelta', label: 'Cards per cube Δ90d', value: (s) => s.perCube.delta },
+    { key: 'perCubeMomentum', label: 'Cards per cube momentum /30d', value: (s) => s.perCube.momentum },
+    { key: 'share', label: 'Share of cube', value: (s) => s.share.current },
+    { key: 'shareDelta', label: 'Share Δ90d', value: (s) => s.share.delta },
+    { key: 'shareMomentum', label: 'Share momentum /30d', value: (s) => s.share.momentum },
+];
 
 const props = defineProps<{
     data: FullTrendsData;
@@ -179,6 +246,12 @@ const topAdditionsColumns: CsvColumn<{ key: string; additions: number; fromSet: 
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.sets-trend-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .export-row {

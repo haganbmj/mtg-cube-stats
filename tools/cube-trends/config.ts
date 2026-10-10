@@ -4,6 +4,7 @@ const DEFAULT_THRESHOLDS: Thresholds = {
     momentumMinPeakIr: 0.05,
     deltaWindowDays: 90,
     setMinCards: 2,
+    setMomentumMinPeak: 0.5,
     displacementWeeks: 8,
     retentionWeeks: 26,
     trendsetterMinAdopters: 3,
