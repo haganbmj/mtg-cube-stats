@@ -5,10 +5,18 @@ import { weightedQuantile } from './stats';
 
 const DAY = 86_400_000;
 
+export interface AgePercentiles {
+    p10: number;
+    p25: number;
+    p50: number;
+    p75: number;
+    p90: number;
+}
+
 export interface TimelinePoint {
     t: Ms;
     cubes: number;
-    medianAgeDays: number | null;
+    agePercentiles: AgePercentiles | null;
     shareUnder: { m3: number; m6: number; m12: number };
     homogenization: { weightedMean: number; mean: number; q1: number; median: number; q3: number } | null;
     adds: number;
@@ -60,9 +68,12 @@ export function analyzeTimeline(ctx: AnalysisContext): TimelineResult {
         }
 
         const totalAgeWeight = ages.reduce((sum, e) => sum + e.weight, 0);
-        const medianAgeDays = ages.length === 0
+        const ageValues = ages.map((e) => e.value);
+        const ageWeights = ages.map((e) => e.weight);
+        const ageAt = (q: number): number => weightedQuantile(ageValues, ageWeights, q);
+        const agePercentiles: AgePercentiles | null = ages.length === 0
             ? null
-            : weightedQuantile(ages.map((e) => e.value), ages.map((e) => e.weight), 0.5);
+            : { p10: ageAt(0.1), p25: ageAt(0.25), p50: ageAt(0.5), p75: ageAt(0.75), p90: ageAt(0.9) };
 
         let homogenization: TimelinePoint['homogenization'] = null;
         if (presentCubes.length >= 2) {
@@ -107,7 +118,7 @@ export function analyzeTimeline(ctx: AnalysisContext): TimelineResult {
         return {
             t,
             cubes: presentCubes.length,
-            medianAgeDays,
+            agePercentiles,
             shareUnder: {
                 m3: shareUnder(ages, totalAgeWeight, 90),
                 m6: shareUnder(ages, totalAgeWeight, 180),

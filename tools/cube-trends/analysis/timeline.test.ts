@@ -21,9 +21,24 @@ describe('analyzeTimeline', () => {
         const ctx = makeContext({ samples, cubes, cardInfo, config: flatWeighting });
         const { points } = analyzeTimeline(ctx);
 
-        expect(points[0].medianAgeDays).toBe(30);
+        expect(points[0].agePercentiles!.p50).toBe(30);
         expect(points[0].shareUnder.m3).toBe(0.5);
         expect(points[0].shareUnder.m12).toBe(0.5);
+    });
+
+    it('computes 10th/25th/50th/75th/90th age percentiles, null when no cards have ages', () => {
+        const t = 1000 * DAY;
+        const keys = Array.from({ length: 10 }, (_, i) => `c${i + 1}`);
+        const cubes = [
+            { id: 'a', revisions: [{ id: 'a-0', date: t, cards: keys }], grid: ['a-0', 'a-0'] },
+        ];
+        const cardInfo = keys.map((key, i) => makeCardInfo(key, { eligibility: { date: t - (i + 1) * 10 * DAY, setCode: 'aaa', fallback: false } }));
+
+        const { points } = analyzeTimeline(makeContext({ samples: [t, t], cubes, cardInfo, config: flatWeighting }));
+        expect(points[0].agePercentiles).toEqual({ p10: 10, p25: 30, p50: 50, p75: 80, p90: 90 });
+
+        const bare = analyzeTimeline(makeContext({ samples: [0], cubes: [{ id: 'a', revisions: [{ id: 'a-0', date: 0, cards: ['x'] }], grid: ['a-0'] }], config: flatWeighting }));
+        expect(bare.points[0].agePercentiles).toBeNull();
     });
 
     it('returns null homogenization with fewer than two present cubes', () => {

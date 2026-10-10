@@ -1,7 +1,7 @@
 <template>
     <div class="recency-view">
-        <h3>Median Card Age</h3>
-        <p class="chart-description">Median time since cards first became eligible, across all cards in all cubes.</p>
+        <h3>Card Age Percentiles</h3>
+        <p class="chart-description">Time since cards first became eligible, across all cards in all cubes. The 90th percentile line means 90% of cards are younger than that age.</p>
         <TrendChart :option="ageOption" />
 
         <h3>Share Under Age Threshold</h3>
@@ -14,23 +14,33 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import { releaseMarkLines } from '../util/releaseMarkers';
-import { formatPercent, formatPercentTooltip, formatYears, daysToYears } from '../util/format';
+import { formatPercent, formatPercentTooltip, formatYears, daysToYears, formatDate, axisTooltip } from '../util/format';
 import TrendChart from '../components/TrendChart.vue';
 
 const props = defineProps<{
     data: FullTrendsData;
 }>();
 
+const AGE_LINES = [
+    { name: '90th', key: 'p90' },
+    { name: '75th', key: 'p75' },
+    { name: 'Median', key: 'p50' },
+    { name: '25th', key: 'p25' },
+    { name: '10th', key: 'p10' },
+] as const;
+
 const ageOption = computed(() => ({
-    tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatYears(v) },
+    tooltip: { trigger: 'axis', formatter: axisTooltip(formatDate, formatYears, { sortDesc: true }) },
+    legend: { data: AGE_LINES.map((line) => line.name) },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', name: 'Years' },
-    series: [{
+    series: AGE_LINES.map((line, i) => ({
+        name: line.name,
         type: 'line',
         connectNulls: false,
-        data: props.data.timeline.points.map((p) => [p.t, p.medianAgeDays === null ? null : daysToYears(p.medianAgeDays)]),
-        markLine: releaseMarkLines(props.data.sets.markers),
-    }],
+        data: props.data.timeline.points.map((p) => [p.t, p.agePercentiles === null ? null : daysToYears(p.agePercentiles[line.key])]),
+        markLine: i === 0 ? releaseMarkLines(props.data.sets.markers) : undefined,
+    })),
 }));
 
 const shareOption = computed(() => ({
