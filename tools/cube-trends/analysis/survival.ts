@@ -1,7 +1,7 @@
 import type { Empty, Ms } from '../types';
 import type { AnalysisContext } from './context';
 import type { PanelRevision } from './panel';
-import { baseOracleId } from './cardInfo';
+import { baseOracleId, copyNumber } from './cardInfo';
 import { kaplanMeier, type Spell } from './stats';
 
 const DAY = 86_400_000;
@@ -32,7 +32,7 @@ function computeCubeSpells(cRevisions: PanelRevision[], firstSeen: Map<string, M
 
     for (const rev of cRevisions) {
         for (const key of rev.cards) {
-            if (!open.has(key)) {
+            if (copyNumber(key) === 1 && !open.has(key)) {
                 open.set(key, { start: rev.addedAt.get(key) ?? rev.date, observed: firstSeen.get(rev.id)! });
             }
         }

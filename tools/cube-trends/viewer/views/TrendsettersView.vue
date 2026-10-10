@@ -55,7 +55,7 @@ import type { CsvColumn } from '../util/csv';
 
 const meanPercentileTip = 'Average adoption order among adopting cubes; 0% = first.';
 const leadOnConsensusTip = 'Early adoptions (first quarter) of cards that reached ≥20% IR.';
-const meanLagTip = 'Average time from a card first becoming eligible to this cube adding it, for cards that became eligible within the analysis window (first copy only). Late-window cards can only show short lags.';
+const meanLagTip = 'Average time from a card first becoming eligible to this cube adding it, for cards that became eligible within the analysis window. Late-window cards can only show short lags.';
 const newCardAdoptionsTip = 'Number of new-card adoptions the Mean Lag is averaged over.';
 
 const props = defineProps<{

@@ -70,7 +70,6 @@
                                             :name="cardLookup.get(row.key)?.info.name ?? row.key"
                                             :imageUrl="cardLookup.get(row.key)?.info.urlFront"
                                             :setCode="cardLookup.get(row.key)?.info.eligibility?.setCode"
-                                            :copies="copyNumber(row.key)"
                                         />
                                     </template>
                                 </el-table-column>
@@ -93,7 +92,6 @@
                                             :name="cardLookup.get(row.key)?.info.name ?? row.key"
                                             :imageUrl="cardLookup.get(row.key)?.info.urlFront"
                                             :setCode="cardLookup.get(row.key)?.info.eligibility?.setCode"
-                                            :copies="copyNumber(row.key)"
                                         />
                                     </template>
                                 </el-table-column>
@@ -115,7 +113,6 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { SetAdoption, DisplacementGroup } from '../../analysis/sets';
-import { copyNumber } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatCount, formatPercent, formatDate, axisTooltip } from '../util/format';
 import { compareNullable, byName } from '../util/sort';

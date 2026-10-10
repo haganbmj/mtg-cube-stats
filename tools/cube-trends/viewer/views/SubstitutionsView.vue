@@ -14,7 +14,6 @@
                             :name="row.removedName"
                             :imageUrl="row.removedInfo?.urlFront"
                             :setCode="row.removedInfo?.eligibility?.setCode"
-                            :copies="row.removedCopy"
                         />
                     </template>
                 </el-table-column>
@@ -24,7 +23,6 @@
                             :name="row.addedName"
                             :imageUrl="row.addedInfo?.urlFront"
                             :setCode="row.addedInfo?.eligibility?.setCode"
-                            :copies="row.addedCopy"
                         />
                     </template>
                 </el-table-column>
@@ -42,7 +40,7 @@
 import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { Substitution } from '../../analysis/substitutions';
-import { copyNumber, type CardInfo } from '../../analysis/cardInfo';
+import type { CardInfo } from '../../analysis/cardInfo';
 import { buildCardLookup } from '../util/cardLookup';
 import { compareNullable, byName } from '../util/sort';
 import ExportButton from '../components/ExportButton.vue';
@@ -62,10 +60,8 @@ const cardLookup = computed(() => buildCardLookup(props.data.cards));
 
 interface SubstitutionRow extends Substitution {
     removedName: string;
-    removedCopy: number;
     removedInfo: CardInfo | undefined;
     addedName: string;
-    addedCopy: number;
     addedInfo: CardInfo | undefined;
 }
 
@@ -76,10 +72,8 @@ const rows = computed<SubstitutionRow[]>(() => {
     return props.data.substitutions.pairs.map((pair) => ({
         ...pair,
         removedName: cardLookup.value.get(pair.removed)?.info.name ?? pair.removed,
-        removedCopy: copyNumber(pair.removed),
         removedInfo: cardLookup.value.get(pair.removed)?.info,
         addedName: cardLookup.value.get(pair.added)?.info.name ?? pair.added,
-        addedCopy: copyNumber(pair.added),
         addedInfo: cardLookup.value.get(pair.added)?.info,
     }));
 });

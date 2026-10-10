@@ -3,7 +3,7 @@
         <el-row :gutter="16" class="headline-stats">
             <el-col :span="4"><el-statistic title="Cubes" :value="data.meta.cubes.length" /></el-col>
             <el-col :span="4"><el-statistic title="Samples" :value="data.meta.samples.length" /></el-col>
-            <el-col :span="6"><el-statistic title="First-copy Cards (latest)" :value="distinctFirstCopyCount" /></el-col>
+            <el-col :span="6"><el-statistic title="Distinct Cards (latest)" :value="distinctCardCount" /></el-col>
             <el-col :span="5">
                 <div class="headline-stat">
                     <div class="headline-stat-title">Homogenization</div>
@@ -137,8 +137,8 @@ const props = defineProps<{
 
 const lastSampleIndex = computed(() => props.data.meta.samples.length - 1);
 
-const distinctFirstCopyCount = computed(() => props.data.cards.cards.filter(
-    (card) => card.copy === 1 && card.count[lastSampleIndex.value] > 0,
+const distinctCardCount = computed(() => props.data.cards.cards.filter(
+    (card) => card.count[lastSampleIndex.value] > 0,
 ).length);
 
 const homogenizationLabel = computed(() => {
@@ -151,15 +151,15 @@ const churnLabel = computed(() => {
     return rate === undefined || rate === null ? '—' : formatPercent(rate);
 });
 
-const copy1WithMomentum = computed(() => props.data.cards.cards.filter(
-    (card) => card.copy === 1 && card.momentum !== null,
+const cardsWithMomentum = computed(() => props.data.cards.cards.filter(
+    (card) => card.momentum !== null,
 ));
 
-const risers = computed(() => [...copy1WithMomentum.value]
+const risers = computed(() => [...cardsWithMomentum.value]
     .sort((a, b) => b.momentum! - a.momentum!)
     .slice(0, 10));
 
-const fallers = computed(() => [...copy1WithMomentum.value]
+const fallers = computed(() => [...cardsWithMomentum.value]
     .sort((a, b) => a.momentum! - b.momentum!)
     .slice(0, 10));
 

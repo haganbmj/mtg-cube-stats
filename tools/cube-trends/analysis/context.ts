@@ -4,6 +4,7 @@ import { type DiffEvent, computeDiffs } from './diffs';
 import { createSimilarity } from './similarity';
 import { computeWeights } from './weights';
 import { computeInclusion, type InclusionRow } from './inclusion';
+import { copyNumber } from './cardInfo';
 
 export interface SetInfo {
     code: string;
@@ -25,7 +26,8 @@ export function buildContext(panel: Panel, config: TrendsConfig, sets: SetInfo[]
     const sim = createSimilarity(panel);
     const weights = computeWeights(panel, config, sim);
     const inclusion = computeInclusion(panel, weights);
-    const diffs = computeDiffs(panel);
+    // Card trends care whether a cube runs a card, not how many copies.
+    const diffs = computeDiffs(panel).filter((event) => copyNumber(event.key) === 1);
 
     return { panel, weights, sim, inclusion, diffs, config, sets };
 }

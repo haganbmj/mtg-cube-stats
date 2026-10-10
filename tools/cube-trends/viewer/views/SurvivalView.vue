@@ -2,7 +2,7 @@
     <div class="survival-view">
         <EmptyState v-if="emptyReason !== null" :reason="emptyReason" />
         <template v-else>
-            <p class="chart-description">Share of card copies still in a cube N weeks after being added (Kaplan–Meier). 'New Cards' are cards first released (eligible) within the analysis window, timed from their eligibility date if a cube added them earlier; 'Established' are older cards. Overall includes every card, counted from the first snapshot for cards already in a cube.</p>
+            <p class="chart-description">Share of cards still in a cube N weeks after being added (Kaplan–Meier). 'New Cards' are cards first released (eligible) within the analysis window, timed from their eligibility date if a cube added them earlier; 'Established' are older cards. Overall includes every card, counted from the first snapshot for cards already in a cube.</p>
             <TrendChart :option="option" />
         </template>
     </div>

@@ -1,6 +1,6 @@
 import type { Ms } from '../types';
 import type { AnalysisContext } from './context';
-import { baseOracleId } from './cardInfo';
+import { baseOracleId, copyNumber } from './cardInfo';
 import { weightedQuantile } from './stats';
 
 const DAY = 86_400_000;
@@ -48,6 +48,9 @@ export function analyzeTimeline(ctx: AnalysisContext): TimelineResult {
         for (const c of presentCubes) {
             const rev = panel.revisions.get(grid[c][k]!)!;
             for (const key of rev.cards) {
+                if (copyNumber(key) !== 1) {
+                    continue;
+                }
                 const info = panel.cardInfo.get(baseOracleId(key));
                 if (!info?.eligibility) {
                     continue;

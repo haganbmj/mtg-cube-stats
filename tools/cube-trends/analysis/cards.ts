@@ -7,7 +7,6 @@ const DAY = 86_400_000;
 
 export interface CardTrend {
     key: string;
-    copy: number;
     info: CardInfo;
     ir: number[];
     unweighted: number[];
@@ -34,6 +33,9 @@ export function analyzeCards(ctx: AnalysisContext): CardsResult {
     const cards: CardTrend[] = [];
 
     for (const [key, row] of inclusion) {
+        if (copyNumber(key) !== 1) {
+            continue;
+        }
         const { ir, unweighted, count } = row;
         const info = panel.cardInfo.get(baseOracleId(key))!;
 
@@ -71,7 +73,6 @@ export function analyzeCards(ctx: AnalysisContext): CardsResult {
 
         cards.push({
             key,
-            copy: copyNumber(key),
             info,
             ir,
             unweighted,

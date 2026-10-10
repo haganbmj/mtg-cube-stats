@@ -1,7 +1,7 @@
 import type { Ms } from '../types';
 import type { AnalysisContext, SetInfo } from './context';
 import type { ColorCategory } from './cardInfo';
-import { baseOracleId } from './cardInfo';
+import { baseOracleId, copyNumber } from './cardInfo';
 import type { DiffEvent } from './diffs';
 
 const WEEK = 7 * 86_400_000;
@@ -91,7 +91,7 @@ function computeAdoption(ctx: AnalysisContext, marker: SetInfo): SetAdoption | n
             const w = weights[c][k];
             weightedTotal += w;
             for (const key of panel.revisions.get(revId)!.cards) {
-                if (attributedBases.has(baseOracleId(key))) {
+                if (copyNumber(key) === 1 && attributedBases.has(baseOracleId(key))) {
                     weightedCount += w;
                 }
             }

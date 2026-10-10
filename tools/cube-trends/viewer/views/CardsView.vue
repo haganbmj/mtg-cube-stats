@@ -5,7 +5,6 @@
             <el-select v-model="colorFilter" placeholder="Color" clearable style="width: 120px;">
                 <el-option v-for="cat in COLOR_CATEGORIES" :key="cat" :label="cat" :value="cat" />
             </el-select>
-            <el-switch v-model="includeAdditional" active-text="Include additional copies" />
             <ExportButton filename="cards.csv" :rows="sortedRows" :columns="exportColumns" />
         </div>
 
@@ -16,7 +15,6 @@
                         :name="row.info.name"
                         :imageUrl="row.info.urlFront"
                         :setCode="row.info.eligibility?.setCode"
-                        :copies="row.copy"
                         clickable
                     />
                 </template>
@@ -84,7 +82,6 @@ const emit = defineEmits<{
 
 const searchQuery = ref('');
 const colorFilter = ref<ColorCategory | ''>('');
-const includeAdditional = ref(false);
 const currentPage = ref(1);
 const pageSize = 50;
 const sortProp = ref('current');
@@ -93,9 +90,6 @@ const sortOrder = ref<'ascending' | 'descending' | null>('descending');
 const filteredRows = computed(() => {
     const query = searchQuery.value.trim().toLowerCase();
     return props.data.cards.cards.filter((card) => {
-        if (!includeAdditional.value && card.copy !== 1) {
-            return false;
-        }
         if (query && !card.info.name.toLowerCase().includes(query)) {
             return false;
         }
@@ -159,7 +153,7 @@ const pagedRows = computed(() => {
     return sortedRows.value.slice(start, start + pageSize);
 });
 
-watch([searchQuery, colorFilter, includeAdditional], () => {
+watch([searchQuery, colorFilter], () => {
     currentPage.value = 1;
 });
 
@@ -174,7 +168,6 @@ function handleRowClick(row: CardTrend): void {
 
 const exportColumns: CsvColumn<CardTrend>[] = [
     { key: 'name', label: 'Name', value: (c) => c.info.name },
-    { key: 'copy', label: 'Copy', value: (c) => c.copy },
     { key: 'current', label: 'Current IR', value: (c) => c.current },
     { key: 'peak', label: 'Peak IR', value: (c) => c.peak },
     { key: 'delta', label: 'Δ90d', value: (c) => c.delta },

@@ -1,4 +1,5 @@
 import type { AnalysisContext } from './context';
+import { copyNumber } from './cardInfo';
 
 export interface CubeChurn {
     cubeId: string;
@@ -44,7 +45,12 @@ export function analyzeChurn(ctx: AnalysisContext): ChurnResult {
             if (revId === null) {
                 return null;
             }
-            const size = revisions.get(revId)!.cards.size;
+            let size = 0;
+            for (const key of revisions.get(revId)!.cards) {
+                if (copyNumber(key) === 1) {
+                    size++;
+                }
+            }
             if (size === 0) {
                 return null;
             }

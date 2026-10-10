@@ -6,11 +6,11 @@
         </div>
 
         <h4>Inclusion Rate</h4>
-        <p class="chart-description">Weighted share of cubes running each copy of this card at each snapshot.</p>
+        <p class="chart-description">Weighted share of cubes running this card at each snapshot.</p>
         <TrendChart :option="irChartOption" />
 
         <h4>Cubes Including This Card</h4>
-        <p class="chart-description">Number of cubes running each copy at each snapshot (unweighted, unlike IR).</p>
+        <p class="chart-description">Number of cubes running this card at each snapshot (unweighted, unlike IR).</p>
         <TrendChart :option="countChartOption" />
 
         <div class="card-timeline-header">
@@ -21,7 +21,6 @@
         <el-table :data="timelineRows" size="small" :default-sort="{ prop: 'firstSeen', order: 'ascending' }">
             <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
             <el-table-column prop="owner" label="Owner" sortable :sort-method="(a, b) => byName(a.owner, b.owner)" />
-            <el-table-column prop="copiesLatest" label="Copies (latest)" sortable :sort-method="(a, b) => compareNullable(a.copiesLatest, b.copiesLatest)" />
             <el-table-column prop="firstSeen" label="First Seen" sortable :sort-method="(a, b) => compareNullable(a.firstSeen, b.firstSeen)">
                 <template #default="{ row }">{{ formatDate(row.firstSeen) }}</template>
             </el-table-column>
@@ -51,44 +50,36 @@ const props = defineProps<{
     oracleId: string;
 }>();
 
-const copies = computed(() => [...props.data.cards.cards]
-    .filter((card) => card.info.oracleId === props.oracleId)
-    .sort((a, b) => a.copy - b.copy));
+const trend = computed(() => props.data.cards.cards.find((card) => card.info.oracleId === props.oracleId) ?? null);
 
-const info = computed(() => copies.value[0]?.info ?? null);
-
-function copyLabel(copy: number): string {
-    return copy === 1 ? 'Copy 1' : `×${copy}`;
-}
+const info = computed(() => trend.value?.info ?? null);
 
 const irChartOption = computed(() => ({
     tooltip: { trigger: 'axis', valueFormatter: (v: number) => formatPercentTooltip(v) },
-    legend: { data: copies.value.map((c) => copyLabel(c.copy)) },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', min: 0, max: 1, axisLabel: { formatter: (v: number) => formatPercent(v) } },
-    series: copies.value.map((c, i) => ({
-        name: copyLabel(c.copy),
+    series: trend.value ? [{
+        name: 'IR',
         type: 'line',
-        data: props.data.meta.samples.map((t, k) => [t, c.ir[k]]),
-        markLine: i === 0 ? releaseMarkLines(props.data.sets.markers) : undefined,
-    })),
+        data: props.data.meta.samples.map((t, k) => [t, trend.value!.ir[k]]),
+        markLine: releaseMarkLines(props.data.sets.markers),
+    }] : [],
 }));
 
 const countChartOption = computed(() => ({
     tooltip: { trigger: 'axis' },
-    legend: { data: copies.value.map((c) => copyLabel(c.copy)) },
     xAxis: { type: 'time' },
     yAxis: { type: 'value', min: 0 },
-    series: copies.value.map((c, i) => ({
-        name: copyLabel(c.copy),
+    series: trend.value ? [{
+        name: 'Cubes',
         type: 'line',
-        data: props.data.meta.samples.map((t, k) => [t, c.cubesPresent[k].length]),
-        markLine: i === 0 ? releaseMarkLines(props.data.sets.markers) : undefined,
-    })),
+        data: props.data.meta.samples.map((t, k) => [t, trend.value!.cubesPresent[k].length]),
+        markLine: releaseMarkLines(props.data.sets.markers),
+    }] : [],
 }));
 
 const timelineRows = computed<CardTimelineRow[]>(() => (
-    buildCardTimeline(copies.value, props.data.meta.samples, props.data.meta.cubes)
+    trend.value ? buildCardTimeline(trend.value, props.data.meta.samples, props.data.meta.cubes) : []
 ));
 
 function statusText(row: CardTimelineRow): string {
@@ -99,7 +90,6 @@ function statusText(row: CardTimelineRow): string {
 const timelineColumns: CsvColumn<CardTimelineRow>[] = [
     { key: 'name', label: 'Cube', value: (r) => r.name },
     { key: 'owner', label: 'Owner', value: (r) => r.owner },
-    { key: 'copiesLatest', label: 'Copies (latest)', value: (r) => r.copiesLatest },
     { key: 'firstSeen', label: 'First Seen', value: (r) => formatDate(r.firstSeen) },
     { key: 'lastSeen', label: 'Last Seen', value: (r) => formatDate(r.lastSeen) },
     { key: 'status', label: 'Status', value: (r) => statusText(r) },
