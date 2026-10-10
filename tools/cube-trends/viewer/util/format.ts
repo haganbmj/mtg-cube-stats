@@ -13,13 +13,13 @@ export function formatSignedCount(value: number | null, unit = ''): string {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}${unit}`;
 }
 
-export function formatMomentum(value: number | null): string {
+export function formatMomentum(value: number | null, digits = 1): string {
     if (value === null) {
         return '—';
     }
     const pointsPerMonth = value * 100;
     const sign = pointsPerMonth >= 0 ? '+' : '';
-    return `${sign}${pointsPerMonth.toFixed(1)} pp/30d`;
+    return `${sign}${pointsPerMonth.toFixed(digits)} pp/30d`;
 }
 
 export function formatDate(ms: number | null): string {

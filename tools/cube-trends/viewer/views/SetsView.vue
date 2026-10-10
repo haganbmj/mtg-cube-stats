@@ -174,11 +174,11 @@ function formatTrendDelta(value: number | null): string {
     if (trendMetric.value === 'perCube') {
         return formatSignedCount(value);
     }
-    return value === null ? '—' : formatPercent(value);
+    return value === null ? '—' : `${value >= 0 ? '+' : ''}${(value * 100).toFixed(2)} pp`;
 }
 
 function formatTrendMomentum(value: number | null): string {
-    return trendMetric.value === 'perCube' ? formatSignedCount(value, ' /30d') : formatMomentum(value);
+    return trendMetric.value === 'perCube' ? formatSignedCount(value, ' /30d') : formatMomentum(value, 2);
 }
 
 const trendColumns: CsvColumn<SetTrend>[] = [
