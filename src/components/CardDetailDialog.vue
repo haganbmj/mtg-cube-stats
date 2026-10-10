@@ -91,7 +91,12 @@
                         <el-col :span="12" :xs="24">
                             <el-descriptions title="Print Info" :column="1" :label-width="150" :border="true" size="default">
                                 <el-descriptions-item label="Set">
-                                    {{ activeCard.setCode?.toUpperCase() }}<template v-if="activeCard.setName"> &mdash; {{ activeCard.setName }}</template>
+                                    <SetSymbol
+                                        v-if="activeCard.setCode"
+                                        :setCode="activeCard.setCode"
+                                        :setName="activeCard.setName"
+                                        class="set-symbol-inline"
+                                    />{{ activeCard.setCode?.toUpperCase() }}<template v-if="activeCard.setName"> &mdash; {{ activeCard.setName }}</template>
                                 </el-descriptions-item>
                                 <el-descriptions-item label="Set Type">{{ activeCard.setType ?? 'N/A' }}</el-descriptions-item>
                                 <el-descriptions-item label="Release Date">{{ activeCard.releaseDate ?? 'N/A' }}</el-descriptions-item>
@@ -253,6 +258,7 @@ initCardStats();
 import { displayName, externalCubeId } from '../util/Snapshots';
 import type { Cube, CubeOverviewRow } from '../types';
 import { openCubeDetailDialogKey } from '../types/injectionKeys';
+import SetSymbol from './SetSymbol.vue';
 
 const props = defineProps({
     visible: {
@@ -393,6 +399,11 @@ const getGameTagColor = (game: string) => {
 </script>
 
 <style scoped>
+.set-symbol-inline {
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+
 .card-dialog-header {
     display: flex;
     align-items: center;

@@ -9,10 +9,11 @@
         <el-table-column
             prop="setCode"
             label="Set Code"
-            min-width="80"
+            min-width="110"
             sortable
         >
             <template #default="{ row }">
+                <SetSymbol :setCode="row.setCode" :setName="row.setName" class="set-symbol-cell" />
                 <el-link underline="never" @click="emit('filter', `set=&quot;${row.setCode}&quot;`)">{{ row.setCode }}</el-link>
             </template>
         </el-table-column>
@@ -46,6 +47,7 @@
 import { computed } from 'vue';
 import { castInensitiveSort } from '../util/HelperFunctions';
 import { getSetName } from '../util/CubeFunctions';
+import SetSymbol from './SetSymbol.vue';
 
 const emit = defineEmits(['filter']);
 
@@ -73,3 +75,10 @@ const setNames = computed(() => {
     }).sort((a, b) => castInensitiveSort(b.setName, a.setName));
 });
 </script>
+
+<style scoped>
+.set-symbol-cell {
+    margin-right: 6px;
+    font-size: 1.1em;
+}
+</style>
