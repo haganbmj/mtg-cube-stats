@@ -10,7 +10,7 @@
         </div>
         <el-table :data="data.sets.adoption" size="small" :default-sort="{ prop: 'releasedAt', order: 'descending' }">
             <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)">
-                <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code }}</template>
+                <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code.toUpperCase() }}</template>
             </el-table-column>
             <el-table-column prop="name" label="Name" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
             <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
@@ -39,7 +39,7 @@
         <p class="chart-description">Every set with cards in these cubes, by first eligible printing. Each card counts once per cube regardless of copies.</p>
         <el-table :data="data.sets.trends" size="small" max-height="480" :default-sort="{ prop: 'current', order: 'descending' }">
             <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)">
-                <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code }}</template>
+                <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code.toUpperCase() }}</template>
             </el-table-column>
             <el-table-column prop="name" label="Name" min-width="180" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
             <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
@@ -70,7 +70,7 @@
                 :name="marker.code"
             >
                 <template #title>
-                    <SetSymbol :setCode="marker.code" :setName="marker.name" />{{ `${marker.name} (${marker.code}) — released ${formatDate(marker.releasedAt)}${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}` }}
+                    <SetSymbol :setCode="marker.code" :setName="marker.name" />{{ `${marker.name} (${marker.code.toUpperCase()}) — released ${formatDate(marker.releasedAt)}${displacementByCode.get(marker.code)?.partial ? ' (partial window)' : ''}` }}
                 </template>
                 <template v-if="displacementByCode.get(marker.code)">
                     <div class="export-row">
@@ -190,7 +190,7 @@ function formatTrendMomentum(value: number | null): string {
 }
 
 const trendColumns: CsvColumn<SetTrend>[] = [
-    { key: 'code', label: 'Set', value: (s) => s.code },
+    { key: 'code', label: 'Set', value: (s) => s.code.toUpperCase() },
     { key: 'name', label: 'Name', value: (s) => s.name },
     { key: 'releasedAt', label: 'Released', value: (s) => formatDate(s.releasedAt) },
     { key: 'perCube', label: 'Cards per cube', value: (s) => s.perCube.current },
@@ -222,7 +222,7 @@ const adoptionOption = computed(() => ({
 }));
 
 const peakColumns: CsvColumn<SetAdoption>[] = [
-    { key: 'code', label: 'Set', value: (s) => s.code },
+    { key: 'code', label: 'Set', value: (s) => s.code.toUpperCase() },
     { key: 'name', label: 'Name', value: (s) => s.name },
     { key: 'peak', label: 'Peak (cards per cube)', value: (s) => formatCount(s.peak) },
     { key: 'timeToPeakWeeks', label: 'Weeks to Peak', value: (s) => s.timeToPeakWeeks },

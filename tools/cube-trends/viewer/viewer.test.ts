@@ -296,10 +296,10 @@ describe('releaseMarkLines', () => {
         expect(result.lineStyle.type).toBe('dashed');
         expect(result.label.color).toBe('#909399');
         expect(result.data).toEqual([
-            { xAxis: 1000, name: 'dom' },
-            { xAxis: 2000, name: 'war' },
+            { xAxis: 1000, name: 'DOM' },
+            { xAxis: 2000, name: 'WAR' },
         ]);
-        expect(result.label.formatter({ name: 'dom' })).toBe('dom');
+        expect(result.label.formatter({ name: 'DOM' })).toBe('DOM');
     });
 
     it('merges sets released on the same date into one marker', () => {
@@ -310,11 +310,11 @@ describe('releaseMarkLines', () => {
         ]) as { data: { xAxis: number; name: string }[]; tooltip: { formatter: (p: { name: string }) => string } };
 
         expect(result.data).toEqual([
-            { xAxis: 1000, name: 'dom' },
-            { xAxis: 3000, name: 'msh/msc' },
+            { xAxis: 1000, name: 'DOM' },
+            { xAxis: 3000, name: 'MSH/MSC' },
         ]);
-        expect(result.tooltip.formatter({ name: 'msh/msc' }))
-            .toBe('Marvel Super Heroes (msh), Marvel Super Heroes Commander (msc)');
+        expect(result.tooltip.formatter({ name: 'MSH/MSC' }))
+            .toBe('Marvel Super Heroes (MSH), Marvel Super Heroes Commander (MSC)');
     });
 });
 

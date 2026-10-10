@@ -37,7 +37,7 @@
             </el-table-column>
             <el-table-column prop="eligibility" label="Eligibility" sortable="custom">
                 <template #default="{ row }">
-                    <template v-if="row.info.eligibility">{{ formatDate(row.info.eligibility.date) }} <SetSymbol :setCode="row.info.eligibility.setCode" :setName="setNames.get(row.info.eligibility.setCode)" />{{ row.info.eligibility.setCode }}</template>
+                    <template v-if="row.info.eligibility">{{ formatDate(row.info.eligibility.date) }} <SetSymbol :setCode="row.info.eligibility.setCode" :setName="setNames.get(row.info.eligibility.setCode)" />{{ row.info.eligibility.setCode.toUpperCase() }}</template>
                     <template v-else>—</template>
                 </template>
             </el-table-column>
@@ -177,7 +177,7 @@ const exportColumns: CsvColumn<CardTrend>[] = [
     { key: 'delta', label: 'Δ90d', value: (c) => c.delta },
     { key: 'momentum', label: 'Momentum', value: (c) => c.momentum },
     { key: 'eligibility', label: 'Eligibility', value: (c) => (c.info.eligibility ? formatDate(c.info.eligibility.date) : '') },
-    { key: 'setCode', label: 'Set', value: (c) => c.info.eligibility?.setCode ?? '' },
+    { key: 'setCode', label: 'Set', value: (c) => c.info.eligibility?.setCode.toUpperCase() ?? '' },
     { key: 'colorCategory', label: 'Color', value: (c) => c.info.colorCategory },
 ];
 </script>

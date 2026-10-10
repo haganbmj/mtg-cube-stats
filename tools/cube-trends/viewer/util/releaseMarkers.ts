@@ -15,8 +15,8 @@ export function releaseMarkLines(markers: SetInfo[]): object {
         .map(([releasedAt, group]) => {
             // Name order puts a main set before its variants (e.g. "X" before "X Commander").
             const sorted = [...group].sort((a, b) => a.name.localeCompare(b.name) || a.code.localeCompare(b.code));
-            const label = sorted.map((m) => m.code).join('/');
-            fullNames.set(label, sorted.map((m) => `${m.name} (${m.code})`).join(', '));
+            const label = sorted.map((m) => m.code.toUpperCase()).join('/');
+            fullNames.set(label, sorted.map((m) => `${m.name} (${m.code.toUpperCase()})`).join(', '));
             return { xAxis: releasedAt, name: label };
         });
 
