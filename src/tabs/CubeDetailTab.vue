@@ -200,13 +200,15 @@ const onSelectCubeFromView = (id: string) => {
 // Default to the first visible loaded cube when the tab is entered with no
 // selection (either at mount, or after cubes finish loading in the background).
 // A URL-supplied selectedCubeId short-circuits this — the auto-load watch handles it.
+// If the selected cube was unloaded, fall back to another loaded cube (or clear).
 watch(
-    () => Object.keys(props.loadedCubes).length,
-    (count) => {
-        if (props.selectedCubeId) return;
-        if (count === 0) return;
-        const firstVisible = visibleOptions.value[0]?.id ?? Object.keys(props.loadedCubes)[0];
-        if (firstVisible) emit('update:selectedCubeId', firstVisible);
+    () => Object.keys(props.loadedCubes),
+    (keys, oldKeys) => {
+        const selected = props.selectedCubeId;
+        const wasUnloaded = !!selected && !!oldKeys?.includes(selected) && !keys.includes(selected);
+        if (selected && !wasUnloaded) return;
+        const fallback = visibleOptions.value[0]?.id ?? keys[0] ?? null;
+        if (fallback !== selected) emit('update:selectedCubeId', fallback);
     },
     { immediate: true },
 );
