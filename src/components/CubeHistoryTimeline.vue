@@ -14,7 +14,7 @@
                 :start="chartStart"
                 :end="now"
                 :selectedWeek="selectedWeek"
-                @select="selectedWeek = $event"
+                @select="toggleWeek"
             />
             <div class="history-timeline-footer">
                 <el-text type="info" size="small">
@@ -92,6 +92,10 @@ const selectedEntries = computed(() => {
 const dateLabel = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const dateTimeLabel = (ms: number) => new Date(ms).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) + ' UTC';
 
+const toggleWeek = (week: number) => {
+    selectedWeek.value = selectedWeek.value === week ? null : week;
+};
+
 const load = async () => {
     error.value = false;
     try {
@@ -148,6 +152,7 @@ onMounted(load);
 
 .history-timeline-entries {
     margin-top: 0.5em;
+    max-width: 28rem;
     display: flex;
     flex-direction: column;
     gap: 0.25em;
