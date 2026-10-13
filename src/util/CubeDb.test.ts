@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
-import { getDb, _resetForTesting, DB_NAME, CUBES_STORE, ASSETS_STORE } from './CubeDb';
+import { getDb, _resetForTesting, DB_NAME, CUBES_STORE, ASSETS_STORE, HISTORY_STORE } from './CubeDb';
 
 describe('CubeDb schema', () => {
     beforeEach(async () => {
@@ -10,17 +10,17 @@ describe('CubeDb schema', () => {
         await deleteDB(DB_NAME);
     });
 
-    it('opens a fresh DB at v3 with both stores and their indexes', async () => {
+    it('opens a fresh DB at v4 with all stores and their indexes', async () => {
         const db = await getDb();
-        expect(db.version).toBe(3);
-        expect(Array.from(db.objectStoreNames)).toEqual(expect.arrayContaining([CUBES_STORE, ASSETS_STORE]));
+        expect(db.version).toBe(4);
+        expect(Array.from(db.objectStoreNames)).toEqual(expect.arrayContaining([CUBES_STORE, ASSETS_STORE, HISTORY_STORE]));
 
         const tx = db.transaction([CUBES_STORE, ASSETS_STORE], 'readonly');
         expect(Array.from(tx.objectStore(CUBES_STORE).indexNames)).toContain('shortId');
         expect(Array.from(tx.objectStore(ASSETS_STORE).indexNames)).toContain('family');
     });
 
-    it('upgrades an existing v2 DB to v3 without dropping cube data or the shortId index', async () => {
+    it('upgrades an existing v2 DB to v4 without dropping cube data or the shortId index', async () => {
         // Manually build a v2 DB matching what the pre-upgrade CubeCache.ts produced.
         const v2 = await openDB(DB_NAME, 2, {
             upgrade(db) {
@@ -31,9 +31,9 @@ describe('CubeDb schema', () => {
         await v2.put(CUBES_STORE, { id: 'cube-1', shortId: 'c1', data: { name: 'Legacy Cube' }, fetchedAt: '2026-01-01T00:00:00Z' });
         v2.close();
 
-        // Now open via the production getDb, which should trigger the v2→v3 upgrade.
+        // Now open via the production getDb, which should trigger the v2→v4 upgrade.
         const db = await getDb();
-        expect(db.version).toBe(3);
+        expect(db.version).toBe(4);
 
         // Existing cube data survives.
         const cube = await db.get(CUBES_STORE, 'cube-1');
@@ -48,9 +48,10 @@ describe('CubeDb schema', () => {
         expect(Array.from(db.objectStoreNames)).toContain(ASSETS_STORE);
         const assetTx = db.transaction(ASSETS_STORE, 'readonly');
         expect(Array.from(assetTx.objectStore(ASSETS_STORE).indexNames)).toContain('family');
+        expect(Array.from(db.objectStoreNames)).toContain(HISTORY_STORE);
     });
 
-    it('upgrades a v1 DB (no shortId index) all the way to v3', async () => {
+    it('upgrades a v1 DB (no shortId index) all the way to v4', async () => {
         // Simulate a pre-v2 install: cubes store exists but has no shortId index.
         const v1 = await openDB(DB_NAME, 1, {
             upgrade(db) {
@@ -61,7 +62,7 @@ describe('CubeDb schema', () => {
         v1.close();
 
         const db = await getDb();
-        expect(db.version).toBe(3);
+        expect(db.version).toBe(4);
         expect(Array.from(db.objectStoreNames)).toContain(ASSETS_STORE);
 
         // shortId index was added by the v1→v2 leg of the upgrade.
@@ -75,6 +76,6 @@ describe('CubeDb schema', () => {
         const db1 = await getDb();
         const db2 = await getDb();
         expect(db1).toBe(db2);
-        expect(db1.version).toBe(3);
+        expect(db1.version).toBe(4);
     });
 });

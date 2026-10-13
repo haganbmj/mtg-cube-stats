@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, type PropType } from 'vue';
 import type { Cube, CubeCard, CubeOverviewRow, SimilarityMatrix } from '../types';
-import { displayName } from '../util/Snapshots';
+import { displayName, parseLoadedKey } from '../util/Snapshots';
 import { castInensitiveSort, normalizeSortName } from '../util/HelperFunctions';
 import { parseCubeIdInput } from '../util/CubeCobra';
 import CubeDetailView from '../components/CubeDetailView.vue';
@@ -136,6 +136,16 @@ const emit = defineEmits<{
 
 const loading = ref(false);
 
+const findLoadedKey = (input: string): string | undefined => {
+    const id = parseCubeIdInput(input);
+    const { changelogId } = parseLoadedKey(id);
+    return Object.entries(props.loadedCubes).find(([, cube]) =>
+        cube.id === id
+        || cube.shortId === id
+        || (changelogId != null && cube.snapshotChangelogId === changelogId),
+    )?.[0];
+};
+
 const sortedCubeOptions = computed(() =>
     Object.entries(props.loadedCubes)
         .map(([id, cube]) => ({ id, cube }))
@@ -166,21 +176,16 @@ const onCubeSelect = async (value: string) => {
         emit('update:selectedCubeId', value);
         return;
     }
-    const id = parseCubeIdInput(value);
-    const existing = Object.entries(props.loadedCubes).find(
-        ([, cube]) => cube.id === id || cube.shortId === id,
-    );
+    const existing = findLoadedKey(value);
     if (existing) {
-        emit('update:selectedCubeId', existing[0]);
+        emit('update:selectedCubeId', existing);
         return;
     }
     loading.value = true;
     try {
         await props.loadCubeById(value);
-        const found = Object.entries(props.loadedCubes).find(
-            ([, cube]) => cube.id === id || cube.shortId === id,
-        );
-        if (found) emit('update:selectedCubeId', found[0]);
+        const found = findLoadedKey(value);
+        if (found) emit('update:selectedCubeId', found);
     } finally {
         loading.value = false;
     }
@@ -212,16 +217,18 @@ watch(
     async (id) => {
         if (!id) return;
         if (props.loadedCubes[id]) return;
+        const existing = findLoadedKey(id);
+        if (existing) {
+            emit('update:selectedCubeId', existing);
+            return;
+        }
         loading.value = true;
         try {
             await props.loadCubeById(id);
             // Normalize short-form/alias ids to the internal key used by loadedCubes.
-            const parsed = parseCubeIdInput(id);
-            const found = Object.entries(props.loadedCubes).find(
-                ([, cube]) => cube.id === parsed || cube.shortId === parsed,
-            );
-            if (found && found[0] !== id) {
-                emit('update:selectedCubeId', found[0]);
+            const found = findLoadedKey(id);
+            if (found && found !== id) {
+                emit('update:selectedCubeId', found);
             }
         } finally {
             loading.value = false;

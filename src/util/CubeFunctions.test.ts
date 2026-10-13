@@ -134,11 +134,12 @@ describe('stripToRawCube', () => {
         expect(stripped(cube).suffixedCardIds).toEqual(['oracle-1', 'oracle-1_2']);
     });
 
-    it('preserves snapshot fields (baseCubeId, snapshotDate)', () => {
-        const cube: Cube = { ...baseMeta, id: 'cube-1@1700000000000', baseCubeId: 'cube-1', snapshotDate: 1700000000000, cards: [] };
+    it('preserves snapshot fields (baseCubeId, snapshotDate, snapshotChangelogId)', () => {
+        const cube: Cube = { ...baseMeta, id: 'cube-1@1700000000000', baseCubeId: 'cube-1', snapshotDate: 1700000000000, snapshotChangelogId: 'cl-1', cards: [] };
         const result = stripped(cube);
         expect(result.baseCubeId).toBe('cube-1');
         expect(result.snapshotDate).toBe(1700000000000);
+        expect(result.snapshotChangelogId).toBe('cl-1');
     });
 
     it('preserves hidden flag', () => {

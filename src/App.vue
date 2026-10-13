@@ -608,8 +608,8 @@ const addCubes = async (cubeIds: string[]) => {
         while (queue.length > 0) {
             const id = queue.shift()!;
             try {
-                const { snapshotDate } = parseLoadedKey(id);
-                if (snapshotDate != null) {
+                const { snapshotDate, changelogId } = parseLoadedKey(id);
+                if (snapshotDate != null || changelogId) {
                     await addAny(id);
                 } else {
                     // existing live-cube logic unchanged
@@ -712,8 +712,44 @@ const addSnapshot = async (
         return null;
     }
 
+    return storeFetchedSnapshot(baseCubeId, raw, options);
+};
+
+const addSnapshotByChangelog = async (
+    baseCubeId: string,
+    changelogId: string,
+    options: { hidden?: boolean } = {},
+): Promise<{ key: string; deduped: boolean } | null> => {
+    let raw;
+    try {
+        raw = await getCubeData(baseCubeId, { changelog: changelogId });
+    } catch (e) {
+        console.error(`Failed to load changelog ${changelogId} for ${baseCubeId}:`, e);
+        ElMessage({ message: `Failed to load snapshot for ${baseCubeId}`, type: 'error', duration: 4000 });
+        return null;
+    }
+
+    return storeFetchedSnapshot(baseCubeId, raw, options);
+};
+
+const showSnapshot = async (key: string, data: Cube, options: { hidden?: boolean }) => {
+    await ensureScryfallInitialized();
+    const enriched = enrichCube(data);
+    if (presetBaseIds.value.size === 0) {
+        activePresetName.value = null;
+    }
+    loadedCubes.value[key] = options.hidden ? { ...enriched, hidden: true } : enriched;
+    updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
+    return { key, deduped: false };
+};
+
+const storeFetchedSnapshot = async (
+    baseCubeId: string,
+    raw: any,
+    options: { hidden?: boolean },
+): Promise<{ key: string; deduped: boolean }> => {
     const changelogDate: number = raw.changelog.date;
-    const key = snapshotKey(baseCubeId, changelogDate);
+    const key = snapshotKey(raw.id ?? baseCubeId, changelogDate);
 
     if (loadedCubes.value[key]) {
         ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
@@ -726,41 +762,22 @@ const addSnapshot = async (
             ElMessage({ message: 'Snapshot already loaded', type: 'info', duration: 3000 });
             return { key, deduped: true };
         }
-
-        await ensureScryfallInitialized();
-        const enriched = enrichCube(cached.data);
-        if (presetBaseIds.value.size === 0) {
-            activePresetName.value = null;
-        }
-        loadedCubes.value[key] = enriched;
-        if (options.hidden) {
-            loadedCubes.value[key] = { ...loadedCubes.value[key], hidden: true };
-        }
-        updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
-        return { key, deduped: false };
+        return showSnapshot(key, cached.data, options);
     }
 
     await ensureScryfallInitialized();
     const fetchedAt = new Date().toISOString();
     const stripped = remapCube(raw, false, fetchedAt, { snapshotDate: changelogDate });
     await setCachedCube(key, stripped, fetchedAt);
-    const enriched = enrichCube(stripped);
-
-    if (presetBaseIds.value.size === 0) {
-        activePresetName.value = null;
-    }
-    loadedCubes.value[key] = enriched;
-    if (options.hidden) {
-        loadedCubes.value[key] = { ...loadedCubes.value[key], hidden: true };
-    }
-    updateSimilarityForCube(key, loadedCubes.value, similarityMatrix.value);
-    return { key, deduped: false };
+    return showSnapshot(key, stripped, options);
 };
 
 const addAny = async (key: string): Promise<void> => {
-    const { baseCubeId, snapshotDate } = parseLoadedKey(key);
+    const { baseCubeId, snapshotDate, changelogId } = parseLoadedKey(key);
     if (snapshotDate != null) {
         await addSnapshot(baseCubeId, snapshotDate);
+    } else if (changelogId) {
+        await addSnapshotByChangelog(baseCubeId, changelogId);
     } else {
         await addCube(key);
     }
@@ -1006,6 +1023,7 @@ const refreshCube = async (id: string) => {
 provide('refreshCube', refreshCube);
 provide('addCube', addCube);
 provide('addSnapshot', addSnapshot);
+provide('addSnapshotByChangelog', addSnapshotByChangelog);
 provide('removeCube', removeCube);
 provide('checksState', checksState);
 provide('checkResults', checkResults);

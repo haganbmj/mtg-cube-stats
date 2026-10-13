@@ -165,6 +165,7 @@ export function remapCube(
     if (options.snapshotDate != null) {
         remappedCube.baseCubeId = remappedCube.id;
         remappedCube.snapshotDate = options.snapshotDate;
+        remappedCube.snapshotChangelogId = cube.changelog?.id;
         remappedCube.id = snapshotKey(remappedCube.baseCubeId, options.snapshotDate);
         remappedCube.lastModified = new Date(options.snapshotDate).toISOString();
         delete remappedCube.shortId;
@@ -199,6 +200,7 @@ export function stripToRawCube(cube: Cube): Cube {
         fetchedAt: cube.fetchedAt,
         baseCubeId: cube.baseCubeId,
         snapshotDate: cube.snapshotDate,
+        snapshotChangelogId: cube.snapshotChangelogId,
         hidden: cube.hidden,
         cards: cube.cards.map(c => c.isCustomCard
             ? {

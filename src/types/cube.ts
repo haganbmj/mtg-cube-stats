@@ -114,6 +114,7 @@ export interface Cube {
   id: string;
   baseCubeId?: string;     // Present only on snapshots; the canonical CubeCobra cube id
   snapshotDate?: number;   // Present only on snapshots; ms epoch from changelog.date
+  snapshotChangelogId?: string; // Present only on snapshots; CubeCobra changelog id
   /**
    * Session-only visibility flag. When true, the cube is excluded from
    * Overview, Statistics, Cards, Infographic, and similarity peer rankings,

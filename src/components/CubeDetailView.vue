@@ -623,8 +623,16 @@
                     <ArchetypeAnalysis :cubeCards="activeCubeCards" />
                 </el-tab-pane> -->
 
-                <el-tab-pane :label="historyTabLabel" name="history">
+                <el-tab-pane :label="historyTabLabel" name="history" :lazy="true">
                     <div class="history-tab">
+                        <CubeHistoryTimeline
+                            v-if="activeTab === 'history' && baseCubeId"
+                            :key="baseCubeId"
+                            :cubeId="baseCubeId"
+                            :knownSnapshotDates="knownSnapshotDates"
+                            @loaded="refreshCachedSnapshots"
+                        />
+
                         <section class="history-presets">
                             <h4 class="history-section-title">Load snapshot from…</h4>
                             <div class="history-preset-buttons">
@@ -803,6 +811,7 @@ import KeywordTable from './KeywordTable.vue';
 import SetNameTable from './SetNameTable.vue';
 import StatCmpIndicator from './StatCmpIndicator.vue';
 import SimilarCubesTable from './SimilarCubesTable.vue';
+import CubeHistoryTimeline from './CubeHistoryTimeline.vue';
 import CubeListView from './CubeListView.vue';
 import CardSearchInput from './filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
@@ -1039,6 +1048,10 @@ const historyTabLabel = computed(() => {
     const n = historyRows.value.length;
     return n > 0 ? `History (${n})` : 'History';
 });
+
+const knownSnapshotDates = computed(() =>
+    historyRows.value.map(r => r.cube.snapshotDate).filter((d): d is number => d != null),
+);
 
 const loadPreset = async (offsetMs: number) => {
     if (!addSnapshot) return;
