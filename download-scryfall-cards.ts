@@ -88,6 +88,9 @@ if (!fs.existsSync('./data/tagger-data.json') || process.argv[2] == "--update" |
         url: `https://api.scryfall.com/private/tags/oracle`,
         method: 'GET',
         responseType: 'stream',
+        headers: {
+            'User-Agent': 'Griselbrand/0.1.0',
+        },
     })
 
     const writeTagger = fs.createWriteStream('./data/tagger-data.json');
@@ -229,9 +232,9 @@ const minRarityOrder = ['common', 'uncommon', 'rare', 'mythic', 'special', 'bonu
 // Single-image layouts (incl. split/flip/adventure) carry image_uris at the top level;
 // double-sided layouts (transform/modal_dfc/etc.) carry them per face.
 const frontImageUri = (card: any): string =>
-    card.image_uris?.large
-    ?? card.card_faces?.[0]?.image_uris?.large
-    ?? `https://cards.scryfall.io/large/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.jpg`;
+    card.image_uris?.display
+    ?? card.card_faces?.[0]?.image_uris?.display
+    ?? `https://cards.scryfall.io/display/front/${card.id.charAt(0)}/${card.id.charAt(1)}/${card.id}.webp`;
 
 const stripped = cards.filter((card: any) => {
     // Process the exclusions.
@@ -256,10 +259,11 @@ const stripped = cards.filter((card: any) => {
 }).map((card: any) => {
     // Then set the high level data necessary to organize the remaining cards.
     let cardBackUri: string | undefined = undefined;
-    if (card.card_faces?.[1]?.image_uris?.large) {
-        cardBackUri = card.card_faces[1].image_uris.large;
+    if (card.card_faces?.[1]?.image_uris?.display) {
+        cardBackUri = card.card_faces[1].image_uris.display;
     } else if (card.layout == 'meld') {
-        cardBackUri = `https://backs.scryfall.io/large/${card.card_back_id.charAt(0)}/${card.card_back_id.charAt(1)}/${card.card_back_id}.jpg`;
+        // backs.scryfall.io has no WebP yet; `normal` is the only JPEG size Scryfall is keeping.
+        cardBackUri = `https://backs.scryfall.io/normal/${card.card_back_id.charAt(0)}/${card.card_back_id.charAt(1)}/${card.card_back_id}.jpg`;
     }
 
     const applicablePromoTypes = (card.promo_types || []).filter((pt: string) => !notPromoTypes.includes(pt));
