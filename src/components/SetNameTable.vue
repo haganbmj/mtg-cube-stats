@@ -28,6 +28,13 @@
             </template>
         </el-table-column>
         <el-table-column
+            prop="releaseDate"
+            label="Release Date"
+            min-width="140"
+            :formatter="(row) => formatReleaseDate(row.releaseDate)"
+            sortable
+        />
+        <el-table-column
             prop="count"
             label="Count"
             min-width="100"
@@ -46,7 +53,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { castInensitiveSort } from '../util/HelperFunctions';
-import { getSetName } from '../util/CubeFunctions';
+import { getSetName, getSetReleaseDates } from '../util/CubeFunctions';
 import SetSymbol from './SetSymbol.vue';
 
 const emit = defineEmits(['filter']);
@@ -63,17 +70,24 @@ const props = defineProps({
 });
 
 const setNames = computed(() => {
+    const releaseDates = getSetReleaseDates();
     // Note that while the sort here appears backwards, it seems el-table uses the active sort order.
     // So when you do a descending sort on the count column, it should actually reverse this and show as ascending by name.
     return Object.entries(props.setCodeDistribution).map(([key, value]) => {
         return {
             setCode: key,
             setName: getSetName(key),
+            releaseDate: releaseDates[key.toLowerCase()] ?? '',
             count: value,
             percentage: value / props.totalCards,
         };
     }).sort((a, b) => castInensitiveSort(b.setName, a.setName));
 });
+
+const formatReleaseDate = (releaseDate: string) => {
+    if (!releaseDate) return '';
+    return new Date(releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+};
 </script>
 
 <style scoped>

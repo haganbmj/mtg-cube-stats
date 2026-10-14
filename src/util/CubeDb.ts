@@ -1,9 +1,10 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
 export const DB_NAME = 'cube-cache';
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 export const CUBES_STORE = 'cubes';
 export const ASSETS_STORE = 'assets';
+export const HISTORY_STORE = 'history';
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 let warnedOnce = false;
@@ -26,6 +27,11 @@ export function getDb(): Promise<IDBPDatabase> {
                     if (!db.objectStoreNames.contains(ASSETS_STORE)) {
                         const assetsStore = db.createObjectStore(ASSETS_STORE, { keyPath: 'url' });
                         assetsStore.createIndex('family', 'family', { unique: false });
+                    }
+                }
+                if (oldVersion < 4) {
+                    if (!db.objectStoreNames.contains(HISTORY_STORE)) {
+                        db.createObjectStore(HISTORY_STORE, { keyPath: 'cubeId' });
                     }
                 }
             },
