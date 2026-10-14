@@ -21,11 +21,14 @@ export function parseCubeIdInput(input: string): string {
 // TODO: Handle errors...
 export async function getCubeData(
     cubeId: string,
-    options: { date?: number } = {},
+    options: { date?: number; changelog?: string } = {},
 ): Promise<CubeCobraResponse> {
-    const url = options.date
-        ? `https://cubecobra.com/cube/api/cubeJSON/${cubeId}?date=${options.date}`
-        : `https://cubecobra.com/cube/api/cubeJSON/${cubeId}`;
+    let url = `https://cubecobra.com/cube/api/cubeJSON/${cubeId}`;
+    if (options.changelog) {
+        url += `?changelog=${encodeURIComponent(options.changelog)}`;
+    } else if (options.date) {
+        url += `?date=${options.date}`;
+    }
     try {
         const response = await axios({
             url,
@@ -34,6 +37,31 @@ export async function getCubeData(
         return response.data;
     } catch (e: any) {
         console.error(`Failed to fetch cube: ${cubeId}, status: ${e.status}. message: ${e.message}`);
+        throw e;
+    }
+}
+
+export interface CubeHistoryEntry {
+    id: string;
+    date: number;
+    cubeVersion?: number;
+}
+
+export interface CubeHistoryPage {
+    cubeId: string;
+    changelogs: CubeHistoryEntry[];
+    nextCursor?: string;
+}
+
+/** Fetches one newest-first page of a cube's changelog metadata (max 100 per page). */
+export async function getCubeHistoryPage(cubeId: string, cursor?: string): Promise<CubeHistoryPage> {
+    let url = `https://cubecobra.com/cube/api/history/${encodeURIComponent(cubeId)}?limit=100`;
+    if (cursor) url += `&cursor=${encodeURIComponent(cursor)}`;
+    try {
+        const response = await axios({ url, method: 'GET' });
+        return response.data;
+    } catch (e: any) {
+        console.error(`Failed to fetch cube history: ${cubeId}, status: ${e.status}. message: ${e.message}`);
         throw e;
     }
 }
