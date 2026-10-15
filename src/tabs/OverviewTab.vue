@@ -806,7 +806,7 @@ const handleBulkEntrySubmit = async () => {
 
     bulkEntryVisible.value = false;
 };
-const visualDisplayVisible = bindStorage('overview-display-mode-visual', (v) => typeof v === 'boolean' ? v : isMobile.value);
+const visualDisplayVisible = bindStorage('overview-display-mode-visual', (v) => typeof v === 'boolean' ? v : true);
 const displayModeValue = computed({
     get: () => visualDisplayVisible.value ? 'grid' : 'table',
     set: (val: string) => { visualDisplayVisible.value = val === 'grid'; },
