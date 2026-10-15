@@ -24,7 +24,7 @@ function median(values: number[]): number | null {
     return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
-// A cube counts as active in an interval when it has a churn rate there (existed at both ends).
+// A cube counts as tracked in an interval when it has a churn rate there (a revision resolved at the interval's end).
 export function buildCubesUpdated(churn: ChurnResult, samples: number[]): CubesUpdatedPoint[] {
     return samples.map((t, k) => {
         const changes = churn.cubes
@@ -49,7 +49,7 @@ export function buildCubesUpdatedOption(points: CubesUpdatedPoint[], markers: Se
                 const p = points[params[0].dataIndex];
                 const rows = [formatDate(p.t)];
                 if (p.share !== null) {
-                    rows.push(`Cubes modified: ${formatPercentTooltip(p.share)} (${p.modified} of ${p.active})`);
+                    rows.push(`Cubes modified: ${formatPercentTooltip(p.share)} (${p.modified} of ${p.active} tracked)`);
                 }
                 if (p.medianChanges !== null) {
                     rows.push(`Median changes: ${Math.round(p.medianChanges)}`);
