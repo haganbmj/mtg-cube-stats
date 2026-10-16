@@ -80,6 +80,13 @@ export interface ScryfallDataStructure {
   sets: Record<string, string>; // setCode -> setName
   setDates: Record<string, string>; // setCode -> ISO release date (YYYY-MM-DD)
   tokens: Record<string, ScryfallToken>; // keyed by oracleId
+  keywordCosts?: KeywordCostTable;
+}
+
+// Keyword -> reminder-text word count, computed at build time
+export interface KeywordCostTable {
+  costs: Record<string, number>;
+  fallback: number;
 }
 
 // Type for the dynamic import result

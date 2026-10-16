@@ -5,6 +5,7 @@ import axios from 'axios';
 import { strict as assert } from 'assert';
 import { detectCardArchetypes } from './src/util/ArchetypeDetection';
 import { flatMapTypes } from './src/util/TypeLine';
+import { buildKeywordCosts } from './src/util/KeywordCosts';
 import type { CubeCard } from './src/types';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
@@ -473,6 +474,7 @@ const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
 }, {});
 
 minimized.cards = best;
+minimized.keywordCosts = buildKeywordCosts(Object.values(best) as any[]);
 delete minimized.minPrices;
 
 minimized.setDates = setDates;
