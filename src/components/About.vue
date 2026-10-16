@@ -89,7 +89,7 @@
         <section>
             <h3>Complexity Score</h3>
             <p>
-                A whole number from 0 to 100 estimating how much rules text and cognitive load a cube asks of its players. Six components are measured per cube, then each is normalized against fixed bounds:
+                A whole number from 0 to 100 estimating how much rules text and cognitive load a cube asks of its players. Six components are measured per cube, then each is normalized against fixed bounds. The Low and High bounds are the 5th and 95th percentiles of each component across the preloaded cube collections, derived with <code>npm run complexity:tune</code>.
             </p>
             <el-table :data="complexityComponentData" style="max-width: 900px;" size="small" :show-header="true" stripe>
                 <el-table-column prop="component" label="Component" min-width="140" />

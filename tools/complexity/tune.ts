@@ -38,6 +38,9 @@ function percentile(sorted: number[], p: number): number {
 
 function main(): void {
     const scryfall = readJson<ScryfallDataStructure>(CARDS_PATH);
+    if (!scryfall.keywordCosts) {
+        console.warn(`Warning: ${CARDS_PATH} has no keywordCosts; using the default keyword cost table, so the derived bounds will be wrong. Re-run \`npm run cards\` to regenerate it.`);
+    }
     const table = scryfall.keywordCosts ?? DEFAULT_KEYWORD_COST_TABLE;
 
     const rawById = new Map<string, { name: string; raw: ComplexityComponents }>();

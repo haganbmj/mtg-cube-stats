@@ -126,8 +126,18 @@ export function scoreComplexity(
     return { score, breakdown: { raw: { ...raw }, normalized } };
 }
 
+function formatRaw(key: ComponentKey, value: number): string {
+    if (key === 'layoutLoad') {
+        return value.toFixed(3);
+    }
+    if (key === 'familiarity') {
+        return `pop ${value.toFixed(1)}%`;
+    }
+    return value.toFixed(1);
+}
+
 export function complexityBreakdownHtml(breakdown: ComplexityBreakdown): string {
     return COMPONENT_KEYS
-        .map(key => `${COMPLEXITY_COMPONENT_LABELS[key]}: ${breakdown.normalized[key].toFixed(2)} (${breakdown.raw[key].toFixed(1)})`)
+        .map(key => `${COMPLEXITY_COMPONENT_LABELS[key]}: ${breakdown.normalized[key].toFixed(2)} (${formatRaw(key, breakdown.raw[key])})`)
         .join('<br>');
 }

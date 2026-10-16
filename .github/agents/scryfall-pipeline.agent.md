@@ -54,11 +54,12 @@ Reversible card layouts are currently skipped (stubbed out with a `return []`).
 
 ## Output Shape (`cards-minimized.json`)
 
-The output is an object with three top-level keys:
+The output is an object with five top-level keys:
 - `cards`: keyed by **oracle ID** (`card.oracle_id`) — the "best" representative printing (see below)
 - `sets`: `setCode → setName` lookup
 - `setDates`: `setCode → ISO release date` lookup
 - `tokens`: keyed by token oracle ID, holds the earliest printing of each token
+- `keywordCosts`: `{ costs: Record<string, number>; fallback: number }` — keyword → reminder-text word count, built by `buildKeywordCosts()` (`src/util/KeywordCosts.ts`) from the best printings; `fallback` is the cost for non-evergreen keywords missing from `costs`. Consumed by the Complexity Score (`src/util/Complexity.ts`) and `tools/complexity/tune.ts`
 
 During the pipeline each oracle ID accumulates an array of printings (sorted oldest→newest), then a `.reduce()` collapses to a single "best" printing — the first non-digital, non-promo, non-token printing (falls back to the first entry). Aggregate fields (`minPriceUsd`, `minPriceTix`, `rarities`, `minRarity`, unioned `games`, computed `archetypes`) are merged onto that best printing.
 

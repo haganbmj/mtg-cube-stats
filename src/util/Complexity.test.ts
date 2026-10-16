@@ -152,5 +152,19 @@ describe('complexityBreakdownHtml', () => {
             expect(html).toContain(label);
         }
         expect(lines[0]).toBe(`${COMPLEXITY_COMPONENT_LABELS.nonLandWords}: 0.50 (5.0)`);
+        expect(lines[4]).toBe(`${COMPLEXITY_COMPONENT_LABELS.familiarity}: 0.50 (pop 5.0%)`);
+        expect(lines[5]).toBe(`${COMPLEXITY_COMPONENT_LABELS.layoutLoad}: 0.50 (5.000)`);
+    });
+
+    it('complexityBreakdownHtml prints layout raw at 3 decimals', () => {
+        const { breakdown } = scoreComplexity({ ...uniform(5), layoutLoad: 0.0234 }, unitBounds);
+        const lines = complexityBreakdownHtml(breakdown).split('<br>');
+        expect(lines[5]).toBe(`${COMPLEXITY_COMPONENT_LABELS.layoutLoad}: 0.00 (0.023)`);
+    });
+
+    it('complexityBreakdownHtml labels unfamiliarity raw value as popularity', () => {
+        const { breakdown } = scoreComplexity({ ...uniform(5), familiarity: 3.5 }, unitBounds);
+        const lines = complexityBreakdownHtml(breakdown).split('<br>');
+        expect(lines[4]).toBe(`${COMPLEXITY_COMPONENT_LABELS.familiarity}: 0.65 (pop 3.5%)`);
     });
 });
