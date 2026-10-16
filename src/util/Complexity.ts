@@ -28,22 +28,22 @@ export const LAYOUT_WEIGHTS: Record<string, number> = {
     mutate: 1.0,
 };
 
-export const DISTINCT_KEYWORD_SIZE_EXPONENT = 1;
+export const DISTINCT_KEYWORD_SIZE_EXPONENT = 0.5;
 
 export const COMPLEXITY_BOUNDS: Record<ComponentKey, { low: number; high: number }> = {
-    nonLandWords: { low: 15, high: 35 },
-    landWords: { low: 0, high: 20 },
-    distinctKeywordLoad: { low: 0, high: 3 },
-    keywordFrequencyLoad: { low: 0, high: 15 },
-    familiarity: { low: 0, high: 10 },
-    layoutLoad: { low: 0, high: 0.1 },
+    nonLandWords: { low: 16.91, high: 30.70 },
+    landWords: { low: 11.34, high: 25.57 },
+    distinctKeywordLoad: { low: 19.25, high: 81.12 },
+    keywordFrequencyLoad: { low: 3.90, high: 10.22 },
+    familiarity: { low: 1.63, high: 6.80 },
+    layoutLoad: { low: 0.00, high: 0.06 },
 };
 
 export const COMPLEXITY_WEIGHTS: Record<ComponentKey, number> = {
-    nonLandWords: 1,
-    landWords: 0.5,
+    nonLandWords: 5,
+    landWords: 1.25,
     distinctKeywordLoad: 1,
-    keywordFrequencyLoad: 1,
+    keywordFrequencyLoad: 0.5,
     familiarity: 0.25,
     layoutLoad: 0.75,
 };

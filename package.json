@@ -21,7 +21,8 @@
     "trends:fetch": "tsx tools/cube-trends/cli/fetch.ts",
     "trends:analyze": "node --max-old-space-size=4096 --import tsx tools/cube-trends/cli/analyze.ts",
     "trends:report": "tsx tools/cube-trends/cli/report.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "complexity:tune": "tsx tools/complexity/tune.ts"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
