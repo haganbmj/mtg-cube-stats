@@ -122,6 +122,8 @@ export interface CubeStats {
     initiative: number;
   };
   archetypes: ArchetypeResult[];
+  complexityScore: number;
+  complexityBreakdown: ComplexityBreakdown;
 }
 
 export interface Cube {

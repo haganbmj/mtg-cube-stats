@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
     mergeSimilarityMatrices,
     stripToRawCube,
@@ -9,7 +9,9 @@ import {
     warmSimilarityCacheForCube,
     determineCosineSimilarityScore,
     updateSimilarityForCube,
+    enrichCube
 } from './CubeFunctions';
+import { DEFAULT_KEYWORD_COST_TABLE } from './KeywordCosts';
 import type { Cube, CubeCard, ScryfallDataStructure, SimilarityMatrix, SimilarityScore } from '../types';
 
 const score = (n: number): SimilarityScore => ({ cosineSimilarity: n, insersectionSize: 0 });
@@ -333,5 +335,54 @@ describe('warmSimilarityCacheForCube', () => {
 
         expect(matrix.a.b).toEqual(score(-999));
         expect(matrix.b.a).toEqual(score(-999));
+    });
+});
+
+describe('enrichCube complexity stats', () => {
+    beforeEach(() => {
+        _clearScryfallRefreshListenersForTesting();
+    });
+
+    afterEach(() => {
+        _applyFreshScryfallForTesting({ cards: {}, tokens: {}, sets: {}, setDates: {} });
+    });
+
+    it('scores complexity and falls back to the default keyword cost table when card data lacks keywordCosts', () => {
+        _applyFreshScryfallForTesting({
+            cards: {
+                'cascade-card': {
+                    name: 'Cascade Card',
+                    effectiveTypes: ['Creature'],
+                    keywords: ['Cascade'],
+                    layout: 'normal',
+                    oracleTextWordCountMinusParen: 1,
+                } as any,
+                'plain-land': {
+                    name: 'Plain Land',
+                    effectiveTypes: ['Land'],
+                    keywords: [],
+                    layout: 'normal',
+                    oracleTextWordCountMinusParen: 0,
+                } as any,
+            },
+            tokens: {},
+            sets: {},
+            setDates: {},
+        });
+
+        const cube = enrichCube({
+            id: 'complexity-cube',
+            name: 'Complexity Cube',
+            owner: 'owner',
+            cards: [
+                { printingId: 'p1', oracleId: 'cascade-card' },
+                { printingId: 'p2', oracleId: 'plain-land' },
+            ],
+        });
+
+        expect(Number.isInteger(cube.stats!.complexityScore)).toBe(true);
+        expect(cube.stats!.complexityScore).toBeGreaterThanOrEqual(0);
+        expect(cube.stats!.complexityScore).toBeLessThanOrEqual(100);
+        expect(cube.stats!.complexityBreakdown.raw.keywordFrequencyLoad).toBe(DEFAULT_KEYWORD_COST_TABLE.fallback / 2);
     });
 });
