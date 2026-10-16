@@ -60,6 +60,21 @@ export interface CubeCard {
   customImageUrl?: string;
 }
 
+export interface ComplexityComponents {
+  nonLandWords: number;
+  landWords: number;
+  distinctKeywordLoad: number;
+  keywordFrequencyLoad: number;
+  /** Raw: average popularity (0–100). Normalized: 1 − clamped normalized popularity. */
+  familiarity: number;
+  layoutLoad: number;
+}
+
+export interface ComplexityBreakdown {
+  raw: ComplexityComponents;
+  normalized: ComplexityComponents;
+}
+
 export interface CubeStats {
   totalCards: number;
   totalUniqueCards: number;
