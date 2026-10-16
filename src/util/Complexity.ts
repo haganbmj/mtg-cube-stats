@@ -31,21 +31,21 @@ export const LAYOUT_WEIGHTS: Record<string, number> = {
 export const DISTINCT_KEYWORD_SIZE_EXPONENT = 0.5;
 
 export const COMPLEXITY_BOUNDS: Record<ComponentKey, { low: number; high: number }> = {
-    nonLandWords: { low: 16.91, high: 30.70 },
-    landWords: { low: 11.34, high: 25.57 },
-    distinctKeywordLoad: { low: 19.25, high: 81.12 },
-    keywordFrequencyLoad: { low: 3.90, high: 10.22 },
-    familiarity: { low: 1.63, high: 6.80 },
-    layoutLoad: { low: 0.00, high: 0.06 },
+    nonLandWords: { low: 16.913, high: 30.700 },
+    landWords: { low: 11.338, high: 25.610 },
+    distinctKeywordLoad: { low: 19.253, high: 81.118 },
+    keywordFrequencyLoad: { low: 3.901, high: 10.205 },
+    familiarity: { low: 1.629, high: 6.803 },
+    layoutLoad: { low: 0.001, high: 0.056 },
 };
 
 export const COMPLEXITY_WEIGHTS: Record<ComponentKey, number> = {
-    nonLandWords: 5,
-    landWords: 1.25,
-    distinctKeywordLoad: 1,
+    nonLandWords: 11,
+    landWords: 2,
+    distinctKeywordLoad: 2,
     keywordFrequencyLoad: 0.5,
     familiarity: 0.25,
-    layoutLoad: 0.75,
+    layoutLoad: 0.5,
 };
 
 export const COMPLEXITY_COMPONENT_LABELS: Record<ComponentKey, string> = {

@@ -51,8 +51,8 @@ function main(): void {
     console.log('export const COMPLEXITY_BOUNDS: Record<ComponentKey, { low: number; high: number }> = {');
     for (const key of COMPONENT_KEYS) {
         const sorted = [...rawById.values()].map(c => c.raw[key]).sort((a, b) => a - b);
-        const low = percentile(sorted, 0.05).toFixed(2);
-        const high = percentile(sorted, 0.95).toFixed(2);
+        const low = percentile(sorted, 0.05).toFixed(3);
+        const high = percentile(sorted, 0.95).toFixed(3);
         console.log(`    ${key}: { low: ${low}, high: ${high} },`);
     }
     console.log('};\n');
