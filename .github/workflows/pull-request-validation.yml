@@ -29,12 +29,15 @@ jobs:
           key: cube-preloads-${{ github.run_id }}
           restore-keys: |
             cube-preloads-
+      # The `path` list is part of the cache version hash; it must stay identical
+      # to the save step in github-pages.yml or every restore misses.
       - name: Restore Cache Card List
         uses: actions/cache/restore@v6.1.0
         with:
           path: |
             data/default-cards.jsonl
             data/flavor-words.json
+            data/sets.json
             data/tagger-data.json
           key: scryfall-json-${{ github.run_id }}
           restore-keys: |

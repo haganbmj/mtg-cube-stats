@@ -59,6 +59,8 @@ jobs:
           key: cube-preloads-${{ github.run_id }}
           restore-keys: |
             cube-preloads-
+      # The `path` list is part of the cache version hash; it must stay identical
+      # to the matching save step and to pull-request-validation.yml or restores miss.
       - name: Restore Cached Card List
         uses: actions/cache/restore@v6.1.0
         with:
@@ -67,10 +69,16 @@ jobs:
             data/flavor-words.json
             data/sets.json
             data/tagger-data.json
-            data/cubecobra-card-stats.json
           key: scryfall-json-${{ github.run_id }}
           restore-keys: |
             scryfall-json-
+      - name: Restore Cached CubeCobra Card Stats
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: data/cubecobra-card-stats.json
+          key: cobra-cards-${{ github.run_id }}
+          restore-keys: |
+            cobra-cards-
 
       - run: echo "VITE_BUILD_SHA=$GITHUB_SHA" >> $GITHUB_ENV
       - run: npm ci
@@ -92,8 +100,12 @@ jobs:
             data/flavor-words.json
             data/sets.json
             data/tagger-data.json
-            data/cubecobra-card-stats.json
           key: scryfall-json-${{ github.run_id }}
+      - name: Save Cached CubeCobra Card Stats
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: data/cubecobra-card-stats.json
+          key: cobra-cards-${{ github.run_id }}
       - name: Save Cached Preloads
         uses: actions/cache/save@v6.1.0
         with:
