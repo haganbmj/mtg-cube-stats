@@ -566,6 +566,7 @@ const peerStats = computed(() => {
         averageElo:                 ms(cubes.map(c => c.stats?.averageElo ?? 0)),
         averagePopularity:          ms(cubes.map(c => c.stats?.averagePopularity ?? 0)),
         blendedRarityScore:         ms(cubes.map(c => c.stats?.blendedRarityScore ?? 0)),
+        complexityScore:            ms(cubes.map(c => c.stats?.complexityScore ?? 0)),
         averageReleaseYear:         ms(cubes.map(c => c.stats?.averageReleaseYear ?? 0)),
         medianReleaseYear:          ms(cubes.map(c => c.stats?.medianReleaseYear ?? 0)),
         averageWordCount:           ms(cubes.map(c => c.stats?.averageWordCount ?? 0)),

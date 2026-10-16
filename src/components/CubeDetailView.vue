@@ -136,6 +136,18 @@
                                     </el-tooltip>
                                 </div>
                                 <div class="stat-item">
+                                    <i class="ms ms-ability-learn ms-2x stat-icon"></i>
+                                    <el-tooltip :content="statTooltip(activeCube.stats?.complexityBreakdown ? complexityBreakdownHtml(activeCube.stats.complexityBreakdown) : 'Comprehension effort, 0–100', activeCubeComparisons.complexityScore)" raw-content placement="top" :hide-after="50" :enterable="false">
+                                        <div>
+                                            <div class="stat-value">
+                                                {{ activeCube.stats?.complexityScore ?? 0 }}
+                                                <StatCmpIndicator :comparison="activeCubeComparisons.complexityScore" />
+                                            </div>
+                                            <div class="stat-label">Complexity Score</div>
+                                        </div>
+                                    </el-tooltip>
+                                </div>
+                                <div class="stat-item">
                                     <i class="ms ms-ability-deathtouch ms-2x stat-icon"></i>
                                     <el-tooltip :content="statTooltip('Cards tagged as removal in Scryfall Tagger', activeCubeComparisons.removalRatio)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
@@ -797,6 +809,7 @@ import type { ChecksState, CheckResult } from '../types/checks';
 import type { ScryfallToken } from '../types/scryfall';
 import { formatPrice } from '../util/HelperFunctions';
 import { getTokens } from '../util/CubeFunctions';
+import { complexityBreakdownHtml } from '../util/Complexity';
 import { filterMode, visualColumnCount } from '../util/CubeListDisplayPrefs';
 import { getCategoryTagColor, getCategoryTooltip } from '../util/CubeCategories';
 import { listCachedSnapshots, evictCube } from '../util/CubeCache';
@@ -1200,6 +1213,7 @@ const activeCubeComparisons = computed((): Record<string, ComparisonResult | nul
         averageElo:                 cmp(stats?.averageElo ?? 0, 'averageElo'),
         averagePopularity:          cmp(stats?.averagePopularity ?? 0, 'averagePopularity'),
         blendedRarityScore:         cmp(stats?.blendedRarityScore ?? 0, 'blendedRarityScore'),
+        complexityScore:            cmp(stats?.complexityScore ?? 0, 'complexityScore'),
         averageReleaseYear:         cmp(stats?.averageReleaseYear ?? 0, 'averageReleaseYear'),
         medianReleaseYear:          cmp(stats?.medianReleaseYear ?? 0, 'medianReleaseYear'),
         averageWordCount:           cmp(stats?.averageWordCount ?? 0, 'averageWordCount'),

@@ -482,6 +482,19 @@
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.blendedRarityScore ?? 0, 'blendedRarityScore')" />
             </template>
 
+            <template #cell-complexityScore="{ row }">
+                <el-tooltip v-if="row.stats?.complexityBreakdown" :content="complexityBreakdownHtml(row.stats.complexityBreakdown)" raw-content placement="top" :hide-after="50" :enterable="false">
+                    <span>
+                        {{ row.stats?.complexityScore ?? 0 }}
+                        <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.complexityScore ?? 0, 'complexityScore')" />
+                    </span>
+                </el-tooltip>
+                <template v-else>
+                    {{ row.stats?.complexityScore ?? 0 }}
+                    <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.complexityScore ?? 0, 'complexityScore')" />
+                </template>
+            </template>
+
             <template #cell-averageWordCount="{ row }">
                 {{ (row.stats?.averageWordCount ?? 0).toFixed(2) }}
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.averageWordCount ?? 0, 'averageWordCount')" />
@@ -526,6 +539,7 @@ import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 import { parseCubeIdInput } from '../util/CubeCobra';
+import { complexityBreakdownHtml } from '../util/Complexity';
 import { openCubeDetailDialogKey } from '../types/injectionKeys';
 import type { ChecksState, CheckResult } from '../types/checks';
 
@@ -622,6 +636,7 @@ const defaultColumnOrder = [
     'stats.averageElo',
     'stats.averagePopularity',
     'stats.blendedRarityScore',
+    'stats.complexityScore',
     'stats.averageWordCount',
     'stats.averageWordCountUnique',
     'stats.uniqueKeywords',
@@ -659,6 +674,7 @@ const columnMeta: Record<string, { label: string; tooltip?: string }> = {
     'stats.averageElo': { label: 'Avg. Card Elo', tooltip: 'Average CubeCobra Card Elo Rating' },
     'stats.averagePopularity': { label: 'Avg. Card Popularity', tooltip: 'Average CubeCobra Card Popularity Score' },
     'stats.blendedRarityScore': { label: 'Rarity Score', tooltip: 'Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200' },
+    'stats.complexityScore': { label: 'Complexity Score', tooltip: 'Comprehension effort, 0–100: word counts, keywords, unfamiliarity, and layouts' },
     'stats.averageWordCount': { label: 'Avg. Word Count', tooltip: 'Average Oracle Text Word Count, excluding Reminder Text' },
     'stats.averageWordCountUnique': { label: 'Avg. Word Count (Unique)', tooltip: 'Average Oracle Text Word Count of Unique Cards, excluding Reminder Text' },
     'stats.uniqueKeywords': { label: 'Keywords', tooltip: 'Number of Unique Keywords' },
@@ -1020,6 +1036,7 @@ const columnDefsMap: Record<string, StickyTableColumn> = {
     'stats.averageElo': { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '70px', formatter: fmtFixed2('stats.averageElo'), sortable: true, tooltip: 'Average CubeCobra Elo Rating' },
     'stats.averagePopularity': { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Pop.', minWidth: '70px', formatter: fmtPopularity('stats.averagePopularity'), sortable: true, tooltip: 'Average CubeCobra Card Popularity %' },
     'stats.blendedRarityScore': { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', formatter: fmtFixed2('stats.blendedRarityScore'), sortable: true, tooltip: 'Blended Rarity Score — minimum rarity per card, C=0.333, U=0.666, R=1.000, M=1.200' },
+    'stats.complexityScore': { key: 'complexityScore', prop: 'stats.complexityScore', label: 'Complexity', minWidth: '85px', sortable: true, tooltip: 'Comprehension effort, 0–100: word counts, keywords, unfamiliarity, and layouts' },
     'stats.averageWordCount': { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Words', minWidth: '75px', formatter: fmtFixed2('stats.averageWordCount'), sortable: true, tooltip: 'Average Oracle Text Word Count (excluding Reminder Text)' },
     'stats.averageWordCountUnique': { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Words*', minWidth: '80px', formatter: fmtFixed2('stats.averageWordCountUnique'), sortable: true, tooltip: 'Average Oracle Text Word Count of Unique Cards (excluding Reminder Text)' },
     'stats.uniqueKeywords': { key: 'uniqueKeywords', prop: 'stats.uniqueKeywords', label: 'Keywords', minWidth: '75px', sortable: true, tooltip: 'Number of unique keywords' },
