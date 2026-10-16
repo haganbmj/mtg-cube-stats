@@ -86,4 +86,4 @@ This is a **purely static site** — no API server, no server-side rendering. Al
 **Key Design Decisions**:
 - Cosine similarity used over Jaccard (better for variable cube sizes)
 - Card data uses original printing (CubeCobra overrides ignored)
-- Rarity scoring: Common=0.333, Uncommon=0.666, Rare=1.0, Mythic=1.2
+- Rarity scoring (×100 scale, shown as whole numbers): Common=33.3, Uncommon=66.6, Rare=100, Mythic=120

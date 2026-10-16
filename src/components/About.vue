@@ -83,7 +83,7 @@
             <p class="formula" style="margin-top: 0.75em;">
                 $$\text{Rarity Score} = \frac{1}{n} \sum_{i=1}^{n} w(r_i)$$
             </p>
-            <p>where $w(r_i)$ is the weight for card $i$'s minimum rarity and $n$ is the total card count. A pure common cube scores $\approx 0.333$, while a cube of all mythics scores $1.200$.</p>
+            <p>where $w(r_i)$ is the weight for card $i$'s minimum rarity and $n$ is the total card count. A pure common cube scores $\approx 33$, while a cube of all mythics scores $120$. Scores are shown rounded to whole numbers.</p>
         </section>
 
         <section>
@@ -266,11 +266,11 @@ const frequencyCubesLastModified = computed(() => {
 const frequencyTotalCubes = computed(() => getFrequencyData()?.cubeCount?.total ?? null);
 
 const rarityScoreData = [
-    { rarity: 'Common', weight: '0.333' },
-    { rarity: 'Uncommon', weight: '0.666' },
-    { rarity: 'Rare', weight: '1.000' },
-    { rarity: 'Mythic', weight: '1.200' },
-    { rarity: 'Bonus', weight: '1.000' },
+    { rarity: 'Common', weight: '33.3' },
+    { rarity: 'Uncommon', weight: '66.6' },
+    { rarity: 'Rare', weight: '100' },
+    { rarity: 'Mythic', weight: '120' },
+    { rarity: 'Bonus', weight: '100' },
 ];
 
 const complexityComponentDescriptions: Record<keyof typeof COMPLEXITY_WEIGHTS, string> = {

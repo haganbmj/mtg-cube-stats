@@ -89,11 +89,11 @@ export function getKeywordCostTable(): KeywordCostTable {
 }
 
 const rarityScoreMap: Record<string, number> = {
-    common: 0.333,
-    uncommon: 0.666,
-    rare: 1.000,
-    mythic: 1.200,
-    bonus: 1.000,
+    common: 33.3,
+    uncommon: 66.6,
+    rare: 100,
+    mythic: 120,
+    bonus: 100,
 };
 
 /**

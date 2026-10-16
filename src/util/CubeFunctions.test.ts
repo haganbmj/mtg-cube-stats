@@ -386,3 +386,28 @@ describe('enrichCube complexity stats', () => {
         expect(cube.stats!.complexityBreakdown.raw.keywordFrequencyLoad).toBe(DEFAULT_KEYWORD_COST_TABLE.fallback / 2);
     });
 });
+
+describe('enrichCube rarity score', () => {
+    afterEach(() => {
+        _applyFreshScryfallForTesting({ cards: {}, tokens: {}, sets: {}, setDates: {} });
+    });
+
+    it('averages per-card minimum-rarity weights on a ×100 scale (C=33.3, U=66.6, R=100, M=120)', () => {
+        const card = (minRarity: string) => ({ name: minRarity, effectiveTypes: ['Creature'], keywords: [], layout: 'normal', minRarity } as any);
+        _applyFreshScryfallForTesting({
+            cards: { c: card('common'), u: card('uncommon'), r: card('rare'), m: card('mythic') },
+            tokens: {},
+            sets: {},
+            setDates: {},
+        });
+
+        const cube = enrichCube({
+            id: 'rarity-cube',
+            name: 'Rarity Cube',
+            owner: 'owner',
+            cards: ['c', 'u', 'r', 'm'].map((oracleId, i) => ({ printingId: `p${i}`, oracleId })),
+        });
+
+        expect(cube.stats!.blendedRarityScore).toBeCloseTo((33.3 + 66.6 + 100 + 120) / 4, 5);
+    });
+});

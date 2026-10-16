@@ -125,10 +125,10 @@
                                 </div>
                                 <div class="stat-item">
                                     <i class="ms ms-rarity ms-2x stat-icon"></i>
-                                    <el-tooltip :content="statTooltip('Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200', activeCubeComparisons.blendedRarityScore)" raw-content placement="top" :hide-after="50" :enterable="false">
+                                    <el-tooltip :content="statTooltip('Card Minimum Rarity Score, using C=33, U=67, R=100, M=120', activeCubeComparisons.blendedRarityScore)" raw-content placement="top" :hide-after="50" :enterable="false">
                                         <div>
                                             <div class="stat-value">
-                                                {{ (activeCube.stats?.blendedRarityScore ?? 0).toFixed(2) }}
+                                                {{ Math.round(activeCube.stats?.blendedRarityScore ?? 0) }}
                                                 <StatCmpIndicator :comparison="activeCubeComparisons.blendedRarityScore" />
                                             </div>
                                             <div class="stat-label">Rarity Score</div>

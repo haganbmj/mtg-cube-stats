@@ -478,7 +478,7 @@
             </template>
 
             <template #cell-blendedRarityScore="{ row }">
-                {{ (row.stats?.blendedRarityScore ?? 0).toFixed(2) }}
+                {{ Math.round(row.stats?.blendedRarityScore ?? 0) }}
                 <StatCmpIndicator v-if="showPeerComparisons" :comparison="rowCmp(row.stats?.blendedRarityScore ?? 0, 'blendedRarityScore')" />
             </template>
 
@@ -673,7 +673,7 @@ const columnMeta: Record<string, { label: string; tooltip?: string }> = {
     'stats.averageNonLandCmc': { label: 'Avg. Mana Value', tooltip: 'Average Mana Value of Non-Land Cards' },
     'stats.averageElo': { label: 'Avg. Card Elo', tooltip: 'Average CubeCobra Card Elo Rating' },
     'stats.averagePopularity': { label: 'Avg. Card Popularity', tooltip: 'Average CubeCobra Card Popularity Score' },
-    'stats.blendedRarityScore': { label: 'Rarity Score', tooltip: 'Card Minimum Rarity Score, using C=0.333, U=0.666, R=1.000, M=1.200' },
+    'stats.blendedRarityScore': { label: 'Rarity Score', tooltip: 'Card Minimum Rarity Score, using C=33, U=67, R=100, M=120' },
     'stats.complexityScore': { label: 'Complexity Score', tooltip: 'Comprehension effort, 0–100: word counts, keywords, unfamiliarity, and layouts' },
     'stats.averageWordCount': { label: 'Avg. Word Count', tooltip: 'Average Oracle Text Word Count, excluding Reminder Text' },
     'stats.averageWordCountUnique': { label: 'Avg. Word Count (Unique)', tooltip: 'Average Oracle Text Word Count of Unique Cards, excluding Reminder Text' },
@@ -1001,6 +1001,7 @@ function handleTableSortChange(payload: { prop: string; order: 'ascending' | 'de
 
 // --- Formatter helpers ---
 const fmtFixed2 = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2);
+const fmtRounded = (prop: string) => (row: any) => String(Math.round(getNestedProp(row, prop) ?? 0));
 const fmtPriceUsd = (prop: string) => (row: any) => '$' + formatPrice(getNestedProp(row, prop) ?? 0);
 const fmtPriceTix = (prop: string) => (row: any) => formatPrice(getNestedProp(row, prop) ?? 0);
 const fmtPopularity = (prop: string) => (row: any) => (getNestedProp(row, prop) ?? 0).toFixed(2) + ' %';
@@ -1035,7 +1036,7 @@ const columnDefsMap: Record<string, StickyTableColumn> = {
     'stats.averageNonLandCmc': { key: 'averageNonLandCmc', prop: 'stats.averageNonLandCmc', label: 'Avg. MV', minWidth: '70px', formatter: fmtFixed2('stats.averageNonLandCmc'), sortable: true, tooltip: 'Average Mana Value of Non-Land Cards' },
     'stats.averageElo': { key: 'averageElo', prop: 'stats.averageElo', label: 'Avg. Elo', minWidth: '70px', formatter: fmtFixed2('stats.averageElo'), sortable: true, tooltip: 'Average CubeCobra Elo Rating' },
     'stats.averagePopularity': { key: 'averagePopularity', prop: 'stats.averagePopularity', label: 'Avg. Pop.', minWidth: '70px', formatter: fmtPopularity('stats.averagePopularity'), sortable: true, tooltip: 'Average CubeCobra Card Popularity %' },
-    'stats.blendedRarityScore': { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', formatter: fmtFixed2('stats.blendedRarityScore'), sortable: true, tooltip: 'Blended Rarity Score — minimum rarity per card, C=0.333, U=0.666, R=1.000, M=1.200' },
+    'stats.blendedRarityScore': { key: 'blendedRarityScore', prop: 'stats.blendedRarityScore', label: 'Rarity', minWidth: '65px', formatter: fmtRounded('stats.blendedRarityScore'), sortable: true, tooltip: 'Blended Rarity Score — minimum rarity per card, C=33, U=67, R=100, M=120' },
     'stats.complexityScore': { key: 'complexityScore', prop: 'stats.complexityScore', label: 'Complexity', minWidth: '85px', sortable: true, tooltip: 'Comprehension effort, 0–100: word counts, keywords, unfamiliarity, and layouts' },
     'stats.averageWordCount': { key: 'averageWordCount', prop: 'stats.averageWordCount', label: 'Avg. Words', minWidth: '75px', formatter: fmtFixed2('stats.averageWordCount'), sortable: true, tooltip: 'Average Oracle Text Word Count (excluding Reminder Text)' },
     'stats.averageWordCountUnique': { key: 'averageWordCountUnique', prop: 'stats.averageWordCountUnique', label: 'Avg. Words*', minWidth: '80px', formatter: fmtFixed2('stats.averageWordCountUnique'), sortable: true, tooltip: 'Average Oracle Text Word Count of Unique Cards (excluding Reminder Text)' },

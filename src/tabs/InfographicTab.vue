@@ -460,7 +460,7 @@
                                 <div class="cube-details-compact">
                                     <h4><a :href="`https://cubecobra.com/cube/about/${externalCubeId(lowestRarityScoreCube)}`" target="_blank" @click.prevent="openCubeDetailDialog(lowestRarityScoreCube.id)">{{ displayName(lowestRarityScoreCube) }}</a></h4>
                                     <p>by <a :href="`https://cubecobra.com/user/view/${lowestRarityScoreCube.owner}`" target="_blank" rel="noopener">{{ lowestRarityScoreCube.owner }}</a></p>
-                                    <div class="stat-highlight">Rarity Score: {{ lowestRarityScoreCube.stats.blendedRarityScore.toFixed(2) }}</div>
+                                    <div class="stat-highlight">Rarity Score: {{ Math.round(lowestRarityScoreCube.stats.blendedRarityScore) }}</div>
                                 </div>
                             </div>
                         </div>
