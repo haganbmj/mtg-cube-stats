@@ -31,6 +31,9 @@ describe('parseDuration', () => {
     it('parses years as 365 days', () => {
         expect(parseDuration('1y')).toBe(365 * DAY_MS);
     });
+    it('parses weeks', () => {
+        expect(parseDuration('2w')).toBe(14 * DAY_MS);
+    });
     it('throws on malformed input', () => {
         expect(() => parseDuration('6months')).toThrow();
         expect(() => parseDuration('')).toThrow();
