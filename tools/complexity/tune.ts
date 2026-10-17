@@ -53,7 +53,10 @@ function main(): void {
     console.log(`Computed raw components for ${rawById.size} cubes.\n`);
     console.log('export const COMPLEXITY_BOUNDS: Record<ComponentKey, { low: number; high: number }> = {');
     for (const key of COMPONENT_KEYS) {
-        const sorted = [...rawById.values()].map(c => c.raw[key]).sort((a, b) => a - b);
+        const sorted = [...rawById.values()]
+            .map(c => c.raw[key])
+            .filter((value): value is number => value !== null)
+            .sort((a, b) => a - b);
         const low = percentile(sorted, 0.05).toFixed(3);
         const high = percentile(sorted, 0.95).toFixed(3);
         console.log(`    ${key}: { low: ${low}, high: ${high} },`);
@@ -80,7 +83,7 @@ function main(): void {
     console.log(`${preset.label} ranking:`);
     console.log(['rank', 'score', ...COMPONENT_KEYS, 'name'].join('\t'));
     ranked.forEach((cube, i) => {
-        const values = COMPONENT_KEYS.map(key => cube.breakdown.normalized[key].toFixed(2));
+        const values = COMPONENT_KEYS.map(key => cube.breakdown.normalized[key]?.toFixed(2) ?? 'n/a');
         console.log([i + 1, cube.score, ...values, cube.name].join('\t'));
     });
 

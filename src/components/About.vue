@@ -89,7 +89,10 @@
         <section>
             <h3>Complexity Score</h3>
             <p>
-                A whole number from 0 to 100 estimating how much rules text and cognitive load a cube asks of its players. Six components are measured per cube, then each is normalized against fixed bounds. The Low and High bounds are the 5th and 95th percentiles of each component across the preloaded cube collections, derived with <code>npm run complexity:tune</code>.
+                A whole number from 0 to 100 estimating how much rules text and cognitive load a cube asks of its players. Nine components are measured per cube, then each is normalized against fixed bounds. The Low and High bounds are the 5th and 95th percentiles of each component across the <strong>CubeCobra Top 100</strong>, derived with <code>npm run complexity:tune</code>.
+                Per-card averages count each distinct card once, so duplicate copies don't skew them.
+                Land and non-land cards are measured and weighted separately, with lands weighted lower than their non-land counterparts.
+                Cubes without lands leave the land components out of the score.
             </p>
             <el-table :data="complexityComponentData" style="max-width: 900px;" size="small" :show-header="true" stripe>
                 <el-table-column prop="component" label="Component" min-width="140" />
@@ -101,7 +104,7 @@
             <p class="formula" style="margin-top: 0.75em;">
                 $$\text{Complexity} = \operatorname{round}\left(100 \cdot \frac{\sum_i w_i c_i}{\sum_i w_i}\right)$$
             </p>
-            <p>where $w_i$ is the component weight and $c_i$ is the component value normalized between its Low and High bounds and clamped to $[0, 1]$. Familiarity is inverted ($c = 1 - \text{normalized popularity}$), so less popular cards make a cube more complex.</p>
+            <p>where $w_i$ is the component weight and $c_i$ is the component value normalized between its Low and High bounds and clamped to $[0, 1]$; the sums run over the components present for the cube. Unfamiliarity is inverted ($c = 1 - \text{normalized popularity}$), so less popular cards make a cube more complex.</p>
 
             <h4>Layout Weights</h4>
             <el-table :data="layoutWeightData" style="max-width: 700px;" size="small" :show-header="true" stripe>
@@ -112,9 +115,10 @@
             <h4>Keyword Cost</h4>
             <p>
                 Each keyword's cost is the median word count of its reminder text across Scryfall Oracle text.
-                Evergreen keywords cost a fixed {{ EVERGREEN_KEYWORD_COST }}, and keywords without reminder text use the median cost of the others.
-                Distinct keyword load is divided by {{ distinctKeywordDivisor }}, where $n$ is the cube's card count, so larger cubes aren't penalized for naturally containing more distinct keywords.
-                Familiarity uses CubeCobra card popularity.
+                Reminder text only counts when no other keyword on that card, and no em dash (—), comes between the keyword and the parenthesis.
+                Evergreen keywords cost a fixed {{ EVERGREEN_KEYWORD_COST }}, ability words (Scryfall's list) cost a fixed {{ ABILITY_WORD_KEYWORD_COST }}, and keywords without reminder text use the median cost of the others.
+                Distinct keyword load is divided by {{ distinctKeywordDivisor }}, where $n$ is the cube's total card count (copies included), so larger cubes aren't penalized for naturally containing more distinct keywords.
+                Unfamiliarity uses CubeCobra card popularity.
             </p>
         </section>
 
@@ -198,8 +202,9 @@
 import { ref, computed, onMounted } from 'vue';
 import katex from 'katex';
 import { getFrequencyData, initFrequencyData } from '../util/CubeCobraFrequency';
-import { COMPLEXITY_BOUNDS, COMPLEXITY_COMPONENT_LABELS, COMPLEXITY_WEIGHTS, DISTINCT_KEYWORD_SIZE_EXPONENT, LAYOUT_WEIGHTS } from '../util/Complexity';
-import { EVERGREEN_KEYWORD_COST } from '../util/KeywordCosts';
+import type { ComplexityComponentKey } from '../types';
+import { COMPLEXITY_BOUNDS, COMPLEXITY_COMPONENT_KEYS, COMPLEXITY_COMPONENT_LABELS, COMPLEXITY_WEIGHTS, DISTINCT_KEYWORD_SIZE_EXPONENT, LAYOUT_WEIGHTS } from '../util/Complexity';
+import { ABILITY_WORD_KEYWORD_COST, EVERGREEN_KEYWORD_COST } from '../util/KeywordCosts';
 
 initFrequencyData();
 
@@ -273,16 +278,19 @@ const rarityScoreData = [
     { rarity: 'Bonus', weight: '100' },
 ];
 
-const complexityComponentDescriptions: Record<keyof typeof COMPLEXITY_WEIGHTS, string> = {
-    nonLandWords: 'Average Oracle word count of non-land cards, excluding reminder text',
-    landWords: 'Average Oracle word count of land cards, excluding reminder text',
-    distinctKeywordLoad: 'Sum of keyword costs over distinct keywords, divided by card count^exponent',
-    keywordFrequencyLoad: 'Average per-card sum of keyword costs',
-    familiarity: 'Average CubeCobra card popularity, inverted (less popular = more complex)',
-    layoutLoad: 'Average per-card layout weight',
+const complexityComponentDescriptions: Record<ComplexityComponentKey, string> = {
+    nonLandWords: 'Average Oracle word count of distinct non-land cards, excluding reminder text',
+    landWords: 'Average Oracle word count of distinct land cards, excluding reminder text',
+    nonLandKeywordText: 'Average reminder-text word count of keywords on distinct non-land cards',
+    landKeywordText: 'Average reminder-text word count of keywords on distinct land cards',
+    nonLandFamiliarity: 'Average CubeCobra popularity of distinct non-land cards, inverted (less popular = more complex)',
+    landFamiliarity: 'Average CubeCobra popularity of distinct land cards, inverted (less popular = more complex)',
+    nonLandLayouts: 'Average layout weight of distinct non-land cards',
+    landLayouts: 'Average layout weight of distinct land cards',
+    distinctKeywordLoad: 'Sum of keyword costs over distinct keywords, divided by total card count^exponent',
 };
 
-const complexityComponentData = (Object.keys(COMPLEXITY_WEIGHTS) as (keyof typeof COMPLEXITY_WEIGHTS)[]).map(key => ({
+const complexityComponentData = COMPLEXITY_COMPONENT_KEYS.map(key => ({
     component: COMPLEXITY_COMPONENT_LABELS[key],
     description: complexityComponentDescriptions[key],
     weight: String(COMPLEXITY_WEIGHTS[key]),
