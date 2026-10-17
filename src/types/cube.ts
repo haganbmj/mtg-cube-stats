@@ -60,15 +60,22 @@ export interface CubeCard {
   customImageUrl?: string;
 }
 
-export interface ComplexityComponents {
-  nonLandWords: number;
-  landWords: number;
-  distinctKeywordLoad: number;
-  keywordFrequencyLoad: number;
-  /** Raw: average popularity (0–100). Normalized: 1 − clamped normalized popularity. */
-  familiarity: number;
-  layoutLoad: number;
-}
+export type ComplexityComponentKey =
+  | 'nonLandWords'
+  | 'landWords'
+  | 'nonLandKeywordText'
+  | 'landKeywordText'
+  | 'nonLandFamiliarity'
+  | 'landFamiliarity'
+  | 'nonLandLayouts'
+  | 'landLayouts'
+  | 'distinctKeywordLoad';
+
+/**
+ * `null` means the component's group (land or non-land) has no cards; `distinctKeywordLoad` is never `null`.
+ * Familiarity raw values are average popularity (0–100); normalized values are 1 − clamped normalized popularity.
+ */
+export type ComplexityComponents = Record<ComplexityComponentKey, number | null>;
 
 export interface ComplexityBreakdown {
   raw: ComplexityComponents;

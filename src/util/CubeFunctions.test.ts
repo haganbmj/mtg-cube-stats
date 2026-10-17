@@ -383,7 +383,8 @@ describe('enrichCube complexity stats', () => {
         expect(Number.isInteger(cube.stats!.complexityScore)).toBe(true);
         expect(cube.stats!.complexityScore).toBeGreaterThanOrEqual(0);
         expect(cube.stats!.complexityScore).toBeLessThanOrEqual(100);
-        expect(cube.stats!.complexityBreakdown.raw.keywordFrequencyLoad).toBe(DEFAULT_KEYWORD_COST_TABLE.fallback / 2);
+        expect(cube.stats!.complexityBreakdown.raw.nonLandKeywordText).toBe(DEFAULT_KEYWORD_COST_TABLE.fallback);
+        expect(cube.stats!.complexityBreakdown.raw.landKeywordText).toBe(0);
     });
 });
 
