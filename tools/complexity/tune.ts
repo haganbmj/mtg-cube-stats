@@ -1,18 +1,23 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { ComplexityComponents, Cube, CubeCard, PresetCollection, ScryfallDataStructure } from '../../src/types';
-import { COMPLEXITY_BOUNDS, computeComplexityComponents, scoreComplexity } from '../../src/util/Complexity';
+import type { ComplexityBreakdown, ComplexityComponents, Cube, CubeCard, PresetCollection, ScryfallDataStructure } from '../../src/types';
+import { COMPLEXITY_COMPONENT_KEYS, computeComplexityComponents, scoreComplexity } from '../../src/util/Complexity';
 import { DEFAULT_KEYWORD_COST_TABLE } from '../../src/util/KeywordCosts';
 
 const CARDS_PATH = 'data/cards-minimized.json';
 const CUBES_DIR = 'preloads/generated/cubes';
 const PRESETS_PATH = 'preloads/generated/presets.json';
-const REFERENCE_PRESET = 'capitol-cube-champs-2026';
-const REFERENCE_TOP = ['trinket', 'bacon'];
-const REFERENCE_BOTTOM = ['limited masters', 'fast and friendly'];
-const REFERENCE_SLACK = 5;
+const CORPUS_PRESET = 'cubecobra-top100';
+const REFERENCE_TOP = ['aquaone powered', 'Bodleian Cube', 'LSVCube', 'Nitpicking Nerds Commander Cube'];
+const REFERENCE_BOTTOM = ['Sacred Geometry', 'Alpha Reimagined', 'CLASSIC CUBE', 'Ancient Times', 'Pink Sleeves'];
+const EXTRA_BREAKDOWNS = ['The Amonkar Desert', '100 Ornithopters'];
+const REFERENCE_SLACK = 25;
 
-const COMPONENT_KEYS = Object.keys(COMPLEXITY_BOUNDS) as (keyof ComplexityComponents)[];
+interface ScoredCube {
+    name: string;
+    score: number;
+    breakdown: ComplexityBreakdown;
+}
 
 function readJson<T>(file: string): T {
     return JSON.parse(fs.readFileSync(file, 'utf-8')) as T;
@@ -27,13 +32,16 @@ function enrichCard(card: CubeCard, scryfall: ScryfallDataStructure): CubeCard {
 }
 
 function percentile(sorted: number[], p: number): number {
-    if (sorted.length === 0) {
-        return 0;
-    }
     const index = (sorted.length - 1) * p;
     const lower = Math.floor(index);
     const upper = Math.ceil(index);
     return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
+}
+
+// Older presets.json files list cubes as an array of ids.
+function presetCubeIds(preset: PresetCollection): string[] {
+    const cubes = preset.cubes as PresetCollection['cubes'] | string[];
+    return Array.isArray(cubes) ? cubes : Object.keys(cubes);
 }
 
 function main(): void {
@@ -43,64 +51,82 @@ function main(): void {
     }
     const table = scryfall.keywordCosts ?? DEFAULT_KEYWORD_COST_TABLE;
 
-    const rawById = new Map<string, { name: string; raw: ComplexityComponents }>();
-    for (const file of fs.readdirSync(CUBES_DIR).filter(f => f.endsWith('.json'))) {
-        const cube = readJson<Cube>(path.join(CUBES_DIR, file));
-        const cards = (cube.cards ?? []).map(card => enrichCard(card, scryfall));
-        rawById.set(cube.id, { name: cube.name, raw: computeComplexityComponents(cards, table) });
+    const preset = readJson<PresetCollection[]>(PRESETS_PATH).find(p => p.name === CORPUS_PRESET);
+    if (!preset) {
+        console.error(`Preset ${CORPUS_PRESET} not found in ${PRESETS_PATH}; run \`npm run preload\` first.`);
+        process.exit(1);
     }
 
-    console.log(`Computed raw components for ${rawById.size} cubes.\n`);
-    console.log('export const COMPLEXITY_BOUNDS: Record<ComponentKey, { low: number; high: number }> = {');
-    for (const key of COMPONENT_KEYS) {
-        const sorted = [...rawById.values()]
+    const corpus: { name: string; raw: ComplexityComponents }[] = [];
+    for (const id of presetCubeIds(preset)) {
+        const file = path.join(CUBES_DIR, `${id}.json`);
+        if (!fs.existsSync(file)) {
+            console.warn(`Warning: no generated file for ${CORPUS_PRESET} cube ${id} (${file}).`);
+            continue;
+        }
+        const cube = readJson<Cube>(file);
+        const cards = (cube.cards ?? []).map(card => enrichCard(card, scryfall));
+        corpus.push({ name: cube.name, raw: computeComplexityComponents(cards, table) });
+    }
+
+    console.log(`Computed raw components for ${corpus.length} ${CORPUS_PRESET} cubes.\n`);
+    console.log('export const COMPLEXITY_BOUNDS: Record<ComplexityComponentKey, { low: number; high: number }> = {');
+    for (const key of COMPLEXITY_COMPONENT_KEYS) {
+        const sorted = corpus
             .map(c => c.raw[key])
             .filter((value): value is number => value !== null)
             .sort((a, b) => a - b);
+        if (sorted.length === 0) {
+            console.warn(`Warning: no non-null ${key} values in the corpus; bounds unavailable.`);
+            console.log(`    ${key}: { low: 0, high: 0 },`);
+            continue;
+        }
         const low = percentile(sorted, 0.05).toFixed(3);
         const high = percentile(sorted, 0.95).toFixed(3);
         console.log(`    ${key}: { low: ${low}, high: ${high} },`);
     }
     console.log('};\n');
 
-    const preset = readJson<PresetCollection[]>(PRESETS_PATH).find(p => p.name === REFERENCE_PRESET);
-    if (!preset) {
-        console.log(`Preset ${REFERENCE_PRESET} not found; skipping reference check.`);
-        return;
-    }
-
-    const ranked = Object.keys(preset.cubes)
-        .flatMap(id => {
-            const entry = rawById.get(id);
-            if (!entry) {
-                console.warn(`Missing generated cube ${id} from ${REFERENCE_PRESET}.`);
-                return [];
-            }
-            return [{ name: entry.name, ...scoreComplexity(entry.raw) }];
-        })
+    const ranked: ScoredCube[] = corpus
+        .map(cube => ({ name: cube.name, ...scoreComplexity(cube.raw) }))
         .sort((a, b) => b.score - a.score);
 
     console.log(`${preset.label} ranking:`);
-    console.log(['rank', 'score', ...COMPONENT_KEYS, 'name'].join('\t'));
-    ranked.forEach((cube, i) => {
-        const values = COMPONENT_KEYS.map(key => cube.breakdown.normalized[key]?.toFixed(2) ?? 'n/a');
-        console.log([i + 1, cube.score, ...values, cube.name].join('\t'));
-    });
+    console.log(['rank', 'score', 'name'].join('\t'));
+    ranked.forEach((cube, i) => console.log([i + 1, cube.score, cube.name].join('\t')));
 
-    const rankOf = (needle: string) => 1 + ranked.findIndex(c => c.name.toLowerCase().includes(needle));
+    const findCube = (name: string) => ranked.find(c => c.name.toLowerCase() === name.toLowerCase());
+
+    console.log('\nBreakdowns (normalized):');
+    console.log(['score', ...COMPLEXITY_COMPONENT_KEYS, 'name'].join('\t'));
+    for (const name of [...REFERENCE_TOP, ...REFERENCE_BOTTOM, ...EXTRA_BREAKDOWNS]) {
+        const cube = findCube(name);
+        if (!cube) {
+            console.log(`not found: ${name}`);
+            continue;
+        }
+        const values = COMPLEXITY_COMPONENT_KEYS.map(key => cube.breakdown.normalized[key]?.toFixed(2) ?? 'n/a');
+        console.log([cube.score, ...values, cube.name].join('\t'));
+    }
+
+    // Ties resolve pessimistically: a tied top cube ranks below its ties, a tied bottom cube above them.
+    const topRank = (cube: ScoredCube) => ranked.filter(c => c.score >= cube.score).length;
+    const bottomRank = (cube: ScoredCube) => ranked.filter(c => c.score > cube.score).length + 1;
+    const check = (name: string, top: boolean) => {
+        const cube = findCube(name);
+        if (!cube) {
+            return { name, rank: null, pass: false };
+        }
+        const rank = top ? topRank(cube) : bottomRank(cube);
+        return { name, rank, pass: top ? rank <= REFERENCE_SLACK : rank > ranked.length - REFERENCE_SLACK };
+    };
     const checks = [
-        ...REFERENCE_TOP.map(needle => {
-            const rank = rankOf(needle);
-            return { needle, rank, pass: rank > 0 && rank <= REFERENCE_SLACK };
-        }),
-        ...REFERENCE_BOTTOM.map(needle => {
-            const rank = rankOf(needle);
-            return { needle, rank, pass: rank > ranked.length - REFERENCE_SLACK };
-        }),
+        ...REFERENCE_TOP.map(name => check(name, true)),
+        ...REFERENCE_BOTTOM.map(name => check(name, false)),
     ];
     console.log('');
-    for (const check of checks) {
-        console.log(`${check.pass ? 'ok  ' : 'miss'} ${check.needle}: rank ${check.rank || 'not found'} of ${ranked.length}`);
+    for (const result of checks) {
+        console.log(`${result.pass ? 'ok  ' : 'miss'} ${result.name}: ${result.rank === null ? 'not in the corpus' : `rank ${result.rank}`} of ${ranked.length}`);
     }
     console.log(`Reference check (top/bottom ${REFERENCE_SLACK}): ${checks.every(c => c.pass) ? 'PASS' : 'FAIL'}`);
 }

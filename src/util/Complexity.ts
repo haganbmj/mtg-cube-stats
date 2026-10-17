@@ -41,27 +41,27 @@ export const LAYOUT_WEIGHTS: Record<string, number> = {
 export const DISTINCT_KEYWORD_SIZE_EXPONENT = 0.5;
 
 export const COMPLEXITY_BOUNDS: Record<ComplexityComponentKey, { low: number; high: number }> = {
-    nonLandWords: { low: 16.913, high: 30.700 },
-    landWords: { low: 11.338, high: 25.610 },
-    nonLandKeywordText: { low: 3.901, high: 10.205 },
-    landKeywordText: { low: 3.901, high: 10.205 },
-    nonLandFamiliarity: { low: 1.629, high: 6.803 },
-    landFamiliarity: { low: 1.629, high: 6.803 },
-    nonLandLayouts: { low: 0.001, high: 0.056 },
-    landLayouts: { low: 0.001, high: 0.056 },
-    distinctKeywordLoad: { low: 19.253, high: 81.118 },
+    nonLandWords: { low: 16.344, high: 30.618 },
+    landWords: { low: 13.950, high: 24.229 },
+    nonLandKeywordText: { low: 3.922, high: 9.375 },
+    landKeywordText: { low: 0.028, high: 4.900 },
+    nonLandFamiliarity: { low: 1.711, high: 6.506 },
+    landFamiliarity: { low: 2.176, high: 10.796 },
+    nonLandLayouts: { low: 0.000, high: 0.041 },
+    landLayouts: { low: 0.000, high: 0.159 },
+    distinctKeywordLoad: { low: 18.916, high: 76.250 },
 };
 
 export const COMPLEXITY_WEIGHTS: Record<ComplexityComponentKey, number> = {
     nonLandWords: 8,
-    landWords: 2,
+    landWords: 0.25,
     nonLandKeywordText: 1,
-    landKeywordText: 0.5,
-    nonLandFamiliarity: 0.25,
+    landKeywordText: 0.25,
+    nonLandFamiliarity: 0.2,
     landFamiliarity: 0.1,
     nonLandLayouts: 0.5,
-    landLayouts: 0.3,
-    distinctKeywordLoad: 2,
+    landLayouts: 0.25,
+    distinctKeywordLoad: 3,
 };
 
 export const COMPLEXITY_COMPONENT_LABELS: Record<ComplexityComponentKey, string> = {
