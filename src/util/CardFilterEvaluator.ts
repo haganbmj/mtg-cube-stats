@@ -209,7 +209,7 @@ function parseColorValue(raw: string): string[] {
  * Parse a Scryfall power/toughness string to a number.
  * Returns null for non-numeric values like "*", "1+*", "∞".
  */
-function parsePT(val: string | undefined | null): number | null {
+export function parsePT(val: string | undefined | null): number | null {
     if (val == null) return null;
     if (val.includes('*') || val.includes('+') || val.includes('∞')) return null;
     const n = parseFloat(val);

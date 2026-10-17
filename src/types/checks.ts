@@ -1,6 +1,19 @@
 export type ComparisonOp = '>' | '<' | '>=' | '<=' | '!=' | '=';
 export type AggregateFunction = 'avg' | 'sum' | 'min' | 'max' | 'median';
-export type AggregateField = 'cmc' | 'words' | 'power' | 'toughness' | 'elo' | 'usd' | 'tix' | 'year';
+// Canonical Card Search keyword names (see normalizeKeyword in CardFilterParser).
+export type AggregateField =
+  | 'cmc'
+  | 'power'
+  | 'toughness'
+  | 'pt'
+  | 'loyalty'
+  | 'wordcount'
+  | 'wordcountreminder'
+  | 'year'
+  | 'usd'
+  | 'tix'
+  | 'elo'
+  | 'popularity';
 
 export interface CountCheck {
   type: 'count';

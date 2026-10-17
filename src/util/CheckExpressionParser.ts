@@ -7,11 +7,17 @@ import type {
   AggregateFunction,
   AggregateField
 } from '../types/checks';
-import { parseQuery } from './CardFilterParser';
+import { parseQuery, normalizeKeyword, isKnownKeyword } from './CardFilterParser';
 
 const COMPARISON_OPS = ['>=', '<=', '!=', '>', '<', '='] as const;
 const AGGREGATE_FUNCTIONS: AggregateFunction[] = ['avg', 'sum', 'min', 'max', 'median'];
-const AGGREGATE_FIELDS: AggregateField[] = ['cmc', 'words', 'power', 'toughness', 'elo', 'usd', 'tix', 'year'];
+const AGGREGATE_FIELDS: AggregateField[] = [
+  'cmc', 'power', 'toughness', 'pt', 'loyalty', 'wordcount', 'wordcountreminder',
+  'year', 'usd', 'tix', 'elo', 'popularity',
+];
+// Numeric in Card Search, but derived from cross-cube aggregation or cube-level
+// stats rather than stored on a single cube's cards.
+const UNAVAILABLE_AGGREGATE_FIELDS = new Set(['cubecount', 'count', 'globalrate', 'cubesize']);
 
 interface ParseCheckResult {
   expression: CheckExpression | null;
@@ -70,10 +76,30 @@ function parseThreshold(s: string): { value: number; isPercentage: boolean } | n
 }
 
 /**
+ * Resolve an aggregate field name (or any Card Search alias for it) to its canonical name.
+ */
+function resolveAggregateField(raw: string): { field: AggregateField } | { error: string } {
+  const canonical = normalizeKeyword(raw);
+  if (AGGREGATE_FIELDS.includes(canonical as AggregateField)) {
+    return { field: canonical as AggregateField };
+  }
+  if (UNAVAILABLE_AGGREGATE_FIELDS.has(canonical)) {
+    return { error: `"${raw}" is not available in Checks; it isn't stored on this cube's cards. Valid fields: ${AGGREGATE_FIELDS.join(', ')}` };
+  }
+  if (isKnownKeyword(raw)) {
+    return { error: `"${raw}" is not a numeric field. Valid fields: ${AGGREGATE_FIELDS.join(', ')}` };
+  }
+  return { error: `Unknown aggregate field "${raw}". Valid fields: ${AGGREGATE_FIELDS.join(', ')}` };
+}
+
+/**
  * Try to parse as an aggregate expression.
  * Pattern: func(field) or func(field, cardFilter)
  */
-function parseAggregate(lhs: string): { func: AggregateFunction; field: AggregateField; cardFilter: string | null } | null {
+function parseAggregate(lhs: string):
+  | { func: AggregateFunction; field: AggregateField; cardFilter: string | null }
+  | { error: string }
+  | null {
   const match = lhs.match(/^(avg|sum|min|max|median)\((.+)\)$/);
   if (!match) return null;
 
@@ -92,11 +118,10 @@ function parseAggregate(lhs: string): { func: AggregateFunction; field: Aggregat
     cardFilter = inner.slice(commaIndex + 1).trim();
   }
 
-  if (!AGGREGATE_FIELDS.includes(fieldStr as AggregateField)) {
-    return null;
-  }
+  const resolved = resolveAggregateField(fieldStr);
+  if ('error' in resolved) return resolved;
 
-  return { func, field: fieldStr as AggregateField, cardFilter };
+  return { func, field: resolved.field, cardFilter };
 }
 
 export function parseCheckExpression(input: string): ParseCheckResult {
@@ -144,6 +169,9 @@ export function parseCheckExpression(input: string): ParseCheckResult {
 
   // Try aggregate
   const agg = parseAggregate(lhs);
+  if (agg && 'error' in agg) {
+    return { expression: null, error: agg.error };
+  }
   if (agg) {
     const threshold = parseThreshold(rhs);
     if (!threshold) {
