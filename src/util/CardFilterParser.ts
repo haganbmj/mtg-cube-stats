@@ -170,6 +170,10 @@ export function normalizeKeyword(raw: string): string {
     return KEYWORD_ALIASES[raw.toLowerCase()] ?? raw.toLowerCase();
 }
 
+export function isKnownKeyword(raw: string): boolean {
+    return Object.prototype.hasOwnProperty.call(KEYWORD_ALIASES, raw.toLowerCase());
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Parse result
 // ─────────────────────────────────────────────────────────────────────────────

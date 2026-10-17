@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { evaluateCheck } from './CheckEvaluator';
+import { parseCheckExpression } from './CheckExpressionParser';
 import type { CountCheck, RelativeCheck, AggregateCheck } from '../types/checks';
 import type { CubeCard } from '../types/cube';
 
@@ -181,6 +182,75 @@ describe('CheckEvaluator', () => {
       const result = evaluateCheck(expr, cards, emptyCtx);
       expect(result.passed).toBe(true);
       expect(result.lhsValue).toBe(3); // (2+4)/2, * skipped
+    });
+
+    function aggregate(field: string, cards: CubeCard[]) {
+      const expr = { type: 'aggregate', func: 'avg', field, cardFilter: null, op: '>', threshold: 0 } as AggregateCheck;
+      return evaluateCheck(expr, cards, emptyCtx).lhsValue;
+    }
+
+    it('wordcount excludes reminder text, matching Card Search wc:', () => {
+      const cards = [
+        makeCard({ oracleTextWordCount: 10, oracleTextWordCountMinusParen: 6 }),
+        makeCard({ oracleTextWordCount: 4, oracleTextWordCountMinusParen: 2 }),
+      ];
+      expect(aggregate('wordcount', cards)).toBe(4);
+    });
+
+    it('wordcountreminder includes reminder text, matching Card Search wcr:', () => {
+      const cards = [
+        makeCard({ oracleTextWordCount: 10, oracleTextWordCountMinusParen: 6 }),
+        makeCard({ oracleTextWordCount: 4, oracleTextWordCountMinusParen: 2 }),
+      ];
+      expect(aggregate('wordcountreminder', cards)).toBe(7);
+    });
+
+    it('power skips variable values like 1+* the same way Card Search does', () => {
+      const cards = [
+        makeCard({ power: '2' } as any),
+        makeCard({ power: '1+*' } as any),
+        makeCard({ power: '4' } as any),
+      ];
+      expect(aggregate('power', cards)).toBe(3);
+    });
+
+    it('pt sums power and toughness, skipping cards missing either', () => {
+      const cards = [
+        makeCard({ power: '2', toughness: '3' } as any),
+        makeCard({ power: '4', toughness: '5' } as any),
+        makeCard({ power: '*', toughness: '5' } as any),
+        makeCard({}),
+      ];
+      expect(aggregate('pt', cards)).toBe(7); // (5+9)/2
+    });
+
+    it('loyalty averages planeswalkers only', () => {
+      const cards = [
+        makeCard({ loyalty: '3' } as any),
+        makeCard({ loyalty: '5' } as any),
+        makeCard({}),
+      ];
+      expect(aggregate('loyalty', cards)).toBe(4);
+    });
+
+    it('popularity averages the CubeCobra popularity value', () => {
+      const cards = [
+        makeCard({ popularity: 10 }),
+        makeCard({ popularity: 30 }),
+      ];
+      expect(aggregate('popularity', cards)).toBe(20);
+    });
+
+    it('avg(wc) parses and evaluates end-to-end', () => {
+      const cards = [
+        makeCard({ oracleTextWordCount: 12, oracleTextWordCountMinusParen: 8 }),
+        makeCard({ oracleTextWordCount: 20, oracleTextWordCountMinusParen: 12 }),
+      ];
+      const { expression } = parseCheckExpression('avg(wc) <= 10');
+      expect(expression).not.toBeNull();
+      const result = evaluateCheck(expression!, cards, emptyCtx);
+      expect(result.lhsValue).toBe(10);
+      expect(result.passed).toBe(true);
     });
   });
 });

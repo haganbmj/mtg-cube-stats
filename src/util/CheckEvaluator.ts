@@ -1,7 +1,7 @@
 import type { CheckExpression, CheckResult, AggregateField } from '../types/checks';
 import type { CubeCard } from '../types/cube';
 import type { FilterContext } from './CardFilterEvaluator';
-import { evaluateCard } from './CardFilterEvaluator';
+import { evaluateCard, parsePT } from './CardFilterEvaluator';
 import { parseQuery } from './CardFilterParser';
 
 function compare(lhs: number, op: string, rhs: number): boolean {
@@ -35,21 +35,29 @@ function countMatching(cardFilter: string, cards: CubeCard[], ctx: FilterContext
 }
 
 function getNumericField(card: CubeCard, field: AggregateField): number | null {
+  const c = card as any;
   switch (field) {
     case 'cmc':
       return card.cmc ?? null;
-    case 'words':
+    case 'wordcount':
+      return card.oracleTextWordCountMinusParen ?? null;
+    case 'wordcountreminder':
       return card.oracleTextWordCount ?? null;
-    case 'power': {
-      const v = parseFloat((card as any).power);
-      return isNaN(v) ? null : v;
+    case 'power':
+      return parsePT(c.power);
+    case 'toughness':
+      return parsePT(c.toughness);
+    case 'pt': {
+      const pow = parsePT(c.power);
+      const tou = parsePT(c.toughness);
+      return pow === null || tou === null ? null : pow + tou;
     }
-    case 'toughness': {
-      const v = parseFloat((card as any).toughness);
-      return isNaN(v) ? null : v;
-    }
+    case 'loyalty':
+      return parsePT(c.loyalty);
     case 'elo':
       return card.elo ?? null;
+    case 'popularity':
+      return card.popularity ?? null;
     case 'usd':
       return card.minPriceUsd ?? null;
     case 'tix':

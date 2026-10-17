@@ -27,11 +27,22 @@ defineEmits<{ (e: 'update:visible', val: boolean): void }>();
 
             <h4>Aggregate Checks</h4>
             <p>Apply a function over a numeric field. Functions: <code>avg</code>, <code>sum</code>, <code>min</code>, <code>max</code>, <code>median</code>.</p>
-            <p>Fields: <code>cmc</code>, <code>words</code>, <code>power</code>, <code>toughness</code>, <code>elo</code>, <code>usd</code>, <code>tix</code>, <code>year</code>.</p>
+            <p>Fields use the same names and aliases as the Cards tab search:</p>
+            <ul>
+                <li><code>cmc</code> <code>mv</code> <code>manavalue</code> — mana value</li>
+                <li><code>power</code> <code>pow</code> · <code>toughness</code> <code>tou</code> · <code>pt</code> <code>powtou</code> (power + toughness)</li>
+                <li><code>loyalty</code> <code>loy</code></li>
+                <li><code>wordcount</code> <code>words</code> <code>wc</code> — excludes reminder text</li>
+                <li><code>wordcountreminder</code> <code>wordsrem</code> <code>wcr</code> — includes reminder text</li>
+                <li><code>year</code> <code>released</code></li>
+                <li><code>usd</code> · <code>tix</code> · <code>elo</code> · <code>popularity</code> <code>pop</code></li>
+            </ul>
+            <p>Cards without a numeric value (e.g. non-creatures for <code>power</code>, or <code>*</code> values) are skipped.</p>
             <ul>
                 <li><code>avg(cmc) &lt; 3.5</code> — average mana value under 3.5</li>
-                <li><code>avg(cmc, type:creature) &lt; 3</code> — average CMC of creatures</li>
+                <li><code>avg(mv, type:creature) &lt; 3</code> — average mana value of creatures</li>
                 <li><code>max(cmc) &lt;= 7</code> — no card costs more than 7</li>
+                <li><code>avg(wc) &lt;= 20</code> — average word count of 20 or less</li>
             </ul>
 
             <h4>Operators</h4>

@@ -134,10 +134,48 @@ describe('CheckExpressionParser', () => {
       expect(result.expression).toEqual({
         type: 'aggregate',
         func: 'median',
-        field: 'words',
+        field: 'wordcount',
         cardFilter: null,
         op: '>',
         threshold: 10,
+      });
+    });
+
+    describe('field names follow Card Search keyword aliases', () => {
+      const cases: Array<[string, string]> = [
+        ['wc', 'wordcount'],
+        ['words', 'wordcount'],
+        ['wordcount', 'wordcount'],
+        ['wcr', 'wordcountreminder'],
+        ['wordsrem', 'wordcountreminder'],
+        ['mv', 'cmc'],
+        ['manavalue', 'cmc'],
+        ['pow', 'power'],
+        ['tou', 'toughness'],
+        ['pt', 'pt'],
+        ['powtou', 'pt'],
+        ['loy', 'loyalty'],
+        ['loyalty', 'loyalty'],
+        ['released', 'year'],
+        ['pop', 'popularity'],
+        ['popularity', 'popularity'],
+        ['elo', 'elo'],
+        ['usd', 'usd'],
+        ['tix', 'tix'],
+        ['CMC', 'cmc'],
+      ];
+      for (const [input, canonical] of cases) {
+        it(`avg(${input}) resolves to ${canonical}`, () => {
+          const result = parseCheckExpression(`avg(${input}) > 1`);
+          expect(result.error).toBeNull();
+          expect(result.expression).toMatchObject({ type: 'aggregate', field: canonical });
+        });
+      }
+
+      it('resolves aliases in scoped aggregates', () => {
+        const result = parseCheckExpression('avg(wc, t:creature) < 20');
+        expect(result.error).toBeNull();
+        expect(result.expression).toMatchObject({ field: 'wordcount', cardFilter: 't:creature' });
       });
     });
   });
@@ -158,7 +196,23 @@ describe('CheckExpressionParser', () => {
     it('returns error for invalid aggregate field', () => {
       const result = parseCheckExpression('avg(invalid) > 5');
       expect(result.expression).toBeNull();
-      expect(result.error).not.toBeNull();
+      expect(result.error).toContain('Unknown aggregate field "invalid"');
+    });
+
+    it('rejects known keywords that are not numeric', () => {
+      for (const field of ['rarity', 'r', 'set', 'date', 'type']) {
+        const result = parseCheckExpression(`avg(${field}) > 1`);
+        expect(result.expression, field).toBeNull();
+        expect(result.error, field).toContain('not a numeric field');
+      }
+    });
+
+    it('rejects numeric keywords that have no per-card data in Checks', () => {
+      for (const field of ['cubecount', 'cubes', 'copies', 'count', 'globalrate', 'gr', 'cubesize']) {
+        const result = parseCheckExpression(`avg(${field}) > 1`);
+        expect(result.expression, field).toBeNull();
+        expect(result.error, field).toContain('not available in Checks');
+      }
     });
 
     it('returns error for invalid aggregate function', () => {
