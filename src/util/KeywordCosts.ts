@@ -3,6 +3,8 @@ import { isEvergreenKeyword } from './Keywords';
 
 export const EVERGREEN_KEYWORD_COST = 3;
 
+export const ABILITY_WORD_KEYWORD_COST = EVERGREEN_KEYWORD_COST;
+
 export const DEFAULT_KEYWORD_COST_TABLE: KeywordCostTable = { costs: {}, fallback: 15 };
 
 function countWords(text: string): number {
@@ -23,25 +25,57 @@ function escapeRegExp(text: string): string {
 /**
  * Measures each keyword's reminder text on cards where the keyword starts a line
  * (or follows a comma in a keyword list), so that mid-sentence mentions are ignored.
+ * A match is discarded when an em dash or another of the card's keywords (word-prefix,
+ * case-insensitive) appears between the keyword and the `(`, since that reminder text
+ * belongs to something else. Ability words that appear on any card cost a fixed
+ * ABILITY_WORD_KEYWORD_COST and are excluded from the fallback median.
  */
-export function buildKeywordCosts(cards: Array<{ oracleText: string; keywords: string[] }>): KeywordCostTable {
+export function buildKeywordCosts(
+    cards: Array<{ oracleText: string; keywords: string[] }>,
+    abilityWords: string[] = [],
+): KeywordCostTable {
     const observations = new Map<string, number[]>();
     const patterns = new Map<string, RegExp>();
+    const prefixPatterns = new Map<string, RegExp>();
+    const abilityWordSet = new Set(abilityWords);
 
     for (const card of cards) {
         const oracleText = card?.oracleText ?? '';
-        for (const keyword of card?.keywords ?? []) {
+        const keywords = card?.keywords ?? [];
+        for (const keyword of keywords) {
             if (!observations.has(keyword)) {
                 observations.set(keyword, []);
             }
             let pattern = patterns.get(keyword);
             if (!pattern) {
-                pattern = new RegExp(`(?:^|\\n|, )${escapeRegExp(keyword)}\\b[^(\\n]*?\\(([^)]*)\\)`, 'i');
+                pattern = new RegExp(`(?:^|\\n|, )${escapeRegExp(keyword)}\\b([^(\\n]*?)\\(([^)]*)\\)`, 'i');
                 patterns.set(keyword, pattern);
             }
             const match = pattern.exec(oracleText);
-            if (match) {
-                observations.get(keyword)!.push(countWords(match[1]));
+            if (!match) {
+                continue;
+            }
+            const between = match[1];
+            if (between.includes('—')) {
+                continue;
+            }
+            let borrowed = false;
+            for (const other of keywords) {
+                if (other === keyword) {
+                    continue;
+                }
+                let prefixPattern = prefixPatterns.get(other);
+                if (!prefixPattern) {
+                    prefixPattern = new RegExp(`\\b${escapeRegExp(other)}`, 'i');
+                    prefixPatterns.set(other, prefixPattern);
+                }
+                if (prefixPattern.test(between)) {
+                    borrowed = true;
+                    break;
+                }
+            }
+            if (!borrowed) {
+                observations.get(keyword)!.push(countWords(match[2]));
             }
         }
     }
@@ -53,7 +87,7 @@ export function buildKeywordCosts(cards: Array<{ oracleText: string; keywords: s
             continue;
         }
         costs[keyword] = roundedMedian(counts);
-        if (!isEvergreenKeyword(keyword)) {
+        if (!isEvergreenKeyword(keyword) && !abilityWordSet.has(keyword)) {
             nonEvergreenCosts.push(costs[keyword]);
         }
     }
@@ -65,6 +99,8 @@ export function buildKeywordCosts(cards: Array<{ oracleText: string; keywords: s
     for (const keyword of observations.keys()) {
         if (isEvergreenKeyword(keyword)) {
             costs[keyword] = EVERGREEN_KEYWORD_COST;
+        } else if (abilityWordSet.has(keyword)) {
+            costs[keyword] = ABILITY_WORD_KEYWORD_COST;
         } else if (costs[keyword] === undefined) {
             costs[keyword] = fallback;
         }

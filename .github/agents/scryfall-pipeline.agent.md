@@ -16,6 +16,7 @@ Scryfall API (bulk-data, catalog, tagger) → download-scryfall-cards.ts → dat
 - `download-scryfall-cards.ts` — the entire pipeline; run via `npm run cards` or `npm run cards:update`
 - `data/default-cards.jsonl` — raw Scryfall bulk export, decompressed from `.jsonl.gz` (not checked in)
 - `data/flavor-words.json` — Scryfall flavor keyword catalog (used to filter `keywords`)
+- `data/ability-words.json` — Scryfall ability word catalog (ability words get a fixed cost in `keywordCosts`)
 - `data/tagger-data.json` — Scryfall Tagger oracle tag database (source of `tags` like `removal`)
 - `data/sets.json` — Scryfall set list (used to build `setCode → releaseDate` map)
 - `data/cards-minimized.json` — output: oracle-keyed map of minimized card printings, loaded by the app at runtime
@@ -34,6 +35,7 @@ REFRESH_SCRYFALL=true npm run cards   # Same as --update via env var
 |------|-------------------|-------|
 | `default-cards.jsonl` | `GET /bulk-data/default-cards` (metadata) → `jsonl_download_uri` | Downloads `.jsonl.gz`, gunzips to disk, parses line-by-line with `readline` |
 | `flavor-words.json` | `GET /catalog/flavor-words?format=file` | Used to strip flavor keywords from `card.keywords` |
+| `ability-words.json` | `GET /catalog/ability-words?format=file` | Passed to `buildKeywordCosts()`; ability words (e.g. Landfall) get a fixed cost of 3 and are excluded from the fallback median |
 | `tagger-data.json` | `GET /private/tags/oracle` | Streamed; used to populate `tags` per oracle ID |
 | `sets.json` | `GET /sets` | Used to build `setCode → releaseDate` lookup |
 
@@ -59,7 +61,7 @@ The output is an object with five top-level keys:
 - `sets`: `setCode → setName` lookup
 - `setDates`: `setCode → ISO release date` lookup
 - `tokens`: keyed by token oracle ID, holds the earliest printing of each token
-- `keywordCosts`: `{ costs: Record<string, number>; fallback: number }` — keyword → reminder-text word count, built by `buildKeywordCosts()` (`src/util/KeywordCosts.ts`) from the best printings; `fallback` is the cost for non-evergreen keywords missing from `costs`. Consumed by the Complexity Score (`src/util/Complexity.ts`) and `tools/complexity/tune.ts`
+- `keywordCosts`: `{ costs: Record<string, number>; fallback: number }` — keyword → reminder-text word count, built by `buildKeywordCosts()` (`src/util/KeywordCosts.ts`) from the best printings; a keyword's reminder text is ignored when an em dash or another of the card's keywords sits between it and the `(`; evergreen keywords and ability words cost a fixed 3; `fallback` (median of the other measured costs) is the cost for non-evergreen keywords missing from `costs`. Consumed by the Complexity Score (`src/util/Complexity.ts`) and `tools/complexity/tune.ts`
 
 During the pipeline each oracle ID accumulates an array of printings (sorted oldest→newest), then a `.reduce()` collapses to a single "best" printing — the first non-digital, non-promo, non-token printing (falls back to the first entry). Aggregate fields (`minPriceUsd`, `minPriceTix`, `rarities`, `minRarity`, unioned `games`, computed `archetypes`) are merged onto that best printing.
 
