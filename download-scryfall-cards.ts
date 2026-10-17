@@ -5,6 +5,7 @@ import axios from 'axios';
 import { strict as assert } from 'assert';
 import { detectCardArchetypes } from './src/util/ArchetypeDetection';
 import { flatMapTypes } from './src/util/TypeLine';
+import { buildKeywordCosts } from './src/util/KeywordCosts';
 import type { CubeCard } from './src/types';
 
 const refresh = process.env.REFRESH_SCRYFALL || 'false';
@@ -65,6 +66,28 @@ if (!fs.existsSync('./data/flavor-words.json') || process.argv[2] == "--update" 
     console.log('Using existing flavor data.');
 }
 
+if (!fs.existsSync('./data/ability-words.json') || process.argv[2] == "--update" || refresh.toLowerCase() === 'true') {
+    console.log('Downloading fresh ability word data.');
+
+    const abilityWordsResp = await axios({
+        url: `https://api.scryfall.com/catalog/ability-words?format=file`,
+        method: 'GET',
+        responseType: 'stream',
+        headers: {
+            'User-Agent': 'Griselbrand/0.1.0',
+        },
+    })
+
+    const writeAbilityWords = fs.createWriteStream('./data/ability-words.json');
+    abilityWordsResp.data.pipe(writeAbilityWords);
+    await new Promise((res, rej) => {
+        writeAbilityWords.on('finish', res);
+        writeAbilityWords.on('error', rej);
+    });
+} else {
+    console.log('Using existing ability word data.');
+}
+
 if (!fs.existsSync('./data/sets.json') || process.argv[2] == "--update" || refresh.toLowerCase() === 'true') {
     console.log('Downloading fresh set data.');
 
@@ -110,6 +133,7 @@ for await (const line of rl) {
     if (line.trim()) cards.push(JSON.parse(line));
 }
 const flavorWords = JSON.parse(fs.readFileSync('./data/flavor-words.json', 'utf8'));
+const abilityWords = JSON.parse(fs.readFileSync('./data/ability-words.json', 'utf8'));
 const taggerData = JSON.parse(fs.readFileSync('./data/tagger-data.json', 'utf8'));
 const setsData = JSON.parse(fs.readFileSync('./data/sets.json', 'utf8'));
 
@@ -473,6 +497,7 @@ const best = Object.keys(minimized.cards).reduce((store: any, key: string) => {
 }, {});
 
 minimized.cards = best;
+minimized.keywordCosts = buildKeywordCosts(Object.values(best) as any[], abilityWords.data);
 delete minimized.minPrices;
 
 minimized.setDates = setDates;

@@ -460,7 +460,45 @@
                                 <div class="cube-details-compact">
                                     <h4><a :href="`https://cubecobra.com/cube/about/${externalCubeId(lowestRarityScoreCube)}`" target="_blank" @click.prevent="openCubeDetailDialog(lowestRarityScoreCube.id)">{{ displayName(lowestRarityScoreCube) }}</a></h4>
                                     <p>by <a :href="`https://cubecobra.com/user/view/${lowestRarityScoreCube.owner}`" target="_blank" rel="noopener">{{ lowestRarityScoreCube.owner }}</a></p>
-                                    <div class="stat-highlight">Rarity Score: {{ lowestRarityScoreCube.stats.blendedRarityScore.toFixed(2) }}</div>
+                                    <div class="stat-highlight">Rarity Score: {{ Math.round(lowestRarityScoreCube.stats.blendedRarityScore) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="mostComplexCube">
+                        <template #header>
+                            <h3>Most Complex</h3>
+                            <p class="subtitle">Cube with highest complexity score</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="mostComplexCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/about/${externalCubeId(mostComplexCube)}`" target="_blank" @click.prevent="openCubeDetailDialog(mostComplexCube.id)">{{ displayName(mostComplexCube) }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${mostComplexCube.owner}`" target="_blank" rel="noopener">{{ mostComplexCube.owner }}</a></p>
+                                    <div class="stat-highlight">Complexity Score: {{ mostComplexCube.stats.complexityScore }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+
+                <el-col :span="8" :xs="24" :sm="12" :md="8">
+                    <el-card class="content-card" v-if="leastComplexCube">
+                        <template #header>
+                            <h3>Least Complex</h3>
+                            <p class="subtitle">Cube with lowest complexity score</p>
+                        </template>
+                        <div class="cube-stat">
+                            <div class="cube-info-compact">
+                                <img :src="leastComplexCube.thumbnail" class="cube-thumbnail-small" loading="lazy" />
+                                <div class="cube-details-compact">
+                                    <h4><a :href="`https://cubecobra.com/cube/about/${externalCubeId(leastComplexCube)}`" target="_blank" @click.prevent="openCubeDetailDialog(leastComplexCube.id)">{{ displayName(leastComplexCube) }}</a></h4>
+                                    <p>by <a :href="`https://cubecobra.com/user/view/${leastComplexCube.owner}`" target="_blank" rel="noopener">{{ leastComplexCube.owner }}</a></p>
+                                    <div class="stat-highlight">Complexity Score: {{ leastComplexCube.stats.complexityScore }}</div>
                                 </div>
                             </div>
                         </div>
@@ -932,6 +970,30 @@ const lowestRarityScoreCube = computed(() => {
 
     return Object.values(props.loadedCubes).reduce((lowest: any, cube: any) => {
         if (!lowest || cube.stats.blendedRarityScore < lowest.stats.blendedRarityScore) {
+            return cube;
+        }
+        return lowest;
+    }, null);
+});
+
+const mostComplexCube = computed(() => {
+    if (totalCubes.value === 0) return null;
+
+    return Object.values(props.loadedCubes).reduce((highest: any, cube: any) => {
+        if (cube.stats.complexityScore === undefined) return highest;
+        if (!highest || cube.stats.complexityScore > highest.stats.complexityScore) {
+            return cube;
+        }
+        return highest;
+    }, null);
+});
+
+const leastComplexCube = computed(() => {
+    if (totalCubes.value === 0) return null;
+
+    return Object.values(props.loadedCubes).reduce((lowest: any, cube: any) => {
+        if (cube.stats.complexityScore === undefined) return lowest;
+        if (!lowest || cube.stats.complexityScore < lowest.stats.complexityScore) {
             return cube;
         }
         return lowest;

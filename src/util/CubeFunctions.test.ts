@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
     mergeSimilarityMatrices,
     stripToRawCube,
@@ -9,7 +9,9 @@ import {
     warmSimilarityCacheForCube,
     determineCosineSimilarityScore,
     updateSimilarityForCube,
+    enrichCube
 } from './CubeFunctions';
+import { DEFAULT_KEYWORD_COST_TABLE } from './KeywordCosts';
 import type { Cube, CubeCard, ScryfallDataStructure, SimilarityMatrix, SimilarityScore } from '../types';
 
 const score = (n: number): SimilarityScore => ({ cosineSimilarity: n, insersectionSize: 0 });
@@ -333,5 +335,80 @@ describe('warmSimilarityCacheForCube', () => {
 
         expect(matrix.a.b).toEqual(score(-999));
         expect(matrix.b.a).toEqual(score(-999));
+    });
+});
+
+describe('enrichCube complexity stats', () => {
+    beforeEach(() => {
+        _clearScryfallRefreshListenersForTesting();
+    });
+
+    afterEach(() => {
+        _applyFreshScryfallForTesting({ cards: {}, tokens: {}, sets: {}, setDates: {} });
+    });
+
+    it('scores complexity and falls back to the default keyword cost table when card data lacks keywordCosts', () => {
+        _applyFreshScryfallForTesting({
+            cards: {
+                'cascade-card': {
+                    name: 'Cascade Card',
+                    effectiveTypes: ['Creature'],
+                    keywords: ['Cascade'],
+                    layout: 'normal',
+                    oracleTextWordCountMinusParen: 1,
+                } as any,
+                'plain-land': {
+                    name: 'Plain Land',
+                    effectiveTypes: ['Land'],
+                    keywords: [],
+                    layout: 'normal',
+                    oracleTextWordCountMinusParen: 0,
+                } as any,
+            },
+            tokens: {},
+            sets: {},
+            setDates: {},
+        });
+
+        const cube = enrichCube({
+            id: 'complexity-cube',
+            name: 'Complexity Cube',
+            owner: 'owner',
+            cards: [
+                { printingId: 'p1', oracleId: 'cascade-card' },
+                { printingId: 'p2', oracleId: 'plain-land' },
+            ],
+        });
+
+        expect(Number.isInteger(cube.stats!.complexityScore)).toBe(true);
+        expect(cube.stats!.complexityScore).toBeGreaterThanOrEqual(0);
+        expect(cube.stats!.complexityScore).toBeLessThanOrEqual(100);
+        expect(cube.stats!.complexityBreakdown.raw.nonLandKeywordText).toBe(DEFAULT_KEYWORD_COST_TABLE.fallback);
+        expect(cube.stats!.complexityBreakdown.raw.landKeywordText).toBe(0);
+    });
+});
+
+describe('enrichCube rarity score', () => {
+    afterEach(() => {
+        _applyFreshScryfallForTesting({ cards: {}, tokens: {}, sets: {}, setDates: {} });
+    });
+
+    it('averages per-card minimum-rarity weights on a ×100 scale (C=33.3, U=66.6, R=100, M=120)', () => {
+        const card = (minRarity: string) => ({ name: minRarity, effectiveTypes: ['Creature'], keywords: [], layout: 'normal', minRarity } as any);
+        _applyFreshScryfallForTesting({
+            cards: { c: card('common'), u: card('uncommon'), r: card('rare'), m: card('mythic') },
+            tokens: {},
+            sets: {},
+            setDates: {},
+        });
+
+        const cube = enrichCube({
+            id: 'rarity-cube',
+            name: 'Rarity Cube',
+            owner: 'owner',
+            cards: ['c', 'u', 'r', 'm'].map((oracleId, i) => ({ printingId: `p${i}`, oracleId })),
+        });
+
+        expect(cube.stats!.blendedRarityScore).toBeCloseTo((33.3 + 66.6 + 100 + 120) / 4, 5);
     });
 });

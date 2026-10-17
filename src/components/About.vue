@@ -83,7 +83,43 @@
             <p class="formula" style="margin-top: 0.75em;">
                 $$\text{Rarity Score} = \frac{1}{n} \sum_{i=1}^{n} w(r_i)$$
             </p>
-            <p>where $w(r_i)$ is the weight for card $i$'s minimum rarity and $n$ is the total card count. A pure common cube scores $\approx 0.333$, while a cube of all mythics scores $1.200$.</p>
+            <p>where $w(r_i)$ is the weight for card $i$'s minimum rarity and $n$ is the total card count. A pure common cube scores $\approx 33$, while a cube of all mythics scores $120$. Scores are shown rounded to whole numbers.</p>
+        </section>
+
+        <section>
+            <h3>Complexity Score</h3>
+            <p>
+                A whole number from 0 to 100 estimating how much rules text and cognitive load a cube asks of its players. Nine components are measured per cube, then each is normalized against fixed bounds. The Low and High bounds are the 5th and 95th percentiles of each component across the <strong>CubeCobra Top 100</strong>, derived with <code>npm run complexity:tune</code>.
+                Per-card averages count each distinct card once, so duplicate copies don't skew them.
+                Land and non-land cards are measured and weighted separately, with lands weighted lower than their non-land counterparts.
+                Cubes without lands leave the land components out of the score.
+            </p>
+            <el-table :data="complexityComponentData" style="max-width: 900px;" size="small" :show-header="true" stripe>
+                <el-table-column prop="component" label="Component" min-width="140" />
+                <el-table-column prop="description" label="Description" min-width="380" />
+                <el-table-column prop="weight" label="Weight" align="right" />
+                <el-table-column prop="low" label="Low" align="right" />
+                <el-table-column prop="high" label="High" align="right" />
+            </el-table>
+            <p class="formula" style="margin-top: 0.75em;">
+                $$\text{Complexity} = \operatorname{round}\left(100 \cdot \frac{\sum_i w_i c_i}{\sum_i w_i}\right)$$
+            </p>
+            <p>where $w_i$ is the component weight and $c_i$ is the component value normalized between its Low and High bounds and clamped to $[0, 1]$; the sums run over the components present for the cube. Unfamiliarity is inverted ($c = 1 - \text{normalized popularity}$), so less popular cards make a cube more complex.</p>
+
+            <h4>Layout Weights</h4>
+            <el-table :data="layoutWeightData" style="max-width: 700px;" size="small" :show-header="true" stripe>
+                <el-table-column prop="layouts" label="Layouts" min-width="350" />
+                <el-table-column prop="weight" label="Weight" align="right" />
+            </el-table>
+
+            <h4>Keyword Cost</h4>
+            <p>
+                Each keyword's cost is the median word count of its reminder text across Scryfall Oracle text.
+                Reminder text only counts when no other keyword on that card comes between the keyword and the parenthesis.
+                Evergreen keywords cost a fixed {{ EVERGREEN_KEYWORD_COST }}, ability words (Scryfall's list) cost a fixed {{ ABILITY_WORD_KEYWORD_COST }}, and keywords without reminder text use the median cost of the others.
+                Distinct keyword load is divided by {{ distinctKeywordDivisor }}, where $n$ is the cube's total card count (copies included), so larger cubes aren't penalized for naturally containing more distinct keywords.
+                Unfamiliarity uses CubeCobra card popularity.
+            </p>
         </section>
 
         <section>
@@ -166,6 +202,9 @@
 import { ref, computed, onMounted } from 'vue';
 import katex from 'katex';
 import { getFrequencyData, initFrequencyData } from '../util/CubeCobraFrequency';
+import type { ComplexityComponentKey } from '../types';
+import { COMPLEXITY_BOUNDS, COMPLEXITY_COMPONENT_KEYS, COMPLEXITY_COMPONENT_LABELS, COMPLEXITY_WEIGHTS, DISTINCT_KEYWORD_SIZE_EXPONENT, LAYOUT_WEIGHTS } from '../util/Complexity';
+import { ABILITY_WORD_KEYWORD_COST, EVERGREEN_KEYWORD_COST } from '../util/KeywordCosts';
 
 initFrequencyData();
 
@@ -232,12 +271,44 @@ const frequencyCubesLastModified = computed(() => {
 const frequencyTotalCubes = computed(() => getFrequencyData()?.cubeCount?.total ?? null);
 
 const rarityScoreData = [
-    { rarity: 'Common', weight: '0.333' },
-    { rarity: 'Uncommon', weight: '0.666' },
-    { rarity: 'Rare', weight: '1.000' },
-    { rarity: 'Mythic', weight: '1.200' },
-    { rarity: 'Bonus', weight: '1.000' },
+    { rarity: 'Common', weight: '33.3' },
+    { rarity: 'Uncommon', weight: '66.6' },
+    { rarity: 'Rare', weight: '100' },
+    { rarity: 'Mythic', weight: '120' },
+    { rarity: 'Bonus', weight: '100' },
 ];
+
+const complexityComponentDescriptions: Record<ComplexityComponentKey, string> = {
+    nonLandWords: 'Average Oracle word count of distinct non-land cards, excluding reminder text',
+    landWords: 'Average Oracle word count of distinct land cards, excluding reminder text',
+    nonLandKeywordText: 'Average reminder-text word count of keywords on distinct non-land cards',
+    landKeywordText: 'Average reminder-text word count of keywords on distinct land cards',
+    nonLandFamiliarity: 'Average CubeCobra popularity of distinct non-land cards, inverted (less popular = more complex)',
+    landFamiliarity: 'Average CubeCobra popularity of distinct land cards, inverted (less popular = more complex)',
+    nonLandLayouts: 'Average layout weight of distinct non-land cards',
+    landLayouts: 'Average layout weight of distinct land cards',
+    distinctKeywordLoad: 'Sum of keyword costs over distinct keywords, divided by total card count^exponent',
+};
+
+const complexityComponentData = COMPLEXITY_COMPONENT_KEYS.map(key => ({
+    component: COMPLEXITY_COMPONENT_LABELS[key],
+    description: complexityComponentDescriptions[key],
+    weight: String(COMPLEXITY_WEIGHTS[key]),
+    low: COMPLEXITY_BOUNDS[key].low.toFixed(3),
+    high: COMPLEXITY_BOUNDS[key].high.toFixed(3),
+}));
+
+const layoutWeightData = [
+    ...Array.from(new Set(Object.values(LAYOUT_WEIGHTS)))
+        .sort((a, b) => a - b)
+        .map(weight => ({
+            layouts: Object.keys(LAYOUT_WEIGHTS).filter(layout => LAYOUT_WEIGHTS[layout] === weight).join(', '),
+            weight: weight.toFixed(2),
+        })),
+    { layouts: 'Every other layout (including normal)', weight: (0).toFixed(2) },
+];
+
+const distinctKeywordDivisor = `$n^{${DISTINCT_KEYWORD_SIZE_EXPONENT}}$`;
 
 const categoryData = [
     { category: 'Pauper', criteria: 'All cards are common' },

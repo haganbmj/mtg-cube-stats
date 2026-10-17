@@ -60,6 +60,28 @@ export interface CubeCard {
   customImageUrl?: string;
 }
 
+export type ComplexityComponentKey =
+  | 'nonLandWords'
+  | 'landWords'
+  | 'nonLandKeywordText'
+  | 'landKeywordText'
+  | 'nonLandFamiliarity'
+  | 'landFamiliarity'
+  | 'nonLandLayouts'
+  | 'landLayouts'
+  | 'distinctKeywordLoad';
+
+/**
+ * `null` means the component's group (land or non-land) has no cards; `distinctKeywordLoad` is never `null`.
+ * Familiarity raw values are average popularity (0–100); normalized values are 1 − clamped normalized popularity.
+ */
+export type ComplexityComponents = Record<ComplexityComponentKey, number | null>;
+
+export interface ComplexityBreakdown {
+  raw: ComplexityComponents;
+  normalized: ComplexityComponents;
+}
+
 export interface CubeStats {
   totalCards: number;
   totalUniqueCards: number;
@@ -107,6 +129,8 @@ export interface CubeStats {
     initiative: number;
   };
   archetypes: ArchetypeResult[];
+  complexityScore: number;
+  complexityBreakdown: ComplexityBreakdown;
 }
 
 export interface Cube {

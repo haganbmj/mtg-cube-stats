@@ -7,6 +7,8 @@ import { assumedCategories } from './CubeCategories';
 import { snapshotKey } from './Snapshots';
 import { flatMapTypes, primaryTypeOf } from './TypeLine';
 import { loadJsonAsset, registerKnownAssetUrl } from './AssetCache';
+import { computeComplexityComponents, scoreComplexity } from './Complexity';
+import { DEFAULT_KEYWORD_COST_TABLE } from './KeywordCosts';
 import cardsUrl from '../../data/cards-minimized.json?url';
 import type {
     ScryfallDataStructure,
@@ -15,6 +17,7 @@ import type {
     Cube,
     CubeCard,
     CubeStats,
+    KeywordCostTable,
     SimilarityScore,
     SimilarityMatrix
 } from '../types';
@@ -81,12 +84,16 @@ export function getScryfallCards(): Record<string, ScryfallCard> {
     return scryfall?.cards ?? {};
 }
 
+export function getKeywordCostTable(): KeywordCostTable {
+    return scryfall?.keywordCosts ?? DEFAULT_KEYWORD_COST_TABLE;
+}
+
 const rarityScoreMap: Record<string, number> = {
-    common: 0.333,
-    uncommon: 0.666,
-    rare: 1.000,
-    mythic: 1.200,
-    bonus: 1.000,
+    common: 33.3,
+    uncommon: 66.6,
+    rare: 100,
+    mythic: 120,
+    bonus: 100,
 };
 
 /**
@@ -548,6 +555,8 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
         assumedCategories: assumedCategories(cards),
     }
 
+    const complexity = scoreComplexity(computeComplexityComponents(cards, getKeywordCostTable()));
+
     const secondOrderStats: CubeStats = {
         ...firstOrderStats,
         uniqueKeywords: Object.keys(firstOrderStats.keywords).length,
@@ -565,6 +574,8 @@ function analyzeCubeContents(cards: CubeCard[]): CubeStats {
             initiative: cards.filter(c => c.oracleText?.toLowerCase().includes('take the initiative')).length,
         },
         archetypes: detectCubeArchetypes(cards),
+        complexityScore: complexity.score,
+        complexityBreakdown: complexity.breakdown,
     }
 
     return secondOrderStats;

@@ -57,6 +57,7 @@ export const overviewSortProperties: SortProperty[] = [
     { prop: 'stats.creatureCards', label: 'Creatures', autoDirection: 'descending' },
     { prop: 'stats.totalUniqueCards', label: 'Unique Cards', autoDirection: 'descending' },
     { prop: 'stats.blendedRarityScore', label: 'Rarity', autoDirection: 'descending' },
+    { prop: 'stats.complexityScore', label: 'Complexity', autoDirection: 'descending' },
     { prop: 'stats.averageElo', label: 'Avg. Elo', autoDirection: 'descending' },
     { prop: 'stats.averagePopularity', label: 'Avg. Popularity', autoDirection: 'descending' },
     { prop: 'stats.cardCounts.abnormalLayout', label: 'Abnormal Layout', autoDirection: 'descending' },
