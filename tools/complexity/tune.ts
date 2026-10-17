@@ -95,7 +95,15 @@ function main(): void {
     console.log(['rank', 'score', 'name'].join('\t'));
     ranked.forEach((cube, i) => console.log([i + 1, cube.score, cube.name].join('\t')));
 
-    const findCube = (name: string) => ranked.find(c => c.name.toLowerCase() === name.toLowerCase());
+    const warnedDuplicates = new Set<string>();
+    const findCube = (name: string) => {
+        const matches = ranked.filter(c => c.name.toLowerCase() === name.toLowerCase());
+        if (matches.length > 1 && !warnedDuplicates.has(name)) {
+            warnedDuplicates.add(name);
+            console.warn(`Warning: ${matches.length} cubes in ${CORPUS_PRESET} match "${name}"; using the highest-scoring one.`);
+        }
+        return matches[0];
+    };
 
     console.log('\nBreakdowns (normalized):');
     console.log(['score', ...COMPLEXITY_COMPONENT_KEYS, 'name'].join('\t'));
@@ -115,20 +123,26 @@ function main(): void {
     const check = (name: string, top: boolean) => {
         const cube = findCube(name);
         if (!cube) {
-            return { name, rank: null, pass: false };
+            console.log(`${name}: not in collection — skipped`);
+            return null;
         }
         const rank = top ? topRank(cube) : bottomRank(cube);
-        return { name, rank, pass: top ? rank <= REFERENCE_SLACK : rank > ranked.length - REFERENCE_SLACK };
+        const pass = top ? rank <= REFERENCE_SLACK : rank > ranked.length - REFERENCE_SLACK;
+        console.log(`${pass ? 'ok  ' : 'miss'} ${name}: rank ${rank} of ${ranked.length}`);
+        return pass;
     };
-    const checks = [
-        ...REFERENCE_TOP.map(name => check(name, true)),
-        ...REFERENCE_BOTTOM.map(name => check(name, false)),
-    ];
     console.log('');
-    for (const result of checks) {
-        console.log(`${result.pass ? 'ok  ' : 'miss'} ${result.name}: ${result.rank === null ? 'not in the corpus' : `rank ${result.rank}`} of ${ranked.length}`);
+    const topChecks = REFERENCE_TOP.map(name => check(name, true)).filter(pass => pass !== null);
+    const bottomChecks = REFERENCE_BOTTOM.map(name => check(name, false)).filter(pass => pass !== null);
+    // Require at least one present reference on each side so the check can't pass vacuously.
+    const passed = topChecks.length > 0 && bottomChecks.length > 0 && [...topChecks, ...bottomChecks].every(Boolean);
+    if (topChecks.length === 0) {
+        console.log('No top reference cubes are in the collection.');
     }
-    console.log(`Reference check (top/bottom ${REFERENCE_SLACK}): ${checks.every(c => c.pass) ? 'PASS' : 'FAIL'}`);
+    if (bottomChecks.length === 0) {
+        console.log('No bottom reference cubes are in the collection.');
+    }
+    console.log(`Reference check (top/bottom ${REFERENCE_SLACK}): ${passed ? 'PASS' : 'FAIL'}`);
 }
 
 main();
