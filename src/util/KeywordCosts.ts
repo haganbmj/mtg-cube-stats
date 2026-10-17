@@ -25,9 +25,8 @@ function escapeRegExp(text: string): string {
 /**
  * Measures each keyword's reminder text on cards where the keyword starts a line
  * (or follows a comma in a keyword list), so that mid-sentence mentions are ignored.
- * A match is discarded when an em dash or another of the card's keywords (word-prefix,
- * case-insensitive) appears between the keyword and the `(`, since that reminder text
- * belongs to something else. Ability words that appear on any card cost a fixed
+ * A match is discarded when another of the card's keywords (word-prefix, case-insensitive)
+ * appears between the keyword and the `(`, since that reminder text belongs to that keyword. Ability words that appear on any card cost a fixed
  * ABILITY_WORD_KEYWORD_COST and are excluded from the fallback median.
  */
 export function buildKeywordCosts(
@@ -56,9 +55,6 @@ export function buildKeywordCosts(
                 continue;
             }
             const between = match[1];
-            if (between.includes('—')) {
-                continue;
-            }
             let borrowed = false;
             for (const other of keywords) {
                 if (other === keyword) {

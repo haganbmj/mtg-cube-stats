@@ -35,6 +35,7 @@ jobs:
         uses: actions/cache/restore@v6.1.0
         with:
           path: |
+            data/ability-words.json
             data/default-cards.jsonl
             data/flavor-words.json
             data/sets.json

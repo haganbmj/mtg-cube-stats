@@ -115,7 +115,7 @@
             <h4>Keyword Cost</h4>
             <p>
                 Each keyword's cost is the median word count of its reminder text across Scryfall Oracle text.
-                Reminder text only counts when no other keyword on that card, and no em dash (—), comes between the keyword and the parenthesis.
+                Reminder text only counts when no other keyword on that card comes between the keyword and the parenthesis.
                 Evergreen keywords cost a fixed {{ EVERGREEN_KEYWORD_COST }}, ability words (Scryfall's list) cost a fixed {{ ABILITY_WORD_KEYWORD_COST }}, and keywords without reminder text use the median cost of the others.
                 Distinct keyword load is divided by {{ distinctKeywordDivisor }}, where $n$ is the cube's total card count (copies included), so larger cubes aren't penalized for naturally containing more distinct keywords.
                 Unfamiliarity uses CubeCobra card popularity.

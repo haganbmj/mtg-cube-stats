@@ -43,13 +43,13 @@ export const DISTINCT_KEYWORD_SIZE_EXPONENT = 0.5;
 export const COMPLEXITY_BOUNDS: Record<ComplexityComponentKey, { low: number; high: number }> = {
     nonLandWords: { low: 16.344, high: 30.618 },
     landWords: { low: 13.950, high: 24.229 },
-    nonLandKeywordText: { low: 3.922, high: 9.375 },
+    nonLandKeywordText: { low: 3.922, high: 9.429 },
     landKeywordText: { low: 0.028, high: 4.900 },
     nonLandFamiliarity: { low: 1.711, high: 6.506 },
     landFamiliarity: { low: 2.176, high: 10.796 },
     nonLandLayouts: { low: 0.000, high: 0.041 },
     landLayouts: { low: 0.000, high: 0.159 },
-    distinctKeywordLoad: { low: 18.916, high: 76.250 },
+    distinctKeywordLoad: { low: 18.916, high: 74.895 },
 };
 
 export const COMPLEXITY_WEIGHTS: Record<ComplexityComponentKey, number> = {

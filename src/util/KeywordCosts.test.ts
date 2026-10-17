@@ -44,9 +44,17 @@ describe('buildKeywordCosts', () => {
         expect(t.costs.Landfall).toBe(t.fallback);
         expect(t.fallback).toBe(2);
     });
-    it('ignores reminder text after an em dash', () => {
-        const t = buildKeywordCosts([storm, { oracleText: 'Threshold — Creatures get +1/+1. (x y z w v)', keywords: ['Threshold'] }]);
-        expect(t.costs.Threshold).toBe(2);
+    it('does not charge a keyword for another keyword\'s reminder text without an em dash', () => {
+        const t = buildKeywordCosts([storm, {
+            oracleText: 'Landfall Whenever a land you control enters, target player mills three cards. (a b c d e)',
+            keywords: ['Landfall', 'Mill'],
+        }]);
+        expect(t.costs.Landfall).toBe(t.fallback);
+        expect(t.fallback).toBe(2);
+    });
+    it('keeps a real keyword\'s reminder written after an em dash', () => {
+        const t = buildKeywordCosts([{ oracleText: 'Suspend 4—{1}{U} (a b c)', keywords: ['Suspend'] }]);
+        expect(t.costs.Suspend).toBe(3);
     });
     it('assigns ABILITY_WORD_KEYWORD_COST to ability words and excludes them from the fallback median', () => {
         const t = buildKeywordCosts([
