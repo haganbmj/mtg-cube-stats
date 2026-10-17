@@ -83,9 +83,12 @@ jobs:
 
       - run: echo "VITE_BUILD_SHA=$GITHUB_SHA" >> $GITHUB_ENV
       - run: npm ci
+      - run: npm run lint
       - run: npm run cards
       - run: npm run cobra-cards
       - run: npm run preload
+      # After preload: App.vue statically imports preloads/generated/presets.json.
+      - run: npm run typecheck
       - run: VITE_BUILD_SHA=$GITHUB_SHA npm run build
 
       - name: Upload Pages Artifact

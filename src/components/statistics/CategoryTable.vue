@@ -50,11 +50,11 @@ const props = defineProps({
 });
 
 const tableData = computed(() => {
-    const categoryCounts = Object.values(props.loadedCubes).reduce((acc, curr) => {
+    const categoryCounts = Object.values(props.loadedCubes).reduce<Record<string, number>>((acc, curr: any) => {
         const category = curr.stats.assumedCategories[0] || 'Uncategorized';
         acc[category] = (acc[category] || 0) + 1;
         return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
     return Object.entries(categoryCounts).map(([category, count]) => ({
         category,

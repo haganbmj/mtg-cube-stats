@@ -1,4 +1,10 @@
 import axios from 'axios';
+import type { AxiosResponse } from 'axios';
+
+interface CubeSearchPage {
+    cubes?: { id: string }[];
+    lastKey?: object | null;
+}
 
 interface CubeCobraResponse {
     // This would be the raw CubeCobra API response structure
@@ -75,15 +81,15 @@ export async function fetchTopCubeIds(count: number = 100): Promise<string[]> {
     let lastKey: object | null = null;
 
     while (ids.length < count) {
-        const response = await axios({
+        const response: AxiosResponse<CubeSearchPage> = await axios({
             url: 'https://cubecobra.com/search/getmoresearchitems',
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             data: { query: '', order: 'pop', ascending: 'false', lastKey },
         });
 
-        const data = response.data;
-        const cubes: { id: string }[] = data.cubes ?? [];
+        const data: CubeSearchPage = response.data;
+        const cubes = data.cubes ?? [];
 
         for (const cube of cubes) {
             if (ids.length >= count) break;

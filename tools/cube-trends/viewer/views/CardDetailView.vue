@@ -25,15 +25,15 @@
         </div>
         <p class="chart-description">Cubes that ran this card during the window. Dates are snapshot dates (interval precision).</p>
         <el-table :data="timelineRows" size="small" :default-sort="{ prop: 'firstSeen', order: 'ascending' }">
-            <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
-            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a, b) => byName(a.owner, b.owner)" />
-            <el-table-column prop="firstSeen" label="First Seen" sortable :sort-method="(a, b) => compareNullable(a.firstSeen, b.firstSeen)">
+            <el-table-column prop="name" label="Cube" sortable :sort-method="(a: CardTimelineRow, b: CardTimelineRow) => byName(a.name, b.name)" />
+            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a: CardTimelineRow, b: CardTimelineRow) => byName(a.owner, b.owner)" />
+            <el-table-column prop="firstSeen" label="First Seen" sortable :sort-method="(a: CardTimelineRow, b: CardTimelineRow) => compareNullable(a.firstSeen, b.firstSeen)">
                 <template #default="{ row }">{{ formatDate(row.firstSeen) }}</template>
             </el-table-column>
-            <el-table-column prop="lastSeen" label="Last Seen" sortable :sort-method="(a, b) => compareNullable(a.lastSeen, b.lastSeen)">
+            <el-table-column prop="lastSeen" label="Last Seen" sortable :sort-method="(a: CardTimelineRow, b: CardTimelineRow) => compareNullable(a.lastSeen, b.lastSeen)">
                 <template #default="{ row }">{{ formatDate(row.lastSeen) }}</template>
             </el-table-column>
-            <el-table-column label="Status" sortable :sort-method="(a, b) => byName(statusText(a), statusText(b))">
+            <el-table-column label="Status" sortable :sort-method="(a: CardTimelineRow, b: CardTimelineRow) => byName(statusText(a), statusText(b))">
                 <template #default="{ row }">{{ statusText(row) }}</template>
             </el-table-column>
         </el-table>

@@ -83,11 +83,11 @@ import { ref, computed } from 'vue';
 import WordCountScatterPlotChart from '../components/statistics/WordCountScatterPlotChart.vue';
 import AvgCmcByColorBoxPlotChart from '../components/statistics/AvgCmcByColorBoxPlotChart.vue';
 import WordCountPopularityScatterPlotChart from '../components/statistics/WordCountPopularityScatterPlotChart.vue';
-import CategoryTable from '../components/statistics/CategoryTable.vue';
+// import CategoryTable from '../components/statistics/CategoryTable.vue';
 import CubeCardCountHistogramChart from '../components/statistics/CubeCardCountHistogramChart.vue';
 import ManaValueDistributionBoxPlotChart from '../components/statistics/ManaValueDistributionBoxPlotChart.vue';
 import ReleaseYearDistributionBoxPlotChart from '../components/statistics/ReleaseYearDistributionBoxPlotChart.vue';
-import ReleaseYearDistributionChart from '../components/statistics/ReleaseYearDistributionChart.vue';
+// import ReleaseYearDistributionChart from '../components/statistics/ReleaseYearDistributionChart.vue';
 import TokenCountScatterPlotChart from '../components/statistics/TokenCountScatterPlotChart.vue';
 
 const props = defineProps({

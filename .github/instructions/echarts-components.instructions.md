@@ -77,7 +77,7 @@ Use custom formatters for MTG-specific data:
 ```typescript
 tooltip: {
     trigger: 'item',
-    formatter: (args) => `<b>${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`
+    formatter: (args: any) => `<b>${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} Cards`
 }
 ```
 

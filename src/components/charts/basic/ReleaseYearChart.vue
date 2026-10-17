@@ -87,7 +87,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: (args) => {
+            formatter: (args: any) => {
                 if (args.componentType === 'markLine') {
                     if (args.name === 'Average') {
                         return `<b>Average/Mean</b><br/>${props.averageReleaseYear.toFixed(1)}<br/>\u00b11\u03c3: ${props.averageReleaseYearStdDev.toFixed(2)} years`;

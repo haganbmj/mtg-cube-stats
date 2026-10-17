@@ -30,7 +30,6 @@ describe('AssetCache', () => {
         await _resetForTesting();
         const { deleteDB } = await import('idb');
         await deleteDB('cube-cache');
-        // @ts-expect-error test override
         globalThis.fetch = vi.fn();
     });
 

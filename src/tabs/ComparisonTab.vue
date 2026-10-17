@@ -92,10 +92,10 @@
                     <div class="cube-header">
                         <el-image v-if="cubeA.thumbnail" :src="cubeA.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cubeA)}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
+                            <el-link :href="cubeCobraCubeUrl(cubeA)" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeA.id)">
                                 <span class="cube-header-name">{{ displayName(cubeA) }}</span>
                             </el-link>
-                            <el-link :href="`https://cubecobra.com/user/view/${cubeA.ownerId}`" target="_blank" underline="never">
+                            <el-link :href="cubeCobraUserUrl(cubeA.ownerId)" target="_blank" underline="never">
                                 <span class="cube-header-owner">{{ cubeA.owner }}</span>
                             </el-link>
                             <div class="cube-header-meta">
@@ -111,10 +111,10 @@
                     <div class="cube-header">
                         <el-image v-if="cubeB.thumbnail" :src="cubeB.thumbnail" fit="cover" class="cube-header-image" />
                         <div class="cube-header-info">
-                            <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cubeB)}`" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
+                            <el-link :href="cubeCobraCubeUrl(cubeB)" target="_blank" type="default" underline="never" @click.prevent="openCubeDetailDialog?.(cubeB.id)">
                                 <span class="cube-header-name">{{ displayName(cubeB) }}</span>
                             </el-link>
-                            <el-link :href="`https://cubecobra.com/user/view/${cubeB.ownerId}`" target="_blank" underline="never">
+                            <el-link :href="cubeCobraUserUrl(cubeB.ownerId)" target="_blank" underline="never">
                                 <span class="cube-header-owner">{{ cubeB.owner }}</span>
                             </el-link>
                             <div class="cube-header-meta">
@@ -159,7 +159,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue';
 import type { Cube, CubeCard } from '../types';
-import { displayName, externalCubeId } from '../util/Snapshots';
+import { displayName } from '../util/Snapshots';
+import { cubeCobraCubeUrl, cubeCobraUserUrl } from '../util/ExternalLinks';
 import CubeComparisonView from '../components/CubeComparisonView.vue';
 import CardSearchInput from '../components/filters/CardSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
@@ -341,7 +342,7 @@ const matchingOracleIds = computed<Set<string> | null>(() => {
     return ids;
 });
 
-const formatDate = (dateStr: string) => {
+const formatDate = (dateStr: string | number) => {
     try {
         return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
     } catch {
@@ -349,7 +350,7 @@ const formatDate = (dateStr: string) => {
     }
 };
 
-const fullTimestamp = (dateStr: string) => {
+const fullTimestamp = (dateStr: string | number) => {
     try {
         return new Date(dateStr).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone: 'UTC' });
     } catch {

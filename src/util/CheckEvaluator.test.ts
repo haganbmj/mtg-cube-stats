@@ -29,9 +29,9 @@ describe('CheckEvaluator', () => {
   describe('count checks', () => {
     it('counts matching cards (absolute)', () => {
       const cards = [
-        makeCard({ colors: ['U'], effectiveColors: ['U'], typeLine: 'Creature', effectiveTypes: ['creature'] }),
-        makeCard({ colors: ['U'], effectiveColors: ['U'], typeLine: 'Instant', effectiveTypes: ['instant'] }),
-        makeCard({ colors: ['R'], effectiveColors: ['R'], typeLine: 'Creature', effectiveTypes: ['creature'] }),
+        makeCard({ colors: ['U'], typeLine: 'Creature', effectiveTypes: ['creature'] }),
+        makeCard({ colors: ['U'], typeLine: 'Instant', effectiveTypes: ['instant'] }),
+        makeCard({ colors: ['R'], typeLine: 'Creature', effectiveTypes: ['creature'] }),
       ];
       const expr: CountCheck = {
         type: 'count',

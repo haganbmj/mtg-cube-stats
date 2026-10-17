@@ -30,10 +30,10 @@ const chartOptions = computed(() => {
     const cubeArray = Object.values(props.loadedCubes);
 
     // Aggregate all cards across all cubes
-    const combined = {};
+    const combined: Record<string, number> = {};
     cubeArray.forEach(cube => {
         if (cube.stats?.releaseYearDistribution) {
-            Object.entries(cube.stats.releaseYearDistribution).forEach(([year, count]) => {
+            Object.entries(cube.stats.releaseYearDistribution as Record<string, number>).forEach(([year, count]) => {
                 combined[year] = (combined[year] || 0) + count;
             });
         }
@@ -64,7 +64,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: (args) => {
+            formatter: (args: any) => {
                 return `<b>Year ${args.name}</b><br/>${args.value}%<br/>${args.data.rawValue} cards`;
             },
         },

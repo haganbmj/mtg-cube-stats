@@ -1,12 +1,7 @@
 // Card filter grammar for the Nearley parser.
 // This is the source of truth — edit this file directly.
 import moo from 'moo';
-
-interface CompiledGrammar {
-    Lexer: moo.Lexer;
-    ParserRules: Array<{ name: string; symbols: unknown[]; postprocess?: (...args: any[]) => any }>;
-    ParserStart: string;
-}
+import type { CompiledRules, Lexer } from 'nearley';
 
 const lexer = moo.compile({
     ws:          { match: /[\s,]+/u, lineBreaks: true },
@@ -25,8 +20,9 @@ const lexer = moo.compile({
 
 function id(x: unknown[]) { return x[0]; }
 
-const grammar: CompiledGrammar = {
-    Lexer: lexer,
+const grammar: CompiledRules = {
+    // @types/moo and @types/nearley disagree on formatError's token type; moo lexers are nearley-compatible at runtime.
+    Lexer: lexer as unknown as Lexer,
     ParserRules: [
         { name: 'query', symbols: ['_', 'terms', '_'], postprocess: ([, t]: unknown[]) => t },
         { name: 'terms', symbols: ['terms', '_', { literal: 'or' }, '_', 'term'], postprocess: ([left, , , , right]: unknown[]) => ({ type: 'or', left, right }) },

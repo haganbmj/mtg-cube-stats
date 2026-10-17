@@ -68,7 +68,7 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: (args) => {
+            formatter: (args: any) => {
                 const percentage = cubeArray.length > 0 ? (args.value / cubeArray.length * 100).toFixed(1) : 0;
                 const cubeNames = args.data.cubes.slice(0, 5).join('<br/>') + (args.data.cubes.length > 5 ? '<br/>...' : '');
                 return `<b>${args.name} cards</b><br/>${args.value} cubes (${percentage}%)<br/><br/>${cubeNames}`;

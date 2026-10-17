@@ -193,7 +193,7 @@ const sameBaseCube = computed(
     () => externalCubeId(props.cubeA) === externalCubeId(props.cubeB),
 );
 
-const formatSnapshotDate = (iso?: string): string | null => {
+const formatSnapshotDate = (iso?: string | number): string | null => {
     if (!iso) return null;
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return null;

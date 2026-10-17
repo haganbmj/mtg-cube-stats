@@ -11,7 +11,7 @@
         <template #header>
             <div v-if="activeCard" class="card-dialog-header">
                 <el-link
-                    :href="`https://scryfall.com/card/${activeCard.setCode?.toLowerCase()}/${activeCard.collectorNumber}`"
+                    :href="scryfallCardUrl(activeCard)"
                     target="_blank"
                     type="default"
                     underline="never"
@@ -205,7 +205,7 @@
                             <el-row direction="horizontal">
                                 <el-col :span="16">
                                     <el-tooltip :content="`Owner: ${cube.owner}`" :enterable="false" placement="top" :hide-after="50">
-                                        <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cube)}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ displayName(cube) }}</el-link>
+                                        <el-link :href="cubeCobraCubeUrl(cube)" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ displayName(cube) }}</el-link>
                                     </el-tooltip>
                                 </el-col>
                                 <el-col :span="8">
@@ -223,7 +223,7 @@
                             <el-row direction="horizontal">
                                 <el-col :span="16">
                                     <el-tooltip :content="`Owner: ${cube.owner}`" :enterable="false" placement="top" :hide-after="50">
-                                        <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(cube)}`" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ displayName(cube) }}</el-link>
+                                        <el-link :href="cubeCobraCubeUrl(cube)" target="_blank" @click.prevent="openCubeDetailDialog(cube.id)">{{ displayName(cube) }}</el-link>
                                     </el-tooltip>
                                 </el-col>
                                 <el-col :span="8">
@@ -255,7 +255,8 @@ import { getCardStats, initCardStats } from '../util/CubeCobraCardStats';
 
 initFrequencyData();
 initCardStats();
-import { displayName, externalCubeId } from '../util/Snapshots';
+import { displayName } from '../util/Snapshots';
+import { cubeCobraCubeUrl, scryfallCardUrl } from '../util/ExternalLinks';
 import type { Cube, CubeOverviewRow } from '../types';
 import { openCubeDetailDialogKey } from '../types/injectionKeys';
 import SetSymbol from './SetSymbol.vue';

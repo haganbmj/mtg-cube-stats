@@ -50,7 +50,7 @@ const chartOptions = computed(() => {
     const cubeArray = Object.values(props.loadedCubes);
 
     // Get all unique years from all cubes, but limit to reasonable range
-    const allYears = new Set();
+    const allYears = new Set<number>();
     cubeArray.forEach(cube => {
         Object.keys(cube.stats.releaseYearDistribution || {}).forEach(year => {
             const yearNum = parseInt(year);
@@ -71,8 +71,8 @@ const chartOptions = computed(() => {
     });
 
     // Calculate box plot data for each year (only include years with data)
-    const yearsWithData = [];
-    const boxplotData = [];
+    const yearsWithData: number[] = [];
+    const boxplotData: number[][] = [];
 
     sortedYears.forEach((year, index) => {
         const values = cubePercentages.map(percentages => percentages[index]).filter(v => v > 0);
@@ -83,7 +83,7 @@ const chartOptions = computed(() => {
     });
 
     // Create highlighted cube scatter points
-    const highlightedPoints = [];
+    const highlightedPoints: Array<{ value: [number, number]; cubeName: string; year: number; cardCount: number; percentage: number }> = [];
     if (props.highlighted.length > 0) {
         cubeArray.forEach(cube => {
             if (props.highlighted.includes(cube.id)) {
@@ -105,7 +105,7 @@ const chartOptions = computed(() => {
         });
     }
 
-    const series = [
+    const series: any[] = [
         {
             name: 'Distribution',
             type: 'boxplot',
@@ -140,7 +140,7 @@ const chartOptions = computed(() => {
             trigger: 'item',
             formatter: function(params: any) {
                 if (params.componentType === 'series' && params.seriesType === 'boxplot') {
-                    const [series, min, q1, median, q3, max] = params.data;
+                    const [, min, q1, median, q3, max] = params.data;
                     return `<b>Year ${yearsWithData[params.dataIndex]}</b><br/>
                             Max: ${max.toFixed(1)}%<br/>
                             Q3: ${q3.toFixed(1)}%<br/>

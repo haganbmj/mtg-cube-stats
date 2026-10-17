@@ -307,7 +307,7 @@ describe('warmSimilarityCacheForCube', () => {
         warmSimilarityCacheForCube('a', { a }, trusted);
 
         // The pair for b should not be cached; determineCosineSimilarityScore has no key to warm.
-        expect(determineCosineSimilarityScore.cache.size).toBe(0);
+        expect((determineCosineSimilarityScore.cache as unknown as Map<unknown, unknown>).size).toBe(0);
     });
 
     it('is a no-op when the cube has no row in the trusted matrix', () => {
@@ -316,7 +316,7 @@ describe('warmSimilarityCacheForCube', () => {
 
         warmSimilarityCacheForCube('a', { a, b }, {});
 
-        expect(determineCosineSimilarityScore.cache.size).toBe(0);
+        expect((determineCosineSimilarityScore.cache as unknown as Map<unknown, unknown>).size).toBe(0);
     });
 
     it('subsequent updateSimilarityForCube reads warmed pairs from the cache', () => {

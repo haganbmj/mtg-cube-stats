@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseHash, serializeHash, validateCubeSubtab, VALID_CUBE_SUBTABS } from './useHashRouter';
+import type { HashRouterState } from './useHashRouter';
 
 describe('parseHash', () => {
     it('parses cubes from hash', () => {
@@ -9,7 +10,7 @@ describe('parseHash', () => {
 });
 
 describe('serializeHash', () => {
-    const baseState = {
+    const baseState: HashRouterState = {
         tab: 'overview',
         preset: null,
         cubes: [] as string[],
@@ -21,6 +22,8 @@ describe('serializeHash', () => {
         compareA: null,
         compareB: null,
         allCards: false,
+        cubeId: null,
+        cubeSubtab: null,
     };
 
     it('does not include hidden param', () => {

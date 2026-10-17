@@ -3,7 +3,7 @@ import type { Ref } from 'vue';
 import {
     notifyNestedDismissOpen,
     notifyNestedDismissClosed,
-    signalExternalHistoryBack,
+    signalExternalHistoryBack
 } from './dialogHistoryCoord';
 import { suppressHashReconcile } from './useDetailNavigation';
 

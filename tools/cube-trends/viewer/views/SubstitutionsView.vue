@@ -8,7 +8,7 @@
                 <ExportButton filename="substitutions.csv" :rows="rows" :columns="exportColumns" />
             </div>
             <el-table :data="rows" size="small" :default-sort="{ prop: 'cubes', order: 'descending' }">
-                <el-table-column prop="removedName" label="Removed" sortable :sort-method="(a, b) => byName(a.removedName, b.removedName)">
+                <el-table-column prop="removedName" label="Removed" sortable :sort-method="(a: SubstitutionRow, b: SubstitutionRow) => byName(a.removedName, b.removedName)">
                     <template #default="{ row }">
                         <CardName
                             :name="row.removedName"
@@ -17,7 +17,7 @@
                         />
                     </template>
                 </el-table-column>
-                <el-table-column prop="addedName" label="Added" sortable :sort-method="(a, b) => byName(a.addedName, b.addedName)">
+                <el-table-column prop="addedName" label="Added" sortable :sort-method="(a: SubstitutionRow, b: SubstitutionRow) => byName(a.addedName, b.addedName)">
                     <template #default="{ row }">
                         <CardName
                             :name="row.addedName"
@@ -26,8 +26,8 @@
                         />
                     </template>
                 </el-table-column>
-                <el-table-column prop="cubes" label="Cubes" sortable :sort-method="(a, b) => compareNullable(a.cubes, b.cubes)" />
-                <el-table-column prop="lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                <el-table-column prop="cubes" label="Cubes" sortable :sort-method="(a: SubstitutionRow, b: SubstitutionRow) => compareNullable(a.cubes, b.cubes)" />
+                <el-table-column prop="lift" sortable :sort-method="(a: SubstitutionRow, b: SubstitutionRow) => compareNullable(a.lift, b.lift)">
                     <template #header><InfoLabel label="Lift" :tip="liftTip" /></template>
                     <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                 </el-table-column>
