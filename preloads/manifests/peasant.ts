@@ -118,6 +118,7 @@ const manifest: Manifest = {
         '629ab6452a407b100be28423', // tsuihou - Limited All Stars
         '60a4d6d0586303104c16ba21', // marcinkruk - The Warsaw Peasant Cube
         '216fe320-4d78-4d1f-aae4-b36231f59a9e', // shmouzkeisha - The Library of Babel
+        '168af323-f338-45cf-bdfa-3cff0f7a4c84', // christianh - It's a Kind of Magic
     ],
 };
 
