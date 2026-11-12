@@ -266,7 +266,9 @@ const flatCards = computed(() => {
 const topScrollbarRef = ref<HTMLElement | null>(null);
 const listViewRef = ref<HTMLElement | null>(null);
 const scrollContentWidth = ref(0);
-let syncing = false;
+// Scroll events fire asynchronously, so skip the echo event caused by our own programmatic write.
+let ignoreNextListScroll = false;
+let ignoreNextTopScroll = false;
 
 const updateScrollWidth = () => {
     if (listViewRef.value) {
@@ -275,21 +277,27 @@ const updateScrollWidth = () => {
 };
 
 const onListScroll = () => {
-    if (syncing) return;
-    syncing = true;
-    if (topScrollbarRef.value && listViewRef.value) {
-        topScrollbarRef.value.scrollLeft = listViewRef.value.scrollLeft;
+    if (ignoreNextListScroll) {
+        ignoreNextListScroll = false;
+        return;
     }
-    syncing = false;
+    const list = listViewRef.value;
+    const top = topScrollbarRef.value;
+    if (!list || !top || Math.abs(top.scrollLeft - list.scrollLeft) < 1) return;
+    ignoreNextTopScroll = true;
+    top.scrollLeft = list.scrollLeft;
 };
 
 const onTopScroll = () => {
-    if (syncing) return;
-    syncing = true;
-    if (listViewRef.value && topScrollbarRef.value) {
-        listViewRef.value.scrollLeft = topScrollbarRef.value.scrollLeft;
+    if (ignoreNextTopScroll) {
+        ignoreNextTopScroll = false;
+        return;
     }
-    syncing = false;
+    const list = listViewRef.value;
+    const top = topScrollbarRef.value;
+    if (!list || !top || Math.abs(list.scrollLeft - top.scrollLeft) < 1) return;
+    ignoreNextListScroll = true;
+    list.scrollLeft = top.scrollLeft;
 };
 
 let resizeObserver: ResizeObserver | null = null;
