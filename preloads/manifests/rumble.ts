@@ -23,6 +23,11 @@ const manifest: Manifest = {
         '60e45ef46d34d9567d6a2946',
         '8e138c2c-0011-4cd0-aead-ac9c50f53939',
         '5e0d1d94c652dc52d905b373',
+
+        '2004b39e-7e7a-4dbc-97a4-b92ae6eba7e8',
+        'deb22909-f628-41d3-8b6a-78cf17f0b663',
+        'a3036e3e-fa53-47bd-b56a-608c12680036',
+        'c4d27c11-8886-4218-98b8-1ab976f76755',
     ],
 };
 
