@@ -9,18 +9,18 @@
             <ExportButton filename="sets.csv" :rows="data.sets.adoption" :columns="peakColumns" />
         </div>
         <el-table :data="data.sets.adoption" size="small" :default-sort="{ prop: 'releasedAt', order: 'descending' }">
-            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)">
+            <el-table-column prop="code" label="Set" sortable :sort-method="(a: SetAdoption, b: SetAdoption) => byName(a.code, b.code)">
                 <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code.toUpperCase() }}</template>
             </el-table-column>
-            <el-table-column prop="name" label="Name" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
-            <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
+            <el-table-column prop="name" label="Name" sortable :sort-method="(a: SetAdoption, b: SetAdoption) => byName(a.name, b.name)" />
+            <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a: SetAdoption, b: SetAdoption) => compareNullable(a.releasedAt, b.releasedAt)">
                 <template #default="{ row }">{{ formatDate(row.releasedAt) }}</template>
             </el-table-column>
-            <el-table-column prop="peak" label="Peak (cards per cube)" sortable :sort-method="(a, b) => compareNullable(a.peak, b.peak)">
+            <el-table-column prop="peak" label="Peak (cards per cube)" sortable :sort-method="(a: SetAdoption, b: SetAdoption) => compareNullable(a.peak, b.peak)">
                 <template #default="{ row }">{{ formatCount(row.peak) }}</template>
             </el-table-column>
-            <el-table-column prop="timeToPeakWeeks" label="Weeks to Peak" sortable :sort-method="(a, b) => compareNullable(a.timeToPeakWeeks, b.timeToPeakWeeks)" />
-            <el-table-column prop="retention" sortable :sort-method="(a, b) => compareNullable(a.retention, b.retention)">
+            <el-table-column prop="timeToPeakWeeks" label="Weeks to Peak" sortable :sort-method="(a: SetAdoption, b: SetAdoption) => compareNullable(a.timeToPeakWeeks, b.timeToPeakWeeks)" />
+            <el-table-column prop="retention" sortable :sort-method="(a: SetAdoption, b: SetAdoption) => compareNullable(a.retention, b.retention)">
                 <template #header><InfoLabel label="Retention" :tip="retentionTip" /></template>
                 <template #default="{ row }">{{ row.retention === null ? '—' : formatPercent(row.retention) }}</template>
             </el-table-column>
@@ -38,22 +38,22 @@
         </div>
         <p class="chart-description">Every set with cards in these cubes, by first eligible printing. Each card counts once per cube regardless of copies.</p>
         <el-table :data="data.sets.trends" size="small" max-height="480" :default-sort="{ prop: 'current', order: 'descending' }">
-            <el-table-column prop="code" label="Set" sortable :sort-method="(a, b) => byName(a.code, b.code)">
+            <el-table-column prop="code" label="Set" sortable :sort-method="(a: SetTrend, b: SetTrend) => byName(a.code, b.code)">
                 <template #default="{ row }"><SetSymbol :setCode="row.code" :setName="row.name" />{{ row.code.toUpperCase() }}</template>
             </el-table-column>
-            <el-table-column prop="name" label="Name" min-width="180" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
-            <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a, b) => compareNullable(a.releasedAt, b.releasedAt)">
+            <el-table-column prop="name" label="Name" min-width="180" sortable :sort-method="(a: SetTrend, b: SetTrend) => byName(a.name, b.name)" />
+            <el-table-column prop="releasedAt" label="Released" sortable :sort-method="(a: SetTrend, b: SetTrend) => compareNullable(a.releasedAt, b.releasedAt)">
                 <template #default="{ row }">{{ formatDate(row.releasedAt) }}</template>
             </el-table-column>
-            <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].current, b[trendMetric].current)">
+            <el-table-column prop="current" sortable :sort-method="(a: SetTrend, b: SetTrend) => compareNullable(a[trendMetric].current, b[trendMetric].current)">
                 <template #header><InfoLabel label="Current" :tip="trendCurrentTip" /></template>
                 <template #default="{ row }">{{ formatTrendValue(row[trendMetric].current) }}</template>
             </el-table-column>
-            <el-table-column prop="delta" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].delta, b[trendMetric].delta)">
+            <el-table-column prop="delta" sortable :sort-method="(a: SetTrend, b: SetTrend) => compareNullable(a[trendMetric].delta, b[trendMetric].delta)">
                 <template #header><InfoLabel label="Δ90d" :tip="trendDeltaTip" /></template>
                 <template #default="{ row }"><SignedValue :value="row[trendMetric].delta" :text="formatTrendDelta(row[trendMetric].delta)" /></template>
             </el-table-column>
-            <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a[trendMetric].momentum, b[trendMetric].momentum)">
+            <el-table-column prop="momentum" sortable :sort-method="(a: SetTrend, b: SetTrend) => compareNullable(a[trendMetric].momentum, b[trendMetric].momentum)">
                 <template #header><InfoLabel label="Momentum" :tip="trendMomentumTip" /></template>
                 <template #default="{ row }"><SignedValue :value="row[trendMetric].momentum" :text="formatTrendMomentum(row[trendMetric].momentum)" /></template>
             </el-table-column>
@@ -81,14 +81,14 @@
                         />
                     </div>
                     <el-table :data="displacementByCode.get(marker.code)!.groups" size="small" :default-sort="{ prop: 'lift', order: 'descending' }">
-                        <el-table-column prop="colorCategory" label="Category" sortable :sort-method="(a, b) => byName(a.colorCategory, b.colorCategory)" />
-                        <el-table-column prop="primaryType" label="Type" sortable :sort-method="(a, b) => byName(a.primaryType, b.primaryType)" />
-                        <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
-                        <el-table-column prop="expected" sortable :sort-method="(a, b) => compareNullable(a.expected, b.expected)">
+                        <el-table-column prop="colorCategory" label="Category" sortable :sort-method="(a: DisplacementGroup, b: DisplacementGroup) => byName(a.colorCategory, b.colorCategory)" />
+                        <el-table-column prop="primaryType" label="Type" sortable :sort-method="(a: DisplacementGroup, b: DisplacementGroup) => byName(a.primaryType, b.primaryType)" />
+                        <el-table-column prop="removals" label="Removals" sortable :sort-method="(a: DisplacementGroup, b: DisplacementGroup) => compareNullable(a.removals, b.removals)" />
+                        <el-table-column prop="expected" sortable :sort-method="(a: DisplacementGroup, b: DisplacementGroup) => compareNullable(a.expected, b.expected)">
                             <template #header><InfoLabel label="Expected" :tip="displacementTip" /></template>
                             <template #default="{ row }">{{ row.expected.toFixed(1) }}</template>
                         </el-table-column>
-                        <el-table-column prop="lift" sortable :sort-method="(a, b) => compareNullable(a.lift, b.lift)">
+                        <el-table-column prop="lift" sortable :sort-method="(a: DisplacementGroup, b: DisplacementGroup) => compareNullable(a.lift, b.lift)">
                             <template #header><InfoLabel label="Lift" :tip="displacementTip" /></template>
                             <template #default="{ row }">{{ row.lift.toFixed(2) }}</template>
                         </el-table-column>
@@ -104,7 +104,7 @@
                                 />
                             </div>
                             <el-table :data="displacementByCode.get(marker.code)!.topCards" size="small" :default-sort="{ prop: 'removals', order: 'descending' }">
-                                <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
+                                <el-table-column prop="name" label="Card" sortable :sort-method="(a: TopRemovedRow, b: TopRemovedRow) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
                                     <template #default="{ row }">
                                         <CardName
                                             :name="cardLookup.get(row.key)?.info.name ?? row.key"
@@ -113,7 +113,7 @@
                                         />
                                     </template>
                                 </el-table-column>
-                                <el-table-column prop="removals" label="Removals" sortable :sort-method="(a, b) => compareNullable(a.removals, b.removals)" />
+                                <el-table-column prop="removals" label="Removals" sortable :sort-method="(a: TopRemovedRow, b: TopRemovedRow) => compareNullable(a.removals, b.removals)" />
                             </el-table>
                         </div>
                         <div class="displacement-column">
@@ -126,7 +126,7 @@
                                 />
                             </div>
                             <el-table :data="displacementByCode.get(marker.code)!.topAdded" size="small" :default-sort="{ prop: 'additions', order: 'descending' }">
-                                <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
+                                <el-table-column prop="name" label="Card" sortable :sort-method="(a: TopAddedRow, b: TopAddedRow) => byName(cardLookup.get(a.key)?.info.name ?? a.key, cardLookup.get(b.key)?.info.name ?? b.key)">
                                     <template #default="{ row }">
                                         <CardName
                                             :name="cardLookup.get(row.key)?.info.name ?? row.key"
@@ -135,8 +135,8 @@
                                         />
                                     </template>
                                 </el-table-column>
-                                <el-table-column prop="additions" label="Additions" sortable :sort-method="(a, b) => compareNullable(a.additions, b.additions)" />
-                                <el-table-column prop="fromSet" sortable :sort-method="(a, b) => compareNullable(Number(a.fromSet), Number(b.fromSet))">
+                                <el-table-column prop="additions" label="Additions" sortable :sort-method="(a: TopAddedRow, b: TopAddedRow) => compareNullable(a.additions, b.additions)" />
+                                <el-table-column prop="fromSet" sortable :sort-method="(a: TopAddedRow, b: TopAddedRow) => compareNullable(Number(a.fromSet), Number(b.fromSet))">
                                     <template #header><InfoLabel label="From Set" :tip="fromSetTip" /></template>
                                     <template #default="{ row }">{{ row.fromSet ? '✓' : '—' }}</template>
                                 </el-table-column>
@@ -152,7 +152,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { FullTrendsData } from '../dataSource';
-import type { SetAdoption, DisplacementGroup, SetTrend } from '../../analysis/sets';
+import type { SetAdoption, DisplacementGroup, SetTrend, SetDisplacement } from '../../analysis/sets';
 import { buildCardLookup } from '../util/cardLookup';
 import { formatCount, formatSignedCount, formatMomentum, formatPercent, formatDate, axisTooltip } from '../util/format';
 import { compareNullable, byName } from '../util/sort';
@@ -173,6 +173,9 @@ const trendDeltaTip = 'Change over roughly the last 90 days.';
 const trendMomentumTip = 'Robust trend per 30 days over the full window. Shown for sets reaching at least 0.5 cards per cube.';
 
 const trendMetric = ref<'perCube' | 'share'>('perCube');
+
+type TopRemovedRow = SetDisplacement['topCards'][number];
+type TopAddedRow = SetDisplacement['topAdded'][number];
 
 function formatTrendValue(value: number): string {
     return trendMetric.value === 'perCube' ? formatCount(value) : formatPercent(value);

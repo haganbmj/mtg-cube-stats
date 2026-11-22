@@ -8,20 +8,20 @@
                 <ExportButton filename="trendsetters.csv" :rows="rows" :columns="exportColumns" />
             </div>
             <el-table :data="rows" size="small" :default-sort="{ prop: 'meanPercentile', order: 'ascending' }">
-                <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
-                <el-table-column prop="adoptions" label="Adoptions" sortable :sort-method="(a, b) => compareNullable(a.adoptions, b.adoptions)" />
-                <el-table-column prop="meanPercentile" sortable :sort-method="(a, b) => compareNullable(a.meanPercentile, b.meanPercentile)">
+                <el-table-column prop="name" label="Cube" sortable :sort-method="(a: TrendsetterRow, b: TrendsetterRow) => byName(a.name, b.name)" />
+                <el-table-column prop="adoptions" label="Adoptions" sortable :sort-method="(a: TrendsetterRow, b: TrendsetterRow) => compareNullable(a.adoptions, b.adoptions)" />
+                <el-table-column prop="meanPercentile" sortable :sort-method="(a: TrendsetterRow, b: TrendsetterRow) => compareNullable(a.meanPercentile, b.meanPercentile)">
                     <template #header><InfoLabel label="Mean Percentile" :tip="meanPercentileTip" /></template>
                     <template #default="{ row }">{{ formatPercent(row.meanPercentile) }}</template>
                 </el-table-column>
-                <el-table-column prop="meanLagDays" sortable :sort-method="(a, b) => compareNullable(a.meanLagDays, b.meanLagDays)">
+                <el-table-column prop="meanLagDays" sortable :sort-method="(a: TrendsetterRow, b: TrendsetterRow) => compareNullable(a.meanLagDays, b.meanLagDays)">
                     <template #header><InfoLabel label="Mean Lag" :tip="meanLagTip" /></template>
                     <template #default="{ row }">{{ row.meanLagDays === null ? '—' : formatWeeks(daysToWeeks(row.meanLagDays)) }}</template>
                 </el-table-column>
-                <el-table-column prop="newCardAdoptions" sortable :sort-method="(a, b) => compareNullable(a.newCardAdoptions, b.newCardAdoptions)">
+                <el-table-column prop="newCardAdoptions" sortable :sort-method="(a: TrendsetterRow, b: TrendsetterRow) => compareNullable(a.newCardAdoptions, b.newCardAdoptions)">
                     <template #header><InfoLabel label="New-Card Adoptions" :tip="newCardAdoptionsTip" /></template>
                 </el-table-column>
-                <el-table-column prop="leadOnConsensus" sortable :sort-method="(a, b) => compareNullable(a.leadOnConsensus, b.leadOnConsensus)">
+                <el-table-column prop="leadOnConsensus" sortable :sort-method="(a: TrendsetterRow, b: TrendsetterRow) => compareNullable(a.leadOnConsensus, b.leadOnConsensus)">
                     <template #header><InfoLabel label="Lead on Consensus" :tip="leadOnConsensusTip" /></template>
                 </el-table-column>
                 <el-table-column label="Examples">

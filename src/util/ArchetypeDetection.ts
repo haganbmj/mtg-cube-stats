@@ -27,6 +27,8 @@ export interface ArchetypeResult {
     threshold: number;
     count: number;
     cards: string[];
+    supported: boolean;
+    supportLevel: string;
     percentage: string;
 }
 

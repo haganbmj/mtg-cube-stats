@@ -86,16 +86,23 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import type { PropType } from 'vue';
 import { Search, ArrowDown } from '@element-plus/icons-vue';
 import TristateCheckbox from './TristateCheckbox.vue';
 
+interface TristateOption {
+    value: string;
+    label: string;
+    searchTerms?: string[];
+}
+
 const props = defineProps({
     modelValue: {
-        type: Object,
+        type: Object as PropType<Record<string, boolean | null>>,
         default: () => ({}),
     },
     options: {
-        type: Array,
+        type: Array as PropType<TristateOption[]>,
         default: () => [],
     },
     placeholder: {
@@ -124,18 +131,18 @@ const searchQuery = ref('');
 const filteredOptions = computed(() => {
     if (!searchQuery.value) return props.options;
     const q = searchQuery.value.toLowerCase();
-    return props.options.filter((opt: any) => {
-        if (opt.searchTerms) return opt.searchTerms.some((t: string) => t.includes(q));
+    return props.options.filter(opt => {
+        if (opt.searchTerms) return opt.searchTerms.some(t => t.includes(q));
         return opt.label.toLowerCase().includes(q);
     });
 });
 
 const includedEntries = computed(() => {
-    return props.options.filter((opt: any) => props.modelValue[opt.value] === true);
+    return props.options.filter(opt => props.modelValue[opt.value] === true);
 });
 
 const excludedEntries = computed(() => {
-    return props.options.filter((opt: any) => props.modelValue[opt.value] === false);
+    return props.options.filter(opt => props.modelValue[opt.value] === false);
 });
 
 const onUpdate = (key: string, value: boolean | null) => {

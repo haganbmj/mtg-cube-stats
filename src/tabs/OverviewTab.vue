@@ -286,7 +286,7 @@
                         <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
                     </div>
                     <div class="cube-tile-owner">
-                        <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank" @click.stop>{{ row.owner }}</el-link>
+                        <el-link :href="cubeCobraUserUrl(row.ownerId)" target="_blank" @click.stop>{{ row.owner }}</el-link>
                     </div>
                     <div class="cube-tile-stats">
                         <span class="cube-tile-stat">
@@ -332,12 +332,12 @@
 
             <template #cell-name="{ row }">
                 <el-icon v-if="refreshingCubeIds.has(row.id)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(row)}`" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ displayName(row) }}</el-link>
+                <el-link :href="cubeCobraCubeUrl(row)" target="_blank" @click.prevent="openCubeDetailDialog?.(row.id)">{{ displayName(row) }}</el-link>
                 <el-tag v-if="isSnapshot(row)" size="small" type="info" style="margin-left: 0.5em;">History</el-tag>
             </template>
 
             <template #cell-owner="{ row }">
-                <el-link :href="`https://cubecobra.com/user/view/${row.ownerId}`" target="_blank">{{ row.owner }}</el-link>
+                <el-link :href="cubeCobraUserUrl(row.ownerId)" target="_blank">{{ row.owner }}</el-link>
             </template>
 
             <template #cell-lastModified="{ row }">
@@ -535,7 +535,8 @@ import StickyTable from '../components/StickyTable.vue';
 import ColumnCustomizer from '../components/ColumnCustomizer.vue';
 import CubeSearchInput from '../components/filters/CubeSearchInput.vue';
 import { parseQuery } from '../util/CardFilterParser';
-import { displayName, isSnapshot, externalCubeId } from '../util/Snapshots';
+import { displayName, isSnapshot } from '../util/Snapshots';
+import { cubeCobraCubeUrl, cubeCobraUserUrl } from '../util/ExternalLinks';
 import { evaluateCubeFilter, extractCubeSortDirective } from '../util/CubeFilterEvaluator';
 import type { CubeFilterContext } from '../util/CubeFilterEvaluator';
 import { parseCubeIdInput } from '../util/CubeCobra';

@@ -47,8 +47,6 @@ const chartOptions = computed(() => {
     }));
 
     const xMax = Math.ceil(Math.max(...series.map((s: any) => s.data[0][0])) * 1.05);
-    const yMax = Math.ceil(Math.max(...series.map((s: any) => s.data[0][1])) * 1.05);
-    // const refMax = Math.max(xMax, yMax);
 
     const referenceLine = {
         name: 'y = x',

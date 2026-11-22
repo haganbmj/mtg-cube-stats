@@ -153,7 +153,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import type { PropType } from 'vue';
 import { detectCubeArchetypes } from '../util/ArchetypeDetection';
+import type { CubeCard } from '../types/cube';
 
 // Function to get card object by name from cube cards
 const getCardByName = (cardName: string) => {
@@ -186,13 +188,13 @@ const handleThumbnailError = (event: Event) => {
 
 const props = defineProps({
     cubeCards: {
-        type: Array,
+        type: Array as PropType<CubeCard[]>,
         required: true,
     },
 });
 
 const showOnlySupported = ref(false);
-const showAllCards = ref({});
+const showAllCards = ref<Record<string, boolean>>({});
 
 // Detect archetypes from cube cards
 const archetypes = computed(() => {
@@ -207,26 +209,27 @@ const displayedArchetypes = computed(() => {
     return showOnlySupported.value ? supportedArchetypes.value : archetypes.value;
 });
 
-const totalCards = computed(() => {
-    return props.cubeCards.length;
-});
-
-const averageSupport = computed(() => {
-    if (supportedArchetypes.value.length === 0) return 0;
-    const total = supportedArchetypes.value.reduce((sum, arch) => sum + arch.count, 0);
-    return total / supportedArchetypes.value.length;
-});
-
-const strongestArchetype = computed(() => {
-    return supportedArchetypes.value[0] || null;
-});
-
-const archetypeDensity = computed(() => {
-    if (archetypes.value.length === 0) return 0;
-    const totalArchetypeCards = archetypes.value.reduce((sum, arch) => sum + arch.count, 0);
-    // Note: cards can support multiple archetypes, so this can exceed 100%
-    return (totalArchetypeCards / totalCards.value) * 100;
-});
+// Used by the commented-out summary stats in the template.
+// const totalCards = computed(() => {
+//     return props.cubeCards.length;
+// });
+//
+// const averageSupport = computed(() => {
+//     if (supportedArchetypes.value.length === 0) return 0;
+//     const total = supportedArchetypes.value.reduce((sum, arch) => sum + arch.count, 0);
+//     return total / supportedArchetypes.value.length;
+// });
+//
+// const strongestArchetype = computed(() => {
+//     return supportedArchetypes.value[0] || null;
+// });
+//
+// const archetypeDensity = computed(() => {
+//     if (archetypes.value.length === 0) return 0;
+//     const totalArchetypeCards = archetypes.value.reduce((sum, arch) => sum + arch.count, 0);
+//     // Note: cards can support multiple archetypes, so this can exceed 100%
+//     return (totalArchetypeCards / totalCards.value) * 100;
+// });
 </script>
 
 <style scoped>

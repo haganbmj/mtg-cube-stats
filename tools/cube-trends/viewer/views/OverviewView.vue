@@ -34,12 +34,12 @@
                     <ExportButton filename="top-risers.csv" :rows="risers" :columns="momentumColumns" />
                 </div>
                 <el-table :data="risers" size="small" :default-sort="{ prop: 'momentum', order: 'descending' }">
-                    <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(a.info.name, b.info.name)">
+                    <el-table-column prop="name" label="Card" sortable :sort-method="(a: CardTrend, b: CardTrend) => byName(a.info.name, b.info.name)">
                         <template #default="{ row }">
                             <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
                         </template>
                     </el-table-column>
-                    <el-table-column prop="setCode" width="90" sortable :sort-method="(a, b) => byName(setCodeOf(a), setCodeOf(b))">
+                    <el-table-column prop="setCode" width="90" sortable :sort-method="(a: CardTrend, b: CardTrend) => byName(setCodeOf(a), setCodeOf(b))">
                         <template #header><InfoLabel label="Set" :tip="setTip" /></template>
                         <template #default="{ row }">
                             <template v-if="row.info.eligibility">
@@ -48,11 +48,11 @@
                             <template v-else>—</template>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
+                    <el-table-column prop="current" sortable :sort-method="(a: CardTrend, b: CardTrend) => compareNullable(a.current, b.current)">
                         <template #header><InfoLabel label="IR" :tip="irTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
-                    <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
+                    <el-table-column prop="momentum" sortable :sort-method="(a: CardTrend, b: CardTrend) => compareNullable(a.momentum, b.momentum)">
                         <template #header><InfoLabel label="Momentum" :tip="momentumTip" /></template>
                         <template #default="{ row }"><SignedValue :value="row.momentum" :text="formatMomentum(row.momentum)" /></template>
                     </el-table-column>
@@ -64,12 +64,12 @@
                     <ExportButton filename="top-fallers.csv" :rows="fallers" :columns="momentumColumns" />
                 </div>
                 <el-table :data="fallers" size="small" :default-sort="{ prop: 'momentum', order: 'ascending' }">
-                    <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(a.info.name, b.info.name)">
+                    <el-table-column prop="name" label="Card" sortable :sort-method="(a: CardTrend, b: CardTrend) => byName(a.info.name, b.info.name)">
                         <template #default="{ row }">
                             <CardName :name="row.info.name" :imageUrl="row.info.urlFront" :setCode="row.info.eligibility?.setCode" />
                         </template>
                     </el-table-column>
-                    <el-table-column prop="setCode" width="90" sortable :sort-method="(a, b) => byName(setCodeOf(a), setCodeOf(b))">
+                    <el-table-column prop="setCode" width="90" sortable :sort-method="(a: CardTrend, b: CardTrend) => byName(setCodeOf(a), setCodeOf(b))">
                         <template #header><InfoLabel label="Set" :tip="setTip" /></template>
                         <template #default="{ row }">
                             <template v-if="row.info.eligibility">
@@ -78,11 +78,11 @@
                             <template v-else>—</template>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a.current, b.current)">
+                    <el-table-column prop="current" sortable :sort-method="(a: CardTrend, b: CardTrend) => compareNullable(a.current, b.current)">
                         <template #header><InfoLabel label="IR" :tip="irTip" /></template>
                         <template #default="{ row }">{{ formatPercent(row.current) }}</template>
                     </el-table-column>
-                    <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a.momentum, b.momentum)">
+                    <el-table-column prop="momentum" sortable :sort-method="(a: CardTrend, b: CardTrend) => compareNullable(a.momentum, b.momentum)">
                         <template #header><InfoLabel label="Momentum" :tip="momentumTip" /></template>
                         <template #default="{ row }"><SignedValue :value="row.momentum" :text="formatMomentum(row.momentum)" /></template>
                     </el-table-column>
@@ -95,12 +95,12 @@
             <ExportButton filename="newest-consensus.csv" :rows="newestConsensus" :columns="newestConsensusColumns" />
         </div>
         <el-table :data="newestConsensus" size="small" :default-sort="{ prop: 'firstSeen', order: 'descending' }">
-            <el-table-column prop="name" label="Card" sortable :sort-method="(a, b) => byName(a.trend.info.name, b.trend.info.name)">
+            <el-table-column prop="name" label="Card" sortable :sort-method="(a: NewestConsensusRow, b: NewestConsensusRow) => byName(a.trend.info.name, b.trend.info.name)">
                 <template #default="{ row }">
                     <CardName :name="row.trend.info.name" :imageUrl="row.trend.info.urlFront" :setCode="row.trend.info.eligibility?.setCode" />
                 </template>
             </el-table-column>
-            <el-table-column prop="setCode" width="90" sortable :sort-method="(a, b) => byName(setCodeOf(a.trend), setCodeOf(b.trend))">
+            <el-table-column prop="setCode" width="90" sortable :sort-method="(a: NewestConsensusRow, b: NewestConsensusRow) => byName(setCodeOf(a.trend), setCodeOf(b.trend))">
                 <template #header><InfoLabel label="Set" :tip="setTip" /></template>
                 <template #default="{ row }">
                     <template v-if="row.trend.info.eligibility">
@@ -109,15 +109,15 @@
                     <template v-else>—</template>
                 </template>
             </el-table-column>
-            <el-table-column prop="firstSeen" sortable :sort-method="(a, b) => compareNullable(a.trend.firstSeen, b.trend.firstSeen)">
+            <el-table-column prop="firstSeen" sortable :sort-method="(a: NewestConsensusRow, b: NewestConsensusRow) => compareNullable(a.trend.firstSeen, b.trend.firstSeen)">
                 <template #header><InfoLabel label="First Seen" :tip="firstSeenTip" /></template>
                 <template #default="{ row }">{{ formatDate(row.trend.firstSeen) }}</template>
             </el-table-column>
-            <el-table-column prop="current" sortable :sort-method="(a, b) => compareNullable(a.trend.current, b.trend.current)">
+            <el-table-column prop="current" sortable :sort-method="(a: NewestConsensusRow, b: NewestConsensusRow) => compareNullable(a.trend.current, b.trend.current)">
                 <template #header><InfoLabel label="IR" :tip="irTip" /></template>
                 <template #default="{ row }">{{ formatPercent(row.trend.current) }}</template>
             </el-table-column>
-            <el-table-column prop="momentum" sortable :sort-method="(a, b) => compareNullable(a.trend.momentum, b.trend.momentum)">
+            <el-table-column prop="momentum" sortable :sort-method="(a: NewestConsensusRow, b: NewestConsensusRow) => compareNullable(a.trend.momentum, b.trend.momentum)">
                 <template #header><InfoLabel label="Momentum" :tip="momentumTip" /></template>
                 <template #default="{ row }"><SignedValue :value="row.trend.momentum" :text="formatMomentum(row.trend.momentum)" /></template>
             </el-table-column>
@@ -129,19 +129,19 @@
         </div>
         <p class="chart-description">Coverage counts how many of the {{ data.meta.samples.length }} sampled dates we could resolve a revision of the cube for; gaps count the sampled dates where CubeCobra never returned a usable revision. A cube that was created partway through the window has low coverage with zero gaps, while a cube with gaps has holes in an otherwise tracked history.</p>
         <el-table :data="data.meta.cubes" size="small" :default-sort="{ prop: 'name', order: 'ascending' }">
-            <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)">
+            <el-table-column prop="name" label="Cube" sortable :sort-method="(a: MetaCube, b: MetaCube) => byName(a.name, b.name)">
                 <template #default="{ row }">
                     <el-link :href="cubeCobraUrl(row.id)" target="_blank" rel="noopener">{{ row.name }}</el-link>
                 </template>
             </el-table-column>
-            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a, b) => byName(a.owner, b.owner)" />
-            <el-table-column prop="coverage" width="140" sortable :sort-method="(a, b) => compareNullable(a.coverage, b.coverage)">
+            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a: MetaCube, b: MetaCube) => byName(a.owner, b.owner)" />
+            <el-table-column prop="coverage" width="140" sortable :sort-method="(a: MetaCube, b: MetaCube) => compareNullable(a.coverage, b.coverage)">
                 <template #header><InfoLabel label="Coverage" :tip="coverageTip" /></template>
                 <template #default="{ row }">
                     {{ row.coverage }}<span class="cell-secondary">/ {{ data.meta.samples.length }}</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="gaps" width="100" sortable :sort-method="(a, b) => compareNullable(a.gaps, b.gaps)">
+            <el-table-column prop="gaps" width="100" sortable :sort-method="(a: MetaCube, b: MetaCube) => compareNullable(a.gaps, b.gaps)">
                 <template #header><InfoLabel label="Gaps" :tip="gapsTip" /></template>
                 <template #default="{ row }">{{ row.gaps }}</template>
             </el-table-column>
@@ -161,7 +161,7 @@ import { computed } from 'vue';
 import type { FullTrendsData } from '../dataSource';
 import type { CardTrend } from '../../analysis/cards';
 import type { ConsensusCard } from '../../analysis/consensus';
-import type { PanelCube } from '../../analysis/panel';
+import type { MetaResult } from '../../output';
 import { buildCardLookup } from '../util/cardLookup';
 import { buildAddsRemovesOption, buildCubesUpdated, buildCubesUpdatedOption } from '../util/charts';
 import { formatPercent, formatMomentum, formatDate } from '../util/format';
@@ -226,9 +226,12 @@ function cubeCobraUrl(cubeId: string): string {
     return `https://cubecobra.com/cube/about/${encodeURIComponent(cubeId)}`;
 }
 
+type MetaCube = MetaResult['cubes'][number];
+type NewestConsensusRow = { consensus: ConsensusCard; trend: CardTrend };
+
 const newestConsensus = computed(() => props.data.consensus.cards
     .map((consensus) => ({ consensus, trend: cardLookup.value.get(consensus.oracleId) }))
-    .filter((entry): entry is { consensus: ConsensusCard; trend: CardTrend } => (
+    .filter((entry): entry is NewestConsensusRow => (
         entry.trend !== undefined && entry.trend.firstSeen !== null
     ))
     .sort((a, b) => b.trend.firstSeen! - a.trend.firstSeen!)
@@ -249,7 +252,7 @@ const newestConsensusColumns: CsvColumn<{ consensus: ConsensusCard; trend: CardT
     { key: 'momentum', label: 'Momentum', value: (r) => r.trend.momentum },
 ];
 
-const cubeColumns: CsvColumn<PanelCube & { coverage: number; gaps: number }>[] = [
+const cubeColumns: CsvColumn<MetaCube>[] = [
     { key: 'name', label: 'Cube', value: (c) => c.name },
     { key: 'owner', label: 'Owner', value: (c) => c.owner },
     { key: 'coverage', label: 'Coverage', value: (c) => c.coverage },

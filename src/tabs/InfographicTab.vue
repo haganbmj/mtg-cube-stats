@@ -565,6 +565,7 @@ import { displayName, externalCubeId } from '../util/Snapshots';
 import PresetHeader from '../components/PresetHeader.vue';
 import SetSymbol from '../components/SetSymbol.vue';
 import { openCubeDetailDialogKey, openCardDetailDialogKey } from '../types/injectionKeys';
+import type { Cube } from '../types/cube';
 
 const activeListModal = ref<'popular' | 'elo' | 'tokens' | 'sets' | 'keywords' | null>(null);
 const modalOpen = computed({
@@ -623,10 +624,11 @@ const totalUniqueCards = computed(() => {
     return allCards.size;
 });
 
-const averageCardsPerCube = computed(() => {
-    if (totalCubes.value === 0) return 0;
-    return totalCards.value / totalCubes.value;
-});
+// Used by the commented-out "Avg Cards per Cube" stat card in the template.
+// const averageCardsPerCube = computed(() => {
+//     if (totalCubes.value === 0) return 0;
+//     return totalCards.value / totalCubes.value;
+// });
 
 // Count how many cubes each card appears in
 const cardCubeCounts = computed(() => {
@@ -659,11 +661,11 @@ const uniqueOnlyCards = computed(() => {
 
 const topPopularCards = computed(() => {
     const cards = Array.from(cardCubeCounts.value.entries())
-        .filter(([oracleId, data]) => {
+        .filter(([, data]) => {
             // Filter out lands and custom cards
             return !data.card.effectiveTypes?.includes('Land') && !data.card.isCustomCard;
         })
-        .map(([oracleId, data]) => ({
+        .map(([, data]) => ({
             ...data.card,
             cubeCount: data.count,
         }))
@@ -759,9 +761,9 @@ const mostCurrentYearCube = computed(() => {
     if (totalCubes.value === 0) return null;
 
     let maxCurrentYearCards = 0;
-    let topCube = null;
+    let topCube: (Cube & Required<Pick<Cube, 'stats'>> & { currentYearCards: number }) | null = null;
 
-    Object.values(props.loadedCubes).forEach((cube: any) => {
+    for (const cube of Object.values(props.loadedCubes) as any[]) {
         const currentYearCards = cube.stats.releaseYearDistribution?.[currentYear.value] || 0;
 
         if (currentYearCards > maxCurrentYearCards) {
@@ -771,7 +773,7 @@ const mostCurrentYearCube = computed(() => {
                 currentYearCards,
             };
         }
-    });
+    }
 
     return topCube;
 });
@@ -884,13 +886,13 @@ const mostUniqueCube = computed(() => {
     if (totalCubes.value < 2) return null;
 
     let lowestAvgSimilarity = 1;
-    let mostUnique = null;
+    let mostUnique: (Cube & { avgSimilarity: number }) | null = null;
 
-    Object.entries(props.loadedCubes).forEach(([id, cube]: [string, any]) => {
+    for (const [id, cube] of Object.entries(props.loadedCubes) as [string, any][]) {
         const scores = props.similarityMatrix[id] || {};
         const otherCubes = Object.keys(props.loadedCubes).filter(otherId => otherId !== id);
 
-        if (otherCubes.length === 0) return;
+        if (otherCubes.length === 0) continue;
 
         const totalScore = Object.values(scores).reduce((acc: number, score: any) => acc + score.cosineSimilarity, 0);
         const avgSimilarity = totalScore / otherCubes.length;
@@ -902,7 +904,7 @@ const mostUniqueCube = computed(() => {
                 avgSimilarity,
             };
         }
-    });
+    }
 
     return mostUnique;
 });

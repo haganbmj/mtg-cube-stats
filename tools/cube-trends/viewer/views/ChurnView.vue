@@ -9,12 +9,12 @@
             <ExportButton filename="churn.csv" :rows="rows" :columns="exportColumns" />
         </div>
         <el-table :data="rows" size="small" :default-sort="{ prop: 'changes', order: 'descending' }">
-            <el-table-column prop="name" label="Cube" sortable :sort-method="(a, b) => byName(a.name, b.name)" />
-            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a, b) => byName(a.owner, b.owner)" />
-            <el-table-column prop="totalAdds" label="Adds" sortable :sort-method="(a, b) => compareNullable(a.totalAdds, b.totalAdds)" />
-            <el-table-column prop="totalRemoves" label="Removes" sortable :sort-method="(a, b) => compareNullable(a.totalRemoves, b.totalRemoves)" />
-            <el-table-column prop="changes" label="Changes" sortable :sort-method="(a, b) => compareNullable(a.changes, b.changes)" />
-            <el-table-column prop="meanRate" label="Mean Rate" sortable :sort-method="(a, b) => compareNullable(a.meanRate, b.meanRate)">
+            <el-table-column prop="name" label="Cube" sortable :sort-method="(a: ChurnRow, b: ChurnRow) => byName(a.name, b.name)" />
+            <el-table-column prop="owner" label="Owner" sortable :sort-method="(a: ChurnRow, b: ChurnRow) => byName(a.owner, b.owner)" />
+            <el-table-column prop="totalAdds" label="Adds" sortable :sort-method="(a: ChurnRow, b: ChurnRow) => compareNullable(a.totalAdds, b.totalAdds)" />
+            <el-table-column prop="totalRemoves" label="Removes" sortable :sort-method="(a: ChurnRow, b: ChurnRow) => compareNullable(a.totalRemoves, b.totalRemoves)" />
+            <el-table-column prop="changes" label="Changes" sortable :sort-method="(a: ChurnRow, b: ChurnRow) => compareNullable(a.changes, b.changes)" />
+            <el-table-column prop="meanRate" label="Mean Rate" sortable :sort-method="(a: ChurnRow, b: ChurnRow) => compareNullable(a.meanRate, b.meanRate)">
                 <template #default="{ row }">{{ formatPercent(row.meanRate) }}</template>
             </el-table-column>
             <el-table-column label="Trend">

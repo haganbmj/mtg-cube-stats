@@ -60,13 +60,13 @@ const chartOptions = computed(() => {
     });
 
     // Calculate box plot data for each mana value
-    const boxplotData = manaValues.map((mv, index) => {
+    const boxplotData = manaValues.map((_mv, index) => {
         const values = cubePercentages.map(percentages => percentages[index]);
         return calculateBoxPlotData(values);
     });
 
     // Create highlighted cube scatter points
-    const highlightedPoints = [];
+    const highlightedPoints: Array<{ value: [number, number]; cubeName: string; manaValue: string; cardCount: number; percentage: number }> = [];
     if (props.highlighted.length > 0) {
         cubeArray.forEach(cube => {
             if (props.highlighted.includes(cube.id)) {
@@ -88,7 +88,7 @@ const chartOptions = computed(() => {
         });
     }
 
-    const series = [
+    const series: any[] = [
         {
             name: 'Distribution',
             type: 'boxplot',
@@ -123,7 +123,7 @@ const chartOptions = computed(() => {
             trigger: 'item',
             formatter: function(params: any) {
                 if (params.componentType === 'series' && params.seriesType === 'boxplot') {
-                    const [series, min, q1, median, q3, max] = params.data;
+                    const [, min, q1, median, q3, max] = params.data;
                     return `<b>MV ${manaValues[params.dataIndex]}</b><br/>
                             Max: ${max.toFixed(1)}%<br/>
                             Q3: ${q3.toFixed(1)}%<br/>

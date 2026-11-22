@@ -26,7 +26,7 @@ const props = defineProps({
     },
 });
 
-const dataLabels = {
+const dataLabels: Record<string, string> = {
     W: 'White',
     U: 'Blue',
     B: 'Black',

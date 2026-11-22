@@ -9,6 +9,7 @@
     "build": "vite build",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "typecheck": "vue-tsc --noEmit",
     "cards": "tsx download-scryfall-cards.ts",
     "cards:update": "tsx download-scryfall-cards.ts --update",
     "cubecobra-exports": "tsx download-cubecobra-exports.ts",
@@ -43,6 +44,8 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/moo": "^0.5.10",
+    "@types/nearley": "^2.11.5",
     "@vitejs/plugin-vue": "6.0.9",
     "@vue/test-utils": "^2.5.1",
     "axios": "^1.21.1",
@@ -52,10 +55,12 @@
     "happy-dom": "^20.14.5",
     "sass": "^1.105.1",
     "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
     "typescript-eslint": "^8.64.0",
     "vite": "8.3.8",
     "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^5.0.2",
-    "vue-loader": "^17.4.2"
+    "vue-loader": "^17.4.2",
+    "vue-tsc": "^3.3.13"
   }
 }

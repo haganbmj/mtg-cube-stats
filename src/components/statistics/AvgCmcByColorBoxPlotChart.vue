@@ -1,9 +1,9 @@
 <template>
-    <VChart ref="chart" class="chart" :option="chartOptions" autoresize />
+    <VChart class="chart" :option="chartOptions" autoresize />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { use } from 'echarts/core';
 import { BoxplotChart, ScatterChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -31,8 +31,6 @@ const props = defineProps({
     },
 });
 
-let chart = ref<any>(null);
-
 const xDimensions = [
     { name: 'All', key: 'A', color: "#e69d87" },
     { name: 'White', key: 'W', color: "#c0c0c0" },
@@ -51,7 +49,7 @@ const highlightedSeries = computed(() => {
     const cubeArray = Object.values(props.loadedCubes);
     const highlightedCubes = cubeArray.filter(cube => props.highlighted.includes(cube.id));
 
-    const scatterData = [];
+    const scatterData: Array<{ value: [number, number]; cubeName: string; colorName: string; cardCount: number; avgCmc: number }> = [];
 
     highlightedCubes.forEach(cube => {
         xDimensions.forEach((dim, index) => {
@@ -89,7 +87,7 @@ const chartOptions = computed(() => {
     const cubeArray = Object.values(props.loadedCubes);
 
     // Calculate box plot data for each dimension
-    const boxplotData = xDimensions.map((dim, index) => {
+    const boxplotData = xDimensions.map((dim) => {
         const values = cubeArray.map(cube => {
             if (dim.key === 'A') {
                 return cube.stats.averageNonLandCmc;
@@ -111,13 +109,13 @@ const chartOptions = computed(() => {
         return [min, q1, median, q3, max];
     });
 
-    const series = [
+    const series: any[] = [
         {
             name: 'Distribution',
             type: 'boxplot',
             data: boxplotData.filter((d): d is number[] => d !== null).map((data, index) => [...data, index]),
             itemStyle: {
-                borderColor: (params) => {
+                borderColor: (params: any) => {
                     const color = xDimensions[params.dataIndex]?.color || '#5755d9';
                     return color;
                 },
@@ -151,9 +149,9 @@ const chartOptions = computed(() => {
         },
         tooltip: {
             trigger: 'item',
-            formatter: (params) => {
+            formatter: (params: any) => {
                 if (params.seriesName === 'Distribution') {
-                    const [series, min, q1, median, q3, max] = params.data;
+                    const [, min, q1, median, q3, max] = params.data;
                     const colorName = xDimensions[params.dataIndex]?.name || 'Unknown';
                     return `<b>${colorName}</b><br/>
                             Max: ${max?.toFixed(2)}<br/>

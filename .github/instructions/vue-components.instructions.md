@@ -259,3 +259,4 @@ import { Search } from '@element-plus/icons-vue';
 - **Don't** import entire Element Plus - use tree-shaking with specific imports
 - **Don't** mutate props directly - use computed or emit events
 - **Don't** forget TypeScript types for complex props like arrays or objects
+- **Don't** inline URL template literals in component bindings (e.g. ``:href="`https://...`"`` on `el-link`/`el-button`) - vue-tsc mangles the `//` and breaks type-checking for the rest of the slot. Use the helpers in `src/util/ExternalLinks.ts` or a script function instead

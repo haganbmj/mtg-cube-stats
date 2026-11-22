@@ -3,7 +3,7 @@ import {
     jaccardSimilarity,
     suffixedDuplicates,
     cosineSimilarity,
-    intersectionSizeOf,
+    intersectionSizeOf
 } from './SimiliartyFunctions';
 
 describe('suffixedDuplicates', () => {

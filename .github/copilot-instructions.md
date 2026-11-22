@@ -16,6 +16,7 @@ npm run dev        # Start development server
 - `npm run dev` - Vite dev server with hot reload
 - `npm run build` - Production build (outputs to `dist/`)
 - `npm run lint` / `npm run lint:fix` - ESLint checking/fixing
+- `npm run typecheck` - vue-tsc type checking (runs in CI alongside lint; requires `npm run preload` output)
 - `npm run cards:update` - Force refresh Scryfall data when stale
 - `npm test` - Vitest (test infrastructure ready, no tests yet)
 

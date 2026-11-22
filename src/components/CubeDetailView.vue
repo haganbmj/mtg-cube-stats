@@ -3,11 +3,11 @@
         <div v-if="activeCube" class="cube-detail-header">
             <el-image :src="activeCube.thumbnail" fit="contain" class="cube-detail-image" />
             <div class="cube-detail-title-block">
-                <el-link :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank" type="default" underline="never">
+                <el-link :href="cubeCobraCubeUrl(activeCube)" target="_blank" type="default" underline="never">
                     <span class="cube-detail-name">{{ displayName(activeCube) }}</span>
                     <el-icon class="el-icon--right"><Link /></el-icon>
                 </el-link>
-                <el-link :href="`https://cubecobra.com/user/view/${activeCube.ownerId}`" target="_blank" underline="never">
+                <el-link :href="cubeCobraUserUrl(activeCube.ownerId)" target="_blank" underline="never">
                     <span class="cube-detail-owner">{{ activeCube.owner }}</span>
                 </el-link>
                 <div v-if="isSnapshot(activeCube)" class="cube-detail-snapshot-meta">
@@ -450,9 +450,9 @@
                         <el-col :span="24">
                             <div class="external-links">
                                 <el-space wrap>
-                                    <el-button tag="a" :href="`https://cubecobra.com/cube/about/${externalCubeId(activeCube)}`" target="_blank">CubeCobra</el-button>
-                                    <el-button tag="a" :href="`https://hedron.network/cube-results/?cubeId=${externalCubeId(activeCube)}`" target="_blank">Hedron Network</el-button>
-                                    <el-button tag="a" :href="`https://luckypaper.co/resources/cube-map/?cube=${externalCubeId(activeCube)}`" target="_blank">LuckyPaper Cube Map</el-button>
+                                    <el-button tag="a" :href="cubeCobraCubeUrl(activeCube)" target="_blank">CubeCobra</el-button>
+                                    <el-button tag="a" :href="hedronCubeUrl(activeCube)" target="_blank">Hedron Network</el-button>
+                                    <el-button tag="a" :href="luckyPaperCubeMapUrl(activeCube)" target="_blank">LuckyPaper Cube Map</el-button>
                                 </el-space>
                             </div>
                         </el-col>
@@ -802,6 +802,7 @@ import { ref, computed, watch, inject, provide, toRef, type PropType, type Ref }
 import { useDateFormat, useWindowSize } from '@vueuse/core';
 import { Loading, Link, Refresh, Clock, InfoFilled, Delete, CircleCheck, CircleClose, BrushFilled, Hide, TopRight } from '@element-plus/icons-vue';
 import { isSnapshot, displayName, externalCubeId, snapshotDateLabel } from '../util/Snapshots';
+import { cubeCobraCubeUrl, cubeCobraUserUrl, hedronCubeUrl, luckyPaperCubeMapUrl } from '../util/ExternalLinks';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Cube, CubeCard, CubeOverviewRow, SimilarityMatrix } from '../types';
@@ -935,9 +936,6 @@ const cubeCheckResults = computed(() => {
     }));
 });
 
-const checksPassCount = computed(() => {
-    return cubeCheckResults.value.filter(r => r.result?.passed).length;
-});
 const currentCubeLoaded = computed(() => !!loadedCubesRef.value[baseCubeId.value]);
 
 const loadingCurrent = ref(false);

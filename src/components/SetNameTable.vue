@@ -31,7 +31,7 @@
             prop="releaseDate"
             label="Release Date"
             min-width="140"
-            :formatter="(row) => formatReleaseDate(row.releaseDate)"
+            :formatter="(row: { releaseDate: string }) => formatReleaseDate(row.releaseDate)"
             sortable
         />
         <el-table-column
@@ -44,7 +44,7 @@
             prop="percentage"
             label="Percentage"
             min-width="140"
-            :formatter="(row) => (row.percentage * 100).toFixed(2) + '%'"
+            :formatter="(row: { percentage: number }) => (row.percentage * 100).toFixed(2) + '%'"
             sortable
         />
     </el-table>
